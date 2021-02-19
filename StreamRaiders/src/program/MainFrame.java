@@ -415,10 +415,10 @@ public class MainFrame {
 							public void actionPerformed(ActionEvent e) {
 								if(Boolean.parseBoolean(black.get(types[tt]))) {
 									blacks.get(name).put(types[tt], "false");
-									GUI.setBackground(name + "::" + types[tt], GUI.getDefButCol());
+									GUI.setBackground(name + "::" + types[tt], Color.green);
 								} else {
 									blacks.get(name).put(types[tt], "true");
-									GUI.setBackground(name + "::" + types[tt], Color.green);
+									GUI.setBackground(name + "::" + types[tt], GUI.getDefButCol());
 								}
 							}
 						});
