@@ -15,7 +15,7 @@ public class Run {
 
 	
 	private String cookies = "";
-	private String clientVersion = "0.141.3";
+	private static String clientVersion = NEF.read("data/clientversion.app").replace("\n", "");
 	
 	private String name = "";
 	

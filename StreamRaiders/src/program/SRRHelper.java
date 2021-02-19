@@ -20,7 +20,8 @@ public class SRRHelper {
 		String ver = json(req.getCurrentTime()).getAsJsonObject("info").getAsJsonPrimitive("version").getAsString();
 		
 		if(!ver.equals(clientVersion)) {
-			System.err.println("Version is outdated " + clientVersion + " -> " + ver);
+			System.err.println("Client version is outdated " + clientVersion + " -> " + ver);
+			System.err.println("not critical but can cause issues");
 			req = new SRR(cookies, ver);
 		}
 		updateUnits();
