@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/HttpClient4/commons-codec-1.11.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/HttpClient4/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/HttpClient4/fluent-hc-4.5.13.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/HttpClient4/httpclient-4.5.13.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/HttpClient4/httpclient-cache-4.5.13.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/HttpClient4/httpclient-osgi-4.5.13.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/HttpClient4/httpclient-win-4.5.13.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/HttpClient4/httpcore-4.4.13.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/HttpClient4/httpmime-4.5.13.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/HttpClient4/jna-4.5.2.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/HttpClient4/jna-platform-4.5.2.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/Json/gson-2.8.6.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/jcef/gluegen-rt.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/jcef/gluegen-rt-natives-windows-amd64.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/jcef/jcef.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="P:/eclipse/workspace/.lib/jcef/lib/win64"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/jcef/jcef-tests.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/jcef/jogl-all.jar"/>
+	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/jcef/jogl-all-natives-windows-amd64.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
