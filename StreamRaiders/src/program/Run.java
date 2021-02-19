@@ -108,17 +108,7 @@ public class Run {
 					
 		lt = lt.minusMinutes(-wait);
 		
-			
 		sleep(wait * 60);
-					/*
-					try {
-						Thread.sleep(wait * 60 * 1000);
-					} catch (Exception e) {
-						Console.add(name, "interrupted", Console.info);
-					}
-					*/
-				
-		
 	}
 	
 	private int time = 0;

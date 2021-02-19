@@ -198,7 +198,10 @@ public class MainFrame {
 	
 	private static void forgetMe() {
 		if(gui.showConfirmationBox("do you really want\nto delete all your\nprofiles?")) {
-			for(String key : profiles.keySet()) {
+			Set<String> kset = profiles.keySet();
+			String[] keys = new String[kset.size()];
+			keys = kset.toArray(keys);
+			for(String key : keys) {
 				forget(key);
 			}
 		}
