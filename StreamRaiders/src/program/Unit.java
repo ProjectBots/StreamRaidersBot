@@ -11,9 +11,9 @@ public class Unit {
 
 	//private static JsonObject stats = JsonParser.json(NEF.read("data/unitStats.app"));
 	
-	JsonObject unit = null;
-	Date cool = null;
-	int rank = 0;
+	private JsonObject unit = null;
+	private Date cool = null;
+	private int rank = 0;
 	
 	public static final String[] common = new String[] {"archer", "tank", "warrior", "flagbearer", "rogue"};
 	public static final String[] uncommon = new String[] {"buster", "bomber", "healer", "barbarian", "alliespaladin"};
