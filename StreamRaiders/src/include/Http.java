@@ -27,6 +27,7 @@ public class Http {
 	private BasicHeader[] headers = new BasicHeader[0];
 	private String[][] urlArgs = new String[0][0];
 	
+	private int max_attemps = 3;
 	
 	public void setUrl(String url) {
 		this.url = url;
@@ -53,17 +54,21 @@ public class Http {
 	
 	public String sendGet() throws Exception {
 		
-		Request req = Request.Get(this.getUrl());
-		
-		BasicHeader[] headers = this.getHeaders();
-		
-		for(int i=0; i<headers.length; i++) {
-			req.setHeader(headers[i]);
+		for(int j=0; j<max_attemps; j++) {
+			try {
+				Request req = Request.Get(this.getUrl());
+				
+				BasicHeader[] headers = this.getHeaders();
+				
+				for(int i=0; i<headers.length; i++) {
+					req.setHeader(headers[i]);
+				}
+				
+				return req.execute().returnContent().asString();
+			} catch (Exception e) {}
 		}
 		
-		return req.execute().returnContent().asString();
-		
-		
+		return null;
 	}
 	
 	/*
