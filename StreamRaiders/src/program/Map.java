@@ -145,6 +145,7 @@ public class Map {
 	}
 
 	private JsonObject[][] addEntity(JsonObject[][] map, JsonArray places) {
+		if(places == null) return map;
 		for(int i=0; i<places.size(); i++) {
 			JsonObject place = places.get(i).getAsJsonObject();
 			
