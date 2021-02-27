@@ -99,8 +99,11 @@ public class Run {
 				raids();
 			}
 		} catch (Exception e) {
-			System.err.println("fatal error happened at \"" + part + "\" -> skipped this round");
+			System.err.println("fatal error happened for " + name + " at \"" + part + "\" -> skipped this round");
 			e.printStackTrace();
+			System.out.println("reload srrh for " + name);
+			srrh = new SRRHelper(cookies, clientVersion);
+			System.out.println("completed reloading srrh for " + name);
 		}
 		
 		sleep((int) Math.round(Math.random()*620) + 100);
