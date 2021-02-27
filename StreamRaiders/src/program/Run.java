@@ -1,6 +1,5 @@
 package program;
 
-import java.time.LocalTime;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Timer;
@@ -67,48 +66,44 @@ public class Run {
 
 	
 	public void runs() {
-		
-		if(!isRunning()) return;
+		String part = "null";
+		try {
+			if(!isRunning()) return;
+			
+			part = "chests";
+			if(chests()) {
+				try {
+					Thread.sleep(5000);
+				} catch (Exception e) {}
+			}
 				
-		if(chests()) {
-			try {
-				Thread.sleep(5000);
-			} catch (Exception e) {}
-		}
-				
-				
-		raids();
-					
-					
-		if(first) {
-			first = false;
-			try {
-				sleep(30);
-				return;
-			} catch (Exception e) {}
-		}
-					
-		if(captains()) {
-			try {
-				Thread.sleep(5000);
-			} catch (Exception e) {}
+			part = "raids 1";	
 			raids();
+						
+						
+			if(first) {
+				first = false;
+				try {
+					part = "sleeping first";
+					sleep(30);
+					return;
+				} catch (Exception e) {}
+			}
+			
+			part = "captains";
+			if(captains()) {
+				try {
+					Thread.sleep(5000);
+				} catch (Exception e) {}
+				part = "raids 2";
+				raids();
+			}
+		} catch (Exception e) {
+			System.err.println("fatal error happened at \"" + part + "\" -> skipped this round");
+			e.printStackTrace();
 		}
-					
-		int ran = (int) Math.round(Math.random()*11) + 1;
-		int wait = 0;
-					
-		if(ran == 12) {
-			wait = 30;
-		} else {
-			wait = ran;
-		}
-					
-		LocalTime lt = LocalTime.now();
-					
-		lt = lt.minusMinutes(-wait);
 		
-		sleep(wait * 60);
+		sleep((int) Math.round(Math.random()*620) + 100);
 	}
 	
 	private int time = 0;
@@ -134,8 +129,8 @@ public class Run {
 				GUI.setText(name + "::counter", smin + ssec);
 				
 				if(time <= 0) {
-					runs();
 					t.cancel();
+					runs();
 				}
 				
 				if(!isRunning()) t.cancel();
