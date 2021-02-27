@@ -8,22 +8,14 @@ public class SRRHelper {
 
 	
 	
-	SRR req = null;
-	Unit[] units = new Unit[0];
-	Raid[] raids = new Raid[0];
-	Map map = null;
-	
+	private SRR req = null;
+	private Unit[] units = new Unit[0];
+	private Raid[] raids = new Raid[0];
+	private Map map = null;
 	
 	
 	public SRRHelper(String cookies, String clientVersion) {
 		req = new SRR(cookies, clientVersion);
-		String ver = json(req.getCurrentTime()).getAsJsonObject("info").getAsJsonPrimitive("version").getAsString();
-		
-		if(!ver.equals(clientVersion)) {
-			System.err.println("Client version is outdated " + clientVersion + " -> " + ver);
-			System.err.println("not critical but can cause issues");
-			req = new SRR(cookies, ver);
-		}
 		updateUnits();
 	}
 	
@@ -45,6 +37,14 @@ public class SRRHelper {
 	
 	public void loadMap(Raid raid) {
 		map = new Map(json(req.getMapData(raid.get(SRC.Raid.battleground))), jsonArr(raid.get(SRC.Raid.placementsSerialized)));
+		/*
+		for(int i=0; i<max_attempts; i++) {
+			try {
+				
+				break;
+			} catch (Exception e) {}
+		}
+		*/
 	}
 	
 	public boolean testPos(boolean epic, int x, int y) {

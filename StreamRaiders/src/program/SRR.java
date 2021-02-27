@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import include.Http;
 
 public class SRR {
+	private static boolean ver_err = false;
 	
 	private String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0";
 	private String cookies = "";
@@ -25,10 +26,26 @@ public class SRR {
 		this.clientVersion = clientVersion;
 		
 		JsonObject raw = json(getUser());
-		this.gameDataVersion = raw.getAsJsonObject("info").getAsJsonPrimitive("dataVersion").getAsString();
-		raw = raw.getAsJsonObject("data");
-		this.userId = raw.getAsJsonPrimitive("userId").getAsString();
-		this.isCaptain = raw.getAsJsonPrimitive("isCaptain").getAsString();
+		String ver = raw.getAsJsonObject("info").getAsJsonPrimitive("version").getAsString();
+		if(!ver.equals(clientVersion)) {
+			if(!ver_err) {
+				ver_err = true;
+				System.err.println("Client version is outdated " + clientVersion + " -> " + ver);
+				System.err.println("not critical but can cause issues");
+			}
+			this.clientVersion = ver;
+			raw = json(getUser());
+			constructor(raw);
+		} else {
+			constructor(raw);
+		}
+	}
+	
+	private void constructor(JsonObject getUser) {
+		this.gameDataVersion = getUser.getAsJsonObject("info").getAsJsonPrimitive("dataVersion").getAsString();
+		getUser = getUser.getAsJsonObject("data");
+		this.userId = getUser.getAsJsonPrimitive("userId").getAsString();
+		this.isCaptain = getUser.getAsJsonPrimitive("isCaptain").getAsString();
 	}
 	
 	private static JsonObject json(String json) {
