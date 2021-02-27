@@ -234,13 +234,16 @@ public class MainFrame {
 			blacks.put(name, NEF.getOpt("configs/" + name + ".app"));
 		} catch (Exception e) {
 			Hashtable<String, String> def = new Hashtable<>();
-			String[] ut = Unit.types;
-			for(int i=0; i<20; i++) {
-				if(i >= 15) {
-					def.put(ut[i], "true");
-					continue;
+			
+			String[][] types = Unit.getTypes();
+			
+			for(int i=0; i<types.length-1; i++) {
+				for(int j=0; j<types[i].length; j++) {
+					def.put(types[i][j], "false");
 				}
-				def.put(ut[i], "false");
+			}
+			for(int i=0; i<types[types.length-1].length; i++) {
+				def.put(types[types.length-1][i], "true");
 			}
 			blacks.put(name, def);
 		}
@@ -393,36 +396,35 @@ public class MainFrame {
 			public void actionPerformed(ActionEvent e) {
 				GUI gui = new GUI("Profile Settings", 800, 300);
 				
-				String[] types = Unit.types;
+				String[][] types = Unit.getTypes();
 				Hashtable<String, String> black = blacks.get(name);
 				
-				int t = 0;
-				
-				for(int i=0; i<4; i++) {
-					for(int j=0; j<5; j++) {
+				for(int i=0; i<types.length; i++) {
+					for(int j=0; j<types[i].length; j++) {
 						Button c = new Button();
 						c.setPos(j, i);
-						c.setText(types[t]);
+						c.setText(types[i][j]);
 						c.setFill('h');
-						if(!Boolean.parseBoolean(black.get(types[t]))) {
+						if(!Boolean.parseBoolean(black.get(types[i][j]))) {
 							c.setBackground(Color.green);
 						} else {
 							c.setBackground(GUI.getDefButCol());
 						}
-						final int tt = t;
+						final int ii = i;
+						final int jj = j;
 						c.setAL(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								if(Boolean.parseBoolean(black.get(types[tt]))) {
-									blacks.get(name).put(types[tt], "false");
-									GUI.setBackground(name + "::" + types[tt], Color.green);
+								if(Boolean.parseBoolean(black.get(types[ii][jj]))) {
+									blacks.get(name).put(types[ii][jj], "false");
+									GUI.setBackground(name + "::" + types[ii][jj], Color.green);
 								} else {
-									blacks.get(name).put(types[tt], "true");
-									GUI.setBackground(name + "::" + types[tt], GUI.getDefButCol());
+									blacks.get(name).put(types[ii][jj], "true");
+									GUI.setBackground(name + "::" + types[ii][jj], GUI.getDefButCol());
 								}
 							}
 						});
-						gui.addBut(c, name + "::" + types[t++]);
+						gui.addBut(c, name + "::" + types[i][j]);
 					}
 				}
 			}

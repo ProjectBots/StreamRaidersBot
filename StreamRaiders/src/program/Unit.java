@@ -15,13 +15,15 @@ public class Unit {
 	Date cool = null;
 	int rank = 0;
 	
+	public static final String[] common = new String[] {"archer", "tank", "warrior", "flagbearer", "rogue"};
+	public static final String[] uncommon = new String[] {"buster", "bomber", "healer", "barbarian", "alliespaladin"};
+	public static final String[] rare = new String[] {"musketeer", "centurion", "monk", "berserker", "flyingarcher"};
+	public static final String[] legendary = new String[] {"mage", "warbeast", "templar", "orcslayer", "alliesballoonbuster"};
 	
-	public static final String[] types = new String[] {
-			"archer", 		"tank", 		"warrior", 	"flagbearer", 	"rogue",
-			"buster", 		"bomber", 		"healer", 	"barbarian", 	"alliespaladin",
-			"musketeer", 	"centurion", 	"monk", 	"berserker", 	"flyingarcher",
-			"mage", 		"warbeast", 	"templar", 	"orcslayer", 	"alliesballoonbuster"	
-	};
+	public static String[][] getTypes() {
+		return new String[][] {common, uncommon, rare, legendary};
+	}
+
 	
 	public Unit(JsonObject unit) {
 		this.unit = unit;
@@ -31,48 +33,17 @@ public class Unit {
 		
 		String unitType = unit.getAsJsonPrimitive("unitType").getAsString();
 		
-		int index = Arrays.asList(types).indexOf(unitType);
-		
-		if(index == -1) {
+		if(Arrays.asList(common).indexOf(unitType) != -1) {
+			rank = 1;
+		} else if(Arrays.asList(uncommon).indexOf(unitType) != -1) {
+			rank = 2;
+		} else if(Arrays.asList(rare).indexOf(unitType) != -1) {
+			rank = 3;
+		} else if(Arrays.asList(legendary).indexOf(unitType) != -1) {
+			rank = 4;
+		} else {
 			System.err.println("Invalid Unit Type: " + unitType);
 		}
-		
-		rank = (int) Math.floor(index / 5) + 1;
-		
-		/*
-		switch(unit.getAsJsonPrimitive("unitType").getAsString()) {
-		case "archer":
-		case "tank":
-		case "warrior":
-		case "flagbearer":
-		case "rogue":
-			rank = 1;
-			break;
-		case "buster":
-		case "bomber":
-		case "healer":
-		case "barbarian":
-		case "alliespaladin":
-			rank = 2;
-			break;
-		case "musketeer":
-		case "centurion":
-		case "monk":
-		case "berserker":
-		case "flyingarcher":
-			rank = 3;
-			break;
-		case "mage":
-		case "warbeast":
-		case "templar":
-		case "alliesballoonbuster":
-		case "orcslayer":
-			rank = 4;
-			break;
-		default:
-			System.err.println("Invalid Unit Type: " + unit.getAsJsonPrimitive("unitType").getAsString());
-		}
-		*/
 	}
 	
 	public String get(String con) {
