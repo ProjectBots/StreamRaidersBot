@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 import org.cef.CefApp;
 import org.cef.CefClient;
 import org.cef.CefSettings;
+import org.cef.CefSettings.LogSeverity;
 import org.cef.OS;
 import org.cef.browser.CefBrowser;
 import org.cef.callback.CefCookieVisitor;
@@ -37,7 +38,7 @@ public class Browser extends JFrame {
 		CefApp.addAppHandler(new CefAppHandlerAdapter(null) {});
 		CefSettings settings = new CefSettings();
 		settings.windowless_rendering_enabled = useOSR;
-		
+		settings.log_severity = LogSeverity.LOGSEVERITY_DISABLE;
 		
 		cefApp_ = CefApp.getInstance(settings);
 
