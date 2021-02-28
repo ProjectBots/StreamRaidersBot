@@ -18,7 +18,7 @@ public class Unit {
 	public static final String[] common = new String[] {"archer", "tank", "warrior", "flagbearer", "rogue"};
 	public static final String[] uncommon = new String[] {"buster", "bomber", "healer", "barbarian", "alliespaladin"};
 	public static final String[] rare = new String[] {"musketeer", "centurion", "monk", "berserker", "flyingarcher"};
-	public static final String[] legendary = new String[] {"mage", "warbeast", "templar", "orcslayer", "alliesballoonbuster"};
+	public static final String[] legendary = new String[] {"mage", "warbeast", "templar", "orcslayer", "alliesballoonbuster", "artillery"};
 	
 	public static String[][] getTypes() {
 		return new String[][] {common, uncommon, rare, legendary};
