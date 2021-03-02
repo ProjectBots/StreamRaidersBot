@@ -34,5 +34,7 @@
   "terrain_stonewalls_awakening",
   "terrain_chessboardtree",
   "terrain_boardlandwater",
-  "terrain_boardlandtree"
+  "terrain_boardlandtree",
+  "terrain_treeretro",
+  "terrain_waterretro"
 ]
