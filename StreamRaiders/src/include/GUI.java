@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -1381,7 +1382,38 @@ public class GUI{
 		((JLabel) getComp(id)).setIcon(new ImageIcon(img.getScaledInstance(x, y, java.awt.Image.SCALE_SMOOTH)));
 	}
 	
-	
+	public static class RoundedBorder implements Border {
+
+	   private int radius;
+	   private Color col = null;
+	   private int thickness = 1;
+
+
+	   RoundedBorder(Color col, int thickness, int radius) {
+	       this.radius = radius;
+	       this.col = col;
+	       this.thickness = thickness;
+	   }
+
+
+	   public Insets getBorderInsets(Component c) {
+	       return new Insets(this.radius+1, this.radius+1, this.radius+2, this.radius);
+	   }
+
+	   public boolean isBorderOpaque() {
+	       return true;
+	   }
+
+		@Override
+		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+			Color old = g.getColor();
+			g.setColor(col);
+			for(int i=0; i<thickness; i++) {
+				g.drawRoundRect(x+i, y+i, width-i-i-1, height-i-i-1, radius, radius);
+			}
+			g.setColor(old);
+		}
+	}
 	
 	//	the Container class
 	public static class Container extends BlankForm {
@@ -1406,6 +1438,8 @@ public class GUI{
 		private String[] idimgs = new String[0];
 		private Container[] containers = new Container[0];
 		private String[] idcontainers = new String[0];
+		
+		private Border b = null;
 		
 		
 		private static String[] add(String[] arr, String obj) {
@@ -1666,6 +1700,20 @@ public class GUI{
 		public String[] getIdContainers() {
 			return idcontainers;
 		}
+
+
+		public void setBorder(Color col, int thickness, int radius) {
+			//b = BorderFactory.createLineBorder(col, thickness, true);
+			b = new RoundedBorder(col, thickness, radius);
+		}
+		
+		public void setBorder(Color col, int thickness) {
+			b = BorderFactory.createLineBorder(col, thickness, true);
+		}
+		
+		public Border getBorder() {
+			return b;
+		}
 		
 	}
 	
@@ -1749,8 +1797,15 @@ public class GUI{
 			con.addContainer(cons[i], ids[i]);
 		}
 		
+		JPanel pane = con.getPane();
+		Border b = opt.getBorder();
+		if(b != null) {
+			pane.setBorder(b);
+		}
+		
+		
 		//	get pane from con and add it as Container
-		addObj(opt, con.getPane(), id);
+		addObj(opt, pane, id);
 	}
 	
 	public void addContainer(Container opt) {

@@ -251,9 +251,13 @@ public class MainFrame {
 		Container both = new Container();
 		both.setPos(0, pos++);
 		both.setFill('h');
+		both.setBorder(Color.lightGray, 1, 30);
+		both.setInsets(5, 0, 5, 0);
 		
 		Container top = new Container();
+		top.setFill('h');
 		top.setPos(0, 0);
+		top.setWeightX(1);
 		
 		Label profileName = new Label();
 		profileName.setPos(0, 0);
@@ -271,11 +275,18 @@ public class MainFrame {
 		counter.setText("");
 		top.addLabel(counter, name + "::counter");
 		
+		Label s3 = new Label();
+		s3.setPos(3, 0);
+		s3.setText("");
+		s3.setWeightX(1);
+		top.addLabel(s3);
+		
 		both.addContainer(top);
 		
 		Container part = new Container();
 		part.setFill('h');
 		part.setPos(0, 1);
+		part.setWeightX(1);
 		
 		CButton start = new CButton(name+"::start");
 		start.setPos(0, 0);
