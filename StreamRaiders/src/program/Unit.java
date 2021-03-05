@@ -15,10 +15,10 @@ public class Unit {
 	private Date cool = null;
 	private int rank = 0;
 	
-	public static final String[] common = new String[] {"archer", "tank", "warrior", "flagbearer", "rogue"};
-	public static final String[] uncommon = new String[] {"buster", "bomber", "healer", "barbarian", "alliespaladin"};
-	public static final String[] rare = new String[] {"musketeer", "centurion", "monk", "berserker", "flyingarcher"};
-	public static final String[] legendary = new String[] {"mage", "warbeast", "templar", "orcslayer", "alliesballoonbuster", "artillery"};
+	public static final String[] common = StreamRaiders.get("common").split(",");
+	public static final String[] uncommon = StreamRaiders.get("uncommon").split(",");
+	public static final String[] rare = StreamRaiders.get("rare").split(",");
+	public static final String[] legendary = StreamRaiders.get("legendary").split(",");
 	
 	public static String[][] getTypes() {
 		return new String[][] {common, uncommon, rare, legendary};
@@ -33,21 +33,18 @@ public class Unit {
 		
 		String unitType = unit.getAsJsonPrimitive("unitType").getAsString();
 		
-		if(Arrays.asList(common).indexOf(unitType) != -1) {
-			rank = 1;
-		} else if(Arrays.asList(uncommon).indexOf(unitType) != -1) {
-			rank = 2;
-		} else if(Arrays.asList(rare).indexOf(unitType) != -1) {
-			rank = 3;
-		} else if(Arrays.asList(legendary).indexOf(unitType) != -1) {
-			rank = 4;
-		} else {
-			System.err.println("Invalid Unit Type: " + unitType);
+		String[][] types = getTypes();
+		for(int i=0; i<types.length; i++) {
+			if(Arrays.asList(types[i]).indexOf(unitType) != -1) {
+				rank = i+1;
+				return;
+			}
 		}
+		System.err.println("Invalid Unit Type: " + unitType);
 	}
 	
 	public String get(String con) {
-		if(con.equals("rank")) return ""+rank;
+		if(con.equals(SRC.Unit.rank)) return ""+rank;
 		
 		try {
 			return unit.getAsJsonPrimitive(con).getAsString();

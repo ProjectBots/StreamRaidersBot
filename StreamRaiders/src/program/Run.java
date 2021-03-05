@@ -14,7 +14,7 @@ public class Run {
 
 	
 	private String cookies = "";
-	private static String clientVersion = NEF.read("data/clientversion.app").replace("\n", "");
+	private static String clientVersion = StreamRaiders.get("clientVersion");
 	
 	private String name = "";
 	
@@ -100,7 +100,6 @@ public class Run {
 			}
 		} catch (Exception e) {
 			System.err.println("fatal error happened for " + name + " at \"" + part + "\" -> skipped this round");
-			e.printStackTrace();
 			System.out.println("reload srrh for " + name);
 			srrh = new SRRHelper(cookies, clientVersion);
 			System.out.println("completed reloading srrh for " + name);
@@ -255,7 +254,7 @@ public class Run {
 		Raid[] offRaids = srrh.getRaids(SRC.Helper.isOffline);
 		if(offRaids.length != 0) {
 			for(int i=0; i<offRaids.length; i++) {
-				JsonArray caps = srrh.search(1, 20, true, true, true, 0, null);
+				JsonArray caps = srrh.search(1, 20, true, true, false, null);
 				JsonObject cap = null;
 				if(caps.size() != 0) {
 					for(int j=0; j<caps.size(); j++) {
@@ -274,7 +273,7 @@ public class Run {
 						}
 					}
 				} else {
-					cap = srrh.search(1, 6, false, true, true, 0, null).get(0).getAsJsonObject();
+					cap = srrh.search(1, 6, false, true, false, "stream raiders").get(0).getAsJsonObject();
 					srrh.setFavorite(cap, true);
 				}
 				srrh.switchRaid(cap, offRaids[i].get(SRC.Raid.userSortIndex));

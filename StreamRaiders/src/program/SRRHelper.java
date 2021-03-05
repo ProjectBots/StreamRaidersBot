@@ -138,8 +138,8 @@ public class SRRHelper {
 	}
 	
 	
-	public JsonArray search(int page, int resultsPerPage, boolean fav, boolean live, boolean pve, int code, String name) {
-		JsonObject raw = json(req.getCaptainsForSearch(page, resultsPerPage, fav, live, pve, code, name)).getAsJsonObject("data");
+	public JsonArray search(int page, int resultsPerPage, boolean fav, boolean live, boolean searchForCaptain, String name) {
+		JsonObject raw = json(req.getCaptainsForSearch(page, resultsPerPage, fav, live, searchForCaptain, name)).getAsJsonObject("data");
 		
 		JsonArray loyalty = raw.getAsJsonArray("pveLoyalty");
 		JsonArray captains = raw.getAsJsonArray("captains");

@@ -6,6 +6,13 @@ public class SRC {
 	
 	public static final SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+	public static class questSlotIds {
+		public static final String daily = "questslot_viewer_daily";
+		public static final String event = "questslot_viewer_event_daily";
+		public static final String ftue = "questslot_viewer_ftue";
+		public static final String weekly = "questslot_viewer_weekly";
+	}
+	
 	public static class Raid {
 		public static final String raidId = "raidId";
 		public static final String captainId = "captainId";
