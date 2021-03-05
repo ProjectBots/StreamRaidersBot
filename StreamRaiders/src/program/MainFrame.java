@@ -494,15 +494,15 @@ public class MainFrame {
 	}
 
 	public static void close() {
+		try {
+			gui.close();
+		} catch (Exception e) {}
+		
 		Set<String> keys = profiles.keySet();
 		for(String key : keys) {
 			NEF.saveOpt("configs/" + key + ".app", blacks.get(key));
 			profiles.get(key).setRunning(false);
 		}
-		
-		try {
-			gui.close();
-		} catch (Exception e) {}
 		
 		System.exit(0);
 	}
