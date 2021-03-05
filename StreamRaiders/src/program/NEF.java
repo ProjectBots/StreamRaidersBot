@@ -22,11 +22,12 @@ public class NEF {
 			r = new FileReader(file);
 			br = new BufferedReader(r);
 			
-			String line = br.readLine();
-			while(line != null) {
+			for(String line = br.readLine(); line != null; line = br.readLine()) {
+				if(line.equals("")) continue;
+				if(line.startsWith("##")) continue;
+				
 				String[] params = line.split("=", 2);
 				tab.put(params[0], params[1]);
-				line = br.readLine();
 			}
 		} catch (FileNotFoundException e) {
 			throw e;
