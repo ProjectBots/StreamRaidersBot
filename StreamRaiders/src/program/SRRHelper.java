@@ -11,6 +11,7 @@ public class SRRHelper {
 	private SRR req = null;
 	private Unit[] units = new Unit[0];
 	private Raid[] raids = new Raid[0];
+	private Store store = null;
 	private Map map = null;
 	
 	
@@ -37,14 +38,6 @@ public class SRRHelper {
 	
 	public void loadMap(Raid raid) {
 		map = new Map(json(req.getMapData(raid.get(SRC.Raid.battleground))), jsonArr(raid.get(SRC.Raid.placementsSerialized)));
-		/*
-		for(int i=0; i<max_attempts; i++) {
-			try {
-				
-				break;
-			} catch (Exception e) {}
-		}
-		*/
 	}
 	
 	public boolean testPos(boolean epic, int x, int y) {
@@ -114,7 +107,7 @@ public class SRRHelper {
 	}
 	
 	public void addRaid(JsonObject captain, String userSortIndex) {
-		req.addPlayerToRaid(/*captain.getAsJsonPrimitive("raidId").getAsString(),*/ captain.getAsJsonPrimitive("userId").getAsString(), userSortIndex);
+		req.addPlayerToRaid(captain.getAsJsonPrimitive("userId").getAsString(), userSortIndex);
 	}
 	
 	public void switchRaid(JsonObject captain, String userSortIndex) {
@@ -179,9 +172,16 @@ public class SRRHelper {
 			case SRC.Helper.all:
 				ret = add(ret, units[i]);
 				break;
+			case SRC.Helper.canUpgradeUnit:
+				store = new Store(req);
+				return store.getUpgradeableUnits(units);
 			}
 		}
 		return ret;
+	}
+	
+	public String upgradeUnit(Unit unit, String specUID) {
+		return store.upgradeUnit(unit, req, specUID);
 	}
 	
 	public Unit[] getUnits(String con, String arg) {
@@ -193,11 +193,6 @@ public class SRRHelper {
 			}
 		}
 		return ret;
-	}
-	
-	//TODO levelUnit
-	public void levelUnit(Unit unit, String specializationUid) {
-		
 	}
 	
 	

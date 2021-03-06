@@ -86,10 +86,14 @@ public class Run {
 			Store s = new Store(srrh.getSRR());
 			JsonArray items = s.getStoreItems(SRC.Store.notPurchased);
 			for(int i=0; i<items.size(); i++) {
-				if(!s.buyItem(items.get(i).getAsJsonObject(), srrh.getSRR())) {
-					System.err.println("couldnt buy " + items.get(i));
+				String err = s.buyItem(items.get(i).getAsJsonObject(), srrh.getSRR());
+				if(err != null) {
+					System.err.println("couldnt buy " + items.get(i) + " because " + err);
 				}
 			}
+			
+			part = "units";
+			upgradeUnits();
 			
 			
 			if(first) {
@@ -164,6 +168,19 @@ public class Run {
 				time--;
 			}
 		}, 0, 1000);
+	}
+	
+	private void upgradeUnits() {
+		Unit[] us = srrh.getUnits(SRC.Helper.canUpgradeUnit);
+		for(int i=0; i<us.length; i++) {
+			String err = srrh.upgradeUnit(us[i], null);
+			if(err != null) {
+				if(!err.equals("no specUID")) {
+					System.out.println("u lvl err: " + err);
+					break;
+				}
+			}
+		}
 	}
 	
 	private String[] pveloy = new String[] {"?", "bronze", "silver", "gold"};

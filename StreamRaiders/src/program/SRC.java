@@ -46,6 +46,7 @@ public class SRC {
 	
 	public static class Helper {
 		public static final int canPlaceUnit = 0;
+		public static final int canUpgradeUnit = 4;
 		public static final int isReward = 1;
 		public static final int isOffline = 2;
 		public static final int all = 3;

@@ -24,7 +24,6 @@ public class Unit {
 		return new String[][] {common, uncommon, rare, legendary};
 	}
 
-	
 	public Unit(JsonObject unit) {
 		this.unit = unit;
 		try {
@@ -70,5 +69,8 @@ public class Unit {
 			e.printStackTrace();
 		}
 	}
+
+
+	
 	
 }

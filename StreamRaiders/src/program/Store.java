@@ -8,8 +8,8 @@ import com.google.gson.JsonObject;
 
 public class Store {
 
-	private static final String[] nLevelCost = StreamRaiders.get("nlevelcost").split("|");
-	private static final String[] lLevelCost = StreamRaiders.get("llevelcost").split("|");
+	private static final String[] nLevelCost = StreamRaiders.get("nlevelcost").split("\\|");
+	private static final String[] lLevelCost = StreamRaiders.get("llevelcost").split("\\|");
 	private static final String[] legendary = StreamRaiders.get("legendary").split(",");
 	
 	private JsonArray shopItems = new JsonArray();
@@ -46,24 +46,60 @@ public class Store {
 		return true;
 	}
 	
-	//TODO upgradeUnit
-	public void upgradeUnit() {
-		
+	
+	public String upgradeUnit(Unit unit, SRR req, String specUID) {
+		String lvl = unit.get(SRC.Unit.level);
+		JsonObject ret;
+		if(lvl.equals("19") || lvl.equals("29")) {
+			if(specUID == null) return "no specUID";
+			ret = JsonParser.json(req.specializeUnit(unit.get(SRC.Unit.unitType), lvl, unit.get(SRC.Unit.unitId), specUID));
+		} else {
+			ret = JsonParser.json(req.upgradeUnit(unit.get(SRC.Unit.unitType), lvl, unit.get(SRC.Unit.unitId)));
+		}
+		try {
+			return ret.getAsJsonPrimitive("errorMessage").getAsString();
+		} catch (Exception e) {
+			return null;
+		}
 	}
 	
-	//TODO buyItem
-	public boolean buyItem(JsonObject item, SRR req) {
-		if(item.getAsJsonPrimitive("purchased").getAsInt() == 1) return false;
+	
+	public Unit[] getUpgradeableUnits(Unit[] units) {
+		Unit[] ret = new Unit[0];
+		for(int i=0; i<units.length; i++) {
+			int lvl = Integer.parseInt(units[i].get(SRC.Unit.level));
+			try {
+				String type = units[i].get(SRC.Unit.unitType);
+				int cost;
+				if(Arrays.asList(legendary).indexOf(type) == -1) {
+					cost = Integer.parseInt(nLevelCost[lvl].split(",")[1]);
+				} else {
+					cost = Integer.parseInt(lLevelCost[lvl].split(",")[1]);
+				}
+				
+				int got = currency.get(type.replace("allies", ""));
+				
+				if(cost <= got) {
+					ret = add(ret, units[i]);
+				}
+			} catch (Exception e) {}
+		}
+		return ret;
+	}
+	
+	
+	public String buyItem(JsonObject item, SRR req) {
+		if(item.getAsJsonPrimitive("purchased").getAsInt() == 1) return "already purchased";
 		
 		int price = item.getAsJsonPrimitive("price").getAsInt();
-		if(!(price <= currency.get("gold"))) return false;
+		if(!(price <= currency.get("gold"))) return "not enough gold";
 		
 		currency.put("gold", currency.get("gold") - price);
 		JsonObject text = JsonParser.json(req.purchaseStoreItem(item.getAsJsonPrimitive("itemId").getAsString()));
-		if(!text.getAsJsonPrimitive("status").getAsString().equals("success")) return false;
+		if(!text.getAsJsonPrimitive("status").getAsString().equals("success")) return text.getAsJsonPrimitive("errorMessage").getAsString();
 		
 		shopItems = text.getAsJsonArray("data");
-		return true;
+		return null;
 	}
 	
 	public JsonArray getStoreItems(int con) {
@@ -80,7 +116,13 @@ public class Store {
 		default:
 			return shopItems;
 		}
-		
+	}
+	
+	private Unit[] add(Unit[] arr, Unit item) {
+		Unit[] arr2 = new Unit[arr.length + 1];
+		System.arraycopy(arr, 0, arr2, 0, arr.length);
+		arr2[arr.length] = item;
+		return arr2;
 	}
 	
 }
