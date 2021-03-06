@@ -159,6 +159,18 @@ public class SRRHelper {
 		return jo.getAsJsonObject("info").getAsJsonPrimitive("serverTime").getAsString();
 	}
 	
+	public void reloadStore() {
+		store = new Store(req);
+	}
+	
+	public JsonArray getStoreItems(int con) {
+		return store.getStoreItems(con);
+	}
+	
+	public String buyItem(JsonObject item) {
+		return store.buyItem(item, req);
+	}
+	
 	public Unit[] getUnits(int con) {
 		String serverTime = updateUnits();
 		Unit[] ret = new Unit[0];
@@ -173,7 +185,6 @@ public class SRRHelper {
 				ret = add(ret, units[i]);
 				break;
 			case SRC.Helper.canUpgradeUnit:
-				store = new Store(req);
 				return store.getUpgradeableUnits(units);
 			}
 		}

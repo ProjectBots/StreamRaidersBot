@@ -81,16 +81,11 @@ public class Run {
 			part = "raids 1";
 			raids();
 						
+			srrh.reloadStore();
 			
 			part = "store";
-			Store s = new Store(srrh.getSRR());
-			JsonArray items = s.getStoreItems(SRC.Store.notPurchased);
-			for(int i=0; i<items.size(); i++) {
-				String err = s.buyItem(items.get(i).getAsJsonObject(), srrh.getSRR());
-				if(err != null) {
-					System.err.println("couldnt buy " + items.get(i) + " because " + err);
-				}
-			}
+			store();
+			
 			
 			part = "units";
 			upgradeUnits();
@@ -168,6 +163,17 @@ public class Run {
 				time--;
 			}
 		}, 0, 1000);
+	}
+	
+	private void store() {
+		JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
+		for(int i=0; i<items.size(); i++) {
+			String err = srrh.buyItem(items.get(i).getAsJsonObject());
+			if(err != null) {
+				if(!(err.equals("not enough gold")))
+				System.err.println(name + " -> couldnt buy " + items.get(i) + " because " + err);
+			}
+		}
 	}
 	
 	private void upgradeUnits() {

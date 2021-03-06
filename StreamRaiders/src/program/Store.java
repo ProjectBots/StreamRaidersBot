@@ -99,7 +99,7 @@ public class Store {
 		if(item.getAsJsonPrimitive("purchased").getAsInt() == 1) return "already purchased";
 		
 		int price = item.getAsJsonPrimitive("price").getAsInt();
-		if(!(price <= currency.get("gold"))) return "not enough gold";
+		if(price > currency.get("gold")) return "not enough gold";
 		
 		currency.put("gold", currency.get("gold") - price);
 		JsonObject text = JsonParser.json(req.purchaseStoreItem(item.getAsJsonPrimitive("itemId").getAsString()));
