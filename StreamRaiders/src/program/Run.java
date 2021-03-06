@@ -175,8 +175,8 @@ public class Run {
 		for(int i=0; i<us.length; i++) {
 			String err = srrh.upgradeUnit(us[i], null);
 			if(err != null) {
-				if(!err.equals("no specUID")) {
-					System.out.println("u lvl err: " + err);
+				if(!(err.equals("no specUID") || err.equals("cant upgrade unit"))) {
+					System.out.println(name + " -> u lvl err: " + err);
 					break;
 				}
 			}

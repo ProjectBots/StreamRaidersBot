@@ -50,6 +50,12 @@ public class Store {
 	public String upgradeUnit(Unit unit, SRR req, String specUID) {
 		String lvl = unit.get(SRC.Unit.level);
 		JsonObject ret;
+		int cost = Integer.parseInt(
+				(Arrays.asList(legendary).indexOf(unit.get(SRC.Unit.unitType)) == -1 
+					? nLevelCost[Integer.parseInt(lvl)] 
+					: lLevelCost[Integer.parseInt(lvl)]
+				).split(",")[0]);
+		
 		if(lvl.equals("19") || lvl.equals("29")) {
 			if(specUID == null) return "no specUID";
 			ret = JsonParser.json(req.specializeUnit(unit.get(SRC.Unit.unitType), lvl, unit.get(SRC.Unit.unitId), specUID));
@@ -59,6 +65,7 @@ public class Store {
 		try {
 			return ret.getAsJsonPrimitive("errorMessage").getAsString();
 		} catch (Exception e) {
+			currency.put("gold", currency.get("gold") - cost);
 			return null;
 		}
 	}

@@ -181,7 +181,10 @@ public class SRRHelper {
 	}
 	
 	public String upgradeUnit(Unit unit, String specUID) {
-		return store.upgradeUnit(unit, req, specUID);
+		if(store.canUpgradeUnit(unit)) {
+			return store.upgradeUnit(unit, req, specUID);
+		}
+		return "cant upgrade unit";
 	}
 	
 	public Unit[] getUnits(String con, String arg) {
