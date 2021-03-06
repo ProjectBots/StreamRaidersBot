@@ -195,6 +195,10 @@ public class SRRHelper {
 		return ret;
 	}
 	
+	//TODO levelUnit
+	public void levelUnit(Unit unit, String specializationUid) {
+		
+	}
 	
 	
 	public String createPlacementData(Unit unit, boolean epic, double[] pos) {

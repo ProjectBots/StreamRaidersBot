@@ -1,5 +1,6 @@
 package program;
 
+import java.awt.Color;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Timer;
@@ -77,15 +78,25 @@ public class Run {
 				} catch (Exception e) {}
 			}
 				
-			part = "raids 1";	
+			part = "raids 1";
 			raids();
 						
-						
+			
+			part = "store";
+			Store s = new Store(srrh.getSRR());
+			JsonArray items = s.getStoreItems(SRC.Store.notPurchased);
+			for(int i=0; i<items.size(); i++) {
+				if(!s.buyItem(items.get(i).getAsJsonObject(), srrh.getSRR())) {
+					System.err.println("couldnt buy " + items.get(i));
+				}
+			}
+			
+			
 			if(first) {
 				first = false;
 				try {
 					part = "sleeping first";
-					sleep(30);
+					sleep(10);
 					return;
 				} catch (Exception e) {}
 			}
@@ -98,14 +109,27 @@ public class Run {
 				part = "raids 2";
 				raids();
 			}
+			
+			sleep((int) Math.round(Math.random()*620) + 100);
 		} catch (Exception e) {
-			System.err.println("fatal error happened for " + name + " at \"" + part + "\" -> skipped this round");
+			System.err.println("critical error happened for " + name + " at \"" + part + "\" -> skipped this round");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e1) {}
 			System.out.println("reload srrh for " + name);
-			srrh = new SRRHelper(cookies, clientVersion);
-			System.out.println("completed reloading srrh for " + name);
+			try {
+				srrh = new SRRHelper(cookies, clientVersion);
+				System.out.println("completed reloading srrh for " + name);
+				sleep(10);
+			} catch (Exception e1) {
+				System.err.println("failed to reload srrh for " + name);
+				GUI.setBackground(name+"::start", Color.red);
+				setRunning(false);
+			}
+			
 		}
 		
-		sleep((int) Math.round(Math.random()*620) + 100);
+		
 	}
 	
 	private int time = 0;

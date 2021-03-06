@@ -6,7 +6,12 @@ public class SRC {
 	
 	public static final SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-	public static class questSlotIds {
+	public static class Store {
+		public static final int all = 0;
+		public static final int notPurchased = 1;
+	}
+	
+	public static class QuestSlotIds {
 		public static final String daily = "questslot_viewer_daily";
 		public static final String event = "questslot_viewer_event_daily";
 		public static final String ftue = "questslot_viewer_ftue";

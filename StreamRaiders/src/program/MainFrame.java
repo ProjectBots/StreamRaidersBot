@@ -25,8 +25,6 @@ import include.GUI.WinLis;
 
 public class MainFrame {
 
-	private static final String version = "1.0.0";
-	
 	private static GUI gui = null;
 	
 	private static Hashtable<String, Run> profiles = new Hashtable<>();
@@ -47,7 +45,7 @@ public class MainFrame {
 	public static void open() {
 		
 		
-		gui = new GUI("StreamRaider Bot " + version, 500, 700);
+		gui = new GUI("StreamRaider Bot " + StreamRaiders.get("botVersion"), 500, 700);
 		
 		gui.addWinLis(new WinLis() {
 			@Override

@@ -89,6 +89,39 @@ public class SRR {
 	}
 	
 	
+	public String upgradeUnit(String unitType, String unitLevel, String unitId) {
+		Http post = getPost("upgradeUnit");
+		post.addEncArg("unitType", unitType);
+		post.addEncArg("unitLevel", unitLevel);
+		post.addEncArg("unitId", unitId);
+		
+		String text = null;
+		try {
+			text = post.sendUrlEncoded();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return text;
+	}
+	
+	
+	public String specializeUnit(String unitType, String unitLevel, String unitId, String specializationUid) {
+		Http post = getPost("specializeUnit");
+		post.addEncArg("unitType", unitType);
+		post.addEncArg("unitLevel", unitLevel);
+		post.addEncArg("unitId", unitId);
+		post.addEncArg("specializationUid", specializationUid);
+		
+		String text = null;
+		try {
+			text = post.sendUrlEncoded();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return text;
+	}
+	
+	
 	public String getAvailableCurrencies() {
 		Http post = getPost("getAvailableCurrencies");
 		
@@ -130,9 +163,38 @@ public class SRR {
 	}
 	
 	
-	
 	public String getCurrentStoreItems() {
 		Http post = getPost("getCurrentStoreItems");
+		
+		String text = null;
+		try {
+			text = post.sendUrlEncoded();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return text;
+	}
+	
+	
+	public String purchaseStoreItem(String itemId) {
+		Http post = getPost("purchaseStoreItem");
+		post.addEncArg("itemId", itemId);
+		
+		String text = null;
+		try {
+			text = post.sendUrlEncoded();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return text;
+	}
+	
+	
+	public String grantEventReward(String eventId, String rewardTier, boolean collectBattlePass) {
+		Http post = getPost("grantEventReward");
+		post.addEncArg("eventId", eventId);
+		post.addEncArg("rewardTier", rewardTier);
+		post.addEncArg("collectBattlePass", (collectBattlePass ? "True" : "False"));
 		
 		String text = null;
 		try {

@@ -23,6 +23,7 @@ public class StreamRaiders {
 		
 		try {
 			opt = NEF.getOpt("data/opt.app");
+			System.out.println("Version: " + get("botVersion") + "\r\n");
 			MainFrame.open();
 		} catch (FileNotFoundException fnf) {
 			System.err.println("Couldnt load \"opt.app\"");

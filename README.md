@@ -1,4 +1,7 @@
 # StreamRaiderBot
+
+Disclaimer: this program is not from Stream Raiders nor affiliated with them. Use at own Risk
+
 A bot for automated farming in Stream Raiders
 
 first click the "+" to add a profile (this can handle a lot of accounts for auto farming).
