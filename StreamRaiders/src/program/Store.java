@@ -2,6 +2,7 @@ package program;
 
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.List;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -46,6 +47,49 @@ public class Store {
 		return true;
 	}
 	
+	public boolean canUnlockUnit(String type) {
+		String[] cost = (Arrays.asList(legendary).indexOf(type) == -1 ? nLevelCost[0] : lLevelCost[0]).split(",");
+		
+		if(currency.get("gold") < Integer.parseInt(cost[0])) return false;
+		if(currency.get(type.replace("allies", "")) < Integer.parseInt(cost[1])) return false;
+		
+		return true;
+	}
+	
+	
+	public Unit[] getUnlockableUnits(Unit[] units) {
+		
+		String[][] allTypes = Unit.getTypes();
+		
+		String[] gotTypes = new String[0];
+		
+		for(int i=0; i<units.length; i++) {
+			gotTypes = add(gotTypes, units[i].get(SRC.Unit.unitType));
+		}
+		
+		List<String> lGotTypes = Arrays.asList(gotTypes);
+		
+		Unit[] ret = new Unit[0];
+		
+		for(int i=0; i<allTypes.length; i++) {
+			for(int j=0; j<allTypes[i].length; j++) {
+				String type = allTypes[i][j];
+				if(lGotTypes.indexOf(type) == -1) {
+					int scrolls = Integer.parseInt((Arrays.asList(legendary).indexOf(type) == -1 
+							? nLevelCost
+							: lLevelCost)[0].split(",")[1]);
+					
+					Integer gotScrolls = currency.get(type.replace("allias", ""));
+					if(gotScrolls == null) continue;
+					if(scrolls <= gotScrolls.intValue()) {
+						ret = add(ret, Unit.createTypeOnly(type));
+					}
+				}
+			}
+		}
+		return ret;
+	}
+	
 	
 	public String upgradeUnit(Unit unit, SRR req, String specUID) {
 		String lvl = unit.get(SRC.Unit.level);
@@ -70,6 +114,28 @@ public class Store {
 		}
 	}
 	
+	
+	public String unlockUnit(String type, SRR req) {
+		
+		int price = 0;
+		try {
+			if(!canUnlockUnit(type)) return "not enough gold";
+
+			String text = req.unlockUnit(type);
+			if(text == null) return "critical request error";
+			
+			JsonObject res = JsonParser.json(text);
+			
+			try {
+				price = res.getAsJsonObject("data").getAsJsonPrimitive("goldCharged").getAsInt();
+			} catch (Exception e) {}
+			
+			return res.getAsJsonPrimitive("errorMessage").getAsString();
+		} catch (Exception e) {
+			currency.put("gold", currency.get("gold") - price);
+			return null;
+		}
+	}
 	
 	public Unit[] getUpgradeableUnits(Unit[] units) {
 		Unit[] ret = new Unit[0];
@@ -99,9 +165,13 @@ public class Store {
 		if(item.getAsJsonPrimitive("purchased").getAsInt() == 1) return "already purchased";
 		
 		int price = item.getAsJsonPrimitive("price").getAsInt();
-		if(price > currency.get("gold")) return "not enough gold";
+		int gold = 0;
+		try {
+			gold = currency.get("gold");
+		} catch (Exception e) {}
+		if(price > gold) return "not enough gold";
 		
-		currency.put("gold", currency.get("gold") - price);
+		currency.put("gold", gold - price);
 		JsonObject text = JsonParser.json(req.purchaseStoreItem(item.getAsJsonPrimitive("itemId").getAsString()));
 		if(!text.getAsJsonPrimitive("status").getAsString().equals("success")) return text.getAsJsonPrimitive("errorMessage").getAsString();
 		
@@ -127,6 +197,13 @@ public class Store {
 	
 	private Unit[] add(Unit[] arr, Unit item) {
 		Unit[] arr2 = new Unit[arr.length + 1];
+		System.arraycopy(arr, 0, arr2, 0, arr.length);
+		arr2[arr.length] = item;
+		return arr2;
+	}
+	
+	private String[] add(String[] arr, String item) {
+		String[] arr2 = new String[arr.length + 1];
 		System.arraycopy(arr, 0, arr2, 0, arr.length);
 		arr2[arr.length] = item;
 		return arr2;

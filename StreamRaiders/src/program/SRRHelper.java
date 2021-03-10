@@ -36,7 +36,18 @@ public class SRRHelper {
 		return map.getMap();
 	}
 	
-	public void loadMap(Raid raid) {
+	
+	public static class PvPException extends Exception {
+
+		private static final long serialVersionUID = 1L;
+		
+		public PvPException () {
+			super("This is a pvp raid");
+		}
+	}
+	
+	public void loadMap(Raid raid) throws PvPException {
+		if(raid.get(SRC.Raid.nodeId).contains("pvp")) throw new PvPException();
 		map = new Map(json(req.getMapData(raid.get(SRC.Raid.battleground))), jsonArr(raid.get(SRC.Raid.placementsSerialized)));
 	}
 	
@@ -121,13 +132,17 @@ public class SRRHelper {
 	}
 	
 	public String updateRaids() {
-		JsonObject jo = json(req.getActiveRaidsByUser());
-		JsonArray rs = jo.getAsJsonArray("data");
-		raids = new Raid[0];
-		for(int i=0; i<rs.size(); i++) {
-			raids = add(raids, new Raid(rs.get(i).getAsJsonObject()));
+		try {
+			JsonObject jo = json(req.getActiveRaidsByUser());
+			JsonArray rs = jo.getAsJsonArray("data");
+			raids = new Raid[0];
+			for(int i=0; i<rs.size(); i++) {
+				raids = add(raids, new Raid(rs.get(i).getAsJsonObject()));
+			}
+			return jo.getAsJsonObject("info").getAsJsonPrimitive("serverTime").getAsString();
+		} catch (Exception e) {
+			return null;
 		}
-		return jo.getAsJsonObject("info").getAsJsonPrimitive("serverTime").getAsString();
 	}
 	
 	
@@ -186,9 +201,15 @@ public class SRRHelper {
 				break;
 			case SRC.Helper.canUpgradeUnit:
 				return store.getUpgradeableUnits(units);
+			case SRC.Helper.canUnlockUnit:
+				return store.getUnlockableUnits(units);
 			}
 		}
 		return ret;
+	}
+	
+	public String unlockUnit(Unit unit) {
+		return store.unlockUnit(unit.get(SRC.Unit.unitType), req);
 	}
 	
 	public String upgradeUnit(Unit unit, String specUID) {

@@ -10,6 +10,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import include.GUI;
+import program.SRRHelper.PvPException;
 
 public class Run {
 
@@ -51,8 +52,13 @@ public class Run {
 			t= new Thread(new Runnable() {
 				@Override
 				public void run() {
-					srrh = new SRRHelper(cookies, clientVersion);
-					runs();
+					try {
+						srrh = new SRRHelper(cookies, clientVersion);
+						runs();
+					} catch (Exception e) {
+						GUI.setBackground(name+"::start", Color.red);
+						setRunning(false);
+					}
 				}
 			});
 			t.start();
@@ -80,15 +86,19 @@ public class Run {
 				
 			part = "raids 1";
 			raids();
-						
+			
+			part = "reload store";
 			srrh.reloadStore();
 			
-			part = "store";
+			part = "buy store";
 			store();
 			
+			part = "unlock units";
+			unlock();
 			
-			part = "units";
+			part = "upgrade units";
 			upgradeUnits();
+			
 			
 			
 			if(first) {
@@ -112,6 +122,7 @@ public class Run {
 			sleep((int) Math.round(Math.random()*620) + 100);
 		} catch (Exception e) {
 			System.err.println("critical error happened for " + name + " at \"" + part + "\" -> skipped this round");
+			e.printStackTrace();
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e1) {}
@@ -127,10 +138,12 @@ public class Run {
 			}
 			
 		}
-		
-		
 	}
 	
+	
+
+
+
 	private int time = 0;
 	
 	private void sleep(int sec) {
@@ -164,6 +177,21 @@ public class Run {
 			}
 		}, 0, 1000);
 	}
+	
+	
+	private void unlock() {
+		Unit[] unlockable = srrh.getUnits(SRC.Helper.canUnlockUnit);
+		
+		for(int i=0; i<unlockable.length; i++) {
+			String err = srrh.unlockUnit(unlockable[i]);
+			if(err != null) {
+				if(err.equals("not enough gold")) continue;
+				System.err.println(err);
+			}
+		}
+	}
+	
+	
 	
 	private void store() {
 		JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
@@ -213,57 +241,59 @@ public class Run {
 		if(plra.length != 0) {
 			
 			for(int i=0; i<plra.length; i++) {
-				
-				if(units.length == 0) {
-					break;
-				}
-				
-				Unit unit = null;
-				for(int j=0; j<units.length; j++) {
-					if(Boolean.parseBoolean(black.get(units[j].get(SRC.Unit.unitType)))) continue;
-					if(unit == null) {
-						unit = units[j];
-					} else {
-						int rank = Integer.parseInt(units[j].get(SRC.Unit.rank));
-						if(rank > Integer.parseInt(unit.get(SRC.Unit.rank))) {
-							unit = units[j];
-						}
-					}
-				}
-				if(unit == null) {
-					break;
-				}
-				
-				
-				srrh.loadMap(plra[i]);
-				JsonObject[][] map = srrh.getMap();
-				
-				
-				int[] maxheat = Heatmap.getMaxHeat(map, 5);
-				
-				int[][] banned = new int[0][0];
-				
-				while(true) {
-					int[] pos = Heatmap.getNearest(map, maxheat, banned);
-					
-					String err0 = srrh.placeUnit(plra[i], unit, false, pos[0], pos[1]);
-					
-					if(err0 == null) {
-						units = remove(units, unit);
+				try {
+					if(units.length == 0) {
 						break;
 					}
-					try {
-						if(err0.equals("OVER_OBSTACLE")) {
-							Map.whiteObst(map[pos[0]][pos[1]].getAsJsonObject("data").getAsJsonPrimitive("ObstacleName").getAsString());
+					
+					Unit unit = null;
+					for(int j=0; j<units.length; j++) {
+						if(Boolean.parseBoolean(black.get(units[j].get(SRC.Unit.unitType)))) continue;
+						if(unit == null) {
+							unit = units[j];
+						} else {
+							int rank = Integer.parseInt(units[j].get(SRC.Unit.rank));
+							if(rank > Integer.parseInt(unit.get(SRC.Unit.rank))) {
+								unit = units[j];
+							}
 						}
-					} catch (Exception e) {}
+					}
+					if(unit == null) {
+						break;
+					}
 					
 					
-					if(banned.length >= 5) break;
+					srrh.loadMap(plra[i]);
+					JsonObject[][] map = srrh.getMap();
 					
 					
-					banned = add(banned, pos);
+					int[] maxheat = Heatmap.getMaxHeat(map, 5);
+					
+					int[][] banned = new int[0][0];
+					
+					while(true) {
+						int[] pos = Heatmap.getNearest(map, maxheat, banned);
+						
+						String err0 = srrh.placeUnit(plra[i], unit, false, pos[0], pos[1]);
+						
+						if(err0 == null) {
+							units = remove(units, unit);
+							break;
+						}
+						try {
+							if(err0.equals("OVER_OBSTACLE")) {
+								Map.whiteObst(map[pos[0]][pos[1]].getAsJsonObject("data").getAsJsonPrimitive("ObstacleName").getAsString());
+							}
+						} catch (Exception e) {}
+						
+						if(banned.length >= 5) break;
+						
+						banned = add(banned, pos);
+					}
+				} catch (PvPException e) {
+					switchRaid(plra[i].get(SRC.Raid.userSortIndex));
 				}
+				
 			}
 		}
 	}
@@ -301,33 +331,37 @@ public class Run {
 		Raid[] offRaids = srrh.getRaids(SRC.Helper.isOffline);
 		if(offRaids.length != 0) {
 			for(int i=0; i<offRaids.length; i++) {
-				JsonArray caps = srrh.search(1, 20, true, true, false, null);
-				JsonObject cap = null;
-				if(caps.size() != 0) {
-					for(int j=0; j<caps.size(); j++) {
-						int loyalty = Integer.parseInt(caps.get(j).getAsJsonObject().getAsJsonPrimitive("pveLoyaltyLevel").getAsString());
-						try {
-							int oldLoy = Integer.parseInt(cap.getAsJsonPrimitive("pveLoyaltyLevel").getAsString());
-							if(loyalty > oldLoy) {
-								cap = caps.get(j).getAsJsonObject();
-							}
-							if(loyalty == 0) {
-								cap = caps.get(j).getAsJsonObject();
-								break;
-							}
-						} catch(Exception e) {
-							cap = caps.get(j).getAsJsonObject();
-						}
-					}
-				} else {
-					cap = srrh.search(1, 6, false, true, false, "stream raiders").get(0).getAsJsonObject();
-					srrh.setFavorite(cap, true);
-				}
-				srrh.switchRaid(cap, offRaids[i].get(SRC.Raid.userSortIndex));
+				switchRaid(offRaids[i].get(SRC.Raid.userSortIndex));
 			}
 			return true;
 		}
 		return false;
+	}
+	
+	private void switchRaid(String sortIndex) {
+		JsonArray caps = srrh.search(1, 20, true, true, false, null);
+		JsonObject cap = null;
+		if(caps.size() != 0) {
+			for(int j=0; j<caps.size(); j++) {
+				int loyalty = Integer.parseInt(caps.get(j).getAsJsonObject().getAsJsonPrimitive("pveLoyaltyLevel").getAsString());
+				try {
+					int oldLoy = Integer.parseInt(cap.getAsJsonPrimitive("pveLoyaltyLevel").getAsString());
+					if(loyalty > oldLoy) {
+						cap = caps.get(j).getAsJsonObject();
+					}
+					if(loyalty == 0) {
+						cap = caps.get(j).getAsJsonObject();
+						break;
+					}
+				} catch(Exception e) {
+					cap = caps.get(j).getAsJsonObject();
+				}
+			}
+		} else {
+			cap = srrh.search(1, 6, false, true, false, "stream raiders").get(0).getAsJsonObject();
+			srrh.setFavorite(cap, true);
+		}
+		srrh.switchRaid(cap, sortIndex);
 	}
 	
 	

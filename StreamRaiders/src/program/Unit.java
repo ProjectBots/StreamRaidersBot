@@ -42,6 +42,16 @@ public class Unit {
 		System.err.println("Invalid Unit Type: " + unitType);
 	}
 	
+	private Unit(String unitType) {
+		JsonObject unit = new JsonObject();
+		unit.addProperty(SRC.Unit.unitType, unitType);
+		this.unit = unit;
+	}
+	
+	public static Unit createTypeOnly(String unitType) {
+		return new Unit(unitType);
+	}
+
 	public String get(String con) {
 		if(con.equals(SRC.Unit.rank)) return ""+rank;
 		

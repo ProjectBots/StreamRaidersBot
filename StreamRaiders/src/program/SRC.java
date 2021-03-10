@@ -42,11 +42,13 @@ public class SRC {
 		public static final String placementsSerialized = "placementsSerialized";
 		public static final String pveWins = "pveWins";
 		public static final String pveLoyaltyLevel = "pveLoyaltyLevel";
+		public static final String nodeId = "nodeId";
 	}
 	
 	public static class Helper {
 		public static final int canPlaceUnit = 0;
 		public static final int canUpgradeUnit = 4;
+		public static final int canUnlockUnit = 5;
 		public static final int isReward = 1;
 		public static final int isOffline = 2;
 		public static final int all = 3;

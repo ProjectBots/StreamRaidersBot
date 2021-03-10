@@ -89,6 +89,20 @@ public class SRR {
 	}
 	
 	
+	public String unlockUnit(String unitType) {
+		Http post = getPost("unlockUnit");
+		post.addEncArg("unitType", unitType);
+		
+		String text = null;
+		try {
+			text = post.sendUrlEncoded();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return text;
+	}
+	
+	
 	public String upgradeUnit(String unitType, String unitLevel, String unitId) {
 		Http post = getPost("upgradeUnit");
 		post.addEncArg("unitType", unitType);
