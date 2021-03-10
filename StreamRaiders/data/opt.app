@@ -1,6 +1,6 @@
 
-botVersion=1.1.0
-clientVersion=0.146.4
+botVersion=1.2.0
+clientVersion=0.147.3
 
 ## unit types
 common=archer,tank,warrior,flagbearer,rogue
