@@ -36,5 +36,6 @@
   "terrain_boardlandwater",
   "terrain_boardlandtree",
   "terrain_treeretro",
-  "terrain_waterretro"
+  "terrain_waterretro",
+  "stonewalls2"
 ]
