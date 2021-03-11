@@ -1,9 +1,9 @@
 package program;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import include.Http;
+import include.JsonParser;
 
 public class SRR {
 	private static boolean ver_err = false;
@@ -25,7 +25,7 @@ public class SRR {
 		this.cookies = cookies;
 		this.clientVersion = clientVersion;
 		
-		JsonObject raw = json(getUser());
+		JsonObject raw = JsonParser.json(getUser());
 		String ver = raw.getAsJsonObject("info").getAsJsonPrimitive("version").getAsString();
 		if(!ver.equals(clientVersion)) {
 			if(!ver_err) {
@@ -34,7 +34,7 @@ public class SRR {
 				System.err.println("not critical but can cause issues");
 			}
 			this.clientVersion = ver;
-			raw = json(getUser());
+			raw = JsonParser.json(getUser());
 			constructor(raw);
 		} else {
 			constructor(raw);
@@ -48,9 +48,7 @@ public class SRR {
 		this.isCaptain = getUser.getAsJsonPrimitive("isCaptain").getAsString();
 	}
 	
-	private static JsonObject json(String json) {
-		return new Gson().fromJson(json, JsonObject.class);
-	}
+	
 	
 
 	public Http getPost(String cn) {

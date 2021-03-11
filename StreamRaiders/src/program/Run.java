@@ -291,7 +291,9 @@ public class Run {
 						banned = add(banned, pos);
 					}
 				} catch (PvPException e) {
-					switchRaid(plra[i].get(SRC.Raid.userSortIndex));
+					System.out.println(name + ": " + plra[i].get(SRC.Raid.twitchDisplayName)
+							+ " changed to pvp -> switched to "
+							+ switchRaid(plra[i].get(SRC.Raid.userSortIndex)));
 				}
 				
 			}
@@ -338,7 +340,7 @@ public class Run {
 		return false;
 	}
 	
-	private void switchRaid(String sortIndex) {
+	private String switchRaid(String sortIndex) {
 		JsonArray caps = srrh.search(1, 20, true, true, false, null);
 		JsonObject cap = null;
 		if(caps.size() != 0) {
@@ -362,6 +364,7 @@ public class Run {
 			srrh.setFavorite(cap, true);
 		}
 		srrh.switchRaid(cap, sortIndex);
+		return cap.getAsJsonPrimitive(SRC.Raid.twitchDisplayName).getAsString();
 	}
 	
 	

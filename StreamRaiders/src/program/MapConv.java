@@ -14,6 +14,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 import include.GUI;
+import include.JsonParser;
 import include.GUI.Label;
 
 public class MapConv {
@@ -48,7 +49,7 @@ public class MapConv {
 						line = br.readLine();
 						if(line == null) break;
 					}
-					ret[i][j] = json(js);
+					ret[i][j] = JsonParser.json(js);
 				}
 			}
 		} catch (Exception e) {
@@ -127,18 +128,6 @@ public class MapConv {
 		
 		GUI gui = new GUI("Map", 600, 500);
 		
-		
-		
-		/*
-		String[] lines = map.split("\n");
-		
-		String[][] smap = new String[lines.length][];
-		
-		for(int i=0; i<lines.length; i++) {
-			smap[i] = lines[i].split("(?<=\\G..)");
-		}
-		*/
-		
 		for(int i=0; i<map.length; i++) {
 			for(int j=0; j<map[i].length; j++) {
 				
@@ -158,11 +147,6 @@ public class MapConv {
 					if(map[i][j].getAsJsonPrimitive("playerRect").getAsBoolean()) {
 						l.setBackground(new Color(0, 204, 255));
 					}
-					/*
-					if(map[i][j].getAsJsonPrimitive("enemyRect").getAsBoolean()) {
-						l.setBackground(new Color(255, 77, 77));
-					}
-					*/
 					if(map[i][j].getAsJsonPrimitive("holdRect").getAsBoolean()) {
 						l.setBackground(new Color(153, 0, 153));
 					}
@@ -187,40 +171,7 @@ public class MapConv {
 				}
 				
 				
-				/*
-				map[i][j].addProperty("playerRect", false);
-				map[i][j].addProperty("enemyRect", false);
-				map[i][j].addProperty("holdRect", false);
-				map[i][j].addProperty("occupied", false);
-				map[i][j].addProperty("unit", 0);	//	0=nothing, 1=player/ally, 2=enemy, 3=obstacle
-				 * 
-				 * 
-				switch(map[i][j]) {
-				case "p ":
-					l.setBackground(new Color(0, 204, 255));
-					break;
-				case "e ":
-					l.setBackground(new Color(255, 77, 77));
-					break;
-				case "h ":
-					l.setBackground(new Color(153, 0, 153));
-					break;
-				case "o ":
-					l.setBackground(Color.lightGray);
-					break;
-				case "a ":
-					l.setBackground(Color.green);
-					break;
-				case "f ":
-					l.setBackground(Color.red);
-					break;
-				case "b ":
-					l.setBackground(new Color(174, 255, 161));
-					break;
-				default:
-					l.setBackground(Color.white);	
-				}
-				*/
+				
 				gui.addLabel(l);
 				
 				
@@ -237,7 +188,6 @@ public class MapConv {
 			for(int j=0; j<map.length; j++) {
 				String p = " ";
 				if(map[j][i].getAsJsonPrimitive("playerRect").getAsBoolean()) p = "p";
-				//if(map[j][i].getAsJsonPrimitive("enemyRect").getAsBoolean()) p = "e";
 				if(map[j][i].getAsJsonPrimitive("holdRect").getAsBoolean()) p = "h";
 				
 				switch(map[j][i].getAsJsonPrimitive("unit").getAsInt()) {
@@ -285,9 +235,6 @@ public class MapConv {
 		return ret;
 	}
 	
-	private static JsonObject json(String json) {
-		return new Gson().fromJson(json, JsonObject.class);
-	}
 	
 	
 }

@@ -5,9 +5,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
+import include.JsonParser;
 
 public class Raid {
 
@@ -73,7 +74,7 @@ public class Raid {
 		JsonObject ret = new JsonObject();
 		
 		try {
-			JsonObject rawData = json(req.getRaidStatsByUser(raid.getAsJsonPrimitive("raidId").getAsString())).getAsJsonObject("data");
+			JsonObject rawData = JsonParser.json(req.getRaidStatsByUser(raid.getAsJsonPrimitive("raidId").getAsString())).getAsJsonObject("data");
 			
 			try {
 				String chest = rawData.getAsJsonPrimitive("chestAwarded").getAsString();
@@ -221,9 +222,6 @@ public class Raid {
 		return false;
 	}
 	
-	private static JsonObject json(String json) {
-		return new Gson().fromJson(json, JsonObject.class);
-	}
 	
 	
 	

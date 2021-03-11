@@ -7,6 +7,8 @@ import java.util.List;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import include.JsonParser;
+
 public class Store {
 
 	private static final String[] nLevelCost = StreamRaiders.get("nlevelcost").split("\\|");

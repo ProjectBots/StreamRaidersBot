@@ -1,8 +1,9 @@
 package program;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
+import include.JsonParser;
 
 public class SRRHelper {
 
@@ -25,7 +26,7 @@ public class SRRHelper {
 	}
 	
 	public String placeUnit(Raid raid, Unit unit, boolean epic, int x, int y) {
-		JsonObject res = json(req.addToRaid(raid.get(SRC.Raid.raidId), createPlacementData(unit, epic, map.getAsSRCoords(new int[] {x, y}))));
+		JsonObject res = JsonParser.json(req.addToRaid(raid.get(SRC.Raid.raidId), createPlacementData(unit, epic, map.getAsSRCoords(new int[] {x, y}))));
 		try {
 			return res.getAsJsonPrimitive("errorMessage").getAsString();
 		} catch (Exception e) {}
@@ -48,7 +49,7 @@ public class SRRHelper {
 	
 	public void loadMap(Raid raid) throws PvPException {
 		if(raid.get(SRC.Raid.nodeId).contains("pvp")) throw new PvPException();
-		map = new Map(json(req.getMapData(raid.get(SRC.Raid.battleground))), jsonArr(raid.get(SRC.Raid.placementsSerialized)));
+		map = new Map(JsonParser.json(req.getMapData(raid.get(SRC.Raid.battleground))), JsonParser.jsonArr(raid.get(SRC.Raid.placementsSerialized)));
 	}
 	
 	public boolean testPos(boolean epic, int x, int y) {
@@ -133,7 +134,7 @@ public class SRRHelper {
 	
 	public String updateRaids() {
 		try {
-			JsonObject jo = json(req.getActiveRaidsByUser());
+			JsonObject jo = JsonParser.json(req.getActiveRaidsByUser());
 			JsonArray rs = jo.getAsJsonArray("data");
 			raids = new Raid[0];
 			for(int i=0; i<rs.size(); i++) {
@@ -147,7 +148,7 @@ public class SRRHelper {
 	
 	
 	public JsonArray search(int page, int resultsPerPage, boolean fav, boolean live, boolean searchForCaptain, String name) {
-		JsonObject raw = json(req.getCaptainsForSearch(page, resultsPerPage, fav, live, searchForCaptain, name)).getAsJsonObject("data");
+		JsonObject raw = JsonParser.json(req.getCaptainsForSearch(page, resultsPerPage, fav, live, searchForCaptain, name)).getAsJsonObject("data");
 		
 		JsonArray loyalty = raw.getAsJsonArray("pveLoyalty");
 		JsonArray captains = raw.getAsJsonArray("captains");
@@ -161,11 +162,11 @@ public class SRRHelper {
 	}
 	
 	public boolean setFavorite(JsonObject captain, boolean b) {
-		return json(req.updateFavoriteCaptains(captain.getAsJsonPrimitive("userId").getAsString(), b)).getAsJsonPrimitive("status").getAsString().contains("success");
+		return JsonParser.json(req.updateFavoriteCaptains(captain.getAsJsonPrimitive("userId").getAsString(), b)).getAsJsonPrimitive("status").getAsString().contains("success");
 	}
 	
 	public String updateUnits() {
-		JsonObject jo = json(req.getUserUnits());
+		JsonObject jo = JsonParser.json(req.getUserUnits());
 		JsonArray u = jo.getAsJsonArray("data");
 		units = new Unit[0];
 		for(int i=0; i<u.size(); i++) {
@@ -267,13 +268,6 @@ public class SRRHelper {
 		return ret.toString();
 	}
 	
-	private static JsonObject json(String json) {
-		return new Gson().fromJson(json, JsonObject.class);
-	}
-	
-	private static JsonArray jsonArr(String json) {
-		return new Gson().fromJson(json, JsonArray.class);
-	}
 	
 	private static Unit[] add(Unit[] arr, Unit item) {
 		Unit[] arr2 = new Unit[arr.length + 1];
