@@ -1,7 +1,6 @@
 package program;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -9,8 +8,6 @@ import com.google.gson.JsonObject;
 
 public class Unit {
 
-	//private static JsonObject stats = JsonParser.json(NEF.read("data/unitStats.app"));
-	
 	private JsonObject unit = null;
 	private Date cool = null;
 	private int rank = 0;
@@ -65,7 +62,7 @@ public class Unit {
 	public boolean isAvailable(String serverTime) {
 		if(cool == null) return true;
 		try {
-			return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(serverTime).after(cool);
+			return SRC.date.parse(serverTime).after(cool);
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
@@ -74,7 +71,7 @@ public class Unit {
 	
 	public void setDate(String date) {
 		try {
-			this.cool = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date);
+			this.cool = SRC.date.parse(date);
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}

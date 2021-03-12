@@ -1,6 +1,5 @@
 package program;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -186,12 +185,12 @@ public class Raid {
 				return false;
 			} catch (Exception e) {}
 			
-			Date st = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(serverTime);
+			Date st = SRC.date.parse(serverTime);
 			
 			try {
 				String sdate = raid.getAsJsonPrimitive("lastUnitPlacedTime").getAsString();
 				
-				Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(sdate);
+				Date date = SRC.date.parse(sdate);
 				
 				Calendar c = GregorianCalendar.getInstance();
 				c.setTime(date);
@@ -202,7 +201,7 @@ public class Raid {
 				}
 			} catch (Exception e) {}
 			
-			Date crea = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(raid.getAsJsonPrimitive("creationDate").getAsString());
+			Date crea = SRC.date.parse(raid.getAsJsonPrimitive("creationDate").getAsString());
 			
 			Calendar c = GregorianCalendar.getInstance();
 			c.setTime(crea);
@@ -222,7 +221,5 @@ public class Raid {
 		return false;
 	}
 	
-	
-	
-	
+
 }
