@@ -22,13 +22,21 @@ public class NEF {
 			r = new FileReader(file);
 			br = new BufferedReader(r);
 			
+			StringBuilder order = new StringBuilder();
+			
 			for(String line = br.readLine(); line != null; line = br.readLine()) {
-				if(line.equals("")) continue;
-				if(line.startsWith("##")) continue;
+				if(order.length() != 0) order.append("|");
+				if(line.equals("") || line.startsWith("##")) {
+					order.append(line);
+					continue;
+				}
 				
 				String[] params = line.split("=", 2);
 				tab.put(params[0], params[1]);
+				order.append("{" + params[0] + "}");
 			}
+			
+			tab.put("~order", order.toString());
 		} catch (FileNotFoundException e) {
 			throw e;
 		} catch (Exception e) {
@@ -57,11 +65,32 @@ public class NEF {
 			bw = new BufferedWriter(w);
 			
 			
-			String text = "";
-			for(String key : table.keySet()) {
-				text += key + "=" + table.get(key) + "\n";
+			String[] order = new String[0];
+			try {
+				order = table.get("~order").split("\\|");
+				table.remove("~order");
+			} catch (Exception e) {}
+			
+			
+			StringBuilder text = new StringBuilder();
+			
+			for(int i=0; i<order.length; i++) {
+				if(order[i].startsWith("{") && order[i].endsWith("}")) {
+					try {
+						order[i] = order[i].substring(1, order[i].length() - 1);
+						text.append(order[i] + "=" + table.get(order[i]) + "\n");
+						table.remove(order[i]);
+					} catch (Exception e) {}
+				} else {
+					text.append(order[i]);
+				}
 			}
-			bw.write(text);
+			
+			for(String key : table.keySet()) {
+				text.append(key + "=" + table.get(key) + "\n");
+			}
+			
+			bw.write(text.toString().substring(0, text.length() - 1));
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -105,17 +134,14 @@ public class NEF {
 		FileReader r = null;
 		BufferedReader br = null;
 		
-		String text = "";
+		StringBuilder text = new StringBuilder();
 		try {
 			r = new FileReader(file);
 			br = new BufferedReader(r);
 			
-			String line = br.readLine();
-			while(line != null) {
-				text += line + "\n";
-				line = br.readLine();
+			for(String line = br.readLine(); line != null; line = br.readLine()) {
+				text.append(line + "\n");
 			}
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -124,7 +150,7 @@ public class NEF {
 				r.close();
 			} catch (Exception e) {}
 		}
-		return text;
+		return text.toString();
 	}
 	
 	private static void createDir(String path) {
