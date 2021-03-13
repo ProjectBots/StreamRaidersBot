@@ -57,12 +57,10 @@ public class NEF {
 		File file = new File(path);
 		
 		FileWriter w = null;
-		BufferedWriter bw = null;
 		
 		try {
 			file.createNewFile();
 			w = new FileWriter(file);
-			bw = new BufferedWriter(w);
 			
 			
 			String[] order = new String[0];
@@ -90,12 +88,11 @@ public class NEF {
 				text.append(key + "=" + table.get(key) + "\n");
 			}
 			
-			bw.write(text.toString().substring(0, text.length() - 1));
+			w.write(text.substring(0, text.length() - 1));
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {
-				bw.close();
 				w.close();
 			} catch (Exception e) {}
 		}
