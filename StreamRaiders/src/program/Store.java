@@ -81,7 +81,7 @@ public class Store {
 							? nLevelCost
 							: lLevelCost)[0].split(",")[1]);
 					
-					Integer gotScrolls = currency.get(type.replace("allias", ""));
+					Integer gotScrolls = currency.get(type.replace("allies", ""));
 					if(gotScrolls == null) continue;
 					if(scrolls <= gotScrolls.intValue()) {
 						ret = add(ret, Unit.createTypeOnly(type));
