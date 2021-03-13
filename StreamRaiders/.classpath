@@ -2,24 +2,19 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
 		<attributes>
-			<attribute name="module" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/Json/gson-2.8.6.jar"/>
-	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/HttpClient4/clientonly/commons-codec-1.11.jar"/>
-	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/HttpClient4/clientonly/commons-logging-1.2.jar"/>
-	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/HttpClient4/clientonly/httpclient-4.5.13.jar"/>
-	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/HttpClient4/clientonly/httpcore-4.4.13.jar"/>
-	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/jcef/gluegen-rt.jar"/>
-	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/jcef/gluegen-rt-natives-windows-amd64.jar"/>
-	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/jcef/jcef.jar">
+	<classpathentry kind="src" output="target/classes" path="src">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="P:/eclipse/workspace/.lib/jcef/lib/win64"/>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/jcef/jcef-tests.jar"/>
-	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/jcef/jogl-all.jar"/>
-	<classpathentry kind="lib" path="P:/eclipse/workspace/.lib/jcef/jogl-all-natives-windows-amd64.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
