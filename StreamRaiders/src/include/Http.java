@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
 import org.apache.http.Consts;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.fluent.Request;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -27,23 +27,12 @@ public class Http {
 	private String[][] urlArgs = new String[0][0];
 	private List<NameValuePair> encArgs = new ArrayList<NameValuePair>();
 	
-	private int max_attemps = 3;
-	
 	public void setUrl(String url) {
 		this.url = url;
 	}
 	
-	private String getUrl() {
-		return url;
-	}
-
-	
 	public void addHeader(String name, String value) {
 		headers = add(headers, new BasicHeader(name, value));
-	}
-	
-	private BasicHeader[] getHeaders() {
-		return headers;
 	}
 	
 	public void addUrlArg(String name, String value) {
@@ -58,21 +47,26 @@ public class Http {
 	
 	public String sendGet() throws Exception {
 		
-		for(int j=0; j<max_attemps; j++) {
-			try {
-				Request req = Request.Get(this.getUrl());
-				
-				BasicHeader[] headers = this.getHeaders();
-				
-				for(int i=0; i<headers.length; i++) {
-					req.setHeader(headers[i]);
-				}
-				
-				return req.execute().returnContent().asString();
-			} catch (Exception e) {}
+		URIBuilder uri = new URIBuilder(this.url);
+		
+		HttpGet get = new HttpGet(uri.build());
+		
+		for(int i=0; i<headers.length; i++) {
+			get.setHeader(headers[i]);
 		}
 		
-		return null;
+		
+		CloseableHttpClient client = HttpClients.createDefault();
+		CloseableHttpResponse response = client.execute(get);
+		
+		String text = new BufferedReader(new InputStreamReader(response.getEntity()
+					.getContent(), StandardCharsets.UTF_8))
+				.lines()
+				.collect(Collectors.joining("\n"));
+		
+		client.close();
+		return text;	
+		
 	}
 	
 	
