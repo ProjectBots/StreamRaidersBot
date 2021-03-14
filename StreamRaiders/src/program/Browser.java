@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.util.Hashtable;
 
 import javax.swing.JFrame;
@@ -11,6 +12,7 @@ import org.cef.CefApp;
 import org.cef.CefClient;
 import org.cef.CefSettings;
 import org.cef.CefSettings.LogSeverity;
+import org.cef.JCefLoader;
 import org.cef.OS;
 import org.cef.browser.CefBrowser;
 import org.cef.callback.CefCookieVisitor;
@@ -19,16 +21,19 @@ import org.cef.misc.BoolRef;
 import org.cef.network.CefCookie;
 import org.cef.network.CefCookieManager;
 
+import include.GUI;
+import include.GUI.Label;
+
 public class Browser extends JFrame {
 
-	private static final long serialVersionUID = -5570653778104813836L;
-	private final CefApp     cefApp_;
-	private final CefClient  client_;
-	private final CefBrowser browser_;
-	private final Component  browerUI_;
+	public static final long serialVersionUID = -5570653778104813836L;
+	
+	public final CefApp     cefApp_;
+	public final CefClient  client_;
+	public final CefBrowser browser_;
+	public final Component  browerUI_;
 
-	public Browser(String name) {
-		
+	public Browser(String name) throws IOException, RuntimeException {
 		Hashtable<String, String> tab = new Hashtable<>();
 		
 		String startURL = "https://www.streamraiders.com/game/";
@@ -39,9 +44,20 @@ public class Browser extends JFrame {
 		CefSettings settings = new CefSettings();
 		settings.windowless_rendering_enabled = useOSR;
 		settings.log_severity = LogSeverity.LOGSEVERITY_DISABLE;
+			
 		
-		cefApp_ = CefApp.getInstance(settings);
-
+		GUI load = new GUI("Embeded Browser", 300, 300);
+			
+		Label l1 = new Label();
+		l1.setText("loading ...\nthis can take a bit");
+			
+		load.addLabel(l1);
+			
+		cefApp_ = JCefLoader.installAndLoadCef(settings);
+			
+		load.close();
+		
+		
 		client_ = cefApp_.createClient();
 		
 		browser_ = client_.createBrowser(startURL, useOSR, isTransparent);
@@ -52,7 +68,7 @@ public class Browser extends JFrame {
 		pack();
 		setSize(800,600);
 		setVisible(true);
-
+		
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
