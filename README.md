@@ -18,3 +18,15 @@ the Map buttons will show the current map.
 the option button in the top left will open a new menu where you can delete all profiles.
 the trashcan will delete the dedicated profile.
 the option buttons in the profile section will open a menu where you can whitelist units.
+
+
+//TODO:
+more options to cutomise (buying, unlocking, upgrading and specializing units)
+much more options to customise (preferred Units, captains, chests)
+specializing units
+reedemption of quest rewards
+reedemption of event progression
+see which chest a raid will bring
+better unit placement (A* pathfinding, including flying units can fly over some stuff)
+automatic update?
+mod support?
