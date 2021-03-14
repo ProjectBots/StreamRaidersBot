@@ -37,5 +37,7 @@
   "terrain_boardlandtree",
   "terrain_treeretro",
   "terrain_waterretro",
-  "stonewalls2"
+  "stonewalls2",
+  "pits",
+  "spiderwebs"
 ]
