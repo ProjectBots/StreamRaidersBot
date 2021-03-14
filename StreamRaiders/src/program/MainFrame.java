@@ -119,8 +119,22 @@ public class MainFrame {
 						@Override
 						public void actionPerformed(ActionEvent e) {
 							String in = GUI.getInputText("newName");
-							if(in == null) return;
-							new Browser(in);
+							if(in.equals("")) {
+								if(!np.showConfirmationBox("go ahead without a name for the profile?")) {
+									return;
+								}
+							}
+							Thread t = new Thread(new Runnable() {
+								@Override
+								public void run() {
+									try {
+										new Browser(in);
+									} catch (Exception e1) {
+										e1.printStackTrace();
+									}
+								}
+							});
+							t.start();
 							np.close();
 						}
 					};
