@@ -133,7 +133,7 @@ public class Store {
 			} catch (Exception e) {}
 			
 			return res.getAsJsonPrimitive("errorMessage").getAsString();
-		} catch (Exception e) {
+		} catch (IllegalStateException e) {
 			currency.put("gold", currency.get("gold") - price);
 			return null;
 		}

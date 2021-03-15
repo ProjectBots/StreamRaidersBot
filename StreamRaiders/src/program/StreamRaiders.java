@@ -29,7 +29,5 @@ public class StreamRaiders {
 		} catch (FileNotFoundException fnf) {
 			System.err.println("Couldnt load \"opt.app\"");
 		}
-		
-		
 	}
 }
