@@ -1,6 +1,7 @@
 package program;
 
 import java.awt.Color;
+import java.time.LocalTime;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Timer;
@@ -126,7 +127,8 @@ public class Run {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e1) {}
-			System.out.println("reload srrh for " + name);
+			LocalTime time = LocalTime.now();
+			System.out.println("reload srrh for " + name + " at " + time.getHour() + ":" + time.getMinute());
 			try {
 				srrh = new SRRHelper(cookies, clientVersion);
 				System.out.println("completed reloading srrh for " + name);
