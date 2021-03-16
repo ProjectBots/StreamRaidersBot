@@ -86,7 +86,8 @@ public class Run {
 			}
 				
 			part = "raids 1";
-			raids();
+			if(raids()) raids();
+			
 			
 			part = "reload store";
 			srrh.reloadStore();
@@ -117,13 +118,14 @@ public class Run {
 					Thread.sleep(5000);
 				} catch (Exception e) {}
 				part = "raids 2";
-				raids();
+				if(raids()) raids();
 			}
 			
 			sleep((int) Math.round(Math.random()*620) + 100);
 		} catch (Exception e) {
-			System.err.println("critical error happened for " + name + " at \"" + part + "\" -> skipped this round");
-			e.printStackTrace();
+			
+			StreamRaiders.log("critical error happened for " + name + " at \"" + part + "\" -> skipped this round", e);
+			
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e1) {}
@@ -221,7 +223,9 @@ public class Run {
 	
 	private String[] pveloy = new String[] {"?", "bronze", "silver", "gold"};
 	
-	private void raids() {
+	private boolean raids() {
+		boolean ret = false;
+		
 		Hashtable<String, String> black = MainFrame.getBlacklist(name);
 		
 		Unit[] units = srrh.getUnits(SRC.Helper.canPlaceUnit);
@@ -296,10 +300,12 @@ public class Run {
 					System.out.println(name + ": " + plra[i].get(SRC.Raid.twitchDisplayName)
 							+ " changed to pvp -> switched to "
 							+ switchRaid(plra[i].get(SRC.Raid.userSortIndex)));
+					ret = true;
 				}
 				
 			}
 		}
+		return ret;
 	}
 	
 	private JsonObject rews = new JsonObject();

@@ -6,9 +6,26 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.time.LocalTime;
 import java.util.Hashtable;
 
 public class NEF {
+	
+	
+	public static void log(String path, String log) {
+		
+		File file = new File(path);
+		
+		String text = "";
+		
+		if(file.exists()) text = read(path) + "\n\n";
+		
+		LocalTime lt = LocalTime.now();
+		text += "---- " + lt.getHour() + ":" + lt.getMinute() + "," + lt.getSecond() + " ----\n" + log;
+		
+		save(path, text);
+	}
+	
 	
 	public static Hashtable<String, String> getOpt(String path) throws FileNotFoundException {
 		

@@ -1,6 +1,8 @@
 package program;
 
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Hashtable;
 
 public class StreamRaiders {
@@ -9,6 +11,22 @@ public class StreamRaiders {
 	
 	public static String get(String key) {
 		return opt.get(key);
+	}
+	
+	synchronized public static void log(String text, Exception e) {
+		
+		StringWriter sw = new StringWriter();
+		e.printStackTrace(new PrintWriter(sw));
+		
+		if(text != null) {
+			System.out.println(text);
+			NEF.log("logs.app", text + "\n" + sw.toString());
+		} else {
+			NEF.log("logs.app", sw.toString());
+		}
+		
+		System.out.println(sw.toString());
+		
 	}
 	
 	public static void main(String[] args) {
