@@ -2,14 +2,20 @@ package program;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-
 import include.JsonParser;
 
 public class Map {
 
 	private int width = 0;
 	private int length = 0;
+	
+	public int width() {
+		return width;
+	}
+	
+	public int length() {
+		return length;
+	}
 	
 	private int hw() {
 		return (int) Math.floor(width/2);
@@ -19,33 +25,48 @@ public class Map {
 		return (int) Math.floor(length/2);
 	}
 	
-	JsonObject[][] map = null;
+	private JsonArray map = null;
 	
-	public JsonObject[][] getMap() {
+	public JsonArray getMap() {
 		return map;
+	}
+	
+	public JsonObject get(int x, int y) {
+		return map.get(x).getAsJsonArray().get(y).getAsJsonObject();
+	}
+	
+	private void set(int x, int y, String key, String value) {
+		map.get(x).getAsJsonArray().get(y).getAsJsonObject().addProperty(key, value);
+	}
+	
+	private void set(int x, int y, String key, boolean value) {
+		map.get(x).getAsJsonArray().get(y).getAsJsonObject().addProperty(key, value);
+	}
+	
+	public Map(JsonArray completeMap) {
+		map = completeMap;
+		width = map.size();
+		length = map.get(0).getAsJsonArray().size();
 	}
 	
 	public Map(JsonObject mapData, JsonArray placements) {
 		float mapScale = mapData.getAsJsonPrimitive("MapScale").getAsFloat();
 		if(mapScale < 0) {
-			width = (int) (mapData.getAsJsonPrimitive("GridWidth").getAsInt()/0.8);
-			length = (int) (mapData.getAsJsonPrimitive("GridLength").getAsInt()/0.8);
+			width = (int) (mapData.getAsJsonPrimitive("GridWidth").getAsInt()/0.8) + 10;
+			length = (int) (mapData.getAsJsonPrimitive("GridLength").getAsInt()/0.8) + 10;
 		} else {
 			width = Math.round(50 * mapScale);
 			length = Math.round(40 * mapScale);
-			//System.err.println("> MapScale: " + mapScale + " w: " + width + " l: " + length);
 		}
 		
-		map = new JsonObject[width][length];
+		map = new JsonArray();
+		
 		for(int i=0; i<width; i++) {
+			map.add(new JsonArray());
 			for(int j=0; j<length; j++) {
-				map[i][j] = new JsonObject();
-				map[i][j].addProperty("playerRect", false);
-				map[i][j].addProperty("enemyRect", false);
-				map[i][j].addProperty("holdRect", false);
-				map[i][j].addProperty("occupied", false);
-				map[i][j].addProperty("unit", 0);	//	0=nothing, 1=player/ally, 2=enemy, 3=obstacle
-				map[i][j].add("data", new JsonObject());
+				JsonObject n = new JsonObject();
+				n.addProperty(SRC.Map.isEmpty, true);
+				map.get(i).getAsJsonArray().add(n);
 			}
 		}
 		
@@ -63,9 +84,12 @@ public class Map {
 	}
 	
 	private boolean testField(int x, int y)  {
-		if(!map[x][y].getAsJsonPrimitive("playerRect").getAsBoolean()) return false;
-		if(map[x][y].getAsJsonPrimitive("unit").getAsInt() != 0) return false;
-		if(map[x][y].getAsJsonPrimitive("occupied").getAsBoolean()) return false;
+		JsonObject field = map.get(x).getAsJsonArray().get(y).getAsJsonObject();
+		if(!field.has(SRC.Map.isEmpty)) return false;
+		if(!field.get(SRC.Map.isEmpty).getAsBoolean()) return false;
+		if(!field.has(SRC.Map.isPlayerRect)) return false;
+		if(!field.get(SRC.Map.isPlayerRect).getAsBoolean()) return false;
+		
 		return true;
 	}
 	
@@ -77,17 +101,10 @@ public class Map {
 		return new double[] {x, y};
 	}
 	
-	
-	private JsonArray playerRects = new JsonArray();
-	
-	public JsonArray getPlayerRects() {
-		return playerRects;
-	}
-	
 	public void updateMap(JsonObject mapData, JsonArray placements) {
-		map = addRects(map, mapData.getAsJsonArray("PlayerPlacementRects"), "playerRect");
-		map = addRects(map, mapData.getAsJsonArray("EnemyPlacementRects"), "enemyRect");
-		map = addRects(map, mapData.getAsJsonArray("HoldingZoneRects"), "holdRect");
+		map = addRects(map, mapData.getAsJsonArray("PlayerPlacementRects"), SRC.Map.isPlayerRect);
+		map = addRects(map, mapData.getAsJsonArray("EnemyPlacementRects"), SRC.Map.isEnemyRect);
+		map = addRects(map, mapData.getAsJsonArray("HoldingZoneRects"), SRC.Map.isHoldRect);
 		
 		map = addEntity(map, placements);
 		map = addEntity(map, mapData.getAsJsonArray("PlacementData"));
@@ -95,58 +112,28 @@ public class Map {
 		
 	}
 	
-	private String[] obWhite = new String[] {
-			"wall",
-			"water",
-			"canal",
-			"tree",
-			"mountains",
-			"canyons"
-	};
-	
-	private static JsonArray obsts = JsonParser.jsonArr(NEF.read("data/obstacles.app"));
-	
-	public static void whiteObst(String name) {
-		if(!obsts.contains(new JsonPrimitive(name))) {
-			obsts.add(name);
-			NEF.save("data/obstacles.app", JsonParser.prettyJson(obsts));
-			System.out.println("+added " + name + " to obstacle list");
-		}
-	}
-
-	private JsonObject[][] addObstacle(JsonObject[][] map, JsonArray places) {
+	private JsonArray addObstacle(JsonArray map, JsonArray places) {
 		for(int i=0; i<places.size(); i++) {
 			JsonObject place = places.get(i).getAsJsonObject();
-			
-			
-			if(!obsts.contains(place.getAsJsonPrimitive("ObstacleName"))) {
-				String obst = place.getAsJsonPrimitive("ObstacleName").getAsString();
-				
-				bif:
-				if(obst.contains("terrain")) {
-					for(int j=0; j<obWhite.length; j++) {
-						if(obst.contains(obWhite[j])) {
-							break bif;
-						}
-					}
-					continue;
-				}
-				
-				whiteObst(obst);
-			}
-			
 			
 			int x = (int) Math.round(place.getAsJsonPrimitive("X").getAsDouble() / 0.8 + hw());
 			int y = (int) Math.round((place.getAsJsonPrimitive("Y").getAsDouble() / 0.8 - hl()) * -1 + 1);
 			
+			String name = place.getAsJsonPrimitive("ObstacleName").getAsString();
 			
-			map[x][y].addProperty("unit", 3);
-			map[x][y].add("data", place);
-		}
+			JsonObject obst = JsonParser.json(StreamRaiders.get("obstacles")).getAsJsonObject(name);
+			
+			set(x, y, SRC.Map.isObstacle, true);
+			set(x, y, "name", name);
+			set(x, y, SRC.Map.canFlyOver, obst.getAsJsonPrimitive("CanFlyOver").getAsBoolean());
+			set(x, y, SRC.Map.canWalkOver, obst.getAsJsonPrimitive("CanWalkOver").getAsBoolean());
+			set(x, y, "ContactBuff", obst.getAsJsonPrimitive("ContactBuff").getAsBoolean());
+			set(x, y, SRC.Map.isEmpty, false);
+			}
 		return map;
 	}
 
-	private JsonObject[][] addEntity(JsonObject[][] map, JsonArray places) {
+	private JsonArray addEntity(JsonArray map, JsonArray places) {
 		if(places == null) return map;
 		for(int i=0; i<places.size(); i++) {
 			JsonObject place = places.get(i).getAsJsonObject();
@@ -165,37 +152,35 @@ public class Map {
 			int x = (int) Math.round(rx / 0.8 + hw());
 			int y = (int) Math.round((ry / 0.8 - hl()) * -1 + 1);
 			
-			try {
-				switch(place.getAsJsonPrimitive("team").getAsString()) {
-				case "Ally":
-					try {
-						if(place.getAsJsonPrimitive("CharacterType").getAsString().contains("epic") || place.getAsJsonPrimitive("CharacterType").getAsString().contains("captain")) {
-							map[x-1][y+1].addProperty("occupied", true);
-							map[x-1][y].addProperty("occupied", true);
-							map[x][y+1].addProperty("occupied", true);
-						}
-						
-					} catch (Exception e) {}
-					map[x][y].addProperty("unit", 1);
-					break;
-				case "Enemy":
-					map[x][y].addProperty("unit", 2);
-					break;
-				default:
-					System.err.println("Unit team incorrect: " + place.getAsJsonPrimitive("team").getAsString());
-					map[x][y].addProperty("unit", 0);
+			switch(place.getAsJsonPrimitive("team").getAsString()) {
+			case "Ally":
+				if(place.getAsJsonPrimitive("CharacterType").getAsString().contains("epic") || place.getAsJsonPrimitive("CharacterType").getAsString().contains("captain")) {
+					set(x-1, y+1, SRC.Map.isOccupied, true);
+					set(x-1, y, SRC.Map.isOccupied, true);
+					set(x, y+1, SRC.Map.isOccupied, true);
+					set(x-1, y+1, SRC.Map.isEmpty, false);
+					set(x-1, y, SRC.Map.isEmpty, false);
+					set(x, y+1, SRC.Map.isEmpty, false);
+					set(x, y, SRC.Map.isEpic, true);
 				}
-			} catch (Exception e) {
-				map[x][y].addProperty("unit", 2);
+				set(x, y, SRC.Map.isAllied, true);
+				break;
+			case "Enemy":
+				set(x, y, SRC.Map.isAllied, false);
+				break;
+			default:
+				StreamRaiders.log("Map->addEntity: team=" + place.getAsJsonPrimitive("team").getAsString(), null);
 			}
-			
-			map[x][y].add("data", place);
-			
+			set(x, y, "isEntity", true);
+			set(x, y, "isEmpty", false);
+			set(x, y, "type", place.getAsJsonPrimitive("CharacterType").getAsString().replaceAll("[0-9]", ""));
+			set(x, y, "lvl", place.getAsJsonPrimitive("CharacterType").getAsString().replaceAll("[a-zA-Z]", ""));
+			set(x, y, "spec", place.getAsJsonPrimitive("specializationUid").getAsString());
 		}
 		return map;
 	}
 
-	private JsonObject[][] addRects(JsonObject[][] map, JsonArray rects, String prop) {
+	private JsonArray addRects(JsonArray map, JsonArray rects, String prop) {
 		if(rects == null) return map;
 		for(int i=0; i<rects.size(); i++) {
 			JsonObject rect = rects.get(i).getAsJsonObject();
@@ -205,20 +190,9 @@ public class Map {
 			int w = (int) Math.round(rect.getAsJsonPrimitive("width").getAsDouble() / 0.8 - 1);
 			int h = (int) Math.round(rect.getAsJsonPrimitive("height").getAsDouble() / 0.8 - 1);
 			
-			
-			
-			if(prop.contains("player")) {
-				JsonObject nrect = new JsonObject();
-				nrect.addProperty("x", x);
-				nrect.addProperty("y", y-h);
-				nrect.addProperty("w", w);
-				nrect.addProperty("h", h);
-				playerRects.add(nrect);
-			}
-			
 			for(int j=x; j<=x+w; j++) {
 				for(int k=y-h; k<=y; k++) {
-					map[j][k].addProperty(prop, true);
+					set(j, k, prop, true);
 				}
 			}
 			
@@ -226,16 +200,55 @@ public class Map {
 		return map;
 	}
 	
+	private boolean isOutOfRange(int x, int y) {
+		if(x < 0 || y < 0) return true;
+		if(x >= width || y >= length) return true;
+		return false;
+	}
 	
-	/*
-	 * p, e, h: rects
-	 * o: obsticale
-	 * a: ally
-	 * f: foe (enemy)
-	 *  : nothing
-	 * 
-	 * 
-	 */
+	public boolean is(int x, int y, String con) {
+		if(isOutOfRange(x, y)) return false;
+		JsonObject place = get(x, y);
+		switch (con) {
+		case SRC.Map.canFlyOver:
+			if(!is(x, y, SRC.Map.isObstacle)) return false;
+			break;
+		case SRC.Map.canWalkOver:
+			if(!is(x, y, SRC.Map.isObstacle)) return false;
+			break;
+		case SRC.Map.isAllied:
+			if(!place.has("isEntity")) return false;
+			if(!place.getAsJsonPrimitive("isEntity").getAsBoolean()) return false;
+			break;
+		case SRC.Map.isEmpty:
+			break;
+		case SRC.Map.isEnemy:
+			if(!place.has("isEntity")) return false;
+			if(!place.getAsJsonPrimitive("isEntity").getAsBoolean()) return false;
+			return !place.getAsJsonPrimitive(SRC.Map.isAllied).getAsBoolean();
+		case SRC.Map.isEnemyRect:
+			if(!place.has(con)) return false;
+			break;
+		case SRC.Map.isHoldRect:
+			if(!place.has(con)) return false;
+			break;
+		case SRC.Map.isObstacle:
+			if(!place.has(con)) return false;
+			break;
+		case SRC.Map.isPlayerRect:
+			if(!place.has(con)) return false;
+			break;
+		case SRC.Map.isOccupied:
+			if(!place.has(con)) return false;
+			break;
+		case SRC.Map.isEpic:
+			if(!place.has(con)) return false;
+			break;
+		default:
+			return false;
+		}
+		return place.getAsJsonPrimitive(con).getAsBoolean();
+	}
 	
 	
 }

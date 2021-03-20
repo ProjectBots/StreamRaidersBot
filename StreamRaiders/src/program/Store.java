@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.JsonParser;
@@ -108,18 +109,45 @@ public class Store {
 		} else {
 			ret = JsonParser.json(req.upgradeUnit(unit.get(SRC.Unit.unitType), lvl, unit.get(SRC.Unit.unitId)));
 		}
+		
+		JsonElement err = ret.get("errorMessage");
+		if(err.isJsonNull()) {
+			currency.put("gold", currency.get("gold") - cost);
+			return null;
+		} else {
+			return err.getAsString();
+		}
+		/*
 		try {
 			return ret.getAsJsonPrimitive("errorMessage").getAsString();
-		} catch (Exception e) {
+		} catch (ClassCastException e) {
 			currency.put("gold", currency.get("gold") - cost);
 			return null;
 		}
+		*/
 	}
 	
 	
 	public String unlockUnit(String type, SRR req) {
 		
 		int price = 0;
+		if(!canUnlockUnit(type)) return "not enough gold";
+
+		String text = req.unlockUnit(type);
+		if(text == null) return "critical request error";
+		
+		JsonObject res = JsonParser.json(text);
+		
+		JsonElement gc = res.getAsJsonObject("data").get("goldCharged");
+		if(!gc.isJsonPrimitive()) return res.getAsJsonPrimitive("errorMessage").getAsString();
+		
+		price = gc.getAsInt();
+		
+		currency.put("gold", currency.get("gold") - price);
+		return null;
+		
+		
+		/*
 		try {
 			if(!canUnlockUnit(type)) return "not enough gold";
 
@@ -133,31 +161,31 @@ public class Store {
 			} catch (Exception e) {}
 			
 			return res.getAsJsonPrimitive("errorMessage").getAsString();
-		} catch (IllegalStateException e) {
+		} catch (ClassCastException e) {
 			currency.put("gold", currency.get("gold") - price);
 			return null;
 		}
+		*/
 	}
 	
 	public Unit[] getUpgradeableUnits(Unit[] units) {
 		Unit[] ret = new Unit[0];
 		for(int i=0; i<units.length; i++) {
-			int lvl = Integer.parseInt(units[i].get(SRC.Unit.level));
-			try {
-				String type = units[i].get(SRC.Unit.unitType);
-				int cost;
-				if(Arrays.asList(legendary).indexOf(type) == -1) {
-					cost = Integer.parseInt(nLevelCost[lvl].split(",")[1]);
-				} else {
-					cost = Integer.parseInt(lLevelCost[lvl].split(",")[1]);
-				}
-				
-				int got = currency.get(type.replace("allies", ""));
-				
-				if(cost <= got) {
-					ret = add(ret, units[i]);
-				}
-			} catch (Exception e) {}
+			String slvl = units[i].get(SRC.Unit.level);
+			if(slvl == null) continue;
+			
+			int lvl = Integer.parseInt(slvl);
+			
+			String type = units[i].get(SRC.Unit.unitType);
+			if(type == null) continue;
+			int cost = Integer.parseInt((Arrays.asList(legendary).indexOf(type) == -1 
+					? nLevelCost[lvl] 
+					: lLevelCost[lvl])
+				.split(",")[1]);
+			
+			int got = currency.get(type.replace("allies", ""));
+			
+			if(cost <= got) ret = add(ret, units[i]);
 		}
 		return ret;
 	}
@@ -170,7 +198,7 @@ public class Store {
 		int gold = 0;
 		try {
 			gold = currency.get("gold");
-		} catch (Exception e) {}
+		} catch (NullPointerException e) {}
 		if(price > gold) return "not enough gold";
 		
 		currency.put("gold", gold - price);

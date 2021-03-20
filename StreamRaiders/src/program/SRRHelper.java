@@ -1,9 +1,11 @@
 package program;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.JsonParser;
+import program.SRR.OutdatedDataException;
 
 public class SRRHelper {
 
@@ -16,25 +18,43 @@ public class SRRHelper {
 	private Map map = null;
 	
 	
-	public SRRHelper(String cookies, String clientVersion) {
-		req = new SRR(cookies, clientVersion);
-		updateUnits();
+	public SRRHelper(String cookies, String clientVersion) throws OutdatedDataException {
+		try {
+			req = new SRR(cookies, clientVersion);
+			updateUnits();
+			return;
+		} catch (OutdatedDataException e1) {
+			updateDataPath(e1.getDataPath());
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {}
+			req = new SRR(cookies, clientVersion);
+		}
 	}
 	
+	private void updateDataPath(String dataPath) {
+		JsonObject data = JsonParser.json(SRR.getData(dataPath));
+		StreamRaiders.set("obstacles", data.getAsJsonObject("sheets").getAsJsonObject("Obstacles").toString());
+		StreamRaiders.set("data", dataPath);
+		StreamRaiders.save();
+	}
+
 	public SRR getSRR() {
 		return req;
 	}
 	
 	public String placeUnit(Raid raid, Unit unit, boolean epic, int x, int y) {
-		JsonObject res = JsonParser.json(req.addToRaid(raid.get(SRC.Raid.raidId), createPlacementData(unit, epic, map.getAsSRCoords(new int[] {x, y}))));
-		try {
-			return res.getAsJsonPrimitive("errorMessage").getAsString();
-		} catch (Exception e) {}
+		JsonElement je = JsonParser.json(req.addToRaid(raid.get(SRC.Raid.raidId),
+					createPlacementData(unit, epic, map.getAsSRCoords(new int[] {x, y}))))
+				.get("errorMessage");
+		
+		if(je.isJsonPrimitive()) return je.getAsString();
+		
 		return null;
 	}
 	
-	public JsonObject[][] getMap() {
-		return map.getMap();
+	public Map getMap() {
+		return map;
 	}
 	
 	
@@ -58,10 +78,6 @@ public class SRRHelper {
 	
 	public double[] getSRPos(int x, int y) {
 		return map.getAsSRCoords(new int[] {x, y});
-	}
-	
-	public JsonArray getPlayerRects() {
-		return map.getPlayerRects();
 	}
 	
 	
@@ -133,17 +149,13 @@ public class SRRHelper {
 	}
 	
 	public String updateRaids() {
-		try {
-			JsonObject jo = JsonParser.json(req.getActiveRaidsByUser());
-			JsonArray rs = jo.getAsJsonArray("data");
-			raids = new Raid[0];
-			for(int i=0; i<rs.size(); i++) {
-				raids = add(raids, new Raid(rs.get(i).getAsJsonObject()));
-			}
-			return jo.getAsJsonObject("info").getAsJsonPrimitive("serverTime").getAsString();
-		} catch (Exception e) {
-			return null;
+		JsonObject jo = JsonParser.json(req.getActiveRaidsByUser());
+		JsonArray rs = jo.getAsJsonArray("data");
+		raids = new Raid[0];
+		for(int i=0; i<rs.size(); i++) {
+			raids = add(raids, new Raid(rs.get(i).getAsJsonObject()));
 		}
+		return jo.getAsJsonObject("info").getAsJsonPrimitive("serverTime").getAsString();
 	}
 	
 	
@@ -233,7 +245,6 @@ public class SRRHelper {
 	
 	
 	public String createPlacementData(Unit unit, boolean epic, double[] pos) {
-
 		JsonObject ret = new JsonObject();
 		ret.addProperty("raidPlacementsId", "");
 		ret.addProperty("userId", req.getUserId());
@@ -264,6 +275,7 @@ public class SRRHelper {
 		ret.addProperty("onPlanIcon", false);
 		ret.addProperty("isSpell", false);
 		ret.addProperty("stackRaidPlacementsId", "0");
+		
 		
 		return ret.toString();
 	}

@@ -38,7 +38,9 @@ public class Run {
 		try {
 			srrh.loadMap(srrh.getRaids()[index]);
 			MapConv.asGui(srrh.getMap());
-		} catch (Exception e) {}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -57,6 +59,7 @@ public class Run {
 						srrh = new SRRHelper(cookies, clientVersion);
 						runs();
 					} catch (Exception e) {
+						StreamRaiders.log("Run->setRunning", e);
 						GUI.setBackground(name+"::start", Color.red);
 						setRunning(false);
 					}
@@ -84,24 +87,21 @@ public class Run {
 					Thread.sleep(5000);
 				} catch (Exception e) {}
 			}
-				
+
 			part = "raids 1";
 			if(raids()) raids();
 			
-			
 			part = "reload store";
 			srrh.reloadStore();
-			
+
 			part = "buy store";
 			store();
-			
+
 			part = "unlock units";
 			unlock();
 			
 			part = "upgrade units";
 			upgradeUnits();
-			
-			
 			
 			if(first) {
 				first = false;
@@ -136,7 +136,8 @@ public class Run {
 				System.out.println("completed reloading srrh for " + name);
 				sleep(10);
 			} catch (Exception e1) {
-				System.err.println("failed to reload srrh for " + name);
+				System.out.println("hi");
+				StreamRaiders.log("failed to reload srrh for " + name, e1);
 				GUI.setBackground(name+"::start", Color.red);
 				setRunning(false);
 			}
@@ -229,10 +230,11 @@ public class Run {
 		Hashtable<String, String> black = MainFrame.getBlacklist(name);
 		
 		Unit[] units = srrh.getUnits(SRC.Helper.canPlaceUnit);
-		
+
 		Raid[] plra = srrh.getRaids(SRC.Helper.canPlaceUnit);
-		
+
 		Raid[] all = srrh.getRaids();
+
 		for(int i=0; i<4; i++) {
 			if(i<all.length) {
 				int wins = Integer.parseInt(all[i].get(SRC.Raid.pveWins));
@@ -268,10 +270,8 @@ public class Run {
 						break;
 					}
 					
-					
 					srrh.loadMap(plra[i]);
-					JsonObject[][] map = srrh.getMap();
-					
+					Map map = srrh.getMap();
 					
 					int[] maxheat = Heatmap.getMaxHeat(map, 5);
 					
@@ -279,18 +279,14 @@ public class Run {
 					
 					while(true) {
 						int[] pos = Heatmap.getNearest(map, maxheat, banned);
-						
+
 						String err0 = srrh.placeUnit(plra[i], unit, false, pos[0], pos[1]);
 						
 						if(err0 == null) {
 							units = remove(units, unit);
 							break;
 						}
-						try {
-							if(err0.equals("OVER_OBSTACLE")) {
-								Map.whiteObst(map[pos[0]][pos[1]].getAsJsonObject("data").getAsJsonPrimitive("ObstacleName").getAsString());
-							}
-						} catch (Exception e) {}
+						
 						
 						if(banned.length >= 5) break;
 						

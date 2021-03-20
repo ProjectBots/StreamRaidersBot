@@ -1,10 +1,30 @@
 package program;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class SRC {
 	
-	public static final SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static final SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	
+	synchronized public static Date dateParse(String in) throws ParseException {
+		return date.parse(in);
+	}
+	
+	public static class Map {
+		public static final String isPlayerRect = "isPlayerRect";
+		public static final String isEnemyRect = "isEnemyRect";
+		public static final String isHoldRect = "isHoldRect";
+		public static final String isEnemy = "isEnemy";
+		public static final String isAllied = "isAllied";
+		public static final String isObstacle = "isObstacle";
+		public static final String canFlyOver = "canFlyOver";
+		public static final String canWalkOver = "canWalkOver";
+		public static final String isEmpty = "isEmpty";
+		public static final String isOccupied = "isOccupied";
+		public static final String isEpic = "isEpic";
+	}
 
 	public static class Store {
 		public static final int all = 0;

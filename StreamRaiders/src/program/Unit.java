@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class Unit {
@@ -21,12 +22,12 @@ public class Unit {
 		return new String[][] {common, uncommon, rare, legendary};
 	}
 
-	public Unit(JsonObject unit) {
+	public Unit(JsonObject unit) throws ClassCastException {
 		this.unit = unit;
-		try {
+		JsonElement jcool = unit.get("cooldownTime");
+		if(jcool.isJsonPrimitive()) {
 			setDate(unit.getAsJsonPrimitive("cooldownTime").getAsString());
-		} catch (Exception e) {}
-		
+		}
 		String unitType = unit.getAsJsonPrimitive("unitType").getAsString();
 		
 		String[][] types = getTypes();
@@ -52,29 +53,27 @@ public class Unit {
 	public String get(String con) {
 		if(con.equals(SRC.Unit.rank)) return ""+rank;
 		
-		try {
-			return unit.getAsJsonPrimitive(con).getAsString();
-		} catch (Exception e) {
-			return null;
-		}
+		JsonElement el = unit.get(con);
+		if(el == null) return null;
+		if(!el.isJsonPrimitive()) return null;
+		return el.getAsString();
 	}
 	
 	public boolean isAvailable(String serverTime) {
 		if(cool == null) return true;
 		try {
-			return SRC.date.parse(serverTime).after(cool);
+			return SRC.dateParse(serverTime).after(cool);
 		} catch (ParseException e) {
-			System.out.println(serverTime);
-			e.printStackTrace();
+			StreamRaiders.log("Unit->isAvailable:" + serverTime, e);
 		}
 		return false;
 	}
 	
 	public void setDate(String date) {
 		try {
-			this.cool = SRC.date.parse(date);
+			this.cool = SRC.dateParse(date);
 		} catch (ParseException e) {
-			e.printStackTrace();
+			StreamRaiders.log("Unit->setDate:" + date, e);
 		}
 	}
 

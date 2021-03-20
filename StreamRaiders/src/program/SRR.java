@@ -8,7 +8,7 @@ import include.JsonParser;
 public class SRR {
 	private static boolean ver_err = false;
 	
-	private String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0";
+	private static String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0";
 	private String cookies = "";
 	
 	private String userId = null;
@@ -21,11 +21,48 @@ public class SRR {
 		return userId;
 	}
 	
-	public SRR(String cookies, String clientVersion) {
+	
+	public static String getData(String dataPath) {
+		
+		Http get = new Http();
+		get.setUrl(dataPath);
+		get.addHeader("User-Agent", userAgent);
+		
+		String ret = null;
+		try {
+			ret = get.sendGet();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return ret;
+	}
+	
+	
+	public static class OutdatedDataException extends Exception {
+		
+		private static final long serialVersionUID = 1L;
+
+		private String dataPath = null;
+		
+		public OutdatedDataException(String newDataPath) {
+			super("the datapath is outdated");
+			dataPath = newDataPath;
+		}
+		
+		public String getDataPath() {
+			return dataPath;
+		}
+	}
+	
+	
+	public SRR(String cookies, String clientVersion) throws OutdatedDataException {
 		this.cookies = cookies;
 		this.clientVersion = clientVersion;
 		
 		JsonObject raw = JsonParser.json(getUser());
+		String data = raw.getAsJsonObject("info").getAsJsonPrimitive("dataPath").getAsString();
+		if(!data.equals(StreamRaiders.get("data"))) throw new OutdatedDataException(data);
+		
 		String ver = raw.getAsJsonObject("info").getAsJsonPrimitive("version").getAsString();
 		if(!ver.equals(clientVersion)) {
 			if(!ver_err) {

@@ -42,7 +42,7 @@ public class NEF {
 			StringBuilder order = new StringBuilder();
 			
 			for(String line = br.readLine(); line != null; line = br.readLine()) {
-				if(order.length() != 0) order.append("|");
+				if(order.length() != 0) order.append("~~~");
 				if(line.equals("") || line.startsWith("##")) {
 					order.append(line);
 					continue;
@@ -67,7 +67,14 @@ public class NEF {
 		return tab;
 	}
 	
-	public static void saveOpt(String path, Hashtable<String, String> table) {
+	public static void saveOpt(String path, Hashtable<String, String> tab) {
+		
+		Hashtable<String, String> table = new Hashtable<>();
+		
+		for(String key : tab.keySet()) {
+			table.put(key, tab.get(key));
+		}
+		
 		
 		createDir(path);
 		
@@ -82,9 +89,11 @@ public class NEF {
 			
 			String[] order = new String[0];
 			try {
-				order = table.get("~order").split("\\|");
+				order = table.get("~order").split("~~~");
 				table.remove("~order");
-			} catch (Exception e) {}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			
 			
 			StringBuilder text = new StringBuilder();
@@ -95,9 +104,11 @@ public class NEF {
 						order[i] = order[i].substring(1, order[i].length() - 1);
 						text.append(order[i] + "=" + table.get(order[i]) + "\n");
 						table.remove(order[i]);
-					} catch (Exception e) {}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				} else {
-					text.append(order[i]);
+					text.append(order[i] + "\n");
 				}
 			}
 			
