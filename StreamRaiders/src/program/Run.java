@@ -34,13 +34,17 @@ public class Run {
 	
 	
 	public void showMap(int index) {
-		if(srrh == null) return;
-		try {
-			srrh.loadMap(srrh.getRaids()[index]);
-			MapConv.asGui(srrh.getMap());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				if(srrh == null) return;
+				try {
+					srrh.loadMap(srrh.getRaids()[index]);
+					MapConv.asGui(srrh.getMap());
+				} catch (Exception e) {}
+			}
+		});
+		t.start();
 	}
 	
 	

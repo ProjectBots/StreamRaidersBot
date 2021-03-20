@@ -1,6 +1,7 @@
 package program;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import include.JsonParser;
 
@@ -152,7 +153,13 @@ public class Map {
 			int x = (int) Math.round(rx / 0.8 + hw());
 			int y = (int) Math.round((ry / 0.8 - hl()) * -1 + 1);
 			
-			switch(place.getAsJsonPrimitive("team").getAsString()) {
+			JsonElement jteam = place.get("team");
+			
+			String team = "Enemy";
+			
+			if(jteam != null && jteam.isJsonPrimitive()) team = jteam.getAsString();
+			
+			switch(team) {
 			case "Ally":
 				if(place.getAsJsonPrimitive("CharacterType").getAsString().contains("epic") || place.getAsJsonPrimitive("CharacterType").getAsString().contains("captain")) {
 					set(x-1, y+1, SRC.Map.isOccupied, true);
@@ -164,6 +171,7 @@ public class Map {
 					set(x, y, SRC.Map.isEpic, true);
 				}
 				set(x, y, SRC.Map.isAllied, true);
+				set(x, y, "spec", place.getAsJsonPrimitive("specializationUid").getAsString());
 				break;
 			case "Enemy":
 				set(x, y, SRC.Map.isAllied, false);
@@ -175,7 +183,7 @@ public class Map {
 			set(x, y, "isEmpty", false);
 			set(x, y, "type", place.getAsJsonPrimitive("CharacterType").getAsString().replaceAll("[0-9]", ""));
 			set(x, y, "lvl", place.getAsJsonPrimitive("CharacterType").getAsString().replaceAll("[a-zA-Z]", ""));
-			set(x, y, "spec", place.getAsJsonPrimitive("specializationUid").getAsString());
+			
 		}
 		return map;
 	}
