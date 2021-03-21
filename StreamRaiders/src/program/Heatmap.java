@@ -7,6 +7,7 @@ public class Heatmap {
 		int ec = 0;
 		for(int x=0; x<map.width(); x++) {
 			for(int y=0; y<map.length(); y++) {
+				if(map.is(x, y, SRC.Map.isObstacle)) continue;
 				int heat = 0;
 				if(map.is(x, y, SRC.Map.isEnemy)) ec++;
 				for(int i=x-r; i<x+r; i++) {
