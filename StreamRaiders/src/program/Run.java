@@ -292,8 +292,6 @@ public class Run {
 							break;
 						}
 						
-						System.out.println(err0);
-						
 						if(banned.length >= 5) {
 							StreamRaiders.log(name + "->" + plra[i].get(SRC.Raid.twitchDisplayName) + ": Couldnt place unit", null);
 							break;
