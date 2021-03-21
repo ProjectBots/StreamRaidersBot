@@ -53,8 +53,8 @@ public class Map {
 	public Map(JsonObject mapData, JsonArray placements) {
 		float mapScale = mapData.getAsJsonPrimitive("MapScale").getAsFloat();
 		if(mapScale < 0) {
-			width = (int) (mapData.getAsJsonPrimitive("GridWidth").getAsInt()/0.8) + 10;
-			length = (int) (mapData.getAsJsonPrimitive("GridLength").getAsInt()/0.8) + 10;
+			width = (int) (mapData.getAsJsonPrimitive("GridWidth").getAsInt()/0.8) + 50;
+			length = (int) (mapData.getAsJsonPrimitive("GridLength").getAsInt()/0.8) + 50;
 		} else {
 			width = Math.round(50 * mapScale);
 			length = Math.round(40 * mapScale);

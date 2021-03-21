@@ -135,7 +135,7 @@ public class Raid {
 				String[] rew = rews.get(0).getAsString().replace("|", "_").split("_");
 				
 				if(typViewChestRews.containsKey(rew[0])) {
-					rew[1] = rew[1].replace("real", "");
+					rew[1] = rew[1].replace("real", "").replace("true", "");
 					String cont = typViewChestRews.get(rew[0]);
 					JsonElement je = ret.get(cont);
 					if(je != null) {

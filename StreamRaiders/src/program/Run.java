@@ -11,6 +11,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import include.GUI;
+import include.Pathfinding;
 import program.SRRHelper.PvPException;
 
 public class Run {
@@ -282,8 +283,8 @@ public class Run {
 					int[][] banned = new int[0][0];
 					
 					while(true) {
-						int[] pos = Heatmap.getNearest(map, maxheat, banned);
-
+						int[] pos = Pathfinding.search(MapConv.asField(map, unit.canFly(), maxheat, banned));
+						
 						String err0 = srrh.placeUnit(plra[i], unit, false, pos[0], pos[1]);
 						
 						if(err0 == null) {
@@ -291,8 +292,12 @@ public class Run {
 							break;
 						}
 						
+						System.out.println(err0);
 						
-						if(banned.length >= 5) break;
+						if(banned.length >= 5) {
+							StreamRaiders.log(name + "->" + plra[i].get(SRC.Raid.twitchDisplayName) + ": Couldnt place unit", null);
+							break;
+						}
 						
 						banned = add(banned, pos);
 					}

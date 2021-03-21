@@ -17,18 +17,23 @@ public class Unit {
 	public static final String[] uncommon = StreamRaiders.get("uncommon").split(",");
 	public static final String[] rare = StreamRaiders.get("rare").split(",");
 	public static final String[] legendary = StreamRaiders.get("legendary").split(",");
+	public static final String[] flying = StreamRaiders.get("flying").split(",");
 	
 	public static String[][] getTypes() {
 		return new String[][] {common, uncommon, rare, legendary};
 	}
 
+	public boolean canFly() {
+		return Arrays.asList(flying).indexOf(unit.getAsJsonPrimitive(SRC.Unit.unitType).getAsString()) != -1;
+	}
+	
 	public Unit(JsonObject unit) throws ClassCastException {
 		this.unit = unit;
 		JsonElement jcool = unit.get("cooldownTime");
 		if(jcool.isJsonPrimitive()) {
 			setDate(unit.getAsJsonPrimitive("cooldownTime").getAsString());
 		}
-		String unitType = unit.getAsJsonPrimitive("unitType").getAsString();
+		String unitType = unit.getAsJsonPrimitive(SRC.Unit.unitType).getAsString();
 		
 		String[][] types = getTypes();
 		for(int i=0; i<types.length; i++) {

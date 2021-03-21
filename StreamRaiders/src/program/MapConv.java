@@ -2,11 +2,48 @@ package program;
 
 
 import java.awt.Color;
+
 import include.GUI;
 import include.JsonParser;
+import include.Pathfinding.Field;
 import include.GUI.Label;
 
 public class MapConv {
+	
+	public static Field[][] asField(Map map, boolean canFly, int[] h, int[][] banned) {
+		
+		int length = map.length();
+		int width = map.width();
+		
+		Field[][] ret = new Field[width][length];
+		
+		for(int x=0; x<width; x++) {
+			loop:
+			for(int y=0; y<length; y++) {
+				ret[x][y] = new Field();
+				if(map.is(x, y, SRC.Map.isObstacle)) {
+					if(map.is(x, y, SRC.Map.canWalkOver)) continue;
+					if(canFly && map.is(x, y, SRC.Map.canFlyOver)) continue;
+					ret[x][y].setObstacle(true);
+				} else if(map.is(x, y, SRC.Map.isPlayerRect)) {
+					for(int i=-1; i<2; i++) {
+						for(int j=-1; j<2; j++) {
+							if(!map.is(x+i, y+j, SRC.Map.isEmpty)) continue loop;
+						}
+					}
+					for(int i=0; i< banned.length; i++) {
+						if(banned[i][0] == x && banned[i][1] == y) continue loop;
+					}
+					ret[x][y].setFinish(true);
+				}
+			}
+		}
+		
+		ret[h[0]][h[1]].setHome();
+		
+		return ret;
+	}
+	
 	
 	public static Map load(String map) {
 		return new Map(JsonParser.jsonArr(map));
@@ -19,7 +56,7 @@ public class MapConv {
 	
 	public static void asGui(Map map) {
 		
-		GUI gui = new GUI("Map", 600, 500);
+		GUI gui = new GUI("Map", 1000, 800);
 		
 		for(int x=0; x<map.width(); x++) {
 			for(int y=0; y<map.length(); y++) {
