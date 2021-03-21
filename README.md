@@ -27,6 +27,5 @@ specializing units
 reedemption of quest rewards  
 reedemption of event progression  
 see which chest a raid will bring  
-better unit placement (A* pathfinding, including flying units can fly over some stuff)  
 automatic update?  
 mod support?  
