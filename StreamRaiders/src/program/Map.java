@@ -33,14 +33,17 @@ public class Map {
 	}
 	
 	public JsonObject get(int x, int y) {
+		if(x >= width || y >= length || x < 0 || y < 0) return null;
 		return map.get(x).getAsJsonArray().get(y).getAsJsonObject();
 	}
 	
 	private void set(int x, int y, String key, String value) {
+		if(x >= width || y >= length || x < 0 || y < 0) return;
 		map.get(x).getAsJsonArray().get(y).getAsJsonObject().addProperty(key, value);
 	}
 	
 	private void set(int x, int y, String key, boolean value) {
+		if(x >= width || y >= length || x < 0 || y < 0) return;
 		map.get(x).getAsJsonArray().get(y).getAsJsonObject().addProperty(key, value);
 	}
 	
@@ -53,8 +56,8 @@ public class Map {
 	public Map(JsonObject mapData, JsonArray placements) {
 		float mapScale = mapData.getAsJsonPrimitive("MapScale").getAsFloat();
 		if(mapScale < 0) {
-			width = (int) (mapData.getAsJsonPrimitive("GridWidth").getAsInt()/0.8) + 50;
-			length = (int) (mapData.getAsJsonPrimitive("GridLength").getAsInt()/0.8) + 50;
+			width = (int) (mapData.getAsJsonPrimitive("GridWidth").getAsInt()/0.8);
+			length = (int) (mapData.getAsJsonPrimitive("GridLength").getAsInt()/0.8);
 		} else {
 			width = Math.round(50 * mapScale);
 			length = Math.round(40 * mapScale);

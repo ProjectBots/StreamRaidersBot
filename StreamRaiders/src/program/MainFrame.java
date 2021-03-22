@@ -481,7 +481,7 @@ public class MainFrame {
 		class Filter implements FilenameFilter {
 			@Override
 			public boolean accept(File dir, String name) {
-				if(!name.contains(".app")) return false;
+				if(!name.endsWith(".app")) return false;
 				return true;
 			}
 		}

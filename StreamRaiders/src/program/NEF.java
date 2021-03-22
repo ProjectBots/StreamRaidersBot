@@ -88,12 +88,11 @@ public class NEF {
 			
 			
 			String[] order = new String[0];
+			
 			try {
 				order = table.get("~order").split("~~~");
 				table.remove("~order");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			} catch (NullPointerException e) {}
 			
 			
 			StringBuilder text = new StringBuilder();

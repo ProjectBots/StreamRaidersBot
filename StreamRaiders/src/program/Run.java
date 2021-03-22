@@ -295,7 +295,7 @@ public class Run {
 						if(err0.equals("PERIOD_ENDED")) break;
 						
 						if(banned.length >= 5) {
-							StreamRaiders.log(name + "->" + plra[i].get(SRC.Raid.twitchDisplayName) + ": Couldnt place unit", null);
+							StreamRaiders.log(name + "->" + plra[i].get(SRC.Raid.twitchDisplayName) + ": Couldnt place unit > " + err0, null);
 							break;
 						}
 						
