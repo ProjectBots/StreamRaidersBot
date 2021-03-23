@@ -22,6 +22,7 @@ import include.GUI.Label;
 import include.GUI.TextArea;
 import include.GUI.TextField;
 import include.GUI.WinLis;
+import include.NEF;
 
 public class MainFrame {
 

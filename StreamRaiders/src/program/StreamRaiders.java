@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Hashtable;
 
+import include.NEF;
+
 public class StreamRaiders {
 	
 	private static Hashtable<String, String> opt = null;

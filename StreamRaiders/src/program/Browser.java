@@ -23,6 +23,7 @@ import org.cef.network.CefCookieManager;
 
 import include.GUI;
 import include.GUI.Label;
+import include.NEF;
 
 public class Browser extends JFrame {
 

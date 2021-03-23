@@ -5,6 +5,7 @@ import java.awt.Color;
 
 import include.GUI;
 import include.JsonParser;
+import include.NEF;
 import include.Pathfinding.Field;
 import include.GUI.Label;
 
