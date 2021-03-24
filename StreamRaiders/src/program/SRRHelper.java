@@ -17,7 +17,6 @@ public class SRRHelper {
 	private Store store = null;
 	private Map map = null;
 	
-	
 	public SRRHelper(String cookies, String clientVersion) throws OutdatedDataException {
 		try {
 			req = new SRR(cookies, clientVersion);
@@ -29,7 +28,24 @@ public class SRRHelper {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {}
 			req = new SRR(cookies, clientVersion);
+			updateUnits();
 		}
+	}
+	
+	public String reload() throws OutdatedDataException {
+		String ret = null;
+		try {
+			ret = req.reload();
+			updateUnits();
+		} catch (OutdatedDataException e1) {
+			updateDataPath(e1.getDataPath());
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {}
+			ret = req.reload();
+			updateUnits();
+		}
+		return ret;
 	}
 	
 	private void updateDataPath(String dataPath) {

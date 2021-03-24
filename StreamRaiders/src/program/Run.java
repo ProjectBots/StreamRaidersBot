@@ -11,6 +11,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import include.GUI;
+import include.Heatmap;
 import include.Pathfinding;
 import program.SRRHelper.PvPException;
 
@@ -129,19 +130,24 @@ public class Run {
 			sleep((int) Math.round(Math.random()*620) + 100);
 		} catch (Exception e) {
 			
-			StreamRaiders.log("critical error happened for " + name + " at \"" + part + "\" -> skipped this round", e);
-			
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e1) {}
 			LocalTime time = LocalTime.now();
 			System.out.println("reload srrh for " + name + " at " + time.getHour() + ":" + time.getMinute());
 			try {
-				srrh = new SRRHelper(cookies, clientVersion);
+				Thread.sleep(1000);
+			} catch (InterruptedException e1) {}
+			
+			try {
+				String ver = srrh.reload();
+				
 				System.out.println("completed reloading srrh for " + name);
+				if(ver != null) {
+					System.out.println("client outdated: " + ver);
+				} else {
+					StreamRaiders.log("critical error happened for " + name + " at \"" + part + "\" -> skipped this round", e);
+				}
+				
 				sleep(10);
 			} catch (Exception e1) {
-				System.out.println("hi");
 				StreamRaiders.log("failed to reload srrh for " + name, e1);
 				GUI.setBackground(name+"::start", Color.red);
 				setRunning(false);
@@ -214,10 +220,14 @@ public class Run {
 		}
 	}
 	
+	
 	private void upgradeUnits() {
+		
+		Hashtable<String, String> black = MainFrame.getBlacklist(name);
+		
 		Unit[] us = srrh.getUnits(SRC.Helper.canUpgradeUnit);
 		for(int i=0; i<us.length; i++) {
-			String err = srrh.upgradeUnit(us[i], null);
+			String err = srrh.upgradeUnit(us[i], black.get("uid_" + us[i].get(SRC.Unit.unitType)));
 			if(err != null) {
 				if(!(err.equals("no specUID") || err.equals("cant upgrade unit"))) {
 					System.out.println(name + " -> u lvl err: " + err);

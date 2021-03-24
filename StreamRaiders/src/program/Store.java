@@ -105,6 +105,7 @@ public class Store {
 		
 		if(lvl.equals("19") || lvl.equals("29")) {
 			if(specUID == null) return "no specUID";
+			if(specUID.equals("null")) return "no specUID";
 			ret = JsonParser.json(req.specializeUnit(unit.get(SRC.Unit.unitType), lvl, unit.get(SRC.Unit.unitId), specUID));
 		} else {
 			ret = JsonParser.json(req.upgradeUnit(unit.get(SRC.Unit.unitType), lvl, unit.get(SRC.Unit.unitId)));
@@ -117,14 +118,6 @@ public class Store {
 		} else {
 			return err.getAsString();
 		}
-		/*
-		try {
-			return ret.getAsJsonPrimitive("errorMessage").getAsString();
-		} catch (ClassCastException e) {
-			currency.put("gold", currency.get("gold") - cost);
-			return null;
-		}
-		*/
 	}
 	
 	
@@ -147,25 +140,6 @@ public class Store {
 		return null;
 		
 		
-		/*
-		try {
-			if(!canUnlockUnit(type)) return "not enough gold";
-
-			String text = req.unlockUnit(type);
-			if(text == null) return "critical request error";
-			
-			JsonObject res = JsonParser.json(text);
-			
-			try {
-				price = res.getAsJsonObject("data").getAsJsonPrimitive("goldCharged").getAsInt();
-			} catch (Exception e) {}
-			
-			return res.getAsJsonPrimitive("errorMessage").getAsString();
-		} catch (ClassCastException e) {
-			currency.put("gold", currency.get("gold") - price);
-			return null;
-		}
-		*/
 	}
 	
 	public Unit[] getUpgradeableUnits(Unit[] units) {
@@ -175,6 +149,7 @@ public class Store {
 			if(slvl == null) continue;
 			
 			int lvl = Integer.parseInt(slvl);
+			if(lvl == 30) continue;
 			
 			String type = units[i].get(SRC.Unit.unitType);
 			if(type == null) continue;

@@ -1,4 +1,7 @@
-package program;
+package include;
+
+import program.Map;
+import program.SRC;
 
 public class Heatmap {
 

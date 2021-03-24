@@ -820,6 +820,7 @@ public class GUI{
 	//	Button
 	public static class Button extends Label {
 		private ActionListener al = null;
+		private Container pane = null;
 		
 		public ActionListener getAl() {
 			return al;
@@ -828,10 +829,25 @@ public class GUI{
 		public void setAL(ActionListener al) {
 			this.al = al;
 		}
+
+		public Container getContainer() {
+			return pane;
+		}
+
+		public void setContainer(Container pane) {
+			this.pane = pane;
+		}
 	}
 	
 	public void addBut(Button opt, String id) {
-		JButton but = new JButton(opt.getText());
+		Container pane = opt.getContainer();
+		JButton but;
+		if(pane != null) {
+			but = new JButton();
+			but.add(asContainer(pane));
+		} else {
+			but = new JButton(opt.getText());
+		}
 		ActionListener al = opt.getAl();
 		if(al != null) {
 			but.addActionListener(al);
@@ -1703,7 +1719,6 @@ public class GUI{
 
 
 		public void setBorder(Color col, int thickness, int radius) {
-			//b = BorderFactory.createLineBorder(col, thickness, true);
 			b = new RoundedBorder(col, thickness, radius);
 		}
 		
@@ -1717,7 +1732,7 @@ public class GUI{
 		
 	}
 	
-	public void addContainer(Container opt, String id) {
+	private JPanel addContainer(Container opt, String id, boolean add) {
 		//	creates new GUI class without a window
 		GUI con = new GUI(true);
 		
@@ -1794,7 +1809,7 @@ public class GUI{
 		Container[] cons = opt.getContainers();
 		ids = opt.getIdContainers();
 		for(int i=0; i<cons.length; i++) {
-			con.addContainer(cons[i], ids[i]);
+			con.addContainer(cons[i], ids[i], true);
 		}
 		
 		JPanel pane = con.getPane();
@@ -1802,14 +1817,32 @@ public class GUI{
 		if(b != null) {
 			pane.setBorder(b);
 		}
+		con.close();
 		
+		if(add) {
+			//	get pane from con and add it as Container
+			addObj(opt, pane, id);
+			return null;
+		} else {
+			pane.setOpaque(false);
+			return pane;
+		}
 		
-		//	get pane from con and add it as Container
-		addObj(opt, pane, id);
+	}
+	
+	public void addContainer(Container opt, String id) {
+		addContainer(opt, id, true);
 	}
 	
 	public void addContainer(Container opt) {
-		addContainer(opt, null);
+		addContainer(opt, null, true);
+	}
+	
+	public static JPanel asContainer(Container opt) {
+		GUI gui = new GUI(true);
+		JPanel pane = gui.addContainer(opt, null, false);
+		gui.close();
+		return pane;
 	}
 	
 	

@@ -58,7 +58,10 @@ public class SRR {
 	public SRR(String cookies, String clientVersion) throws OutdatedDataException {
 		this.cookies = cookies;
 		this.clientVersion = clientVersion;
-		
+		reload();
+	}
+	
+	public String reload() throws OutdatedDataException {
 		JsonObject raw = JsonParser.json(getUser());
 		String data = raw.getAsJsonObject("info").getAsJsonPrimitive("dataPath").getAsString();
 		if(!data.equals(StreamRaiders.get("data"))) throw new OutdatedDataException(data);
@@ -73,8 +76,10 @@ public class SRR {
 			this.clientVersion = ver;
 			raw = JsonParser.json(getUser());
 			constructor(raw);
+			return ver;
 		} else {
 			constructor(raw);
+			return null;
 		}
 	}
 	
