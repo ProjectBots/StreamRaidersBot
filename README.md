@@ -17,7 +17,7 @@ you can skip the wait by pressing the next button.
 the Map buttons will show the current map.  
 the option button in the top left will open a new menu where you can delete all profiles.  
 the trashcan will delete the dedicated profile.  
-the option buttons in the profile section will open a menu where you can whitelist units.  
+the option buttons in the profile section will open a menu where you can whitelist units (and choose a specialization if you want).  
 
 
 //TODO:  
