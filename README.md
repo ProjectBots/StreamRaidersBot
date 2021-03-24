@@ -23,7 +23,6 @@ the option buttons in the profile section will open a menu where you can whiteli
 //TODO:  
 more options to cutomise (buying, unlocking, upgrading and specializing units)  
 much more options to customise (preferred Units, captains, chests)  
-specializing units  
 reedemption of quest rewards  
 reedemption of event progression  
 see which chest a raid will bring  
