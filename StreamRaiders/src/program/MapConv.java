@@ -27,14 +27,14 @@ public class MapConv {
 					if(canFly && map.is(x, y, SRC.Map.canFlyOver)) continue;
 					ret[x][y].setObstacle(true);
 				} else if(map.is(x, y, SRC.Map.isPlayerRect)) {
+					for(int i=0; i< banned.length; i++) {
+						if(banned[i][0] == x && banned[i][1] == y) continue loop;
+					}
 					if(!map.is(x, y, SRC.Map.isEmpty)) continue;
 					for(int i=-1; i<2; i++) {
 						for(int j=-1; j<2; j++) {
 							if(map.is(x+i, y+j, SRC.Map.isEnemy)) continue loop;
 						}
-					}
-					for(int i=0; i< banned.length; i++) {
-						if(banned[i][0] == x && banned[i][1] == y) continue loop;
 					}
 					ret[x][y].setFinish(true);
 				}

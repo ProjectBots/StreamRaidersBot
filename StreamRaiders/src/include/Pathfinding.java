@@ -64,23 +64,40 @@ public class Pathfinding {
 		int width = map.length;
 		int height = map[0].length;
 		
+		int x, y, min, ox, oy, omin;
+		
 		while(true) {
 			
-			int x = -1;
-			int y = -1;
-			int min = Integer.MAX_VALUE;
+			x = -1;
+			y = -1;
+			min = Integer.MAX_VALUE;
+			
+			ox = -1;
+			oy = -1;
+			omin = Integer.MAX_VALUE;
 			
 			for(int i=0; i<width; i++) {
 				for(int j=0; j<height; j++) {
 					if(map[i][j].isExplored) continue;
-					if(map[i][j].isObstacle) continue;
 					
-					if(min > map[i][j].getCost()) {
+					int cost = map[i][j].getCost();
+					
+					if(map[i][j].isObstacle && min == Integer.MAX_VALUE && omin > cost) {
+						ox = i;
+						oy = j;
+						omin = cost;
+					} else if(min > cost) {
 						x = i;
 						y = j;
-						min = map[i][j].getCost();
+						min = cost;
 					}
 				}
+			}
+			
+			if(min == Integer.MAX_VALUE) {
+				x = ox;
+				y = oy;
+				min = omin;
 			}
 			
 			map[x][y].explore();
