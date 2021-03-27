@@ -131,10 +131,12 @@ public class Run {
 		} catch (Exception e) {
 			
 			LocalTime time = LocalTime.now();
-			System.out.println("reload srrh for " + name + " at " + time.getHour() + ":" + time.getMinute());
+			System.out.println("reload srrh in 20 sec for " + name + " at " + time.getHour() + ":" + time.getMinute());
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(20000);
 			} catch (InterruptedException e1) {}
+			
+			System.out.println("started reload for " + name);
 			
 			try {
 				String ver = srrh.reload();
@@ -293,7 +295,14 @@ public class Run {
 					int[][] banned = new int[0][0];
 					
 					while(true) {
-						int[] pos = Pathfinding.search(MapConv.asField(map, unit.canFly(), maxheat, banned));
+						int[] pos = null;
+						try {
+							pos = Pathfinding.search(MapConv.asField(map, unit.canFly(), maxheat, banned));
+						} catch (ArrayIndexOutOfBoundsException e) {
+							StreamRaiders.log("Run->Pathfinding_error: maxheat=" + maxheat, e);
+							break;
+						}
+						
 						
 						String err0 = srrh.placeUnit(plra[i], unit, false, pos[0], pos[1]);
 						

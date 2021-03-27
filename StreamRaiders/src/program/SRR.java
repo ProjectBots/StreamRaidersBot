@@ -62,6 +62,9 @@ public class SRR {
 	}
 	
 	public String reload() throws OutdatedDataException {
+		userId = null;
+		gameDataVersion = "";
+		isCaptain = "";
 		JsonObject raw = JsonParser.json(getUser());
 		String data = raw.getAsJsonObject("info").getAsJsonPrimitive("dataPath").getAsString();
 		if(!data.equals(StreamRaiders.get("data"))) throw new OutdatedDataException(data);
