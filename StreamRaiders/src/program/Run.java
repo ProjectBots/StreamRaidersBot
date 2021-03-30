@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -225,13 +226,15 @@ public class Run {
 		}
 	}
 	
+	private List<String> potionsTiers = Arrays.asList("5,11,14,22,29".split(","));
+	
 	private void collectEvent() {
 		srrh.updateEvent();
 		
 		boolean bp = srrh.hasBattlePass();
 		int tier = srrh.getEventTier();
-		
 		for(int i=1; i<tier; i++) {
+			if(potionsTiers.contains(""+i)) continue;
 			String err = srrh.collectEvent(i, false);
 			if(err != null && !err.equals("cant collect")) {
 				StreamRaiders.log("Run->collectEvent: basic, err:" + err, null);
