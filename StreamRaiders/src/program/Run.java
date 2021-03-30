@@ -102,6 +102,9 @@ public class Run {
 			part = "raids 1";
 			if(raids()) raids();
 			
+			part = "collectEvent";
+			collectEvent();
+			
 			part = "reload store";
 			srrh.reloadStore();
 
@@ -167,10 +170,6 @@ public class Run {
 		}
 	}
 	
-	
-
-
-
 	private int time = 0;
 	
 	private void sleep(int sec) {
@@ -205,6 +204,26 @@ public class Run {
 		}, 0, 1000);
 	}
 	
+	
+	private void collectEvent() {
+		srrh.updateEvent();
+		
+		boolean bp = srrh.hasBattlePass();
+		int tier = srrh.getEventTier();
+		
+		for(int i=1; i<tier; i++) {
+			String err = srrh.collectEvent(i, false);
+			if(err != null && !err.equals("cant collect")) {
+				StreamRaiders.log("Run->collectEvent: basic, err:" + err, null);
+			}
+			if(!bp) continue;
+			
+			err = srrh.collectEvent(i, true);
+			if(err != null && !err.equals("cant collect")) {
+				StreamRaiders.log("collectEvent: pass, err:" + err, null);
+			}
+		}
+	}
 	
 	private void unlock() {
 		Unit[] unlockable = srrh.getUnits(SRC.Helper.canUnlockUnit);

@@ -100,9 +100,11 @@ public class SRR {
 	}
 	
 	
-	
-
 	public Http getPost(String cn) {
+		return getPost(cn, true);
+	}
+
+	public Http getPost(String cn, boolean addUser) {
 		Http post = new Http();
 		
 		post.addHeader("User-Agent", userAgent);
@@ -111,7 +113,7 @@ public class SRR {
 		post.setUrl("https://www.streamraiders.com/api/game/");
 		post.addUrlArg("cn", cn);
 		
-		if(userId != null) {
+		if(userId != null && addUser) {
 			post.addEncArg("userId", userId);
 			post.addEncArg("isCaptain", isCaptain);
 		}
@@ -272,7 +274,9 @@ public class SRR {
 	
 	
 	public String getUserEventProgression() {
-		Http post = getPost("getUserEventProgression");
+		Http post = getPost("getUserEventProgression", false);
+		post.addEncArg("userId", "");
+		post.addEncArg("isCaptain", isCaptain);
 		
 		String text = null;
 		try {

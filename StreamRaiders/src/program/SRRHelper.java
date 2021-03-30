@@ -17,6 +17,7 @@ public class SRRHelper {
 	private Raid[] raids = new Raid[0];
 	private Store store = null;
 	private Map map = null;
+	private QuestEventRewards qer = new QuestEventRewards();
 	
 	public SRRHelper(String cookies, String clientVersion) throws OutdatedDataException, NoInternetException {
 		try {
@@ -58,6 +59,23 @@ public class SRRHelper {
 
 	public SRR getSRR() {
 		return req;
+	}
+	
+	
+	public void updateEvent() {
+		qer.updateEvent(req);
+	}
+	
+	public int getEventTier() {
+		return qer.getEventTier();
+	}
+	
+	public boolean hasBattlePass() {
+		return qer.hasBattlePass();
+	}
+	
+	public String collectEvent(int p, boolean battlePass) {
+		return qer.collectEvent(p, battlePass, req);
 	}
 	
 	public String placeUnit(Raid raid, Unit unit, boolean epic, int x, int y) {
