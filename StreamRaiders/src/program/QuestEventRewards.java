@@ -1,8 +1,10 @@
 package program;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import include.JsonParser;
+import program.QuestEventRewards.Quest.NoQuestException;
 
 public class QuestEventRewards {
 	
@@ -11,6 +13,9 @@ public class QuestEventRewards {
 	private int tier = 0;
 	private String currentEvent = null;
 	
+	private JsonObject questTypes = null;
+	private Quest[] quests = null;
+	
 	public int getEventTier() {
 		return tier;
 	}
@@ -18,6 +23,79 @@ public class QuestEventRewards {
 	public boolean hasBattlePass() {
 		return hasBattlePass;
 	}
+	
+	
+	public class Quest {
+		
+		public class NoQuestException extends Exception {
+			private static final long serialVersionUID = 1L;
+		}
+		
+		private JsonObject quest = null;
+		private int progress = 0;
+		private String slot = null;
+		
+		public Quest(JsonObject rQuest) throws NoQuestException {
+			JsonElement id = rQuest.get("currentQuestId");
+			if(!id.isJsonPrimitive()) throw new NoQuestException();
+			
+			quest = questTypes.getAsJsonObject(id.getAsString());
+			progress = rQuest.getAsJsonPrimitive("currentProgress").getAsInt();
+			slot = rQuest.getAsJsonPrimitive("questSlotId").getAsString();
+		}
+		
+		public boolean canClaim() {
+			return progress >= quest.getAsJsonPrimitive("GoalAmount").getAsInt();
+		}
+		
+		public String getSlot() {
+			return slot;
+		}
+		
+		public String claim(SRR req) {
+			JsonElement err = JsonParser.json(req.collectQuestReward(slot)).get("errorMessage");
+			if(err.isJsonPrimitive()) return err.getAsString();
+			return null;
+		}
+		
+		public String neededUnit() {
+			String u = quest.getAsJsonPrimitive("UnitTypeRequirement").getAsString();
+			if(!u.equals("")) return u;
+			return null;
+		}
+	}
+	
+	public String[] getNeededUnitTypesForQuests() {
+		String[] ret = new String[0];
+		for(int i=0; i<quests.length; i++) {
+			String type = quests[i].neededUnit();
+			if(type != null) ret = add(ret, type);
+		}
+		return ret;
+	}
+	
+	
+	public void updateQuests(SRR req) {
+		questTypes = JsonParser.json(StreamRaiders.get("quests"));
+		
+		JsonArray raw = JsonParser.json(req.getUserQuests()).getAsJsonArray("data");
+		quests = new Quest[0];
+		
+		for(int i=0; i<raw.size(); i++) {
+			try {
+				quests = add(quests, new Quest(raw.get(i).getAsJsonObject()));
+			} catch (NoQuestException e) {}
+		}
+	}
+	
+	public Quest[] getClaimableQuests() {
+		Quest[] ret = new Quest[0];
+		for(int i=0; i<quests.length; i++) 
+			if(quests[i].canClaim()) 
+				ret = add(ret, quests[i]);
+		return ret;
+	}
+	
 	
 	
 	public void updateEvent(SRR req) {
@@ -79,6 +157,20 @@ public class QuestEventRewards {
 		if(err.isJsonPrimitive()) return err.getAsString();
 		
 		return null;
+	}
+	
+	private Quest[] add(Quest[] arr, Quest item) {
+		Quest[] arr2 = new Quest[arr.length + 1];
+		System.arraycopy(arr, 0, arr2, 0, arr.length);
+		arr2[arr.length] = item;
+		return arr2;
+	}
+	
+	private String[] add(String[] arr, String item) {
+		String[] arr2 = new String[arr.length + 1];
+		System.arraycopy(arr, 0, arr2, 0, arr.length);
+		arr2[arr.length] = item;
+		return arr2;
 	}
 	
 }

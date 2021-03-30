@@ -2,6 +2,7 @@ package program;
 
 import java.awt.Color;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Timer;
@@ -13,6 +14,7 @@ import com.google.gson.JsonObject;
 import include.GUI;
 import include.Heatmap;
 import include.Pathfinding;
+import program.QuestEventRewards.Quest;
 import program.SRR.NoInternetException;
 import program.SRRHelper.PvPException;
 
@@ -105,6 +107,9 @@ public class Run {
 			part = "collectEvent";
 			collectEvent();
 			
+			part = "claimQuests";
+			claimQuests();
+			
 			part = "reload store";
 			srrh.reloadStore();
 
@@ -170,6 +175,7 @@ public class Run {
 		}
 	}
 	
+
 	private int time = 0;
 	
 	private void sleep(int sec) {
@@ -204,6 +210,20 @@ public class Run {
 		}, 0, 1000);
 	}
 	
+	private String[] neededUnits = new String[0];
+
+	private void claimQuests() {
+		srrh.updateQuests();
+		
+		neededUnits = srrh.getNeededUnitTypesForQuests();
+		
+		Quest[] quests = srrh.getClaimableQuests();
+		
+		for(int i=0; i<quests.length; i++) {
+			String err = srrh.claimQuest(quests[i]);
+			if(err != null) StreamRaiders.log("Run->claimQuests: err=" + err, null);
+		}
+	}
 	
 	private void collectEvent() {
 		srrh.updateEvent();
@@ -301,6 +321,10 @@ public class Run {
 					
 					Unit unit = null;
 					for(int j=0; j<units.length; j++) {
+						if(Arrays.asList(neededUnits).contains(units[j].get(SRC.Unit.unitType))) {
+							unit = units[j];
+							break;
+						}
 						if(Boolean.parseBoolean(black.get(units[j].get(SRC.Unit.unitType)))) continue;
 						if(unit == null) {
 							unit = units[j];

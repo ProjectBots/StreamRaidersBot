@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.JsonParser;
+import program.QuestEventRewards.Quest;
 import program.SRR.NoInternetException;
 import program.SRR.OutdatedDataException;
 
@@ -51,8 +52,9 @@ public class SRRHelper {
 	}
 	
 	private void updateDataPath(String dataPath) {
-		JsonObject data = JsonParser.json(SRR.getData(dataPath));
-		StreamRaiders.set("obstacles", data.getAsJsonObject("sheets").getAsJsonObject("Obstacles").toString());
+		JsonObject data = JsonParser.json(SRR.getData(dataPath)).getAsJsonObject("sheets");
+		StreamRaiders.set("obstacles", data.getAsJsonObject("Obstacles").toString());
+		StreamRaiders.set("quests", data.getAsJsonObject("Quests").toString());
 		StreamRaiders.set("data", dataPath);
 		StreamRaiders.save();
 	}
@@ -61,6 +63,22 @@ public class SRRHelper {
 		return req;
 	}
 	
+	
+	public void updateQuests() {
+		qer.updateQuests(req);
+	}
+	
+	public Quest[] getClaimableQuests() {
+		return qer.getClaimableQuests();
+	}
+	
+	public String claimQuest(Quest quest) {
+		return quest.claim(req);
+	}
+	
+	public String[] getNeededUnitTypesForQuests() {
+		return qer.getNeededUnitTypesForQuests();
+	}
 	
 	public void updateEvent() {
 		qer.updateEvent(req);
