@@ -484,12 +484,13 @@ public class MainFrame {
 								
 								
 								for(int i=0; i<3; i++) {
-									final String u = uids.get(i).getAsString();
+									final String u = uids.get(i).getAsJsonObject().getAsJsonPrimitive("uid").getAsString();
+									final String uName = uids.get(i).getAsJsonObject().getAsJsonPrimitive("name").getAsString();
 									final int ii = i;
 									Button uid = new Button();
 									uid.setPos(0, i);
-									uid.setText(uids.get(i).getAsString());
-									if(old.equals(uids.get(i).getAsString())) uid.setBackground(Color.green);
+									uid.setText(uName);
+									if(old.equals(u)) uid.setBackground(Color.green);
 									uid.setFill('h');
 									uid.setAL(new ActionListener() {
 										@Override
