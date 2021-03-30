@@ -1,4 +1,4 @@
-botVersion=2.0.4
+botVersion=2.1.0
 clientVersion=0.149.8
 
 ## unit types
