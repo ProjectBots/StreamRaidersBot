@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 import include.GUI;
 import include.Heatmap;
 import include.Pathfinding;
+import program.SRR.NoInternetException;
 import program.SRRHelper.PvPException;
 
 public class Run {
@@ -64,6 +65,10 @@ public class Run {
 					try {
 						srrh = new SRRHelper(cookies, clientVersion);
 						runs();
+					} catch (NoInternetException e) {
+						StreamRaiders.log(name + ": Maybe your internet connection failed", e, true);
+						GUI.setBackground(name+"::start", Color.red);
+						setRunning(false);
 					} catch (Exception e) {
 						StreamRaiders.log("Run->setRunning", e);
 						GUI.setBackground(name+"::start", Color.red);
@@ -149,6 +154,10 @@ public class Run {
 				}
 				
 				sleep(10);
+			} catch (NoInternetException e2) {
+				StreamRaiders.log(name + ": Maybe your internet connection failed", e, true);
+				GUI.setBackground(name+"::start", Color.red);
+				setRunning(false);
 			} catch (Exception e1) {
 				StreamRaiders.log("failed to reload srrh for " + name, e1);
 				GUI.setBackground(name+"::start", Color.red);

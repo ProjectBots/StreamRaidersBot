@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.JsonParser;
+import program.SRR.NoInternetException;
 import program.SRR.OutdatedDataException;
 
 public class SRRHelper {
@@ -17,7 +18,7 @@ public class SRRHelper {
 	private Store store = null;
 	private Map map = null;
 	
-	public SRRHelper(String cookies, String clientVersion) throws OutdatedDataException {
+	public SRRHelper(String cookies, String clientVersion) throws OutdatedDataException, NoInternetException {
 		try {
 			req = new SRR(cookies, clientVersion);
 			updateUnits();
@@ -32,7 +33,7 @@ public class SRRHelper {
 		}
 	}
 	
-	public String reload() throws OutdatedDataException {
+	public String reload() throws OutdatedDataException, NoInternetException {
 		String ret = null;
 		try {
 			ret = req.reload();

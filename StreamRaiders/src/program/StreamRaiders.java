@@ -23,7 +23,11 @@ public class StreamRaiders {
 		NEF.saveOpt("data/opt.app", opt);
 	}
 	
-	synchronized public static void log(String text, Exception e) {
+	public static void log(String text, Exception e) {
+		log(text, e, false);
+	}
+	
+	synchronized public static void log(String text, Exception e, boolean silent) {
 		if(e != null) {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
@@ -35,7 +39,7 @@ public class StreamRaiders {
 				NEF.log("logs.app", sw.toString());
 			}
 			
-			System.err.println(sw.toString());
+			if(!silent) System.err.println(sw.toString());
 		} else {
 			System.err.println(text);
 			NEF.log("logs.app", text);

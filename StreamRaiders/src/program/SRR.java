@@ -1,5 +1,7 @@
 package program;
 
+import java.net.UnknownHostException;
+
 import com.google.gson.JsonObject;
 
 import include.Http;
@@ -54,14 +56,18 @@ public class SRR {
 		}
 	}
 	
+	public static class NoInternetException extends Exception {
+		private static final long serialVersionUID = 1L;
+	}
 	
-	public SRR(String cookies, String clientVersion) throws OutdatedDataException {
+	
+	public SRR(String cookies, String clientVersion) throws OutdatedDataException, NoInternetException {
 		this.cookies = cookies;
 		this.clientVersion = clientVersion;
 		reload();
 	}
 	
-	public String reload() throws OutdatedDataException {
+	public String reload() throws OutdatedDataException, NoInternetException {
 		userId = null;
 		gameDataVersion = "";
 		isCaptain = "";
@@ -118,13 +124,15 @@ public class SRR {
 	}
 	
 	
-	private String getUser() {
+	private String getUser() throws NoInternetException {
 		Http post = getPost("getUser");
 		post.addEncArg("skipDateCheck", "true");
 		
 		String text = null;
 		try {
 			text = post.sendUrlEncoded();
+		} catch (UnknownHostException e) {
+			throw new NoInternetException();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
