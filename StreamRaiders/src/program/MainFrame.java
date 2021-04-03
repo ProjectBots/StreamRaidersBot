@@ -263,18 +263,6 @@ public class MainFrame {
 				}
 			}
 			
-			/*
-			for(int i=0; i<types.length-1; i++) {
-				for(int j=0; j<types[i].length; j++) {
-					def.put(types[i][j], "false");
-					def.put("uid_" + types[i][j], "null");
-				}
-			}
-			for(int i=0; i<types[types.length-1].length; i++) {
-				def.put(types[types.length-1][i], "true");
-				def.put("uid_" + types[types.length-1][i], "null");
-			}
-			*/
 			blacks.put(name, def);
 		}
 		
@@ -536,99 +524,7 @@ public class MainFrame {
 					
 					units.addContainer(unit);
 				}
-				/*
-				for(int i=0; i<types.length; i++) {
-					for(int j=0; j<types[i].length; j++) {
-						
-						final String type = types[i][j];
-						
-						Container unit = new Container();
-						unit.setPos(j, i);
-						
-						Container cimg = new Container();
-						Image img = new Image("data/UnitPics/" + type + ".gif");
-						img.setSquare(100);
-						cimg.addImage(img);
-						
-						Button c = new Button();
-						c.setPos(0, 0);
-						c.setContainer(cimg);
-						c.setFill('h');
-						if(Boolean.parseBoolean(black.get(type))) {
-							c.setBackground(Color.green);
-						} else {
-							c.setBackground(GUI.getDefButCol());
-						}
-						
-						c.setAL(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								if(Boolean.parseBoolean(black.get(type))) {
-									blacks.get(name).put(type, "false");
-									GUI.setBackground(name + "::" + type, GUI.getDefButCol());
-								} else {
-									blacks.get(name).put(type, "true");
-									GUI.setBackground(name + "::" + type, Color.green);
-								}
-							}
-						});
-						unit.addBut(c, name + "::" + type);
-						
-						Button spec = new Button();
-						spec.setPos(0, 1);
-						spec.setText("\u23E3 specialize");
-						spec.setFont(new Font(null, Font.PLAIN, 19));
-						spec.setFill('h');
-						spec.setAL(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								final JsonArray uids = JsonParser.json(StreamRaiders.get("specUIDs")).getAsJsonArray(type);
-								
-								String old = blacks.get(name).get("uid_" + type);
-								
-								GUI gspec = new GUI("specialize " + type, 400, 300);
-								
-								
-								for(int i=0; i<3; i++) {
-									final String u = uids.get(i).getAsJsonObject().getAsJsonPrimitive("uid").getAsString();
-									final String uName = uids.get(i).getAsJsonObject().getAsJsonPrimitive("name").getAsString();
-									final int ii = i;
-									Button uid = new Button();
-									uid.setPos(0, i);
-									uid.setText(uName);
-									if(old.equals(u)) uid.setBackground(Color.green);
-									uid.setFill('h');
-									uid.setAL(new ActionListener() {
-										@Override
-										public void actionPerformed(ActionEvent e) {
-											if(blacks.get(name).get("uid_" + type).equals(u)) {
-												blacks.get(name).put("uid_" + type, "null");
-												GUI.setBackground(name + "::spec::" + type + "::" + ii, GUI.getDefButCol());
-											} else {
-												blacks.get(name).put("uid_" + type, u);
-												GUI.setBackground(name + "::spec::" + type + "::" + ii, Color.green);
-												GUI.setBackground(name + "::spec::" + type + "::" + ((ii+1)%3), GUI.getDefButCol());
-												GUI.setBackground(name + "::spec::" + type + "::" + ((ii+2)%3), GUI.getDefButCol());
-											}
-										}
-									});
-									gspec.addBut(uid, name + "::spec::" + type + "::" + i);
-								}
-								
-							}
-						});
-						unit.addBut(spec);
-						
-						Label space = new Label();
-						space.setPos(0, 2);
-						space.setText("");
-						space.setSize(1, 20);
-						unit.addLabel(space);
-						
-						units.addContainer(unit);
-					}
-				}
-				*/
+				
 				gui.addContainer(units);
 			}
 		});

@@ -84,24 +84,7 @@ public class Store {
 				}
 			}
 		}
-		/*
-		for(int i=0; i<allTypes.length; i++) {
-			for(int j=0; j<allTypes[i].length; j++) {
-				String type = allTypes[i][j];
-				if(lGotTypes.indexOf(type) == -1) {
-					int scrolls = Integer.parseInt((Arrays.asList(legendary).indexOf(type) == -1 
-							? nLevelCost
-							: lLevelCost)[0].split(",")[1]);
-					
-					Integer gotScrolls = currency.get(type.replace("allies", ""));
-					if(gotScrolls == null) continue;
-					if(scrolls <= gotScrolls.intValue()) {
-						ret = add(ret, Unit.createTypeOnly(type));
-					}
-				}
-			}
-		}
-		*/
+		
 		return ret;
 	}
 	

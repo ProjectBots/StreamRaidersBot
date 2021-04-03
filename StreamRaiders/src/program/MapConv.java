@@ -17,6 +17,8 @@ import include.GUI.Label;
 
 public class MapConv {
 	
+	private static boolean found = false;
+	
 	public static Field[][] asField(Map map, boolean canFly, JsonArray allowedPlanTypes,  int[] h, int[][] banned) {
 		
 		int length = map.length();
@@ -24,7 +26,7 @@ public class MapConv {
 		
 		Field[][] ret = new Field[width][length];
 		
-		boolean found = false;
+		found = false;
 		
 		for(int x=0; x<width; x++) {
 			for(int y=0; y<length; y++) {
@@ -37,7 +39,19 @@ public class MapConv {
 					ret[x][y].setObstacle(true);
 				} else if(allowedPlanTypes.contains(new JsonPrimitive(pt))) {
 					setFin(ret, map, x, y, banned);
-					found = true;
+				}
+			}
+		}
+		
+		if(!found) {
+			for(int x=0; x<width; x++) {
+				for(int y=0; y<length; y++) {
+					if(map.is(x, y, SRC.Map.isPlayerRect)) {
+						String pt = map.getPlanType(x, y);
+						if(pt != null && !pt.equals("noPlacement")) {
+							setFin(ret, map, x, y, banned);
+						}
+					}
 				}
 			}
 		}
@@ -65,6 +79,7 @@ public class MapConv {
 				if(map.is(x+i, y+j, SRC.Map.isEnemy)) return;
 		
 		ret[x][y].setFinish(true);
+		found = true;
 		
 		return;
 	}
