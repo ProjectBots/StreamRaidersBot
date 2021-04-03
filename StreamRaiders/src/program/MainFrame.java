@@ -251,8 +251,19 @@ public class MainFrame {
 		} catch (Exception e) {
 			Hashtable<String, String> def = new Hashtable<>();
 			
-			String[][] types = Unit.getTypes();
+			JsonObject types = Unit.getTypes();
 			
+			for(String type : types.keySet()) {
+				if(types.getAsJsonObject(type).getAsJsonPrimitive("rank").getAsInt() != 4) {
+					def.put(type, "true");
+					def.put("uid_" + type, "null");
+				} else {
+					def.put(type, "false");
+					def.put("uid_" + type, "null");
+				}
+			}
+			
+			/*
 			for(int i=0; i<types.length-1; i++) {
 				for(int j=0; j<types[i].length; j++) {
 					def.put(types[i][j], "false");
@@ -263,6 +274,7 @@ public class MainFrame {
 				def.put(types[types.length-1][i], "true");
 				def.put("uid_" + types[types.length-1][i], "null");
 			}
+			*/
 			blacks.put(name, def);
 		}
 		
@@ -348,9 +360,7 @@ public class MainFrame {
 			name1.setText(""+(i+1));
 			name1.setPos(2, i);
 			part.addLabel(name1, name+"::name::"+i);
-		}
-		
-		for(int i=0; i<4; i++) {
+			
 			final int ii = i;
 			Button map = new Button();
 			map.setPos(3, i);
@@ -425,12 +435,108 @@ public class MainFrame {
 			public void actionPerformed(ActionEvent e) {
 				GUI gui = new GUI("Profile Settings", 900, 800);
 				
-				String[][] types = Unit.getTypes();
+				JsonObject types = Unit.getTypes();
 				Hashtable<String, String> black = blacks.get(name);
 				
 				Container units = new Container();
 				units.setPos(0, 0);
 				
+				int x = 0;
+				int y = 1;
+				for(final String type : types.keySet()) {
+					
+					int rank = types.getAsJsonObject(type).getAsJsonPrimitive("rank").getAsInt();
+					if(rank != y) {
+						y = rank;
+						x = 0;
+					}
+					
+					Container unit = new Container();
+					unit.setPos(x++, y);
+					
+					Container cimg = new Container();
+					Image img = new Image("data/UnitPics/" + type + ".gif");
+					img.setSquare(100);
+					cimg.addImage(img);
+					
+					Button c = new Button();
+					c.setPos(0, 0);
+					c.setContainer(cimg);
+					c.setFill('h');
+					if(Boolean.parseBoolean(black.get(type))) {
+						c.setBackground(Color.green);
+					} else {
+						c.setBackground(GUI.getDefButCol());
+					}
+					
+					c.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							if(Boolean.parseBoolean(black.get(type))) {
+								blacks.get(name).put(type, "false");
+								GUI.setBackground(name + "::" + type, GUI.getDefButCol());
+							} else {
+								blacks.get(name).put(type, "true");
+								GUI.setBackground(name + "::" + type, Color.green);
+							}
+						}
+					});
+					unit.addBut(c, name + "::" + type);
+					
+					Button spec = new Button();
+					spec.setPos(0, 1);
+					spec.setText("\u23E3 specialize");
+					spec.setFont(new Font(null, Font.PLAIN, 19));
+					spec.setFill('h');
+					spec.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							final JsonArray uids = JsonParser.json(StreamRaiders.get("specUIDs")).getAsJsonArray(type);
+							
+							String old = blacks.get(name).get("uid_" + type);
+							
+							GUI gspec = new GUI("specialize " + type, 400, 300);
+							
+							
+							for(int i=0; i<3; i++) {
+								final String u = uids.get(i).getAsJsonObject().getAsJsonPrimitive("uid").getAsString();
+								final String uName = uids.get(i).getAsJsonObject().getAsJsonPrimitive("name").getAsString();
+								final int ii = i;
+								Button uid = new Button();
+								uid.setPos(0, i);
+								uid.setText(uName);
+								if(old.equals(u)) uid.setBackground(Color.green);
+								uid.setFill('h');
+								uid.setAL(new ActionListener() {
+									@Override
+									public void actionPerformed(ActionEvent e) {
+										if(blacks.get(name).get("uid_" + type).equals(u)) {
+											blacks.get(name).put("uid_" + type, "null");
+											GUI.setBackground(name + "::spec::" + type + "::" + ii, GUI.getDefButCol());
+										} else {
+											blacks.get(name).put("uid_" + type, u);
+											GUI.setBackground(name + "::spec::" + type + "::" + ii, Color.green);
+											GUI.setBackground(name + "::spec::" + type + "::" + ((ii+1)%3), GUI.getDefButCol());
+											GUI.setBackground(name + "::spec::" + type + "::" + ((ii+2)%3), GUI.getDefButCol());
+										}
+									}
+								});
+								gspec.addBut(uid, name + "::spec::" + type + "::" + i);
+							}
+							
+						}
+					});
+					unit.addBut(spec);
+					
+					Label space = new Label();
+					space.setPos(0, 2);
+					space.setText("");
+					space.setSize(1, 20);
+					unit.addLabel(space);
+					
+					units.addContainer(unit);
+				}
+				/*
 				for(int i=0; i<types.length; i++) {
 					for(int j=0; j<types[i].length; j++) {
 						
@@ -448,7 +554,7 @@ public class MainFrame {
 						c.setPos(0, 0);
 						c.setContainer(cimg);
 						c.setFill('h');
-						if(!Boolean.parseBoolean(black.get(type))) {
+						if(Boolean.parseBoolean(black.get(type))) {
 							c.setBackground(Color.green);
 						} else {
 							c.setBackground(GUI.getDefButCol());
@@ -459,10 +565,10 @@ public class MainFrame {
 							public void actionPerformed(ActionEvent e) {
 								if(Boolean.parseBoolean(black.get(type))) {
 									blacks.get(name).put(type, "false");
-									GUI.setBackground(name + "::" + type, Color.green);
+									GUI.setBackground(name + "::" + type, GUI.getDefButCol());
 								} else {
 									blacks.get(name).put(type, "true");
-									GUI.setBackground(name + "::" + type, GUI.getDefButCol());
+									GUI.setBackground(name + "::" + type, Color.green);
 								}
 							}
 						});
@@ -522,7 +628,7 @@ public class MainFrame {
 						units.addContainer(unit);
 					}
 				}
-				
+				*/
 				gui.addContainer(units);
 			}
 		});

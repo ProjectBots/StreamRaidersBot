@@ -14,7 +14,6 @@ public class Store {
 
 	private static final String[] nLevelCost = StreamRaiders.get("nlevelcost").split("\\|");
 	private static final String[] lLevelCost = StreamRaiders.get("llevelcost").split("\\|");
-	private static final String[] legendary = StreamRaiders.get("legendary").split(",");
 	
 	private JsonArray shopItems = new JsonArray();
 	private Hashtable<String, Integer> currency = new Hashtable<>();
@@ -42,7 +41,7 @@ public class Store {
 		
 		String type = unit.get(SRC.Unit.unitType);
 		
-		String[] cost = (Arrays.asList(legendary).indexOf(type) == -1 ? nLevelCost[lvl] : lLevelCost[lvl]).split(",");
+		String[] cost = (Unit.isLegendary(type) ? lLevelCost[lvl] : nLevelCost[lvl]).split(",");
 		
 		if(currency.get("gold") < Integer.parseInt(cost[0])) return false;
 		if(currency.get(type.replace("allies", "")) < Integer.parseInt(cost[1])) return false;
@@ -51,7 +50,7 @@ public class Store {
 	}
 	
 	public boolean canUnlockUnit(String type) {
-		String[] cost = (Arrays.asList(legendary).indexOf(type) == -1 ? nLevelCost[0] : lLevelCost[0]).split(",");
+		String[] cost = (Unit.isLegendary(type) ? lLevelCost[0] : nLevelCost[0]).split(",");
 		
 		if(currency.get("gold") < Integer.parseInt(cost[0])) return false;
 		if(currency.get(type.replace("allies", "")) < Integer.parseInt(cost[1])) return false;
@@ -62,7 +61,7 @@ public class Store {
 	
 	public Unit[] getUnlockableUnits(Unit[] units) {
 		
-		String[][] allTypes = Unit.getTypes();
+		JsonObject allTypes = Unit.getTypes();
 		
 		String[] gotTypes = new String[0];
 		
@@ -74,6 +73,18 @@ public class Store {
 		
 		Unit[] ret = new Unit[0];
 		
+		for(String type : allTypes.keySet()) {
+			if(lGotTypes.indexOf(type) == -1) {
+				int scrolls = Integer.parseInt((Unit.isLegendary(type) ? lLevelCost : nLevelCost)[0].split(",")[1]);
+				
+				Integer gotScrolls = currency.get(type.replace("allies", ""));
+				if(gotScrolls == null) continue;
+				if(scrolls <= gotScrolls.intValue()) {
+					ret = add(ret, Unit.createTypeOnly(type));
+				}
+			}
+		}
+		/*
 		for(int i=0; i<allTypes.length; i++) {
 			for(int j=0; j<allTypes[i].length; j++) {
 				String type = allTypes[i][j];
@@ -90,6 +101,7 @@ public class Store {
 				}
 			}
 		}
+		*/
 		return ret;
 	}
 	
@@ -98,9 +110,9 @@ public class Store {
 		String lvl = unit.get(SRC.Unit.level);
 		JsonObject ret;
 		int cost = Integer.parseInt(
-				(Arrays.asList(legendary).indexOf(unit.get(SRC.Unit.unitType)) == -1 
-					? nLevelCost[Integer.parseInt(lvl)] 
-					: lLevelCost[Integer.parseInt(lvl)]
+				(Unit.isLegendary(unit.get(SRC.Unit.unitType))
+					? lLevelCost[Integer.parseInt(lvl)] 
+					: nLevelCost[Integer.parseInt(lvl)]
 				).split(",")[0]);
 		
 		if(lvl.equals("19") || lvl.equals("29")) {
@@ -153,10 +165,7 @@ public class Store {
 			
 			String type = units[i].get(SRC.Unit.unitType);
 			if(type == null) continue;
-			int cost = Integer.parseInt((Arrays.asList(legendary).indexOf(type) == -1 
-					? nLevelCost[lvl] 
-					: lLevelCost[lvl])
-				.split(",")[1]);
+			int cost = Integer.parseInt((Unit.isLegendary(type) ? lLevelCost[lvl] : nLevelCost[lvl]).split(",")[1]);
 			
 			int got = currency.get(type.replace("allies", ""));
 			

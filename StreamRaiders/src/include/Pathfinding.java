@@ -68,6 +68,8 @@ public class Pathfinding {
 		
 		while(true) {
 			
+			boolean stuck = true;
+			
 			x = -1;
 			y = -1;
 			min = Integer.MAX_VALUE;
@@ -79,6 +81,8 @@ public class Pathfinding {
 			for(int i=0; i<width; i++) {
 				for(int j=0; j<height; j++) {
 					if(map[i][j].isExplored) continue;
+					
+					stuck = false;
 					
 					int cost = map[i][j].getCost();
 					
@@ -93,6 +97,8 @@ public class Pathfinding {
 					}
 				}
 			}
+			
+			if(stuck) return null;
 			
 			if(min == Integer.MAX_VALUE) {
 				x = ox;

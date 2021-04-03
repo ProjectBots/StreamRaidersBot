@@ -24,6 +24,7 @@ public class SRC {
 		public static final String isEmpty = "isEmpty";
 		public static final String isOccupied = "isOccupied";
 		public static final String isEpic = "isEpic";
+		public static final String isPlayer = "isPlayer";
 	}
 
 	public static class Store {

@@ -1,30 +1,40 @@
 package program;
 
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.Date;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
+import include.JsonParser;
 
 public class Unit {
 
 	private JsonObject unit = null;
 	private Date cool = null;
 	private int rank = 0;
+	private JsonArray ptags = null;
 	
-	public static final String[] common = StreamRaiders.get("common").split(",");
-	public static final String[] uncommon = StreamRaiders.get("uncommon").split(",");
-	public static final String[] rare = StreamRaiders.get("rare").split(",");
-	public static final String[] legendary = StreamRaiders.get("legendary").split(",");
-	public static final String[] flying = StreamRaiders.get("flying").split(",");
+	public static final JsonObject uTypes = JsonParser.json(StreamRaiders.get("unitTypes"));
 	
-	public static String[][] getTypes() {
-		return new String[][] {common, uncommon, rare, legendary};
+	public static JsonArray getAllPlanTypes() {
+		return uTypes.getAsJsonArray("allTypes").deepCopy();
 	}
-
+	
+	public static JsonObject getTypes() {
+		JsonObject ret = uTypes.deepCopy();
+		ret.remove("allTypes");
+		return ret;
+	}
+	
 	public boolean canFly() {
-		return Arrays.asList(flying).indexOf(unit.getAsJsonPrimitive(SRC.Unit.unitType).getAsString()) != -1;
+		return uTypes.getAsJsonObject(this.get(SRC.Unit.unitType)).getAsJsonPrimitive("canFly").getAsBoolean();
+	}
+	
+	public static boolean isLegendary(String type) {
+		return uTypes.getAsJsonObject(type).getAsJsonPrimitive("rank").getAsInt() == 4;
 	}
 	
 	public Unit(JsonObject unit) throws ClassCastException {
@@ -33,16 +43,11 @@ public class Unit {
 		if(jcool.isJsonPrimitive()) {
 			setDate(unit.getAsJsonPrimitive("cooldownTime").getAsString());
 		}
-		String unitType = unit.getAsJsonPrimitive(SRC.Unit.unitType).getAsString();
 		
-		String[][] types = getTypes();
-		for(int i=0; i<types.length; i++) {
-			if(Arrays.asList(types[i]).indexOf(unitType) != -1) {
-				rank = i+1;
-				return;
-			}
-		}
-		System.err.println("Invalid Unit Type: " + unitType);
+		JsonObject uType = uTypes.getAsJsonObject(unit.getAsJsonPrimitive(SRC.Unit.unitType).getAsString());
+		
+		rank = uType.getAsJsonPrimitive("rank").getAsInt();
+		ptags = uType.getAsJsonArray("role");
 	}
 	
 	private Unit(String unitType) {
@@ -69,16 +74,24 @@ public class Unit {
 		try {
 			return SRC.dateParse(serverTime).after(cool);
 		} catch (ParseException e) {
-			StreamRaiders.log("Unit->isAvailable:" + serverTime, e);
+			StreamRaiders.log("Unit -> isAvailable: st=" + serverTime, e);
 		}
 		return false;
+	}
+	
+	public boolean hasPlanType(String tag) {
+		return ptags.contains(new JsonPrimitive(tag));
+	}
+	
+	public JsonArray getPlanTypes() {
+		return ptags;
 	}
 	
 	public void setDate(String date) {
 		try {
 			this.cool = SRC.dateParse(date);
 		} catch (ParseException e) {
-			StreamRaiders.log("Unit->setDate:" + date, e);
+			StreamRaiders.log("Unit -> setDate: date=" + date, e);
 		}
 	}
 

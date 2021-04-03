@@ -11,6 +11,9 @@ import program.SRR.OutdatedDataException;
 
 public class SRRHelper {
 
+	public String getRaidPlan(int index) {
+		return req.getRaidPlan(req.getRaidPlan(raids[index].get(SRC.Raid.raidId)));
+	}
 	
 	
 	private SRR req = null;
@@ -96,9 +99,9 @@ public class SRRHelper {
 		return qer.collectEvent(p, battlePass, req);
 	}
 	
-	public String placeUnit(Raid raid, Unit unit, boolean epic, int x, int y) {
+	public String placeUnit(Raid raid, Unit unit, boolean epic, int[] pos, boolean onPlanIcon) {
 		JsonElement je = JsonParser.json(req.addToRaid(raid.get(SRC.Raid.raidId),
-					createPlacementData(unit, epic, map.getAsSRCoords(new int[] {x, y}))))
+					createPlacementData(unit, epic, map.getAsSRCoords(pos), onPlanIcon)))
 				.get("errorMessage");
 		
 		if(je.isJsonPrimitive()) return je.getAsString();
@@ -122,7 +125,10 @@ public class SRRHelper {
 	
 	public void loadMap(Raid raid) throws PvPException {
 		if(raid.get(SRC.Raid.nodeId).contains("pvp")) throw new PvPException();
-		map = new Map(JsonParser.json(req.getMapData(raid.get(SRC.Raid.battleground))), JsonParser.jsonArr(raid.get(SRC.Raid.placementsSerialized)));
+		JsonElement je = JsonParser.json(req.getRaidPlan(raid.get(SRC.Raid.raidId))).get("data");
+		map = new Map(JsonParser.json(req.getMapData(raid.get(SRC.Raid.battleground))),
+				JsonParser.jsonArr(raid.get(SRC.Raid.placementsSerialized)),
+				(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null));
 	}
 	
 	public boolean testPos(boolean epic, int x, int y) {
@@ -297,7 +303,7 @@ public class SRRHelper {
 	}
 	
 	
-	public String createPlacementData(Unit unit, boolean epic, double[] pos) {
+	public String createPlacementData(Unit unit, boolean epic, double[] pos, boolean onPlanIcon) {
 		JsonObject ret = new JsonObject();
 		ret.addProperty("raidPlacementsId", "");
 		ret.addProperty("userId", req.getUserId());
@@ -325,7 +331,7 @@ public class SRRHelper {
 		}
 		
 		ret.addProperty("team", "Ally");
-		ret.addProperty("onPlanIcon", false);
+		ret.addProperty("onPlanIcon", onPlanIcon);
 		ret.addProperty("isSpell", false);
 		ret.addProperty("stackRaidPlacementsId", "0");
 		

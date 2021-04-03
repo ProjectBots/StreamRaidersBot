@@ -3,6 +3,7 @@ package include;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class JsonParser {
@@ -15,12 +16,8 @@ public class JsonParser {
 		return new Gson().fromJson(json, JsonArray.class);
 	}
 	
-	public static String prettyJson(JsonObject jo) {
-		return new GsonBuilder().setPrettyPrinting().create().toJson(jo);
-	}
-	
-	public static String prettyJson(JsonArray ja) {
-		return new GsonBuilder().setPrettyPrinting().create().toJson(ja);
+	public static String prettyJson(JsonElement json) {
+		return new GsonBuilder().setPrettyPrinting().create().toJson(json);
 	}
 	
 }

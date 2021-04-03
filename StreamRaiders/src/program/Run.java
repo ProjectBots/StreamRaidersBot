@@ -11,6 +11,7 @@ import java.util.TimerTask;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import include.GUI;
 import include.Heatmap;
@@ -46,8 +47,9 @@ public class Run {
 				if(srrh == null) return;
 				try {
 					srrh.loadMap(srrh.getRaids()[index]);
-					MapConv.asGui(srrh.getMap());
-				} catch (Exception e) {}
+					Map map = srrh.getMap();
+					MapConv.asGui(map);
+				} catch (PvPException e) {}
 			}
 		});
 		t.start();
@@ -67,13 +69,14 @@ public class Run {
 				public void run() {
 					try {
 						srrh = new SRRHelper(cookies, clientVersion);
+						isReloading = false;
 						runs();
 					} catch (NoInternetException e) {
-						StreamRaiders.log(name + ": Maybe your internet connection failed", e, true);
+						StreamRaiders.log(name + ": Run -> Maybe your internet connection failed", e, true);
 						GUI.setBackground(name+"::start", Color.red);
 						setRunning(false);
 					} catch (Exception e) {
-						StreamRaiders.log("Run->setRunning", e);
+						StreamRaiders.log(name + ": Run -> setRunning", e);
 						GUI.setBackground(name+"::start", Color.red);
 						setRunning(false);
 					}
@@ -143,37 +146,76 @@ public class Run {
 			
 			sleep((int) Math.round(Math.random()*620) + 100);
 		} catch (Exception e) {
-			
-			LocalTime time = LocalTime.now();
-			System.out.println("reload srrh in 20 sec for " + name + " at " + time.getHour() + ":" + time.getMinute());
-			try {
-				Thread.sleep(20000);
-			} catch (InterruptedException e1) {}
-			
-			System.out.println("started reload for " + name);
-			
-			try {
-				String ver = srrh.reload();
+			reload(20, part, e);
+		}
+	}
+	
+	private boolean isReloading = false;
+	
+	private void reload(int sec, String part, Exception e) {
+
+		LocalTime lt = LocalTime.now();
+		System.out.println("reload srrh in 20 sec for " + name + " at " + lt.getHour() + ":" + lt.getMinute());
+		GUI.setBackground(name+"::start", Color.yellow);
+		
+		time = sec;
+		Timer t = new Timer();
+		t.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				int min = (int) Math.floor(time / 60);
+				int sec = time % 60;
 				
-				System.out.println("completed reloading srrh for " + name);
-				if(ver != null) {
-					System.out.println("client outdated: " + ver);
-				} else {
-					StreamRaiders.log("critical error happened for " + name + " at \"" + part + "\" -> skipped this round", e);
+				String smin = "";
+				String ssec = ""+sec;
+				if(min != 0) {
+					smin = min+":";
+					if(sec < 10) {
+						ssec = "0"+sec;
+					}
 				}
 				
-				sleep(10);
-			} catch (NoInternetException e2) {
-				StreamRaiders.log(name + ": Maybe your internet connection failed", e, true);
-				GUI.setBackground(name+"::start", Color.red);
-				setRunning(false);
-			} catch (Exception e1) {
-				StreamRaiders.log("failed to reload srrh for " + name, e1);
-				GUI.setBackground(name+"::start", Color.red);
-				setRunning(false);
+				GUI.setText(name + "::counter", "Reload in " + smin + ssec);
+				
+				if(time <= 0) {
+					t.cancel();
+					System.out.println("started reload for " + name);
+					
+					try {
+						String ver = srrh.reload();
+						
+						System.out.println("completed reloading srrh for " + name);
+						if(ver != null) {
+							System.out.println("client outdated: " + ver);
+						} else {
+							StreamRaiders.log("critical error happened for " + name + " at \"" + part + "\" -> skipped this round", e);
+						}
+						
+						GUI.setBackground(name+"::start", Color.green);
+						sleep(10);
+					} catch (NoInternetException e2) {
+						StreamRaiders.log(name + ": Run -> Maybe your internet connection failed", e2, true);
+						GUI.setBackground(name+"::start", Color.red);
+						setRunning(false);
+					} catch (Exception e1) {
+						StreamRaiders.log("failed to reload srrh for " + name, e1);
+						
+						if(isReloading) {
+							GUI.setBackground(name+"::start", Color.red);
+							setRunning(false);
+						} else {
+							StreamRaiders.log("critical error happened for " + name + " at \"" + part + "\" -> try to reload again", e);
+							isReloading = true;
+							reload(15*60, part, e);
+						}
+					}
+				}
+				
+				if(!isRunning()) t.cancel();
+				
+				time--;
 			}
-			
-		}
+		}, 0, 1000);
 	}
 	
 
@@ -222,7 +264,7 @@ public class Run {
 		
 		for(int i=0; i<quests.length; i++) {
 			String err = srrh.claimQuest(quests[i]);
-			if(err != null) StreamRaiders.log("Run->claimQuests: err=" + err, null);
+			if(err != null) StreamRaiders.log(name + ": Run -> claimQuests: err=" + err, null);
 		}
 	}
 	
@@ -237,13 +279,13 @@ public class Run {
 			if(potionsTiers.contains(""+i)) continue;
 			String err = srrh.collectEvent(i, false);
 			if(err != null && !err.equals("cant collect")) {
-				StreamRaiders.log("Run->collectEvent: basic, err:" + err, null);
+				StreamRaiders.log(name + ": Run -> collectEvent -> basic: err=" + err, null);
 			}
 			if(!bp) continue;
 			
 			err = srrh.collectEvent(i, true);
 			if(err != null && !err.equals("cant collect")) {
-				StreamRaiders.log("collectEvent: pass, err:" + err, null);
+				StreamRaiders.log(name + ": Run -> collectEvent -> pass: err=" + err, null);
 			}
 		}
 	}
@@ -253,10 +295,8 @@ public class Run {
 		
 		for(int i=0; i<unlockable.length; i++) {
 			String err = srrh.unlockUnit(unlockable[i]);
-			if(err != null) {
-				if(err.equals("not enough gold")) continue;
-				System.err.println(err);
-			}
+			if(err != null && !err.equals("not enough gold"))
+				StreamRaiders.log(name + ": Run -> unlock: type=" + unlockable[i].get(SRC.Unit.unitType) + ", err=" + err, null);
 		}
 	}
 	
@@ -266,10 +306,8 @@ public class Run {
 		JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
 		for(int i=0; i<items.size(); i++) {
 			String err = srrh.buyItem(items.get(i).getAsJsonObject());
-			if(err != null) {
-				if(!(err.equals("not enough gold")))
-				System.err.println(name + " -> couldnt buy " + items.get(i) + " because " + err);
-			}
+			if(err != null && !err.equals("not enough gold"))
+				StreamRaiders.log(name + ": Run -> store: item=" + items.get(i) + ", err=" + err, null);
 		}
 	}
 	
@@ -283,7 +321,7 @@ public class Run {
 			String err = srrh.upgradeUnit(us[i], black.get("uid_" + us[i].get(SRC.Unit.unitType)));
 			if(err != null) {
 				if(!(err.equals("no specUID") || err.equals("cant upgrade unit"))) {
-					System.out.println(name + " -> u lvl err: " + err);
+					StreamRaiders.log(name + ": Run -> upgradeUnits: type=" + us[i].get(SRC.Unit.unitType) + " err=" + err, null);
 					break;
 				}
 			}
@@ -315,66 +353,63 @@ public class Run {
 		}
 		
 		if(plra.length != 0) {
-			
 			for(int i=0; i<plra.length; i++) {
 				try {
 					if(units.length == 0) {
 						break;
 					}
 					
-					Unit unit = null;
-					for(int j=0; j<units.length; j++) {
-						if(Arrays.asList(neededUnits).contains(units[j].get(SRC.Unit.unitType))) {
-							unit = units[j];
-							break;
-						}
-						if(Boolean.parseBoolean(black.get(units[j].get(SRC.Unit.unitType)))) continue;
-						if(unit == null) {
-							unit = units[j];
-						} else {
-							int rank = Integer.parseInt(units[j].get(SRC.Unit.rank));
-							if(rank > Integer.parseInt(unit.get(SRC.Unit.rank))) {
-								unit = units[j];
-							}
-						}
-					}
-					if(unit == null) {
-						break;
-					}
-					
 					srrh.loadMap(plra[i]);
 					Map map = srrh.getMap();
 					
-					int[] maxheat = Heatmap.getMaxHeat(map, 5);
+					JsonArray ppt = map.getPresentPlanTypes();
 					
+					boolean apt = !(ppt.size() == 0);
+					
+					int[] maxheat = Heatmap.getMaxHeat(map, 5);
 					int[][] banned = new int[0][0];
 					
+					loop:
 					while(true) {
-						int[] pos = null;
-						try {
-							pos = Pathfinding.search(MapConv.asField(map, unit.canFly(), maxheat, banned));
-						} catch (ArrayIndexOutOfBoundsException e) {
-							StreamRaiders.log("Run->Pathfinding_error: maxheat=" + maxheat, e);
-							break;
+						fpt = null;
+						Unit unit = findUnit(units, apt, ppt, black);
+						if(unit == null) unit = findUnit(units, false, ppt, black);
+						if(unit == null) break;
+						JsonArray allowedPlanTypes = new JsonArray();
+						allowedPlanTypes.add(fpt);
+						
+						while(true) {
+							int[] pos = null;
+							try {
+								pos = Pathfinding.search(MapConv.asField(map, unit.canFly(), allowedPlanTypes, maxheat, banned));
+							} catch (ArrayIndexOutOfBoundsException e) {
+								StreamRaiders.log(name + ": Run -> raids -> pathfinding: maxheat=" + maxheat + ", allowedPlanTypes=" + allowedPlanTypes.toString(), e);
+								break;
+							}
+							
+							if(pos == null) {
+								ppt.remove(new JsonPrimitive(fpt));
+								continue loop;
+							}
+							
+							String err = srrh.placeUnit(plra[i], unit, false, pos, fpt != null);
+							
+							if(err == null) {
+								units = remove(units, unit);
+								break loop;
+							}
+							
+							if(err.equals("PERIOD_ENDED") || err.equals("AT_POPULATION_LIMIT")) break loop;
+							
+							if(banned.length >= 5) {
+								StreamRaiders.log(name + ": Run -> raids -> unitPlacement: tdn=" + plra[i].get(SRC.Raid.twitchDisplayName) + ", err=" + err, null);
+								break loop;
+							}
+							
+							banned = add(banned, pos);
 						}
-						
-						
-						String err0 = srrh.placeUnit(plra[i], unit, false, pos[0], pos[1]);
-						
-						if(err0 == null) {
-							units = remove(units, unit);
-							break;
-						}
-						
-						if(err0.equals("PERIOD_ENDED")) break;
-						
-						if(banned.length >= 5) {
-							StreamRaiders.log(name + "->" + plra[i].get(SRC.Raid.twitchDisplayName) + ": Couldnt place unit > " + err0, null);
-							break;
-						}
-						
-						banned = add(banned, pos);
 					}
+					
 				} catch (PvPException e) {
 					System.out.println(name + ": " + plra[i].get(SRC.Raid.twitchDisplayName)
 							+ " changed to pvp -> switched to "
@@ -385,6 +420,40 @@ public class Run {
 			}
 		}
 		return ret;
+	}
+	
+	private String fpt = null;
+	
+	private Unit findUnit(Unit[] units, boolean apt, JsonArray ppt, Hashtable<String, String> black) {
+		Unit unit = null;
+		for(int j=0; j<units.length; j++) {
+			String tfpt = null;
+			if(apt) {
+				JsonArray pts = units[j].getPlanTypes();
+				for(int k=0; k<pts.size(); k++) {
+					String pt = pts.get(k).getAsString();
+					if(ppt.contains(new JsonPrimitive(pt))) tfpt = pt;
+				}
+				if(tfpt == null) continue;
+			}
+			
+			if(Arrays.asList(neededUnits).contains(units[j].get(SRC.Unit.unitType))) {
+				unit = units[j];
+				break;
+			}
+			if(!Boolean.parseBoolean(black.get(units[j].get(SRC.Unit.unitType)))) continue;
+			if(unit == null) {
+				unit = units[j];
+				fpt = tfpt;
+			} else {
+				int rank = Integer.parseInt(units[j].get(SRC.Unit.rank));
+				if(rank > Integer.parseInt(unit.get(SRC.Unit.rank))) {
+					unit = units[j];
+					fpt = tfpt;
+				}
+			}
+		}
+		return unit;
 	}
 	
 	private JsonObject rews = new JsonObject();

@@ -54,7 +54,7 @@ public class Raid {
 				return true;
 			}
 		} catch (ParseException e) {
-			StreamRaiders.log("Raid->isOffline: st=" + serverTime + ", cd=" + get(SRC.Raid.creationDate), e);
+			StreamRaiders.log("Raid -> isOffline: st=" + serverTime + ", cd=" + get(SRC.Raid.creationDate), e);
 		}
 		
 		return false;
@@ -121,10 +121,8 @@ public class Raid {
 				} else {
 					ret.addProperty(s[2], Integer.parseInt(s[1]));
 				}
-			} else {
-				if(!ibonus.equals("")) {
-					System.err.println("Bonus " + bonus);
-				}
+			} else if(!ibonus.equals("")) {
+				StreamRaiders.log("Raid -> getChest: bonus=" + bonus, null);
 			}
 		}
 		
@@ -154,7 +152,7 @@ public class Raid {
 					} else if(rew[0].contains("skin")) {
 						ret.addProperty(rew[0], 1);
 					} else {
-						StreamRaiders.log("Raid->getChest: " + String.join(", ", rew), null);
+						StreamRaiders.log("Raid -> getChest: rew=" + String.join(", ", rew), null);
 					}
 				}
 				rews.remove(0);

@@ -53,14 +53,14 @@ public class Map {
 		length = map.get(0).getAsJsonArray().size();
 	}
 	
-	public Map(JsonObject mapData, JsonArray placements) {
+	public Map(JsonObject mapData, JsonArray placements, JsonObject plan) {
 		float mapScale = mapData.getAsJsonPrimitive("MapScale").getAsFloat();
 		if(mapScale < 0) {
-			width = (int) (mapData.getAsJsonPrimitive("GridWidth").getAsInt()/0.8);
-			length = (int) (mapData.getAsJsonPrimitive("GridLength").getAsInt()/0.8);
+			width = (int) (mapData.getAsJsonPrimitive("GridWidth").getAsInt());
+			length = (int) (mapData.getAsJsonPrimitive("GridLength").getAsInt());
 		} else {
-			width = Math.round(50 * mapScale);
-			length = Math.round(40 * mapScale);
+			width = (int) Math.round(41 * mapScale);
+			length = (int) Math.round(29 * mapScale);
 		}
 		
 		map = new JsonArray();
@@ -74,7 +74,7 @@ public class Map {
 			}
 		}
 		
-		updateMap(mapData, placements);
+		updateMap(mapData, placements, plan);
 	}
 	
 	public boolean testPos(boolean epic, int[] coords) {
@@ -100,12 +100,12 @@ public class Map {
 
 	public double[] getAsSRCoords(int[] coords) {
 		double x = ((double) coords[0] - hw()) * 0.8;
-		double y = ((double) coords[1] - 1 - hl()) * -0.8;
+		double y = ((double) coords[1] - hl()) * -0.8;
 		
 		return new double[] {x, y};
 	}
 	
-	public void updateMap(JsonObject mapData, JsonArray placements) {
+	public void updateMap(JsonObject mapData, JsonArray placements, JsonObject plan) {
 		map = addRects(map, mapData.getAsJsonArray("PlayerPlacementRects"), SRC.Map.isPlayerRect);
 		map = addRects(map, mapData.getAsJsonArray("EnemyPlacementRects"), SRC.Map.isEnemyRect);
 		map = addRects(map, mapData.getAsJsonArray("HoldingZoneRects"), SRC.Map.isHoldRect);
@@ -114,14 +114,26 @@ public class Map {
 		map = addEntity(map, mapData.getAsJsonArray("PlacementData"));
 		map = addObstacle(map, mapData.getAsJsonArray("ObstaclePlacementData"));
 		
+		if(plan == null) return;
+		map = addPlan(map, plan);
 	}
 	
+	private JsonArray addPlan(JsonArray map, JsonObject plan) {
+		for(String key : plan.keySet()) {
+			JsonArray pd = plan.getAsJsonArray(key);
+			for(int i=0; i<pd.size(); i+=2) {
+				set(pd.get(i).getAsInt(), pd.get(i+1).getAsInt(), "plan", key);
+			}
+		}
+		return map;
+	}
+
 	private JsonArray addObstacle(JsonArray map, JsonArray places) {
 		for(int i=0; i<places.size(); i++) {
 			JsonObject place = places.get(i).getAsJsonObject();
 			
 			int x = (int) Math.round(place.getAsJsonPrimitive("X").getAsDouble() / 0.8 + hw());
-			int y = (int) Math.round((place.getAsJsonPrimitive("Y").getAsDouble() / 0.8 - hl()) * -1 + 1);
+			int y = (int) Math.round((place.getAsJsonPrimitive("Y").getAsDouble() / 0.8 - hl()) * -1);
 			
 			String name = place.getAsJsonPrimitive("ObstacleName").getAsString();
 			
@@ -154,7 +166,7 @@ public class Map {
 			
 			
 			int x = (int) Math.round(rx / 0.8 + hw());
-			int y = (int) Math.round((ry / 0.8 - hl()) * -1 + 1);
+			int y = (int) Math.round((ry / 0.8 - hl()) * -1);
 			
 			JsonElement jteam = place.get("team");
 			
@@ -175,12 +187,14 @@ public class Map {
 				}
 				set(x, y, SRC.Map.isAllied, true);
 				set(x, y, "spec", place.getAsJsonPrimitive("specializationUid").getAsString());
+				set(x, y, "userId", place.getAsJsonPrimitive("userId").getAsString());
+				
 				break;
 			case "Enemy":
 				set(x, y, SRC.Map.isAllied, false);
 				break;
 			default:
-				StreamRaiders.log("Map->addEntity: team=" + place.getAsJsonPrimitive("team").getAsString(), null);
+				StreamRaiders.log("Map -> addEntity: team=" + place.getAsJsonPrimitive("team").getAsString(), null);
 			}
 			set(x, y, "isEntity", true);
 			set(x, y, "isEmpty", false);
@@ -197,7 +211,7 @@ public class Map {
 			JsonObject rect = rects.get(i).getAsJsonObject();
 			
 			int x = (int) Math.round(rect.getAsJsonPrimitive("x").getAsDouble() / 0.8 + hw() + 0.5);
-			int y = (int) Math.round((rect.getAsJsonPrimitive("y").getAsDouble() / 0.8 - hl()) * -1 + 0.5);
+			int y = (int) Math.round((rect.getAsJsonPrimitive("y").getAsDouble() / 0.8 - hl()) * -1 - 0.5);
 			int w = (int) Math.round(rect.getAsJsonPrimitive("width").getAsDouble() / 0.8 - 1);
 			int h = (int) Math.round(rect.getAsJsonPrimitive("height").getAsDouble() / 0.8 - 1);
 			
@@ -255,10 +269,40 @@ public class Map {
 		case SRC.Map.isEpic:
 			if(!place.has(con)) return false;
 			break;
+		case SRC.Map.isPlayer:
+			if(!place.has("userId")) return false;
+			return !place.getAsJsonPrimitive("userId").getAsString().equals("");
 		default:
 			return false;
 		}
 		return place.getAsJsonPrimitive(con).getAsBoolean();
+	}
+	
+	public String getPlanType(int x, int y) {
+		JsonElement je = get(x, y).get("plan");
+		if(je != null && je.isJsonPrimitive()) {
+			return je.getAsString();
+		} else {
+			return null;
+		}
+	}
+	
+	public JsonArray getPresentPlanTypes() {
+		JsonArray ret = new JsonArray();
+		for(int x=0; x<width; x++) {
+			for(int y=0; y<length; y++) {
+				JsonElement je = get(x, y).get("plan");
+				if(je != null && je.isJsonPrimitive())
+					ret.add(je.getAsString());
+				
+			}
+		}
+		return ret;
+	}
+	
+	public boolean plan(Unit u) {
+		
+		return false;
 	}
 	
 	
