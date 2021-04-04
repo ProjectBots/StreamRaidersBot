@@ -19,7 +19,47 @@ the option button in the top left will open a new menu where you can delete all 
 the trashcan will delete the dedicated profile.  
 the option buttons in the profile section will open a menu where you can whitelist units (and choose a specialization if you want).  
 
+average income for letting the bot do what it does (11 hours) (without quest and event rewards):  
 
+chests:  
+- chestgold 16.8  
+chestboostedskin 3.2  
+chestboss 6.2  
+chestbosssuper 1.6  
+chestbronze 23.2  
+chestboostedgold 0.8  
+chestboostedtoken 2.4  
+chestsilver 14.6  
+  
+basic:  
+- gold 2346.0  
+token 268.4  
+potion 413.6  
+meat 0.4  
+  
+skins (rare but possible):  
+- skinfullpaladincyberfall 0.2  
+  
+scrolls:  
+- warrior 14.2  
+musketeer 32.0  
+monk 28.6  
+rogue 13.2  
+bomber 19.4  
+berserker 22.4  
+tank 16.4  
+barbarian 11.6  
+paladin 16.8  
+healer 18.0  
+centurion 42.2  
+flyingarcher 20.4  
+archer 13.4  
+buster 11.4  
+flagbearer 11.8  
+
+(tested with 5 profiles for 11 hours)  
+
+  
 //TODO:  
 more options to cutomise (buying, unlocking, upgrading and specializing units)  
 much more options to customise (preferred Units, captains, chests)  
