@@ -379,15 +379,10 @@ public class Run {
 						allowedPlanTypes.add(fpt);
 						
 						while(true) {
-							int[] pos = null;
-							try {
-								pos = Pathfinding.search(MapConv.asField(map, unit.canFly(), allowedPlanTypes, maxheat, banned));
-							} catch (ArrayIndexOutOfBoundsException e) {
-								StreamRaiders.log(name + ": Run -> raids -> pathfinding: maxheat=" + maxheat + ", allowedPlanTypes=" + allowedPlanTypes.toString(), e);
-								break;
-							}
+							int[] pos = Pathfinding.search(MapConv.asField(map, unit.canFly(), allowedPlanTypes, maxheat, banned));
 							
 							if(pos == null) {
+								if(fpt == null) break loop;
 								ppt.remove(new JsonPrimitive(fpt));
 								continue loop;
 							}
