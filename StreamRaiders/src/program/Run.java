@@ -1,6 +1,7 @@
 package program;
 
 import java.awt.Color;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -27,13 +28,22 @@ public class Run {
 	private static String clientVersion = StreamRaiders.get("clientVersion");
 	
 	private String name = "";
+	private LocalDateTime started = null;
+	
+	public LocalDateTime getDateTime() {
+		return started;
+	}
+	
+	public void resetDateTime() {
+		started = LocalDateTime.now();
+		rews = new JsonObject();
+	}
+	
 	
 	public Run(String name, String cookies) {
 		this.cookies = cookies;
 		this.name = name;
 	}
-	
-	
 	
 	private boolean first = true;
 	
@@ -70,6 +80,7 @@ public class Run {
 					try {
 						srrh = new SRRHelper(cookies, clientVersion);
 						isReloading = false;
+						started = LocalDateTime.now();
 						runs();
 					} catch (NoInternetException e) {
 						StreamRaiders.log(name + ": Run -> Maybe your internet connection failed", e, true);
@@ -456,6 +467,7 @@ public class Run {
 	public JsonObject getRews() {
 		return rews;
 	}
+	
 	
 	private boolean chests() {
 		Raid[] rera = srrh.getRaids(SRC.Helper.isReward);

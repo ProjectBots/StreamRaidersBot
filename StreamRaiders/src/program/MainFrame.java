@@ -7,6 +7,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Set;
@@ -203,6 +205,42 @@ public class MainFrame {
 							+ "49Jk21tDSxsHGvzK7JrMu5UxrKhvkXu3xCXsrrNyqGJc1Kus27PUHZDDSK13fCQL8S7BcokBM3tbX7fwg1cFt6QeE3ycaYT\n"
 					);
 					opt.addTextArea(don);
+					
+					//TODO
+					//	createAverageIncome
+					Button cai = new Button();
+					cai.setPos(0, 3);
+					cai.setText("create average income file");
+					cai.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							
+							StringBuilder text = new StringBuilder();
+							
+							for(String pro : profiles.keySet()) {
+								Run p = profiles.get(pro);
+								
+								if(p.isRunning()) {
+									LocalDateTime now = LocalDateTime.now();
+									LocalDateTime s = p.getDateTime();
+									JsonObject rews = p.getRews();
+									p.resetDateTime();
+									
+									text.append(Duration.between(s, now).toSeconds() + "\n");
+									
+									for(String key : rews.keySet()) {
+										text.append(key + " " + rews.getAsJsonPrimitive(key).getAsString() + "\n");
+									}
+									
+									text.append("###\n");
+								}
+							}
+							
+							NEF.save("avgIncome.txt", text.toString().substring(0, text.length()-4));
+							
+						}
+					});
+					opt.addBut(cai);
 				}
 			});
 			head.addBut(opt);
