@@ -1,16 +1,7 @@
 package program;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 public class SRC {
 	
-	private static final SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	
-	synchronized public static Date dateParse(String in) throws ParseException {
-		return date.parse(in);
-	}
 	
 	public static class Map {
 		public static final String isPlayerRect = "isPlayerRect";
@@ -25,6 +16,13 @@ public class SRC {
 		public static final String isOccupied = "isOccupied";
 		public static final String isEpic = "isEpic";
 		public static final String isPlayer = "isPlayer";
+	}
+	
+	public static class MapNode {
+		public static final String chestType = "ChestType";
+		public static final String isMystery = "IsMystery";
+		public static final String nodeDifficulty = "NodeDifficulty";
+		public static final String nodeType = "NodeType";
 	}
 
 	public static class Store {
@@ -42,7 +40,7 @@ public class SRC {
 	public static class Raid {
 		public static final String raidId = "raidId";
 		public static final String captainId = "captainId";
-		public static final String lastUnitPlacedTime = "uslastUnitPlacedTimeerId";
+		public static final String lastUnitPlacedTime = "lastUnitPlacedTime";
 		public static final String hasViewedResults = "hasViewedResults";
 		public static final String userSortIndex = "userSortIndex";
 		public static final String chestAwarded = "chestAwarded";

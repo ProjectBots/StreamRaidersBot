@@ -1,19 +1,17 @@
 package program;
 
-import java.text.ParseException;
-import java.util.Date;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import include.JsonParser;
+import include.Time;
 
 public class Unit {
 
 	private JsonObject unit = null;
-	private Date cool = null;
+	private String cool = null;
 	private int rank = 0;
 	private JsonArray ptags = null;
 	
@@ -41,7 +39,7 @@ public class Unit {
 		this.unit = unit;
 		JsonElement jcool = unit.get("cooldownTime");
 		if(jcool.isJsonPrimitive()) {
-			setDate(unit.getAsJsonPrimitive("cooldownTime").getAsString());
+			setCooldown(unit.getAsJsonPrimitive("cooldownTime").getAsString());
 		}
 		
 		JsonObject uType = uTypes.getAsJsonObject(unit.getAsJsonPrimitive(SRC.Unit.unitType).getAsString());
@@ -71,12 +69,7 @@ public class Unit {
 	
 	public boolean isAvailable(String serverTime) {
 		if(cool == null) return true;
-		try {
-			return SRC.dateParse(serverTime).after(cool);
-		} catch (ParseException e) {
-			StreamRaiders.log("Unit -> isAvailable: st=" + serverTime, e);
-		}
-		return false;
+		return Time.isAfter(serverTime, cool);
 	}
 	
 	public boolean hasPlanType(String tag) {
@@ -87,12 +80,8 @@ public class Unit {
 		return ptags;
 	}
 	
-	public void setDate(String date) {
-		try {
-			this.cool = SRC.dateParse(date);
-		} catch (ParseException e) {
-			StreamRaiders.log("Unit -> setDate: date=" + date, e);
-		}
+	public void setCooldown(String date) {
+		cool = date;
 	}
 
 

@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
+import java.io.IOException;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonPrimitive;
@@ -89,7 +90,7 @@ public class MapConv {
 		return new Map(JsonParser.jsonArr(map));
 	}
 	
-	public static void save(String path, Map map) {
+	public static void save(String path, Map map) throws IOException {
 		NEF.save(path, JsonParser.prettyJson(map.getMap()));
 	}
 	

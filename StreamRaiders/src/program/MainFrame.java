@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -51,7 +52,7 @@ public class MainFrame {
 	public static void open() {
 		
 		
-		gui = new GUI("StreamRaider Bot " + StreamRaiders.get("botVersion"), 500, 700);
+		gui = new GUI("StreamRaider Bot " + StreamRaiders.get("botVersion"), 700, 700);
 		
 		gui.addWinLis(new WinLis() {
 			@Override
@@ -235,7 +236,11 @@ public class MainFrame {
 								}
 							}
 							
-							NEF.save("avgIncome.txt", text.toString().substring(0, text.length()-4));
+							try {
+								NEF.save("avgIncome.txt", text.toString().substring(0, text.length()-4));
+							} catch (IOException e1) {
+								e1.printStackTrace();
+							}
 							
 						}
 					});
@@ -276,31 +281,18 @@ public class MainFrame {
 	
 	private static int pos = 1;
 	
-	private static Hashtable<String, Hashtable<String, String>> blacks = new Hashtable<>();
+	private static JsonObject configs = new JsonObject();
 	
-	public static Hashtable<String, String> getBlacklist(String name) {
-		return blacks.get(name);
+	public static JsonObject getConfig(String name) {
+		return configs.getAsJsonObject(name);
 	}
 	
 	private static void addProfile(String name) {
+		JsonObject defConfig = JsonParser.json(StreamRaiders.get("defConfig"));
 		try {
-			blacks.put(name, NEF.getOpt("configs/" + name + ".app"));
-		} catch (Exception e) {
-			Hashtable<String, String> def = new Hashtable<>();
-			
-			JsonObject types = Unit.getTypes();
-			
-			for(String type : types.keySet()) {
-				if(types.getAsJsonObject(type).getAsJsonPrimitive("rank").getAsInt() != 4) {
-					def.put(type, "true");
-					def.put("uid_" + type, "null");
-				} else {
-					def.put(type, "false");
-					def.put("uid_" + type, "null");
-				}
-			}
-			
-			blacks.put(name, def);
+			configs.add(name, JsonParser.json(NEF.read("configs/" + name + ".app"), defConfig));
+		} catch (IOException e) {
+			configs.add(name, defConfig);
 		}
 		
 		Container both = new Container();
@@ -397,10 +389,15 @@ public class MainFrame {
 				}
 			});
 			part.addBut(map);
+			
+			Label chest = new Label();
+			chest.setPos(4, i);
+			chest.setText("");
+			part.addLabel(chest, name+"::chest::"+i);
 		}
 		
 		Label s1 = new Label();
-		s1.setPos(4, 0);
+		s1.setPos(5, 0);
 		s1.setSpan(1, 4);
 		s1.setText("");
 		s1.setWeightX(1);
@@ -408,7 +405,7 @@ public class MainFrame {
 		part.addLabel(s1);
 		
 		Button seeRews = new Button();
-		seeRews.setPos(5, 0);
+		seeRews.setPos(6, 0);
 		seeRews.setSpan(1, 4);
 		seeRews.setFill('v');
 		seeRews.setText("\u26C1");
@@ -450,7 +447,7 @@ public class MainFrame {
 		part.addBut(seeRews);
 		
 		Button stngs = new Button();
-		stngs.setPos(6, 0);
+		stngs.setPos(7, 0);
 		stngs.setSpan(1, 4);
 		stngs.setFill('v');
 		stngs.setText("\u23E3");
@@ -461,7 +458,11 @@ public class MainFrame {
 				GUI gui = new GUI("Profile Settings", 900, 800);
 				
 				JsonObject types = Unit.getTypes();
-				Hashtable<String, String> black = blacks.get(name);
+				
+				JsonObject config = configs.getAsJsonObject(name);
+				JsonObject uCon = config.getAsJsonObject("units");
+				JsonObject sCon = config.getAsJsonObject("specs");
+				JsonObject cCon = config.getAsJsonObject("chests");
 				
 				Container units = new Container();
 				units.setPos(0, 0);
@@ -488,20 +489,19 @@ public class MainFrame {
 					c.setPos(0, 0);
 					c.setContainer(cimg);
 					c.setFill('h');
-					if(Boolean.parseBoolean(black.get(type))) {
+					if(uCon.getAsJsonPrimitive(type).getAsBoolean()) {
 						c.setBackground(Color.green);
 					} else {
 						c.setBackground(GUI.getDefButCol());
 					}
-					
 					c.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							if(Boolean.parseBoolean(black.get(type))) {
-								blacks.get(name).put(type, "false");
+							if(uCon.getAsJsonPrimitive(type).getAsBoolean()) {
+								uCon.addProperty(type, false);
 								GUI.setBackground(name + "::" + type, GUI.getDefButCol());
 							} else {
-								blacks.get(name).put(type, "true");
+								uCon.addProperty(type, true);
 								GUI.setBackground(name + "::" + type, Color.green);
 							}
 						}
@@ -518,7 +518,7 @@ public class MainFrame {
 						public void actionPerformed(ActionEvent e) {
 							final JsonArray uids = JsonParser.json(StreamRaiders.get("specUIDs")).getAsJsonArray(type);
 							
-							String old = blacks.get(name).get("uid_" + type);
+							String old = sCon.getAsJsonPrimitive(type).getAsString();
 							
 							GUI gspec = new GUI("specialize " + type, 400, 300);
 							
@@ -535,11 +535,11 @@ public class MainFrame {
 								uid.setAL(new ActionListener() {
 									@Override
 									public void actionPerformed(ActionEvent e) {
-										if(blacks.get(name).get("uid_" + type).equals(u)) {
-											blacks.get(name).put("uid_" + type, "null");
+										if(sCon.getAsJsonPrimitive(type).getAsString().equals(u)) {
+											sCon.addProperty(type, "null");
 											GUI.setBackground(name + "::spec::" + type + "::" + ii, GUI.getDefButCol());
 										} else {
-											blacks.get(name).put("uid_" + type, u);
+											sCon.addProperty(type, u);
 											GUI.setBackground(name + "::spec::" + type + "::" + ii, Color.green);
 											GUI.setBackground(name + "::spec::" + type + "::" + ((ii+1)%3), GUI.getDefButCol());
 											GUI.setBackground(name + "::spec::" + type + "::" + ((ii+2)%3), GUI.getDefButCol());
@@ -563,12 +563,64 @@ public class MainFrame {
 				}
 				
 				gui.addContainer(units);
+				
+
+				JsonArray chestTypes = JsonParser.jsonArr(StreamRaiders.get("chests"));
+				
+				Container chests = new Container();
+				chests.setPos(0, 1);
+				
+				y = 0;
+				x = 0;
+				for(int i=0; i<chestTypes.size(); i++) {
+					
+					String type = chestTypes.get(i).getAsString();
+					
+					Container cimg = new Container();
+					Image img = new Image("data/ChestPics/" + type + ".png");
+					img.setSquare(100);
+					cimg.addImage(img);
+					
+					Button chest = new Button();
+					chest.setPos(x, y);
+					chest.setContainer(cimg);
+					chest.setFill('h');
+					chest.setInsets(0, 10, 10, 0);
+					if(cCon.getAsJsonPrimitive(type).getAsBoolean()) {
+						chest.setBackground(Color.green);
+					} else {
+						chest.setBackground(GUI.getDefButCol());
+					}
+					chest.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							if(cCon.getAsJsonPrimitive(type).getAsBoolean()) {
+								cCon.addProperty(type, false);
+								GUI.setBackground(name + "::" + type, GUI.getDefButCol());
+							} else {
+								cCon.addProperty(type, true);
+								GUI.setBackground(name + "::" + type, Color.green);
+							}
+						}
+					});
+					chests.addBut(chest, name + "::" + type);
+					
+					if(x >= 3) {
+						x = 0;
+						y++;
+					} else {
+						x++;
+					}
+				}
+				
+				gui.addContainer(chests);
+				
 			}
 		});
 		part.addBut(stngs);
 		
 		Button del = new Button();
-		del.setPos(7, 0);
+		del.setPos(8, 0);
 		del.setSpan(1, 4);
 		del.setFill('v');
 		del.setText("\uD83D\uDDD1");
@@ -611,7 +663,11 @@ public class MainFrame {
 			for(int i=0; i<proFiles.length; i++) {
 				String name = proFiles[i].replace(".app", "");
 				if(!profiles.keySet().contains(name)) {
-					add(name, new Run(name, NEF.read("profiles/" + proFiles[i]).replace("\n", "; ")));
+					try {
+						add(name, new Run(name, NEF.read("profiles/" + proFiles[i]).replace("\n", "; ")));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 			gui.refresh();
@@ -625,7 +681,11 @@ public class MainFrame {
 		
 		Set<String> keys = profiles.keySet();
 		for(String key : keys) {
-			NEF.saveOpt("configs/" + key + ".app", blacks.get(key));
+			try {
+				NEF.save("configs/" + key + ".app", JsonParser.prettyJson(configs.get(key)));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			profiles.get(key).setRunning(false);
 		}
 		

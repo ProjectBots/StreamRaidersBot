@@ -1,6 +1,6 @@
 package program;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Hashtable;
@@ -20,7 +20,11 @@ public class StreamRaiders {
 	}
 	
 	synchronized public static void save() {
-		NEF.saveOpt("data/opt.app", opt);
+		try {
+			NEF.saveOpt("data/opt.app", opt);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static void log(String text, Exception e) {
@@ -28,22 +32,27 @@ public class StreamRaiders {
 	}
 	
 	synchronized public static void log(String text, Exception e, boolean silent) {
-		if(e != null) {
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			
-			if(text != null) {
-				System.err.println(text);
-				NEF.log("logs.app", text + "\n" + sw.toString());
+		try {
+			if(e != null) {
+				StringWriter sw = new StringWriter();
+				e.printStackTrace(new PrintWriter(sw));
+				
+				if(text != null) {
+					System.err.println(text);
+					NEF.log("logs.app", text + "\n" + sw.toString());
+				} else {
+					NEF.log("logs.app", sw.toString());
+				}
+				
+				if(!silent) System.err.println(sw.toString());
 			} else {
-				NEF.log("logs.app", sw.toString());
+				System.err.println(text);
+				NEF.log("logs.app", text);
 			}
-			
-			if(!silent) System.err.println(sw.toString());
-		} else {
-			System.err.println(text);
-			NEF.log("logs.app", text);
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
+		
 	}
 	
 	public static void main(String[] args) {
@@ -58,7 +67,7 @@ public class StreamRaiders {
 		
 		try {
 			opt = NEF.getOpt("data/opt.app");
-		} catch (FileNotFoundException fnf) {
+		} catch (IOException fnf) {
 			System.err.println("Couldnt load \"opt.app\"");
 			return;
 		}

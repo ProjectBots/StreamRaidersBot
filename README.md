@@ -15,9 +15,10 @@ to prevent bans this bot will wait 100 - 720 sec before it checks the raids agai
 
 you can skip the wait by pressing the next button.  
 the Map buttons will show the current map.  
+you can seewhich chest a raid will bring on the right of the map buttons.  
 the option button in the top left will open a new menu where you can delete all profiles.  
 the trashcan will delete the dedicated profile.  
-the option buttons in the profile section will open a menu where you can whitelist units (and choose a specialization if you want).  
+the option buttons in the profile section will open a menu where you can whitelist units and chests (and choose a specialization if you want).  
 
 average income for letting the bot do what it does (11 hours) (without quest and event rewards):  
 

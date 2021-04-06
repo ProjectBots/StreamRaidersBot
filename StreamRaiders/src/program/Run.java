@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import java.util.Timer;
@@ -14,6 +13,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
+import include.Time;
 import include.GUI;
 import include.Heatmap;
 import include.Pathfinding;
@@ -44,8 +44,6 @@ public class Run {
 		this.cookies = cookies;
 		this.name = name;
 	}
-	
-	private boolean first = true;
 	
 	public SRRHelper srrh = null;
 	
@@ -115,8 +113,11 @@ public class Run {
 					Thread.sleep(5000);
 				} catch (Exception e) {}
 			}
+			
+			part = "captains";
+			captains();
 
-			part = "raids 1";
+			part = "raids";
 			if(raids()) raids();
 			
 			part = "collectEvent";
@@ -136,24 +137,6 @@ public class Run {
 			
 			part = "upgrade units";
 			upgradeUnits();
-			
-			if(first) {
-				first = false;
-				try {
-					part = "sleeping first";
-					sleep(10);
-					return;
-				} catch (Exception e) {}
-			}
-			
-			part = "captains";
-			if(captains()) {
-				try {
-					Thread.sleep(5000);
-				} catch (Exception e) {}
-				part = "raids 2";
-				if(raids()) raids();
-			}
 			
 			sleep((int) Math.round(Math.random()*620) + 100);
 		} catch (Exception e) {
@@ -325,11 +308,11 @@ public class Run {
 	
 	private void upgradeUnits() {
 		
-		Hashtable<String, String> black = MainFrame.getBlacklist(name);
+		JsonObject sCon = MainFrame.getConfig(name).getAsJsonObject("specs");
 		
 		Unit[] us = srrh.getUnits(SRC.Helper.canUpgradeUnit);
 		for(int i=0; i<us.length; i++) {
-			String err = srrh.upgradeUnit(us[i], black.get("uid_" + us[i].get(SRC.Unit.unitType)));
+			String err = srrh.upgradeUnit(us[i], sCon.getAsJsonPrimitive(us[i].get(SRC.Unit.unitType)).getAsString());
 			if(err != null) {
 				if(!(err.equals("no specUID") || err.equals("cant upgrade unit"))) {
 					StreamRaiders.log(name + ": Run -> upgradeUnits: type=" + us[i].get(SRC.Unit.unitType) + " err=" + err, null);
@@ -339,12 +322,12 @@ public class Run {
 		}
 	}
 	
-	private String[] pveloy = new String[] {"?", "bronze", "silver", "gold"};
+	private String[] pveloy = "? bronze silver gold".split(" ");
 	
 	private boolean raids() {
 		boolean ret = false;
 		
-		Hashtable<String, String> black = MainFrame.getBlacklist(name);
+		JsonObject uCon = MainFrame.getConfig(name).getAsJsonObject("units");
 		
 		Unit[] units = srrh.getUnits(SRC.Helper.canPlaceUnit);
 
@@ -358,8 +341,10 @@ public class Run {
 				int lvl = Integer.parseInt(all[i].get(SRC.Raid.pveLoyaltyLevel));
 				if(lvl == 0) lvl = 3;
 				GUI.setText(name+"::name::"+i, all[i].get(SRC.Raid.twitchDisplayName) + " - " + wins + "|" + pveloy[lvl]);
+				GUI.setText(name+"::chest::"+i, all[i].getFromNode(SRC.MapNode.chestType).replace("chest", ""));
 			} else {
 				GUI.setText(name+"::name::"+i, "");
+				GUI.setText(name+"::chest::"+i, "");
 			}
 		}
 		
@@ -383,8 +368,8 @@ public class Run {
 					loop:
 					while(true) {
 						fpt = null;
-						Unit unit = findUnit(units, apt, ppt, black);
-						if(unit == null) unit = findUnit(units, false, ppt, black);
+						Unit unit = findUnit(units, apt, ppt, uCon);
+						if(unit == null) unit = findUnit(units, false, ppt, uCon);
 						if(unit == null) break;
 						JsonArray allowedPlanTypes = new JsonArray();
 						allowedPlanTypes.add(fpt);
@@ -420,7 +405,6 @@ public class Run {
 					switchRaid(plra[i].get(SRC.Raid.userSortIndex));
 					ret = true;
 				}
-				
 			}
 		}
 		return ret;
@@ -428,7 +412,7 @@ public class Run {
 	
 	private String fpt = null;
 	
-	private Unit findUnit(Unit[] units, boolean apt, JsonArray ppt, Hashtable<String, String> black) {
+	private Unit findUnit(Unit[] units, boolean apt, JsonArray ppt, JsonObject uCon) {
 		Unit unit = null;
 		for(int j=0; j<units.length; j++) {
 			String tfpt = null;
@@ -445,7 +429,7 @@ public class Run {
 				unit = units[j];
 				break;
 			}
-			if(!Boolean.parseBoolean(black.get(units[j].get(SRC.Unit.unitType)))) continue;
+			if(!uCon.getAsJsonPrimitive(units[j].get(SRC.Unit.unitType)).getAsBoolean()) continue;
 			if(unit == null) {
 				unit = units[j];
 				fpt = tfpt;
@@ -490,40 +474,110 @@ public class Run {
 		return false;
 	}
 	
+	private JsonObject bannedCaps = new JsonObject();
+	
 	private boolean captains() {
-		Raid[] offRaids = srrh.getRaids(SRC.Helper.isOffline);
-		if(offRaids.length != 0) {
-			for(int i=0; i<offRaids.length; i++) {
-				switchRaid(offRaids[i].get(SRC.Raid.userSortIndex));
-			}
-			return true;
+		Raid[] raids = srrh.getRaids(SRC.Helper.all);
+		Set<String> set = bannedCaps.deepCopy().keySet();
+		for(String cap : set) {
+			if(Time.isAfter(bannedCaps.getAsJsonPrimitive(cap).getAsString(), srrh.getServerTime()))
+				bannedCaps.remove(cap);
 		}
-		return false;
+		boolean changed = false;
+		JsonObject cCon = MainFrame.getConfig(name).getAsJsonObject("chests");
+		while(true) {
+			boolean breakout = true;
+			for(int i=0; i<raids.length; i++) {
+				if(!raids[i].isSwitchable(srrh.getServerTime(), true, 10)) continue;
+				if(raids[i].isOffline(srrh.getServerTime(), true, 10)) {
+					switchRaid(raids[i].get(SRC.Raid.userSortIndex));
+					changed = true;
+					breakout = false;
+				} else {
+					String ct = raids[i].getFromNode(SRC.MapNode.chestType);
+					if(ct.contains("bone") || !cCon.getAsJsonPrimitive(ct).getAsBoolean()) {
+						bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
+						switchRaid(raids[i].get(SRC.Raid.userSortIndex));
+						changed = true;
+						breakout = false;
+					}
+					
+				}
+			}
+			if(breakout) {
+				break;
+			} else {
+				raids = srrh.getRaids(SRC.Helper.all);
+			}
+		}
+		return changed;
 	}
 	
 	private String switchRaid(String sortIndex) {
-		JsonArray caps = srrh.search(1, 20, true, true, false, null);
 		JsonObject cap = null;
-		if(caps.size() != 0) {
-			for(int j=0; j<caps.size(); j++) {
-				int loyalty = Integer.parseInt(caps.get(j).getAsJsonObject().getAsJsonPrimitive("pveLoyaltyLevel").getAsString());
+		int site = 1;
+
+		JsonArray caps = srrh.search(site, 6, true, true, false, null);
+		while(caps.size() != 0) {
+			for(int i=0; i<caps.size(); i++) {
+				JsonObject icap = caps.get(i).getAsJsonObject();
+				if(bannedCaps.has(icap.getAsJsonPrimitive(SRC.Raid.captainId).getAsString())) continue;
+				
+				int loyalty = Integer.parseInt(icap.getAsJsonPrimitive(SRC.Raid.pveLoyaltyLevel).getAsString());
 				try {
-					int oldLoy = Integer.parseInt(cap.getAsJsonPrimitive("pveLoyaltyLevel").getAsString());
+					int oldLoy = Integer.parseInt(cap.getAsJsonPrimitive(SRC.Raid.pveLoyaltyLevel).getAsString());
 					if(loyalty > oldLoy) {
-						cap = caps.get(j).getAsJsonObject();
+						cap = icap;
 					}
 					if(loyalty == 0) {
-						cap = caps.get(j).getAsJsonObject();
+						cap = icap;
 						break;
 					}
 				} catch(Exception e) {
-					cap = caps.get(j).getAsJsonObject();
+					cap = icap;
 				}
 			}
-		} else {
-			cap = srrh.search(1, 6, false, true, false, "stream raiders").get(0).getAsJsonObject();
-			srrh.setFavorite(cap, true);
+			caps = srrh.search(site++, 6, true, true, false, null);
 		}
+		
+		if(cap == null) {
+			site = 1;
+			while(true) {
+				caps = srrh.search(site++, 6, false, true, false, "stream raiders");
+				if(caps.size() == 0) break;
+				for(int i=0; i<caps.size(); i++) {
+					JsonObject icap = caps.get(i).getAsJsonObject();
+					if(bannedCaps.has(icap.getAsJsonPrimitive(SRC.Raid.captainId).getAsString())) continue;
+					cap = icap;
+					break;
+				}
+				if(cap != null) {
+					String err = srrh.setFavorite(cap, true);
+					if(err != null) StreamRaiders.log(name + ": Run -> switchRaid -> setFavorite: err=" + err, null);
+					break;
+				}
+			}
+		}
+		
+		if(cap == null) {
+			site = 1;
+			while(true) {
+				caps = srrh.search(site++, 6, false, true, false, null);
+				if(caps.size() == 0) break;
+				for(int i=0; i<caps.size(); i++) {
+					JsonObject icap = caps.get(i).getAsJsonObject();
+					if(bannedCaps.has(icap.getAsJsonPrimitive(SRC.Raid.captainId).getAsString())) continue;
+					cap = icap;
+					break;
+				}
+				if(cap != null) {
+					String err = srrh.setFavorite(cap, true);
+					if(err != null) StreamRaiders.log(name + ": Run -> switchRaid -> setFavorite: err=" + err, null);
+					break;
+				}
+			}
+		}
+		
 		srrh.switchRaid(cap, sortIndex);
 		return cap.getAsJsonPrimitive(SRC.Raid.twitchDisplayName).getAsString();
 	}

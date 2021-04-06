@@ -58,6 +58,7 @@ public class SRRHelper {
 		JsonObject data = JsonParser.json(SRR.getData(dataPath)).getAsJsonObject("sheets");
 		StreamRaiders.set("obstacles", data.getAsJsonObject("Obstacles").toString());
 		StreamRaiders.set("quests", data.getAsJsonObject("Quests").toString());
+		StreamRaiders.set("mapNodes", data.getAsJsonObject("MapNodes").toString());
 		StreamRaiders.set("data", dataPath);
 		StreamRaiders.save();
 	}
@@ -124,11 +125,13 @@ public class SRRHelper {
 	}
 	
 	public void loadMap(Raid raid) throws PvPException {
-		if(raid.get(SRC.Raid.nodeId).contains("pvp")) throw new PvPException();
+		String node = raid.get(SRC.Raid.nodeId);
+		if(node.contains("pvp")) throw new PvPException();
 		JsonElement je = JsonParser.json(req.getRaidPlan(raid.get(SRC.Raid.raidId))).get("data");
 		map = new Map(JsonParser.json(req.getMapData(raid.get(SRC.Raid.battleground))),
 				JsonParser.jsonArr(raid.get(SRC.Raid.placementsSerialized)),
 				(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null));
+		//map.addNode(node);
 	}
 	
 	public boolean testPos(boolean epic, int x, int y) {
@@ -161,8 +164,14 @@ public class SRRHelper {
 		return raids;
 	}
 	
+	private String serverTime = null;
+	
+	public String getServerTime() {
+		return serverTime;
+	}
+	
 	public Raid[] getRaids(int arg) {
-		String serverTime = updateRaids();
+		serverTime = updateRaids();
 		Raid[] ret = new Raid[0];
 		for(int i=0; i<raids.length; i++) {
 			switch(arg) {
@@ -213,6 +222,7 @@ public class SRRHelper {
 		raids = new Raid[0];
 		for(int i=0; i<rs.size(); i++) {
 			raids = add(raids, new Raid(rs.get(i).getAsJsonObject()));
+			raids[i].addNode(raids[i].get(SRC.Raid.nodeId));
 		}
 		return jo.getAsJsonObject("info").getAsJsonPrimitive("serverTime").getAsString();
 	}
@@ -225,15 +235,21 @@ public class SRRHelper {
 		JsonArray captains = raw.getAsJsonArray("captains");
 		
 		for(int i=0; i<loyalty.size(); i++) {
-			captains.get(i).getAsJsonObject().addProperty("pveWins", loyalty.get(i).getAsJsonObject().getAsJsonPrimitive("pveWins").getAsInt());
-			captains.get(i).getAsJsonObject().addProperty("pveLoyaltyLevel", loyalty.get(i).getAsJsonObject().getAsJsonPrimitive("pveLoyaltyLevel").getAsInt());
-		}
+			captains.get(i).getAsJsonObject().addProperty(SRC.Raid.pveWins, loyalty.get(i).getAsJsonObject().getAsJsonPrimitive(SRC.Raid.pveWins).getAsInt());
+			captains.get(i).getAsJsonObject().addProperty(SRC.Raid.pveLoyaltyLevel, loyalty.get(i).getAsJsonObject().getAsJsonPrimitive(SRC.Raid.pveLoyaltyLevel).getAsInt());
+			captains.get(i).getAsJsonObject().addProperty(SRC.Raid.captainId, loyalty.get(i).getAsJsonObject().getAsJsonPrimitive(SRC.Raid.captainId).getAsString());
+			}
 		
 		return captains;
 	}
 	
-	public boolean setFavorite(JsonObject captain, boolean b) {
-		return JsonParser.json(req.updateFavoriteCaptains(captain.getAsJsonPrimitive("userId").getAsString(), b)).getAsJsonPrimitive("status").getAsString().contains("success");
+	public String setFavorite(JsonObject captain, boolean b) {
+		JsonElement err = JsonParser.json(req.updateFavoriteCaptains(captain.getAsJsonPrimitive(SRC.Raid.captainId).getAsString(), b))
+				.get("errorMessage");
+		if(err.isJsonPrimitive()) 
+			return err.getAsString();
+		
+		return null;
 	}
 	
 	public String updateUnits() {

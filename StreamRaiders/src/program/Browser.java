@@ -90,7 +90,11 @@ public class Browser extends JFrame {
 					Thread.sleep(1000);
 				} catch (InterruptedException e1) {}
 				
-				NEF.saveOpt("profiles/" + name + ".app", tab);
+				try {
+					NEF.saveOpt("profiles/" + name + ".app", tab);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 				
 				MainFrame.refresh();
 			}

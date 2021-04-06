@@ -12,6 +12,15 @@ public class JsonParser {
 		return new Gson().fromJson(json, JsonObject.class);
 	}
 	
+	public static JsonObject json(String json, JsonObject def) {
+		JsonObject jo = json(json);
+		for(String key : def.keySet()) {
+			if(!jo.has(key))
+				jo.add(key, def.get(key));
+		}
+		return jo;
+	}
+	
 	public static JsonArray jsonArr(String json) {
 		return new Gson().fromJson(json, JsonArray.class);
 	}

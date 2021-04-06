@@ -1,9 +1,5 @@
 package program;
 
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Hashtable;
 
 import com.google.gson.JsonArray;
@@ -11,10 +7,22 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.JsonParser;
+import include.Time;
 
 public class Raid {
 
 	private JsonObject raid = null;
+	private JsonObject node = null;
+	
+	public void addNode(String node) {
+		this.node = JsonParser.json(StreamRaiders.get("mapNodes")).getAsJsonObject(node);
+	}
+	
+	public String getFromNode(String con) {
+		if(node == null) return null;
+		return node.getAsJsonPrimitive(con).getAsString();
+	}
+	
 	
 	public Raid(JsonObject raid) {
 		this.raid = raid;
@@ -26,6 +34,12 @@ public class Raid {
 		} catch (Exception e) {
 			return null;
 		}
+	}
+	
+	public boolean isSwitchable(String serverTime, boolean whenNotLive, int treshold) {
+		JsonElement je = raid.get(SRC.Raid.lastUnitPlacedTime);
+		if(je.isJsonNull()) return true;
+		return isOffline(serverTime, whenNotLive, treshold);
 	}
 	
 	public boolean isOffline(String serverTime, boolean whenNotLive, int treshold) {
@@ -41,23 +55,9 @@ public class Raid {
 			return true;
 		}
 		if(treshold == -1) return false;
-		try {
-			Date st = SRC.dateParse(serverTime);
-			
-			Date date = SRC.dateParse(get(SRC.Raid.creationDate));
-			
-			Calendar c = GregorianCalendar.getInstance();
-			c.setTime(date);
-			c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) + 30 + treshold);
-			
-			if(st.after(c.getTime())) {
-				return true;
-			}
-		} catch (ParseException e) {
-			StreamRaiders.log("Raid -> isOffline: st=" + serverTime + ", cd=" + get(SRC.Raid.creationDate), e);
-		}
 		
-		return false;
+		return Time.isAfter(serverTime, Time.plusMinutes(get(SRC.Raid.creationDate), 30+treshold));
+		
 	}
 	
 	public boolean isReward() {
@@ -164,38 +164,19 @@ public class Raid {
 	}
 	
 	
-	
 	public boolean canPlaceUnit(String serverTime) {
-		try {
-			if(raid.get("endTime").isJsonPrimitive()) return false;
-			if(raid.get("startTime").isJsonPrimitive()) return false;
-			
-			Date st = SRC.dateParse(serverTime);
-			
-			JsonElement jdate = raid.get("lastUnitPlacedTime");
-			if(jdate.isJsonPrimitive()) {
-				String sdate = jdate.getAsString();
-				
-				Date date = SRC.dateParse(sdate);
-				
-				Calendar c = GregorianCalendar.getInstance();
-				c.setTime(date);
-				c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) + 5);
-				
-				if(st.before(c.getTime())) return false;
-			}
-			
-			Date crea = SRC.dateParse(raid.getAsJsonPrimitive("creationDate").getAsString());
-			
-			Calendar c = GregorianCalendar.getInstance();
-			c.setTime(crea);
-			c.set(Calendar.MINUTE, c.get(Calendar.MINUTE) + 30);
-			
-			if(st.after(c.getTime())) return false;
-			
-			return true;
-		} catch (ParseException e) {}
-		return false;
+		if(raid.get(SRC.Raid.endTime).isJsonPrimitive()) return false;
+		if(raid.get(SRC.Raid.startTime).isJsonPrimitive()) return false;
+		
+		JsonElement date = raid.get("lastUnitPlacedTime");
+		if(date.isJsonPrimitive()) 
+			if(Time.isAfter(Time.plusMinutes(date.getAsString(), 5), serverTime)) 
+				return false;
+		
+		if(Time.isAfter(serverTime, Time.plusMinutes(raid.getAsJsonPrimitive("creationDate").getAsString(), 30))) 
+			return false;
+		
+		return true;
 	}
 	
 
