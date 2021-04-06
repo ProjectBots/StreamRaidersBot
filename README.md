@@ -64,6 +64,5 @@ flagbearer 11.8
 //TODO:  
 more options to cutomise (buying, unlocking, upgrading and specializing units)  
 much more options to customise (preferred Units, captains, chests)  
-see which chest a raid will bring  
 automatic update?  
 mod support?  
