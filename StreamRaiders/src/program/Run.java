@@ -15,6 +15,7 @@ import com.google.gson.JsonPrimitive;
 
 import include.Time;
 import include.GUI;
+import include.GUI.Image;
 import include.Heatmap;
 import include.Pathfinding;
 import program.QuestEventRewards.Quest;
@@ -341,10 +342,14 @@ public class Run {
 				int lvl = Integer.parseInt(all[i].get(SRC.Raid.pveLoyaltyLevel));
 				if(lvl == 0) lvl = 3;
 				GUI.setText(name+"::name::"+i, all[i].get(SRC.Raid.twitchDisplayName) + " - " + wins + "|" + pveloy[lvl]);
-				GUI.setText(name+"::chest::"+i, all[i].getFromNode(SRC.MapNode.chestType).replace("chest", ""));
+				Image img = new Image("data/ChestPics/" + all[i].getFromNode(SRC.MapNode.chestType) + ".png");
+				img.setSquare(30);
+				GUI.setImage(name+"::chest::"+i, img);
 			} else {
 				GUI.setText(name+"::name::"+i, "");
-				GUI.setText(name+"::chest::"+i, "");
+				Image img = new Image("data/ChestPics/nochest.png");
+				img.setSquare(30);
+				GUI.setImage(name+"::chest::"+i, img);
 			}
 		}
 		

@@ -1398,6 +1398,43 @@ public class GUI{
 		((JLabel) getComp(id)).setIcon(new ImageIcon(img.getScaledInstance(x, y, java.awt.Image.SCALE_SMOOTH)));
 	}
 	
+	
+	public static void setImage(String id, Image opt) {
+		try {
+			//	new JLabel
+			JLabel imgl = (JLabel) getComp(id);
+			BufferedImage rawimg = ImageIO.read(new File(opt.path));
+			java.awt.Image img;
+			//	testing if it should be a square
+			if(opt.isSquare()) {
+				//	get size
+				int x = rawimg.getWidth();
+				int y = rawimg.getHeight();
+				if(x >= y) {
+					//	if the width is greater than or the same as the height then scale it that way
+					img = rawimg.getScaledInstance(opt.getSize()[0], -1, java.awt.Image.SCALE_SMOOTH);
+				} else {
+					//	reversed
+					img = rawimg.getScaledInstance(-1, opt.getSize()[0], java.awt.Image.SCALE_SMOOTH);
+				}
+				imgl.setIcon(new ImageIcon(img));
+				//	making the label a square
+				imgl.setPreferredSize(new Dimension(opt.getSize()[0], opt.getSize()[0]));
+				if(opt.getBack() != null) {
+					//	adding background color
+					imgl.setBackground(opt.getBack());
+					imgl.setOpaque(true);
+				}
+			} else {
+				//	adding imageIcon with scaled BufferedImage with file with path
+				img = rawimg.getScaledInstance(opt.getSize()[0], opt.getSize()[1], java.awt.Image.SCALE_SMOOTH);
+				imgl.setIcon(new ImageIcon(img));
+			}
+		} catch (Exception e) {
+			e(e);
+		}
+	}
+	
 	public static class RoundedBorder implements Border {
 
 	   private int radius;

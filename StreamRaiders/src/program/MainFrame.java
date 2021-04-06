@@ -390,10 +390,12 @@ public class MainFrame {
 			});
 			part.addBut(map);
 			
-			Label chest = new Label();
+			
+			Image chest = new Image("data/ChestPics/nochest.png");
 			chest.setPos(4, i);
-			chest.setText("");
-			part.addLabel(chest, name+"::chest::"+i);
+			chest.setSquare(30);
+			part.addImage(chest, name+"::chest::"+i);
+			
 		}
 		
 		Label s1 = new Label();
