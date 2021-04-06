@@ -206,11 +206,10 @@ public class MainFrame {
 					);
 					opt.addTextArea(don);
 					
-					//TODO
-					//	createAverageIncome
+					//	createIncomeFile
 					Button cai = new Button();
 					cai.setPos(0, 3);
-					cai.setText("create average income file");
+					cai.setText("create income file");
 					cai.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
