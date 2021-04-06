@@ -417,9 +417,7 @@ public class Run {
 					}
 					
 				} catch (PvPException e) {
-					System.out.println(name + ": " + plra[i].get(SRC.Raid.twitchDisplayName)
-							+ " changed to pvp -> switched to "
-							+ switchRaid(plra[i].get(SRC.Raid.userSortIndex)));
+					switchRaid(plra[i].get(SRC.Raid.userSortIndex));
 					ret = true;
 				}
 				
