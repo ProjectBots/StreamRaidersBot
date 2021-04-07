@@ -407,7 +407,7 @@ public class Run {
 					}
 					
 				} catch (PvPException e) {
-					switchRaid(plra[i].get(SRC.Raid.userSortIndex));
+					switchRaid(plra[i].get(SRC.Raid.userSortIndex), true);
 					ret = true;
 				}
 			}
@@ -430,7 +430,7 @@ public class Run {
 				if(tfpt == null) continue;
 			}
 			
-			if(Arrays.asList(neededUnits).contains(units[j].get(SRC.Unit.unitType))) {
+			if(Arrays.asList(neededUnits).contains(units[j].get(SRC.Unit.unitType).replace("allies", ""))) {
 				unit = units[j];
 				break;
 			}
@@ -482,6 +482,7 @@ public class Run {
 	private JsonObject bannedCaps = new JsonObject();
 	
 	private boolean captains() {
+		int uCount = srrh.getUnits(SRC.Helper.all).length;
 		Raid[] raids = srrh.getRaids(SRC.Helper.all);
 		Set<String> set = bannedCaps.deepCopy().keySet();
 		for(String cap : set) {
@@ -492,23 +493,34 @@ public class Run {
 		JsonObject cCon = MainFrame.getConfig(name).getAsJsonObject("chests");
 		while(true) {
 			boolean breakout = true;
+			boolean[] got = new boolean[] {false, uCount < 5, uCount < 8, !srrh.hasBattlePass()};
 			for(int i=0; i<raids.length; i++) {
+				got[Integer.parseInt(raids[i].get(SRC.Raid.userSortIndex))] = true;
 				if(!raids[i].isSwitchable(srrh.getServerTime(), true, 10)) continue;
 				if(raids[i].isOffline(srrh.getServerTime(), true, 10)) {
-					switchRaid(raids[i].get(SRC.Raid.userSortIndex));
+					switchRaid(raids[i].get(SRC.Raid.userSortIndex), true);
 					changed = true;
 					breakout = false;
 				} else {
 					String ct = raids[i].getFromNode(SRC.MapNode.chestType);
 					if(ct.contains("bone") || !cCon.getAsJsonPrimitive(ct).getAsBoolean()) {
 						bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
-						switchRaid(raids[i].get(SRC.Raid.userSortIndex));
+						switchRaid(raids[i].get(SRC.Raid.userSortIndex), true);
 						changed = true;
 						breakout = false;
 					}
 					
 				}
 			}
+			
+			for(int i=0; i<got.length; i++) {
+				if(!got[i]) {
+					switchRaid(""+i, false);
+					changed = true;
+					breakout = false;
+				}
+			}
+			
 			if(breakout) {
 				break;
 			} else {
@@ -518,11 +530,13 @@ public class Run {
 		return changed;
 	}
 	
-	private String switchRaid(String sortIndex) {
+	private String switchRaid(String sortIndex, boolean rem) {
 		JsonObject cap = null;
+		int oldLoy = -1;
 		int site = 1;
 
 		JsonArray caps = srrh.search(site, 6, true, true, false, null);
+		loop:
 		while(caps.size() != 0) {
 			for(int i=0; i<caps.size(); i++) {
 				JsonObject icap = caps.get(i).getAsJsonObject();
@@ -530,16 +544,17 @@ public class Run {
 				
 				int loyalty = Integer.parseInt(icap.getAsJsonPrimitive(SRC.Raid.pveLoyaltyLevel).getAsString());
 				try {
-					int oldLoy = Integer.parseInt(cap.getAsJsonPrimitive(SRC.Raid.pveLoyaltyLevel).getAsString());
-					if(loyalty > oldLoy) {
-						cap = icap;
-					}
 					if(loyalty == 0) {
 						cap = icap;
-						break;
+						break loop;
+					}
+					if(loyalty > oldLoy) {
+						cap = icap;
+						oldLoy = Integer.parseInt(cap.getAsJsonPrimitive(SRC.Raid.pveLoyaltyLevel).getAsString());
 					}
 				} catch(Exception e) {
 					cap = icap;
+					oldLoy = Integer.parseInt(cap.getAsJsonPrimitive(SRC.Raid.pveLoyaltyLevel).getAsString());
 				}
 			}
 			caps = srrh.search(site++, 6, true, true, false, null);
@@ -583,7 +598,11 @@ public class Run {
 			}
 		}
 		
-		srrh.switchRaid(cap, sortIndex);
+		if(rem) {
+			srrh.switchRaid(cap, sortIndex);
+		} else {
+			srrh.addRaid(cap, sortIndex);
+		}
 		return cap.getAsJsonPrimitive(SRC.Raid.twitchDisplayName).getAsString();
 	}
 	

@@ -150,9 +150,10 @@ public class Store {
 			if(type == null) continue;
 			int cost = Integer.parseInt((Unit.isLegendary(type) ? lLevelCost[lvl] : nLevelCost[lvl]).split(",")[1]);
 			
-			int got = currency.get(type.replace("allies", ""));
-			
-			if(cost <= got) ret = add(ret, units[i]);
+			if(currency.containsKey(type)) {
+				int got = currency.get(type.replace("allies", ""));
+				if(cost <= got) ret = add(ret, units[i]);
+			}
 		}
 		return ret;
 	}
