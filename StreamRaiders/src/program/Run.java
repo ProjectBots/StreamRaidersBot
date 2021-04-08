@@ -1,6 +1,7 @@
 package program;
 
 import java.awt.Color;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
@@ -70,16 +71,17 @@ public class Run {
 	public boolean isRunning() {
 		return running;
 	}
+	
 	public void setRunning(boolean running) {
 		this.running = running;
 		if(running) {
+			resetDateTime();
 			t= new Thread(new Runnable() {
 				@Override
 				public void run() {
 					try {
 						srrh = new SRRHelper(cookies, clientVersion);
 						isReloading = false;
-						started = LocalDateTime.now();
 						runs();
 					} catch (NoInternetException e) {
 						StreamRaiders.log(name + ": Run -> Maybe your internet connection failed", e, true);
@@ -93,6 +95,20 @@ public class Run {
 				}
 			});
 			t.start();
+		} else {
+			LocalDateTime now = LocalDateTime.now();
+			LocalDateTime s = getDateTime();
+			if(s == null) return;
+			
+			long sec = Duration.between(s, now).toSeconds();
+			if(sec < 3600) return;
+			
+			JsonObject jo = new JsonObject();
+			jo.addProperty("time", sec);
+			jo.add("rewards", rews);
+
+			JsonArray stats = MainFrame.getConfig(name).getAsJsonArray("stats");
+			stats.add(jo);
 		}
 	}
 

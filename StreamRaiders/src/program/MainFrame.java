@@ -8,10 +8,9 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Set;
 
 import com.google.gson.JsonArray;
@@ -207,41 +206,109 @@ public class MainFrame {
 					);
 					opt.addTextArea(don);
 					
-					//	createIncomeFile
 					Button cai = new Button();
 					cai.setPos(0, 3);
-					cai.setText("create income file");
+					cai.setText("show average income");
 					cai.setAL(new ActionListener() {
+						
+						private JsonObject nrews = null;
+						
+						private String get(String key) {
+							return key.replace("skin", "").replace("scroll", "") + " " + nrews.getAsJsonPrimitive(key).getAsFloat() + "  \n";
+						}
+						
+						private String getc(String key) {
+							return key.replace("chest", "") + " " + nrews.getAsJsonPrimitive(key).getAsFloat() + "  \n";
+						}
+						
 						@Override
 						public void actionPerformed(ActionEvent e) {
 							
-							StringBuilder text = new StringBuilder();
+							JsonObject all = new JsonObject();
+							double hours = 0;
 							
-							for(String pro : profiles.keySet()) {
-								Run p = profiles.get(pro);
+							for(String name : configs.keySet()) {
 								
-								if(p.isRunning()) {
-									LocalDateTime now = LocalDateTime.now();
-									LocalDateTime s = p.getDateTime();
-									JsonObject rews = p.getRews();
-									p.resetDateTime();
+								JsonArray stats = configs.getAsJsonObject(name).getAsJsonArray("stats");
+								
+								for(int i=0; i<stats.size(); i++) {
+									JsonObject stat = stats.get(i).getAsJsonObject();
+									hours += (double) stat.getAsJsonPrimitive("time").getAsLong() / 60 / 60;
 									
-									text.append(Duration.between(s, now).toSeconds() + "\n");
+									JsonObject rews = stat.getAsJsonObject("rewards");
 									
 									for(String key : rews.keySet()) {
-										text.append(key + " " + rews.getAsJsonPrimitive(key).getAsString() + "\n");
+										if(all.has(key)) {
+											all.addProperty(key, all.getAsJsonPrimitive(key).getAsInt() + rews.getAsJsonPrimitive(key).getAsInt());
+										} else {
+											all.addProperty(key, rews.getAsJsonPrimitive(key).getAsInt());
+										}
 									}
-									
-									text.append("###\n");
 								}
 							}
 							
-							try {
-								NEF.save("avgIncome.txt", text.toString().substring(0, text.length()-4));
-							} catch (IOException e1) {
-								e1.printStackTrace();
+							nrews = new JsonObject();
+							
+							for(String key : all.keySet())
+								nrews.addProperty(key, (float) Math.round((double) all.getAsJsonPrimitive(key).getAsInt() / hours * 1000) / 1000);
+							
+							StringBuilder text = new StringBuilder();
+							JsonArray rem = new JsonArray();
+							
+							text.append("chests:  \n- ");
+							
+							for(String key : nrews.keySet()) {
+								if(key.contains("chest")) {
+									text.append(getc(key));
+									rem.add(key);
+								}
 							}
 							
+							
+							List<String> rewBefore = Arrays.asList(new String[] {"gold", "token", "potion", "meat"});
+							
+							text.append("  \nbasic:  \n- ");
+							
+							for(String key : nrews.keySet()) {
+								if(rewBefore.contains(key)) {
+									text.append(get(key));
+									rem.add(key);
+								}
+							}
+							
+							
+							text.append("  \nskins (rare but possible):  \n- ");
+							
+							for(String key : nrews.keySet()) {
+								if(key.contains("skin") && !key.contains("chest")) {
+									text.append(get(key));
+									rem.add(key);
+								}
+							}
+							
+							
+							for(int i=0; i<rem.size(); i++) 
+								nrews.remove(rem.get(i).getAsString());
+							
+							
+							text.append("  \nscrolls:  \n- ");
+							
+							for(String key : nrews.keySet()) 
+								text.append(get(key));
+							
+							
+							long min = Math.round(hours * 60) % 60;
+							text.append("\n(tested for " + Math.round(hours) + " hours and " + min + " minutes)  ");
+							
+							
+							GUI ai = new GUI("Average Income per hour per profile", 400, 500);
+							
+							TextArea ta = new TextArea();
+							ta.setEditable(false);
+							ta.setText(text.toString());
+							ai.addTextArea(ta);
+							
+							ai.refresh();
 						}
 					});
 					opt.addBut(cai);
@@ -290,7 +357,7 @@ public class MainFrame {
 	private static void addProfile(String name) {
 		JsonObject defConfig = JsonParser.json(StreamRaiders.get("defConfig"));
 		try {
-			configs.add(name, JsonParser.json(NEF.read("configs/" + name + ".app"), defConfig));
+			configs.add(name, JsonParser.json(NEF.read("configs/" + name + ".app"), defConfig, true));
 		} catch (IOException e) {
 			configs.add(name, defConfig);
 		}
@@ -683,12 +750,12 @@ public class MainFrame {
 		
 		Set<String> keys = profiles.keySet();
 		for(String key : keys) {
+			profiles.get(key).setRunning(false);
 			try {
 				NEF.save("configs/" + key + ".app", JsonParser.prettyJson(configs.get(key)));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			profiles.get(key).setRunning(false);
 		}
 		
 		System.exit(0);

@@ -116,9 +116,7 @@ public class SRRHelper {
 	
 	
 	public static class PvPException extends Exception {
-
 		private static final long serialVersionUID = 1L;
-		
 		public PvPException () {
 			super("This is a pvp raid");
 		}
@@ -131,7 +129,6 @@ public class SRRHelper {
 		map = new Map(JsonParser.json(req.getMapData(raid.get(SRC.Raid.battleground))),
 				JsonParser.jsonArr(raid.get(SRC.Raid.placementsSerialized)),
 				(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null));
-		//map.addNode(node);
 	}
 	
 	public boolean testPos(boolean epic, int x, int y) {
@@ -144,11 +141,10 @@ public class SRRHelper {
 	
 	
 	public Raid getRaid(String con, String arg) {
-		for(int i=0; i<raids.length; i++) {
-			if(raids[i].get(con).equals(arg)) {
+		for(int i=0; i<raids.length; i++) 
+			if(raids[i].get(con).equals(arg)) 
 				return raids[i];
-			}
-		}
+		
 		return null;
 	}
 	
@@ -176,19 +172,13 @@ public class SRRHelper {
 		for(int i=0; i<raids.length; i++) {
 			switch(arg) {
 			case SRC.Helper.canPlaceUnit:
-				if(raids[i].canPlaceUnit(serverTime)) {
-					ret = add(ret, raids[i]);
-				}
+				if(raids[i].canPlaceUnit(serverTime)) ret = add(ret, raids[i]);
 				break;
 			case SRC.Helper.isReward:
-				if(raids[i].isReward()) {
-					ret = add(ret, raids[i]);
-				}
+				if(raids[i].isReward()) ret = add(ret, raids[i]);
 				break;
 			case SRC.Helper.isOffline:
-				if(raids[i].isOffline(serverTime, whenNotLive, treshold)) {
-					ret = add(ret, raids[i]);
-				}
+				if(raids[i].isOffline(serverTime, whenNotLive, treshold)) ret = add(ret, raids[i]);
 				break;
 			case SRC.Helper.all:
 				ret = add(ret, raids[i]);
@@ -238,7 +228,7 @@ public class SRRHelper {
 			captains.get(i).getAsJsonObject().addProperty(SRC.Raid.pveWins, loyalty.get(i).getAsJsonObject().getAsJsonPrimitive(SRC.Raid.pveWins).getAsInt());
 			captains.get(i).getAsJsonObject().addProperty(SRC.Raid.pveLoyaltyLevel, loyalty.get(i).getAsJsonObject().getAsJsonPrimitive(SRC.Raid.pveLoyaltyLevel).getAsInt());
 			captains.get(i).getAsJsonObject().addProperty(SRC.Raid.captainId, loyalty.get(i).getAsJsonObject().getAsJsonPrimitive(SRC.Raid.captainId).getAsString());
-			}
+		}
 		
 		return captains;
 	}
@@ -256,9 +246,7 @@ public class SRRHelper {
 		JsonObject jo = JsonParser.json(req.getUserUnits());
 		JsonArray u = jo.getAsJsonArray("data");
 		units = new Unit[0];
-		for(int i=0; i<u.size(); i++) {
-			units = add(units, new Unit(u.get(i).getAsJsonObject()));
-		}
+		for(int i=0; i<u.size(); i++) units = add(units, new Unit(u.get(i).getAsJsonObject()));
 		return jo.getAsJsonObject("info").getAsJsonPrimitive("serverTime").getAsString();
 	}
 	
@@ -280,9 +268,7 @@ public class SRRHelper {
 		for(int i=0; i<units.length; i++) {
 			switch(con) {
 			case SRC.Helper.canPlaceUnit:
-				if(units[i].isAvailable(serverTime)) {
-					ret = add(ret, units[i]);
-				}
+				if(units[i].isAvailable(serverTime)) ret = add(ret, units[i]);
 				break;
 			case SRC.Helper.all:
 				ret = add(ret, units[i]);
@@ -301,20 +287,16 @@ public class SRRHelper {
 	}
 	
 	public String upgradeUnit(Unit unit, String specUID) {
-		if(store.canUpgradeUnit(unit)) {
-			return store.upgradeUnit(unit, req, specUID);
-		}
-		return "cant upgrade unit";
+		return store.canUpgradeUnit(unit) ? store.upgradeUnit(unit, req, specUID) : "cant upgrade unit";
 	}
 	
 	public Unit[] getUnits(String con, String arg) {
 		updateUnits();
 		Unit[] ret = new Unit[0];
-		for(int i=0; i<units.length; i++) {
-			if(units[i].get(con).equals(arg)) {
+		for(int i=0; i<units.length; i++) 
+			if(units[i].get(con).equals(arg)) 
 				ret = add(ret, units[i]);
-			}
-		}
+		
 		return ret;
 	}
 	
@@ -350,7 +332,6 @@ public class SRRHelper {
 		ret.addProperty("onPlanIcon", onPlanIcon);
 		ret.addProperty("isSpell", false);
 		ret.addProperty("stackRaidPlacementsId", "0");
-		
 		
 		return ret.toString();
 	}
