@@ -446,7 +446,7 @@ public class Run {
 				if(tfpt == null) continue;
 			}
 			
-			if(Arrays.asList(neededUnits).contains(units[j].get(SRC.Unit.unitType).replace("allies", ""))) {
+			if(Arrays.asList(neededUnits).contains(units[j].get(SRC.Unit.unitType))) {
 				unit = units[j];
 				break;
 			}

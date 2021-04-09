@@ -38,9 +38,7 @@ public class Store {
 	
 	public boolean canUpgradeUnit(Unit unit) {
 		int lvl = Integer.parseInt(unit.get(SRC.Unit.level));
-		
 		String type = unit.get(SRC.Unit.unitType);
-		
 		String[] cost = (Unit.isLegendary(type) ? lLevelCost[lvl] : nLevelCost[lvl]).split(",");
 		
 		if(currency.get("gold") < Integer.parseInt(cost[0])) return false;
@@ -74,7 +72,7 @@ public class Store {
 		Unit[] ret = new Unit[0];
 		
 		for(String type : allTypes.keySet()) {
-			if(lGotTypes.indexOf(type) == -1) {
+			if(!lGotTypes.contains(type)) {
 				int scrolls = Integer.parseInt((Unit.isLegendary(type) ? lLevelCost : nLevelCost)[0].split(",")[1]);
 				
 				Integer gotScrolls = currency.get(type.replace("allies", ""));
@@ -142,7 +140,6 @@ public class Store {
 		for(int i=0; i<units.length; i++) {
 			String slvl = units[i].get(SRC.Unit.level);
 			if(slvl == null) continue;
-			
 			int lvl = Integer.parseInt(slvl);
 			if(lvl == 30) continue;
 			
@@ -150,7 +147,7 @@ public class Store {
 			if(type == null) continue;
 			int cost = Integer.parseInt((Unit.isLegendary(type) ? lLevelCost[lvl] : nLevelCost[lvl]).split(",")[1]);
 			
-			if(currency.containsKey(type)) {
+			if(currency.containsKey(type.replace("allies", ""))) {
 				int got = currency.get(type.replace("allies", ""));
 				if(cost <= got) ret = add(ret, units[i]);
 			}

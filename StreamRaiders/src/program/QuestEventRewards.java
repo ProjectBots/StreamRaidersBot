@@ -60,7 +60,7 @@ public class QuestEventRewards {
 		
 		public String neededUnit() {
 			String u = quest.getAsJsonPrimitive("UnitTypeRequirement").getAsString();
-			if(!u.equals("")) return u;
+			if(!u.equals("")) return quest.getAsJsonPrimitive("Objective").getAsString();
 			return null;
 		}
 	}
