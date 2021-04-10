@@ -103,7 +103,7 @@ public class SRRHelper {
 	public String placeUnit(Raid raid, Unit unit, boolean epic, int[] pos, boolean onPlanIcon) {
 		JsonElement je = JsonParser.json(req.addToRaid(raid.get(SRC.Raid.raidId),
 					createPlacementData(unit, epic, map.getAsSRCoords(pos), onPlanIcon)))
-				.get("errorMessage");
+				.get(SRC.errorMessage);
 		
 		if(je.isJsonPrimitive()) return je.getAsString();
 		
@@ -235,7 +235,7 @@ public class SRRHelper {
 	
 	public String setFavorite(JsonObject captain, boolean b) {
 		JsonElement err = JsonParser.json(req.updateFavoriteCaptains(captain.getAsJsonPrimitive(SRC.Raid.captainId).getAsString(), b))
-				.get("errorMessage");
+				.get(SRC.errorMessage);
 		if(err.isJsonPrimitive()) 
 			return err.getAsString();
 		

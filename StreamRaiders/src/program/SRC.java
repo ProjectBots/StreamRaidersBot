@@ -83,5 +83,6 @@ public class SRC {
 		public static final String rank = "rank";
 	}
 	
+	public static final String errorMessage = "errorMessage";
 
 }	

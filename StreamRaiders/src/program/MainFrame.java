@@ -208,7 +208,7 @@ public class MainFrame {
 					
 					Button cai = new Button();
 					cai.setPos(0, 3);
-					cai.setText("show average income");
+					cai.setText("show stats");
 					cai.setAL(new ActionListener() {
 						
 						private JsonObject nrews = null;

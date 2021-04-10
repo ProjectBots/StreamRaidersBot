@@ -104,7 +104,7 @@ public class Store {
 			ret = JsonParser.json(req.upgradeUnit(unit.get(SRC.Unit.unitType), lvl, unit.get(SRC.Unit.unitId)));
 		}
 		
-		JsonElement err = ret.get("errorMessage");
+		JsonElement err = ret.get(SRC.errorMessage);
 		if(err.isJsonNull()) {
 			currency.put("gold", currency.get("gold") - cost);
 			return null;
@@ -125,14 +125,12 @@ public class Store {
 		JsonObject res = JsonParser.json(text);
 		
 		JsonElement gc = res.getAsJsonObject("data").get("goldCharged");
-		if(!gc.isJsonPrimitive()) return res.getAsJsonPrimitive("errorMessage").getAsString();
+		if(!gc.isJsonPrimitive()) return res.getAsJsonPrimitive(SRC.errorMessage).getAsString();
 		
 		price = gc.getAsInt();
 		
 		currency.put("gold", currency.get("gold") - price);
 		return null;
-		
-		
 	}
 	
 	public Unit[] getUpgradeableUnits(Unit[] units) {
@@ -168,7 +166,7 @@ public class Store {
 		
 		currency.put("gold", gold - price);
 		JsonObject text = JsonParser.json(req.purchaseStoreItem(item.getAsJsonPrimitive("itemId").getAsString()));
-		if(!text.getAsJsonPrimitive("status").getAsString().equals("success")) return text.getAsJsonPrimitive("errorMessage").getAsString();
+		if(!text.getAsJsonPrimitive("status").getAsString().equals("success")) return text.getAsJsonPrimitive(SRC.errorMessage).getAsString();
 		
 		shopItems = text.getAsJsonArray("data");
 		return null;

@@ -23,36 +23,41 @@ the option buttons in the profile section will open a menu where you can whiteli
 average income per hour per profile (without quest and event rewards):  
 
 chests:  
-- boss 3.28  
-boostedskin 1.64  
-boostedgold 0.984  
-bosssuper 0.437  
-gold 0.419  
-salvage 0.073  
-boostedtoken 0.073  
-   
+- boss 2.019  
+boostedskin 1.291  
+boostedgold 0.659  
+bosssuper 0.2  
+gold 2.381  
+salvage 0.079  
+boostedtoken 0.107  
+bronze 0.005  
+  
 basic:  
-- gold 1052.183  
-token 28.664  
-potion 30.323  
-meat 0.055  
-
-scrolls:  
-- berserker 6.141  
-centurion 8.583  
-musketeer 7.526  
-flyingarcher 9.913  
-monk 8.164  
-barbarian 0.182  
-paladin 0.364  
-healer 0.292  
-bomber 0.091  
-buster 0.109  
-
+- gold 758.336  
+token 28.503  
+potion 32.31  
+meat 0.074  
+  
 skins (rare but possible): n/a
 
-(tested for 55 hours and 53 minutes)  
+scrolls:  
+- berserker 4.484  
+centurion 5.506  
+musketeer 4.679  
+flyingarcher 5.756  
+monk 5.362  
+barbarian 1.035  
+paladin 1.184  
+healer 0.984  
+buster 0.812  
+bomber 0.919  
+rogue 0.009  
 
+(tested for 215 hours and 25 minutes)  
+  
+//known Issues  
+earning normal gold chest even when blacklisted (SR has a chest limit for boosted and boss chests. They replace them with gold chests)  
+The browser for adding a profile can only be opened once per programm start  
   
 //TODO:  
 more options to cutomise (buying, unlocking, upgrading and specializing units)  
