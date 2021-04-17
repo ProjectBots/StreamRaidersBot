@@ -732,6 +732,11 @@ public class GUI{
 			lab.setBorder(border);
 		}
 		
+		Font font = opt.getFont();
+		if(font != null) {
+			lab.setFont(font);
+		}
+		
 		addObj(opt, lab, id);
 	}
 	
@@ -860,6 +865,11 @@ public class GUI{
 		if(f != null) {
 			but.setFont(f);
 		}
+		int[] size = opt.getSize();
+		if(size != null) {
+			but.setPreferredSize(new Dimension(size[0], size[1]));
+		}
+		
 		addObj(opt, but, id);
 	}
 	

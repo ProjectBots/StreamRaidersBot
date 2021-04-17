@@ -532,6 +532,7 @@ public class MainFrame {
 				JsonObject uCon = config.getAsJsonObject("units");
 				JsonObject sCon = config.getAsJsonObject("specs");
 				JsonObject cCon = config.getAsJsonObject("chests");
+				JsonObject clmm = config.getAsJsonObject("clmm");
 				
 				Container units = new Container();
 				units.setPos(0, 0);
@@ -684,6 +685,47 @@ public class MainFrame {
 				
 				gui.addContainer(chests);
 				
+				Container minMax = new Container();
+				minMax.setPos(0, 2);
+				minMax.setInsets(20, 2, 2, 2);
+				
+				
+				for(int i=0; i<2; i++) {
+					Label mml = new Label();
+					mml.setPos(0, i);
+					mml.setText(i==0 ? "Normal Chests max Loyalty:" : "Loyalty Chests min Loyalty:");
+					mml.setFont(new Font("Calibri", Font.PLAIN, 25));
+					minMax.addLabel(mml);
+					
+					final int ii = i;
+					int ml = clmm.getAsJsonPrimitive(i==0 ? "normChestLoyMax" : "loyChestLoyMin").getAsInt();
+
+					Container cimg = new Container();
+					Image img = new Image("data\\LoyaltyPics\\"+Run.pveloy[ml]+".png");
+					img.setSquare(35);
+					cimg.addImage(img, name+"::loyImg::"+i);
+					
+					Button bl = new Button();
+					bl.setPos(1, i);
+					bl.setContainer(cimg);
+					bl.setBackground(loyCols[ml]);
+					bl.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							int ml = clmm.getAsJsonPrimitive(ii==0 ? "normChestLoyMax" : "loyChestLoyMin").getAsInt() + 1;
+							if(ml > 3) ml = 1;
+							clmm.addProperty(ii==0 ? "normChestLoyMax" : "loyChestLoyMin", ml);
+							Image img = new Image("data\\LoyaltyPics\\"+Run.pveloy[ml]+".png");
+							img.setSquare(35);
+							GUI.setImage(name+"::loyImg::"+ii, img);
+							GUI.setBackground(name+"::loyMinMax::"+ii, loyCols[ml]);
+						}
+					});
+					minMax.addBut(bl, name+"::loyMinMax::"+i);
+					
+				}
+				
+				gui.addContainer(minMax);
 			}
 		});
 		part.addBut(stngs);
@@ -709,7 +751,9 @@ public class MainFrame {
 		gui.addContainer(both, name + "::part");
 	}
 	
-	private static String[] rewBefore = new String[] {"gold", "token", "potion", "meat"};
+	private static final Color[] loyCols = new Color[] {null, new Color(192, 137, 112), new Color(192,192,192), new Color(212, 175, 55)};
+	
+	private static final String[] rewBefore = new String[] {"gold", "token", "potion", "meat"};
 	
 	private static String[] getAppFiles(String folderpath) {
 		class Filter implements FilenameFilter {

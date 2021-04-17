@@ -339,7 +339,7 @@ public class Run {
 		}
 	}
 	
-	private String[] pveloy = "? bronze silver gold".split(" ");
+	public static final String[] pveloy = "? bronze silver gold".split(" ");
 	
 	private boolean raids() {
 		boolean ret = false;
@@ -356,7 +356,6 @@ public class Run {
 			if(i<all.length) {
 				int wins = Integer.parseInt(all[i].get(SRC.Raid.pveWins));
 				int lvl = Integer.parseInt(all[i].get(SRC.Raid.pveLoyaltyLevel));
-				if(lvl == 0) lvl = 3;
 				GUI.setText(name+"::name::"+i, all[i].get(SRC.Raid.twitchDisplayName) + " - " + wins + "|" + pveloy[lvl]);
 				Image img = new Image("data/ChestPics/" + all[i].getFromNode(SRC.MapNode.chestType) + ".png");
 				img.setSquare(30);
@@ -501,30 +500,30 @@ public class Run {
 		int uCount = srrh.getUnits(SRC.Helper.all).length;
 		Raid[] raids = srrh.getRaids(SRC.Helper.all);
 		Set<String> set = bannedCaps.deepCopy().keySet();
-		for(String cap : set) {
+		for(String cap : set) 
 			if(Time.isAfter(bannedCaps.getAsJsonPrimitive(cap).getAsString(), srrh.getServerTime()))
 				bannedCaps.remove(cap);
-		}
+		
 		boolean changed = false;
 		JsonObject cCon = MainFrame.getConfig(name).getAsJsonObject("chests");
+		JsonObject clmm = MainFrame.getConfig(name).getAsJsonObject("clmm");
 		while(true) {
 			boolean breakout = true;
 			boolean[] got = new boolean[] {false, uCount < 5, uCount < 8, !srrh.hasBattlePass()};
 			for(int i=0; i<raids.length; i++) {
 				got[Integer.parseInt(raids[i].get(SRC.Raid.userSortIndex))] = true;
 				if(!raids[i].isSwitchable(srrh.getServerTime(), true, 10)) continue;
-				if(raids[i].isOffline(srrh.getServerTime(), true, 10)) {
+				String ct = raids[i].getFromNode(SRC.MapNode.chestType);
+				int loy = Integer.parseInt(raids[i].get(SRC.Raid.pveLoyaltyLevel));
+				if((raids[i].isOffline(srrh.getServerTime(), true, 10)) ||
+						(ct.contains("bone") || !cCon.getAsJsonPrimitive(ct).getAsBoolean()) ||
+						((ct.contains("boosted") || ct.contains("super"))
+								? loy <= clmm.getAsJsonPrimitive("loyChestLoyMin").getAsInt()
+								: loy >= clmm.getAsJsonPrimitive("normChestLoyMax").getAsInt())) {
+					bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
 					switchRaid(raids[i].get(SRC.Raid.userSortIndex), true);
 					changed = true;
 					breakout = false;
-				} else {
-					String ct = raids[i].getFromNode(SRC.MapNode.chestType);
-					if(ct.contains("bone") || !cCon.getAsJsonPrimitive(ct).getAsBoolean()) {
-						bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
-						switchRaid(raids[i].get(SRC.Raid.userSortIndex), true);
-						changed = true;
-						breakout = false;
-					}
 				}
 			}
 			
@@ -536,11 +535,9 @@ public class Run {
 				}
 			}
 			
-			if(breakout) {
-				break;
-			} else {
-				raids = srrh.getRaids(SRC.Helper.all);
-			}
+			if(breakout) break;
+			
+			raids = srrh.getRaids(SRC.Helper.all);
 		}
 		return changed;
 	}

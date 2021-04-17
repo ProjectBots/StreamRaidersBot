@@ -60,7 +60,8 @@ public class QuestEventRewards {
 		
 		public String neededUnit() {
 			String type = quest.getAsJsonPrimitive("Type").getAsString();
-			if(type.equals("PlaceUnitOfType")) return quest.getAsJsonPrimitive("Objective").getAsString();
+			if(type.equals("PlaceUnitOfType")) 
+				return quest.getAsJsonPrimitive("Objective").getAsString();
 			return null;
 		}
 	}
@@ -151,12 +152,8 @@ public class QuestEventRewards {
 	
 	public String collectEvent(int p, boolean battlePass, SRR req) {
 		if(!canCollectEvent(p, battlePass)) return "cant collect";
-		
 		JsonElement err = JsonParser.json(req.grantEventReward(currentEvent, ""+p, battlePass)).get(SRC.errorMessage);
-		
-		if(err.isJsonPrimitive()) return err.getAsString();
-		
-		return null;
+		return err.isJsonPrimitive() ? err.getAsString() : null;
 	}
 	
 	private Quest[] add(Quest[] arr, Quest item) {
