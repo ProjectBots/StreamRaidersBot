@@ -47,7 +47,11 @@ public class Run {
 		this.name = name;
 	}
 	
-	public SRRHelper srrh = null;
+	private SRRHelper srrh = null;
+	
+	public SRRHelper getSRRH() {
+		return srrh;
+	}
 	
 	
 	public void showMap(int index) {
@@ -56,9 +60,12 @@ public class Run {
 			public void run() {
 				if(srrh == null) return;
 				try {
-					srrh.loadMap(srrh.getRaids()[index]);
-					Map map = srrh.getMap();
-					MapConv.asGui(map);
+					Raid[] raids = srrh.getRaids();
+					if(index < raids.length) {
+						srrh.loadMap(srrh.getRaids()[index]);
+						Map map = srrh.getMap();
+						MapConv.asGui(map);
+					}
 				} catch (PvPException e) {}
 			}
 		});
@@ -345,6 +352,7 @@ public class Run {
 		boolean ret = false;
 		
 		JsonObject uCon = MainFrame.getConfig(name).getAsJsonObject("units");
+		JsonArray locked = MainFrame.getConfig(name).getAsJsonArray("locked");
 		
 		Unit[] units = srrh.getUnits(SRC.Helper.canPlaceUnit);
 
@@ -356,10 +364,18 @@ public class Run {
 			if(i<all.length) {
 				int wins = Integer.parseInt(all[i].get(SRC.Raid.pveWins));
 				int lvl = Integer.parseInt(all[i].get(SRC.Raid.pveLoyaltyLevel));
-				GUI.setText(name+"::name::"+i, all[i].get(SRC.Raid.twitchDisplayName) + " - " + wins + "|" + pveloy[lvl]);
+				String disName = all[i].get(SRC.Raid.twitchDisplayName);
+				GUI.setText(name+"::name::"+i, disName + " - " + wins + "|" + pveloy[lvl]);
 				Image img = new Image("data/ChestPics/" + all[i].getFromNode(SRC.MapNode.chestType) + ".png");
 				img.setSquare(30);
 				GUI.setImage(name+"::chest::"+i, img);
+				if(locked.contains(new JsonPrimitive(disName))) {
+					GUI.setText(name+"::lockBut::"+i, "\uD83D\uDD12");
+					GUI.setBackground(name+"::lockBut::"+i, Color.green);
+				} else {
+					GUI.setText(name+"::lockBut::"+i, "\uD83D\uDD13");
+					GUI.setBackground(name+"::lockBut::"+i, GUI.getDefButCol());
+				}
 			} else {
 				GUI.setText(name+"::name::"+i, "");
 				Image img = new Image("data/ChestPics/nochest.png");
@@ -504,6 +520,8 @@ public class Run {
 			if(Time.isAfter(bannedCaps.getAsJsonPrimitive(cap).getAsString(), srrh.getServerTime()))
 				bannedCaps.remove(cap);
 		
+		JsonArray locked = MainFrame.getConfig(name).getAsJsonArray("locked");
+		
 		boolean changed = false;
 		JsonObject cCon = MainFrame.getConfig(name).getAsJsonObject("chests");
 		JsonObject clmm = MainFrame.getConfig(name).getAsJsonObject("clmm");
@@ -512,8 +530,13 @@ public class Run {
 			boolean[] got = new boolean[] {false, uCount < 5, uCount < 8, !srrh.hasBattlePass()};
 			for(int i=0; i<raids.length; i++) {
 				got[Integer.parseInt(raids[i].get(SRC.Raid.userSortIndex))] = true;
+				if(locked.contains(new JsonPrimitive(raids[i].get(SRC.Raid.twitchDisplayName)))) continue;
 				if(!raids[i].isSwitchable(srrh.getServerTime(), true, 10)) continue;
 				String ct = raids[i].getFromNode(SRC.MapNode.chestType);
+				if(ct == null) {
+					StreamRaiders.log(name + ": Run -> captains: ct=null", null);
+					continue;
+				}
 				int loy = Integer.parseInt(raids[i].get(SRC.Raid.pveLoyaltyLevel));
 				if((raids[i].isOffline(srrh.getServerTime(), true, 10)) ||
 						(ct.contains("bone") || !cCon.getAsJsonPrimitive(ct).getAsBoolean()) ||

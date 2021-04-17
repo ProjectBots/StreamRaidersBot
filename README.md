@@ -60,6 +60,7 @@ earning normal gold chest even when blacklisted (SR has a chest limit for booste
 The browser for adding a profile can only be opened once per programm start  
   
 //TODO:  
+Guide/Help  
 more options to cutomise (buying, unlocking, upgrading and specializing units)  
 much more options to customise (preferred Units, captains, chests)  
 automatic update?  

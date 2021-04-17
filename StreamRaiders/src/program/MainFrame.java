@@ -14,7 +14,9 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import include.GUI;
 import include.GUI.Button;
@@ -438,16 +440,54 @@ public class MainFrame {
 		});
 		part.addBut(next);
 		
+		JsonArray locked = getConfig(name).getAsJsonArray("locked");
 		
 		for(int i=0; i<4; i++) {
+			String disName = ""+i;
+			try {
+				disName = locked.get(i).getAsString();
+			} catch (IndexOutOfBoundsException e) {}
+			
 			Label name1 = new Label();
-			name1.setText(""+(i+1));
+			name1.setText(disName);
 			name1.setPos(2, i);
 			part.addLabel(name1, name+"::name::"+i);
 			
 			final int ii = i;
+			Button lockBut = new Button();
+			lockBut.setPos(3, i);
+			if(i >= locked.size()) {
+				lockBut.setText("\uD83D\uDD13");
+			} else {
+				lockBut.setText("\uD83D\uDD12");
+				lockBut.setBackground(Color.green);
+			}
+			lockBut.setAL(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					JsonArray locked = getConfig(name).getAsJsonArray("locked");
+					SRRHelper srrh = profiles.get(name).getSRRH();
+					if(srrh != null) {
+						Raid[] raids = srrh.getRaids();
+						if(ii < raids.length) {
+							JsonElement disName = new JsonPrimitive(raids[ii].get(SRC.Raid.twitchDisplayName));
+							if(locked.contains(disName)) {
+								locked.remove(disName);
+								GUI.setText(name+"::lockBut::"+ii, "\uD83D\uDD13");
+								GUI.setBackground(name+"::lockBut::"+ii, GUI.getDefButCol());
+							} else {
+								locked.add(disName);
+								GUI.setText(name+"::lockBut::"+ii, "\uD83D\uDD12");
+								GUI.setBackground(name+"::lockBut::"+ii, Color.green);
+							}
+						}
+					}
+				}
+			});
+			part.addBut(lockBut, name+"::lockBut::"+i);
+			
 			Button map = new Button();
-			map.setPos(3, i);
+			map.setPos(4, i);
 			map.setText("Map");
 			map.setAL(new ActionListener() {
 				@Override
@@ -459,14 +499,14 @@ public class MainFrame {
 			
 			
 			Image chest = new Image("data/ChestPics/nochest.png");
-			chest.setPos(4, i);
+			chest.setPos(5, i);
 			chest.setSquare(30);
 			part.addImage(chest, name+"::chest::"+i);
 			
 		}
 		
 		Label s1 = new Label();
-		s1.setPos(5, 0);
+		s1.setPos(6, 0);
 		s1.setSpan(1, 4);
 		s1.setText("");
 		s1.setWeightX(1);
@@ -474,7 +514,7 @@ public class MainFrame {
 		part.addLabel(s1);
 		
 		Button seeRews = new Button();
-		seeRews.setPos(6, 0);
+		seeRews.setPos(7, 0);
 		seeRews.setSpan(1, 4);
 		seeRews.setFill('v');
 		seeRews.setText("\u26C1");
@@ -516,7 +556,7 @@ public class MainFrame {
 		part.addBut(seeRews);
 		
 		Button stngs = new Button();
-		stngs.setPos(7, 0);
+		stngs.setPos(8, 0);
 		stngs.setSpan(1, 4);
 		stngs.setFill('v');
 		stngs.setText("\u23E3");
@@ -731,7 +771,7 @@ public class MainFrame {
 		part.addBut(stngs);
 		
 		Button del = new Button();
-		del.setPos(8, 0);
+		del.setPos(9, 0);
 		del.setSpan(1, 4);
 		del.setFill('v');
 		del.setText("\uD83D\uDDD1");
