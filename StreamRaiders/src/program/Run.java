@@ -113,7 +113,7 @@ public class Run {
 		if(s == null) return;
 		
 		long sec = Duration.between(s, now).toSeconds();
-		//if(sec < 3600) return;
+		if(sec < 3600) return;
 		
 		
 		JsonObject jo = new JsonObject();
