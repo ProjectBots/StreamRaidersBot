@@ -103,20 +103,27 @@ public class Run {
 			});
 			t.start();
 		} else {
-			LocalDateTime now = LocalDateTime.now();
-			LocalDateTime s = getDateTime();
-			if(s == null) return;
-			
-			long sec = Duration.between(s, now).toSeconds();
-			if(sec < 3600) return;
-			
-			JsonObject jo = new JsonObject();
-			jo.addProperty("time", sec);
-			jo.add("rewards", rews);
-
-			JsonArray stats = MainFrame.getConfig(name).getAsJsonArray("stats");
-			stats.add(jo);
+			saveStats();
 		}
+	}
+	
+	public void saveStats() {
+		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime s = getDateTime();
+		if(s == null) return;
+		
+		long sec = Duration.between(s, now).toSeconds();
+		//if(sec < 3600) return;
+		
+		
+		JsonObject jo = new JsonObject();
+		jo.addProperty("time", sec);
+		jo.add("rewards", rews.deepCopy());
+
+		JsonArray stats = MainFrame.getConfig(name).getAsJsonArray("stats");
+		stats.add(jo);
+		
+		resetDateTime();
 	}
 
 	private Thread t = null;
@@ -366,7 +373,9 @@ public class Run {
 				int lvl = Integer.parseInt(all[i].get(SRC.Raid.pveLoyaltyLevel));
 				String disName = all[i].get(SRC.Raid.twitchDisplayName);
 				GUI.setText(name+"::name::"+i, disName + " - " + wins + "|" + pveloy[lvl]);
-				Image img = new Image("data/ChestPics/" + all[i].getFromNode(SRC.MapNode.chestType) + ".png");
+				String ct = all[i].getFromNode(SRC.MapNode.chestType);
+				if(ct == null) ct = "nochest";
+				Image img = new Image("data/ChestPics/" + ct + ".png");
 				img.setSquare(30);
 				GUI.setImage(name+"::chest::"+i, img);
 				if(locked.contains(new JsonPrimitive(disName))) {
@@ -525,6 +534,7 @@ public class Run {
 		boolean changed = false;
 		JsonObject cCon = MainFrame.getConfig(name).getAsJsonObject("chests");
 		JsonObject clmm = MainFrame.getConfig(name).getAsJsonObject("clmm");
+		boolean ctNull = true;
 		while(true) {
 			boolean breakout = true;
 			boolean[] got = new boolean[] {false, uCount < 5, uCount < 8, !srrh.hasBattlePass()};
@@ -534,7 +544,13 @@ public class Run {
 				if(!raids[i].isSwitchable(srrh.getServerTime(), true, 10)) continue;
 				String ct = raids[i].getFromNode(SRC.MapNode.chestType);
 				if(ct == null) {
-					StreamRaiders.log(name + ": Run -> captains: ct=null", null);
+					if(ctNull)
+						StreamRaiders.log(name + ": Run -> captains: ct=null", null);
+					ctNull = false;
+					bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
+					switchRaid(raids[i].get(SRC.Raid.userSortIndex), true);
+					changed = true;
+					breakout = false;
 					continue;
 				}
 				int loy = Integer.parseInt(raids[i].get(SRC.Raid.pveLoyaltyLevel));

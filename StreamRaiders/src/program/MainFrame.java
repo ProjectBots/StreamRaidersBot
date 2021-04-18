@@ -314,6 +314,31 @@ public class MainFrame {
 						}
 					});
 					opt.addBut(cai);
+					
+					Button udas = new Button();
+					udas.setPos(0, 4);
+					udas.setText("update stats");
+					udas.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							for(String key : profiles.keySet()) 
+								profiles.get(key).saveStats();
+						}
+					});
+					opt.addBut(udas);
+					
+					Button resStats = new Button();
+					resStats.setPos(0, 5);
+					resStats.setText("Reset all Stats");
+					resStats.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							if(opt.showConfirmationBox("Reset all the Stats?")) 
+								for(String key : configs.keySet())
+									getConfig(key).add("stats", new JsonArray());
+						}
+					});
+					opt.addBut(resStats);
 				}
 			});
 			head.addBut(opt);
@@ -766,6 +791,18 @@ public class MainFrame {
 				}
 				
 				gui.addContainer(minMax);
+				
+				Button resStat = new Button();
+				resStat.setPos(0, 3);
+				resStat.setText("Reset Stats");
+				resStat.setAL(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						if(gui.showConfirmationBox("Reset Stats?"))
+							getConfig(name).add("stats", new JsonArray());
+					}
+				});
+				gui.addBut(resStat);
 			}
 		});
 		part.addBut(stngs);
