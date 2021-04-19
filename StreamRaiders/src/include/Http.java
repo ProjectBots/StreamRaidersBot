@@ -1,7 +1,9 @@
 package include;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +47,7 @@ public class Http {
 
 	
 	
-	public String sendGet() throws Exception {
+	public String sendGet() throws URISyntaxException, IOException {
 		
 		URIBuilder uri = new URIBuilder(this.url);
 		
@@ -54,7 +56,6 @@ public class Http {
 		for(int i=0; i<headers.length; i++) {
 			get.setHeader(headers[i]);
 		}
-		
 		
 		CloseableHttpClient client = HttpClients.createDefault();
 		CloseableHttpResponse response = client.execute(get);
@@ -72,7 +73,7 @@ public class Http {
 	
 	
 	
-	public String sendUrlEncoded() throws Exception {
+	public String sendUrlEncoded() throws URISyntaxException, IOException {
 		
 		UrlEncodedFormEntity entity = new UrlEncodedFormEntity(encArgs, Consts.UTF_8);
 		

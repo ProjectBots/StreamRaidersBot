@@ -1,5 +1,7 @@
 package program;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 
 import com.google.gson.JsonObject;
@@ -69,13 +71,13 @@ public class SRR {
 	}
 	
 	
-	public SRR(String cookies, String clientVersion) throws OutdatedDataException, NoInternetException {
+	public SRR(String cookies, String clientVersion) throws Exception {
 		this.cookies = cookies;
 		this.clientVersion = clientVersion;
 		reload();
 	}
 	
-	public String reload() throws OutdatedDataException, NoInternetException {
+	public String reload() throws URISyntaxException, IOException, NoInternetException, OutdatedDataException {
 		userId = null;
 		gameDataVersion = "";
 		isCaptain = "";
@@ -108,7 +110,7 @@ public class SRR {
 		return getPost(cn, true);
 	}
 
-	public Http getPost(String cn, boolean addUser) {
+	private Http getPost(String cn, boolean addUser) {
 		Http post = new Http();
 		
 		post.addHeader("User-Agent", userAgent);
@@ -129,218 +131,118 @@ public class SRR {
 		return post;
 	}
 	
-	
-	private String getUser() throws NoInternetException {
-		Http post = getPost("getUser");
-		post.addEncArg("skipDateCheck", "true");
-		
-		String text = null;
+	private String sendPost(Http post) throws IOException, NoInternetException, URISyntaxException  {
 		try {
-			text = post.sendUrlEncoded();
+			return post.sendUrlEncoded();
 		} catch (UnknownHostException e) {
 			throw new NoInternetException();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
-		return text;
+	}
+	
+	private String getUser() throws URISyntaxException, IOException, NoInternetException {
+		Http post = getPost("getUser");
+		post.addEncArg("skipDateCheck", "true");
+		return sendPost(post);
 	}
 	
 	
-	public String unlockUnit(String unitType) {
+	public String unlockUnit(String unitType) throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("unlockUnit");
 		post.addEncArg("unitType", unitType);
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 	
 	
-	public String upgradeUnit(String unitType, String unitLevel, String unitId) {
+	public String upgradeUnit(String unitType, String unitLevel, String unitId) throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("upgradeUnit");
 		post.addEncArg("unitType", unitType);
 		post.addEncArg("unitLevel", unitLevel);
 		post.addEncArg("unitId", unitId);
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 	
 	
-	public String specializeUnit(String unitType, String unitLevel, String unitId, String specializationUid) {
+	public String specializeUnit(String unitType, String unitLevel, String unitId, String specializationUid) throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("specializeUnit");
 		post.addEncArg("unitType", unitType);
 		post.addEncArg("unitLevel", unitLevel);
 		post.addEncArg("unitId", unitId);
 		post.addEncArg("specializationUid", specializationUid);
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 	
 	
-	public String getAvailableCurrencies() {
-		Http post = getPost("getAvailableCurrencies");
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+	public String getAvailableCurrencies() throws URISyntaxException, IOException, NoInternetException {
+		return sendPost(getPost("getAvailableCurrencies"));
 	}
 	
 	
-	public String collectQuestReward(String slotId) {
+	public String collectQuestReward(String slotId) throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("collectQuestReward");
 		post.addEncArg("slotId", slotId);
 		post.addEncArg("autoComplete", "False");
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 	
 	
-	public String getUserQuests() {
-		Http post = getPost("getUserQuests");
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+	public String getUserQuests() throws URISyntaxException, IOException, NoInternetException {
+		return sendPost(getPost("getUserQuests"));
 	}
 	
 	
-	public String getCurrentStoreItems() {
-		Http post = getPost("getCurrentStoreItems");
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+	public String getCurrentStoreItems() throws URISyntaxException, IOException, NoInternetException {
+		return sendPost(getPost("getCurrentStoreItems"));
 	}
 	
 	
-	public String purchaseStoreItem(String itemId) {
+	public String purchaseStoreItem(String itemId) throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("purchaseStoreItem");
 		post.addEncArg("itemId", itemId);
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 	
 	
-	public String grantEventReward(String eventId, String rewardTier, boolean collectBattlePass) {
+	public String grantEventReward(String eventId, String rewardTier, boolean collectBattlePass) throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("grantEventReward");
 		post.addEncArg("eventId", eventId);
 		post.addEncArg("rewardTier", rewardTier);
 		post.addEncArg("collectBattlePass", (collectBattlePass ? "True" : "False"));
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 	
 	
-	public String getUserEventProgression() {
+	public String getUserEventProgression() throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("getUserEventProgression", false);
 		post.addEncArg("userId", "");
 		post.addEncArg("isCaptain", isCaptain);
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 	
 	
-	public String updateFavoriteCaptains(String captainId, boolean fav) {
-		
+	public String updateFavoriteCaptains(String captainId, boolean fav) throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("updateFavoriteCaptains");
 		post.addEncArg("isFavorited", (fav ? "True" : "False"));
 		post.addEncArg("captainId", captainId);
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 	
 	
-	public String addPlayerToRaid(String captainId, String userSortIndex) {
-		
+	public String addPlayerToRaid(String captainId, String userSortIndex) throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("addPlayerToRaid");
 		post.addEncArg("userSortIndex", userSortIndex);
 		post.addEncArg("captainId", captainId);
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 	
 	
-	public String leaveCaptain(String captainId) {
-		
+	public String leaveCaptain(String captainId) throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("leaveCaptain");
 		post.addEncArg("captainId", captainId);
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 	
 	
-	public String getCaptainsForSearch(int page, int resultsPerPage, boolean fav, boolean live, boolean searchForCaptain, String name) {
-		
+	public String getCaptainsForSearch(int page, int resultsPerPage, boolean fav, boolean live, boolean searchForCaptain, String name) throws URISyntaxException, IOException, NoInternetException {
 		JsonObject filter = new JsonObject();
 		filter.addProperty("favorite", (fav ? "true" : "false"));
 		if(name != null) filter.addProperty((searchForCaptain ? "twitchUserName" : "mainGame"), name);
@@ -352,133 +254,67 @@ public class SRR {
 		post.addEncArg("resultsPerPage", ""+resultsPerPage);
 		post.addEncArg("filters", filter.toString());
 		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 
 	
-	public String getRaidPlan(String raidId) {
-		
+	public String getRaidPlan(String raidId) throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("getRaidPlan");
 		post.addEncArg("raidId", raidId);
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 	
 	
-	public String getCurrentTime() {
-		Http post = getPost("getCurrentTime");
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+	public String getCurrentTime() throws URISyntaxException, IOException, NoInternetException {
+		return sendPost(getPost("getCurrentTime"));
 	}
 
 	
-	public String getRaid(String raidId) {
-		
+	public String getRaid(String raidId) throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("getRaid");
 		post.addEncArg("raidId", raidId);
 		post.addEncArg("maybeSendNotifs", "False");
 		post.addEncArg("placementStartIndex", "0");
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 	
 	
-	public String getActiveRaidsByUser() {
-		
+	public String getActiveRaidsByUser() throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("getActiveRaidsByUser");
 		post.addEncArg("placementStartIndices", "{}");
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 	
 	
-	public String getMapData(String map) {
-		
+	public String getMapData(String map) throws URISyntaxException, IOException, NoInternetException {
 		Http get = new Http();
 		get.setUrl("https://d2k2g0zg1te1mr.cloudfront.net/maps/" + map + ".txt");
 		get.addHeader("User-Agent", userAgent);
 		
-		String ret = null;
 		try {
-			ret = get.sendGet();
-		} catch (Exception e) {
-			e.printStackTrace();
+			return get.sendGet();
+		} catch (UnknownHostException e) {
+			throw new NoInternetException();
 		}
-		return ret;
 	}
 	
 	
-	public String getRaidStatsByUser(String raidId) {
-
+	public String getRaidStatsByUser(String raidId) throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("getRaidStatsByUser");
 		post.addEncArg("raidId", raidId);
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 	
 	
-	public String addToRaid(String raidId, String placementData) {
-
+	public String addToRaid(String raidId, String placementData) throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("addToRaid");
 		post.addEncArg("raidId", raidId);
 		post.addEncArg("placementData", placementData);
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+		return sendPost(post);
 	}
 	
 	
-	public String getUserUnits() {
-
-		Http post = getPost("getUserUnits");
-		
-		String text = null;
-		try {
-			text = post.sendUrlEncoded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return text;
+	public String getUserUnits() throws URISyntaxException, IOException, NoInternetException {
+		return sendPost(getPost("getUserUnits"));
 	}
 }

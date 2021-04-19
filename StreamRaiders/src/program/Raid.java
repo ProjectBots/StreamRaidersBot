@@ -1,5 +1,7 @@
 package program;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Hashtable;
 
 import com.google.gson.JsonArray;
@@ -8,6 +10,7 @@ import com.google.gson.JsonObject;
 
 import include.JsonParser;
 import include.Time;
+import program.SRR.NoInternetException;
 
 public class Raid {
 
@@ -87,7 +90,7 @@ public class Raid {
 		typViewChestRews.put("epicpotion", "potion");
 	}
 	
-	public JsonObject getChest(SRR req) {
+	public JsonObject getChest(SRR req) throws URISyntaxException, IOException, NoInternetException {
 		JsonObject ret = new JsonObject();
 		
 		JsonObject rawData = JsonParser.json(req.getRaidStatsByUser(raid.getAsJsonPrimitive("raidId").getAsString())).getAsJsonObject("data");

@@ -1,5 +1,7 @@
 package program;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
@@ -9,6 +11,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.JsonParser;
+import program.SRR.NoInternetException;
 
 public class Store {
 
@@ -18,12 +21,12 @@ public class Store {
 	private JsonArray shopItems = new JsonArray();
 	private Hashtable<String, Integer> currency = new Hashtable<>();
 	
-	public Store(SRR req) {
+	public Store(SRR req) throws URISyntaxException, IOException, NoInternetException {
 		refreshCurrency(req);
 		refreshStoreItems(req);
 	}
 	
-	public void refreshCurrency(SRR req) {
+	public void refreshCurrency(SRR req) throws URISyntaxException, IOException, NoInternetException {
 		currency = new Hashtable<>();
 		JsonArray cs = JsonParser.json(req.getAvailableCurrencies()).getAsJsonArray("data");
 		for(int i=0; i<cs.size(); i++) {
@@ -32,7 +35,7 @@ public class Store {
 		}
 	}
 	
-	public void refreshStoreItems(SRR req) {
+	public void refreshStoreItems(SRR req) throws URISyntaxException, IOException, NoInternetException {
 		shopItems = JsonParser.json(req.getCurrentStoreItems()).getAsJsonArray("data");
 	}
 	
@@ -87,7 +90,7 @@ public class Store {
 	}
 	
 	
-	public String upgradeUnit(Unit unit, SRR req, String specUID) {
+	public String upgradeUnit(Unit unit, SRR req, String specUID) throws URISyntaxException, IOException, NoInternetException {
 		String lvl = unit.get(SRC.Unit.level);
 		JsonObject ret;
 		int cost = Integer.parseInt(
@@ -114,7 +117,7 @@ public class Store {
 	}
 	
 	
-	public String unlockUnit(String type, SRR req) {
+	public String unlockUnit(String type, SRR req) throws URISyntaxException, IOException, NoInternetException {
 		
 		int price = 0;
 		if(!canUnlockUnit(type)) return "not enough gold";
@@ -154,7 +157,7 @@ public class Store {
 	}
 	
 	
-	public String buyItem(JsonObject item, SRR req) {
+	public String buyItem(JsonObject item, SRR req) throws URISyntaxException, IOException, NoInternetException {
 		if(item.getAsJsonPrimitive("purchased").getAsInt() == 1) return "already purchased";
 		
 		int price = item.getAsJsonPrimitive("price").getAsInt();

@@ -1,10 +1,14 @@
 package program;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import include.JsonParser;
 import program.QuestEventRewards.Quest.NoQuestException;
+import program.SRR.NoInternetException;
 
 public class QuestEventRewards {
 	
@@ -52,7 +56,7 @@ public class QuestEventRewards {
 			return slot;
 		}
 		
-		public String claim(SRR req) {
+		public String claim(SRR req) throws URISyntaxException, IOException, NoInternetException {
 			JsonElement err = JsonParser.json(req.collectQuestReward(slot)).get(SRC.errorMessage);
 			if(err.isJsonPrimitive()) return err.getAsString();
 			return null;
@@ -76,7 +80,7 @@ public class QuestEventRewards {
 	}
 	
 	
-	public void updateQuests(SRR req) {
+	public void updateQuests(SRR req) throws URISyntaxException, IOException, NoInternetException {
 		questTypes = JsonParser.json(StreamRaiders.get("quests"));
 		
 		JsonArray raw = JsonParser.json(req.getUserQuests()).getAsJsonArray("data");
@@ -99,7 +103,7 @@ public class QuestEventRewards {
 	
 	
 	
-	public void updateEvent(SRR req) {
+	public void updateEvent(SRR req) throws URISyntaxException, IOException, NoInternetException {
 		JsonObject raw = JsonParser.json(req.getUserEventProgression()).getAsJsonArray("data").get(0).getAsJsonObject();
 		
 		currentEvent = raw.getAsJsonPrimitive("eventUid").getAsString();
@@ -150,7 +154,7 @@ public class QuestEventRewards {
 		return !e.getAsBoolean();
 	}
 	
-	public String collectEvent(int p, boolean battlePass, SRR req) {
+	public String collectEvent(int p, boolean battlePass, SRR req) throws URISyntaxException, IOException, NoInternetException {
 		if(!canCollectEvent(p, battlePass)) return "cant collect";
 		JsonElement err = JsonParser.json(req.grantEventReward(currentEvent, ""+p, battlePass)).get(SRC.errorMessage);
 		return err.isJsonPrimitive() ? err.getAsString() : null;

@@ -53,7 +53,7 @@ public class MainFrame {
 	public static void open() {
 		
 		
-		gui = new GUI("StreamRaider Bot " + StreamRaiders.get("botVersion"), 700, 700);
+		gui = new GUI("StreamRaider Bot " + StreamRaiders.get("botVersion"), 900, 700);
 		
 		gui.addWinLis(new WinLis() {
 			@Override
@@ -465,28 +465,16 @@ public class MainFrame {
 		});
 		part.addBut(next);
 		
-		JsonArray locked = getConfig(name).getAsJsonArray("locked");
-		
 		for(int i=0; i<4; i++) {
-			String disName = ""+i;
-			try {
-				disName = locked.get(i).getAsString();
-			} catch (IndexOutOfBoundsException e) {}
-			
 			Label name1 = new Label();
-			name1.setText(disName);
+			name1.setText(""+i);
 			name1.setPos(2, i);
 			part.addLabel(name1, name+"::name::"+i);
 			
 			final int ii = i;
 			Button lockBut = new Button();
 			lockBut.setPos(3, i);
-			if(i >= locked.size()) {
-				lockBut.setText("\uD83D\uDD13");
-			} else {
-				lockBut.setText("\uD83D\uDD12");
-				lockBut.setBackground(Color.green);
-			}
+			lockBut.setText("\uD83D\uDD13");
 			lockBut.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -511,8 +499,36 @@ public class MainFrame {
 			});
 			part.addBut(lockBut, name+"::lockBut::"+i);
 			
+			
+			Button fav = new Button();
+			fav.setPos(4, i);
+			fav.setText("\uD83D\uDC94");
+			fav.setAL(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					JsonArray favs = getConfig(name).getAsJsonArray("favs");
+					SRRHelper srrh = profiles.get(name).getSRRH();
+					if(srrh != null) {
+						Raid[] raids = srrh.getRaids();
+						if(ii < raids.length) {
+							JsonElement disName = new JsonPrimitive(raids[ii].get(SRC.Raid.twitchDisplayName));
+							if(favs.contains(disName)) {
+								favs.remove(disName);
+								GUI.setText(name+"::favBut::"+ii, "\uD83D\uDC94");
+								GUI.setForeground(name+"::favBut::"+ii, Color.black);
+							} else {
+								favs.add(disName);
+								GUI.setText(name+"::favBut::"+ii, "\u2764");
+								GUI.setForeground(name+"::favBut::"+ii, new Color(227,27,35));
+							}
+						}
+					}
+				}
+			});
+			part.addBut(fav, name+"::favBut::"+i);
+			
 			Button map = new Button();
-			map.setPos(4, i);
+			map.setPos(5, i);
 			map.setText("Map");
 			map.setAL(new ActionListener() {
 				@Override
@@ -524,14 +540,14 @@ public class MainFrame {
 			
 			
 			Image chest = new Image("data/ChestPics/nochest.png");
-			chest.setPos(5, i);
+			chest.setPos(6, i);
 			chest.setSquare(30);
 			part.addImage(chest, name+"::chest::"+i);
 			
 		}
 		
 		Label s1 = new Label();
-		s1.setPos(6, 0);
+		s1.setPos(7, 0);
 		s1.setSpan(1, 4);
 		s1.setText("");
 		s1.setWeightX(1);
@@ -539,7 +555,7 @@ public class MainFrame {
 		part.addLabel(s1);
 		
 		Button seeRews = new Button();
-		seeRews.setPos(7, 0);
+		seeRews.setPos(8, 0);
 		seeRews.setSpan(1, 4);
 		seeRews.setFill('v');
 		seeRews.setText("\u26C1");
@@ -581,7 +597,7 @@ public class MainFrame {
 		part.addBut(seeRews);
 		
 		Button stngs = new Button();
-		stngs.setPos(8, 0);
+		stngs.setPos(9, 0);
 		stngs.setSpan(1, 4);
 		stngs.setFill('v');
 		stngs.setText("\u23E3");
@@ -808,7 +824,7 @@ public class MainFrame {
 		part.addBut(stngs);
 		
 		Button del = new Button();
-		del.setPos(9, 0);
+		del.setPos(10, 0);
 		del.setSpan(1, 4);
 		del.setFill('v');
 		del.setText("\uD83D\uDDD1");
