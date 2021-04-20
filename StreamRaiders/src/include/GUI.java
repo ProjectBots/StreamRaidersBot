@@ -208,6 +208,10 @@ public class GUI{
 	//	The Frame
 	private JFrame frame = new JFrame();
 	
+	private JFrame getFrame() {
+		return frame;
+	}
+	
 	//	Defining the default Color of Buttons
 	private static Color defButCol = new JButton().getBackground();
 	
@@ -231,19 +235,27 @@ public class GUI{
 		this.title = title;
 		size[0] = sizex;
 		size[1] = sizey;
-		window(false);
+		window(false, null);
 	}
+	
+	// Constructor, setting the options then do window
+		public GUI(String title, int sizex, int sizey, GUI relativeTo) {
+			this.title = title;
+			size[0] = sizex;
+			size[1] = sizey;
+			window(false, relativeTo);
+		}
 	
 	private GUI(boolean container) {
-		window(true);
+		window(true, null);
 	}
 	
-	private void window(boolean container) {
+	private void window(boolean container, GUI relativeTo) {
 		if(!container) {
 			//	make a JFrame
 			frame.setTitle(title);
 			frame.setSize(size[0], size[1]);
-			frame.setLocationRelativeTo(null);
+			frame.setLocationRelativeTo(relativeTo == null ? null : relativeTo.getFrame());
 			
 			//	set the default close operation
 			frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -648,6 +660,7 @@ public class GUI{
 		private Color back = null;
 		private Border border = null;
 		private Font font = null;
+		private String tooltip = null;
 		
 		public void setText(String text) {
 			this.text = text;
@@ -705,6 +718,14 @@ public class GUI{
 			return font;
 		}
 
+		public String getTooltip() {
+			return tooltip;
+		}
+
+		public void setTooltip(String tooltip) {
+			this.tooltip = tooltip;
+		}
+
 	}
 	
 	public void addLabel(Label opt, String id) {
@@ -735,6 +756,11 @@ public class GUI{
 		Font font = opt.getFont();
 		if(font != null) {
 			lab.setFont(font);
+		}
+		
+		String tt = opt.getTooltip();
+		if(tt != null) {
+			lab.setToolTipText(tt);
 		}
 		
 		addObj(opt, lab, id);
@@ -797,6 +823,10 @@ public class GUI{
 		Font f = opt.getFont();
 		if(f != null) {
 			cbut.setFont(f);
+		}
+		String tt = opt.getTooltip();
+		if(tt != null) {
+			cbut.setToolTipText(tt);
 		}
 		addObj(opt, cbut, opt.getId());
 	}
@@ -868,6 +898,10 @@ public class GUI{
 		int[] size = opt.getSize();
 		if(size != null) {
 			but.setPreferredSize(new Dimension(size[0], size[1]));
+		}
+		String tt = opt.getTooltip();
+		if(tt != null) {
+			but.setToolTipText(tt);
 		}
 		
 		addObj(opt, but, id);

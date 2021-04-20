@@ -78,6 +78,7 @@ public class MainFrame {
 			nextAll.setPos(0, 0);
 			nextAll.setText("\u23E9");
 			nextAll.setFont(new Font(null, Font.PLAIN, 20));
+			nextAll.setTooltip("skip time for all profiles");
 			nextAll.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -100,6 +101,7 @@ public class MainFrame {
 			refresh.setPos(2, 0);
 			refresh.setText("\u27F3");
 			refresh.setFont(new Font(null, Font.PLAIN, 20));
+			refresh.setTooltip("refresh");
 			refresh.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -112,10 +114,11 @@ public class MainFrame {
 			addPro.setPos(3, 0);
 			addPro.setText("+");
 			addPro.setFont(new Font(null, Font.PLAIN, 20));
+			addPro.setTooltip("add profile");
 			addPro.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					GUI np = new GUI("New Profile", 300, 400);
+					GUI np = new GUI("New Profile", 300, 400, gui);
 					
 					
 					Label lab1 = new Label();
@@ -127,11 +130,10 @@ public class MainFrame {
 						@Override
 						public void actionPerformed(ActionEvent e) {
 							String in = GUI.getInputText("newName");
-							if(in.equals("")) {
-								if(!np.showConfirmationBox("go ahead without a name for the profile?")) {
+							if(in.equals("")) 
+								if(!np.showConfirmationBox("go ahead without a name for the profile?")) 
 									return;
-								}
-							}
+							
 							Thread t = new Thread(new Runnable() {
 								@Override
 								public void run() {
@@ -168,14 +170,16 @@ public class MainFrame {
 			opt.setPos(4, 0);
 			opt.setText("\u23E3");
 			opt.setFont(new Font(null, Font.PLAIN, 20));
+			opt.setTooltip("general stuff");
 			opt.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					GUI opt = new GUI("Options", 400, 500);
+					GUI opt = new GUI("Options", 400, 500, gui);
 					
 					Button fm = new Button();
 					fm.setPos(0, 0);
 					fm.setText("forget me");
+					fm.setTooltip("deletes all profiles");
 					fm.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
@@ -303,7 +307,7 @@ public class MainFrame {
 							text.append("\n(tested for " + Math.round(hours) + " hours and " + min + " minutes)  ");
 							
 							
-							GUI ai = new GUI("Average Income per hour per profile", 400, 500);
+							GUI ai = new GUI("Average Income per hour per profile", 400, 500, opt);
 							
 							TextArea ta = new TextArea();
 							ta.setEditable(false);
@@ -414,6 +418,7 @@ public class MainFrame {
 		Label counter = new Label();
 		counter.setPos(2, 0);
 		counter.setText("");
+		counter.setTooltip("time until next round");
 		top.addLabel(counter, name + "::counter");
 		
 		Label s3 = new Label();
@@ -435,6 +440,7 @@ public class MainFrame {
 		start.setFill('v');
 		start.setText("\u23F5");
 		start.setFont(new Font(null, Font.PLAIN, 20));
+		start.setTooltip("start/stop");
 		start.setCBL(new CButListener() {
 			@Override
 			public void unselected(String id, ActionEvent e) {
@@ -457,6 +463,7 @@ public class MainFrame {
 		next.setFill('v');
 		next.setText("\u23E9");
 		next.setFont(new Font(null, Font.PLAIN, 20));
+		next.setTooltip("skip time");
 		next.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -475,6 +482,7 @@ public class MainFrame {
 			Button lockBut = new Button();
 			lockBut.setPos(3, i);
 			lockBut.setText("\uD83D\uDD13");
+			lockBut.setTooltip("lock/unlock streamer");
 			lockBut.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -503,6 +511,7 @@ public class MainFrame {
 			Button fav = new Button();
 			fav.setPos(4, i);
 			fav.setText("\uD83D\uDC94");
+			fav.setTooltip("favorite/unfavorite streamer");
 			fav.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -530,6 +539,7 @@ public class MainFrame {
 			Button map = new Button();
 			map.setPos(5, i);
 			map.setText("Map");
+			map.setTooltip("show map");
 			map.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -560,6 +570,7 @@ public class MainFrame {
 		seeRews.setFill('v');
 		seeRews.setText("\u26C1");
 		seeRews.setFont(new Font(null, Font.PLAIN, 20));
+		seeRews.setTooltip("show income");
 		seeRews.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -584,13 +595,13 @@ public class MainFrame {
 					text += "|" + key + " " + rews.getAsJsonPrimitive(key).getAsString() + "\n";
 				}
 				
-				GUI gui = new GUI("Rewards for " + name, 300, 300);
+				GUI guir = new GUI("Rewards for " + name, 300, 300, gui);
 				
 				TextArea ta = new TextArea();
 				ta.setEditable(false);
 				ta.setText(text);
 				ta.setPos(0, 0);
-				gui.addTextArea(ta);
+				guir.addTextArea(ta);
 				
 			}
 		});
@@ -602,10 +613,11 @@ public class MainFrame {
 		stngs.setFill('v');
 		stngs.setText("\u23E3");
 		stngs.setFont(new Font(null, Font.PLAIN, 20));
+		stngs.setTooltip("settings");
 		stngs.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				GUI gui = new GUI("Profile Settings", 900, 800);
+				GUI sgui = new GUI("Profile Settings", 900, 800, gui);
 				
 				JsonObject types = Unit.getTypes();
 				
@@ -671,7 +683,7 @@ public class MainFrame {
 							
 							String old = sCon.getAsJsonPrimitive(type).getAsString();
 							
-							GUI gspec = new GUI("specialize " + type, 400, 300);
+							GUI gspec = new GUI("specialize " + type, 400, 300, sgui);
 							
 							
 							for(int i=0; i<3; i++) {
@@ -713,7 +725,7 @@ public class MainFrame {
 					units.addContainer(unit);
 				}
 				
-				gui.addContainer(units);
+				sgui.addContainer(units);
 				
 
 				JsonArray chestTypes = JsonParser.jsonArr(StreamRaiders.get("chests"));
@@ -764,7 +776,7 @@ public class MainFrame {
 					}
 				}
 				
-				gui.addContainer(chests);
+				sgui.addContainer(chests);
 				
 				Container minMax = new Container();
 				minMax.setPos(0, 2);
@@ -806,7 +818,7 @@ public class MainFrame {
 					
 				}
 				
-				gui.addContainer(minMax);
+				sgui.addContainer(minMax);
 				
 				Button resStat = new Button();
 				resStat.setPos(0, 3);
@@ -814,11 +826,11 @@ public class MainFrame {
 				resStat.setAL(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						if(gui.showConfirmationBox("Reset Stats?"))
+						if(sgui.showConfirmationBox("Reset Stats?"))
 							getConfig(name).add("stats", new JsonArray());
 					}
 				});
-				gui.addBut(resStat);
+				sgui.addBut(resStat);
 			}
 		});
 		part.addBut(stngs);
@@ -829,6 +841,7 @@ public class MainFrame {
 		del.setFill('v');
 		del.setText("\uD83D\uDDD1");
 		del.setFont(new Font(null, Font.PLAIN, 20));
+		del.setTooltip("delete profile");
 		del.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
