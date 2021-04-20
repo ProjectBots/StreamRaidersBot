@@ -584,8 +584,8 @@ public class Run {
 				if((raids[i].isOffline(srrh.getServerTime(), true, 10)) ||
 						(ct.contains("bone") || !cCon.getAsJsonPrimitive(ct).getAsBoolean()) ||
 						((ct.contains("boosted") || ct.contains("super"))
-								? loy <= clmm.getAsJsonPrimitive("loyChestLoyMin").getAsInt()
-								: loy >= clmm.getAsJsonPrimitive("normChestLoyMax").getAsInt())) {
+								? loy < clmm.getAsJsonPrimitive("loyChestLoyMin").getAsInt()
+								: loy > clmm.getAsJsonPrimitive("normChestLoyMax").getAsInt())) {
 					bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
 					switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, caps);
 					changed = true;
