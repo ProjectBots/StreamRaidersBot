@@ -28,7 +28,7 @@ public class Store {
 	
 	public void refreshCurrency(SRR req) throws URISyntaxException, IOException, NoInternetException {
 		currency = new Hashtable<>();
-		JsonArray cs = JsonParser.json(req.getAvailableCurrencies()).getAsJsonArray("data");
+		JsonArray cs = JsonParser.parseObj(req.getAvailableCurrencies()).getAsJsonArray("data");
 		for(int i=0; i<cs.size(); i++) {
 			JsonObject c = cs.get(i).getAsJsonObject();
 			currency.put(c.getAsJsonPrimitive("currencyId").getAsString(), Integer.parseInt(c.getAsJsonPrimitive("quantity").getAsString()));
@@ -36,7 +36,7 @@ public class Store {
 	}
 	
 	public void refreshStoreItems(SRR req) throws URISyntaxException, IOException, NoInternetException {
-		shopItems = JsonParser.json(req.getCurrentStoreItems()).getAsJsonArray("data");
+		shopItems = JsonParser.parseObj(req.getCurrentStoreItems()).getAsJsonArray("data");
 	}
 	
 	public boolean canUpgradeUnit(Unit unit) {
@@ -102,9 +102,9 @@ public class Store {
 		if(lvl.equals("19") || lvl.equals("29")) {
 			if(specUID == null) return "no specUID";
 			if(specUID.equals("null")) return "no specUID";
-			ret = JsonParser.json(req.specializeUnit(unit.get(SRC.Unit.unitType), lvl, unit.get(SRC.Unit.unitId), specUID));
+			ret = JsonParser.parseObj(req.specializeUnit(unit.get(SRC.Unit.unitType), lvl, unit.get(SRC.Unit.unitId), specUID));
 		} else {
-			ret = JsonParser.json(req.upgradeUnit(unit.get(SRC.Unit.unitType), lvl, unit.get(SRC.Unit.unitId)));
+			ret = JsonParser.parseObj(req.upgradeUnit(unit.get(SRC.Unit.unitType), lvl, unit.get(SRC.Unit.unitId)));
 		}
 		
 		JsonElement err = ret.get(SRC.errorMessage);
@@ -125,7 +125,7 @@ public class Store {
 		String text = req.unlockUnit(type);
 		if(text == null) return "critical request error";
 		
-		JsonObject res = JsonParser.json(text);
+		JsonObject res = JsonParser.parseObj(text);
 		
 		JsonElement gc = res.getAsJsonObject("data").get("goldCharged");
 		if(!gc.isJsonPrimitive()) return res.getAsJsonPrimitive(SRC.errorMessage).getAsString();
@@ -168,7 +168,7 @@ public class Store {
 		if(price > gold) return "not enough gold";
 		
 		currency.put("gold", gold - price);
-		JsonObject text = JsonParser.json(req.purchaseStoreItem(item.getAsJsonPrimitive("itemId").getAsString()));
+		JsonObject text = JsonParser.parseObj(req.purchaseStoreItem(item.getAsJsonPrimitive("itemId").getAsString()));
 		if(!text.getAsJsonPrimitive("status").getAsString().equals("success")) return text.getAsJsonPrimitive(SRC.errorMessage).getAsString();
 		
 		shopItems = text.getAsJsonArray("data");

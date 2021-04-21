@@ -81,7 +81,7 @@ public class SRR {
 		userId = null;
 		gameDataVersion = "";
 		isCaptain = "";
-		JsonObject raw = JsonParser.json(getUser());
+		JsonObject raw = JsonParser.parseObj(getUser());
 		String data = raw.getAsJsonObject("info").getAsJsonPrimitive("dataPath").getAsString();
 		if(!data.equals(StreamRaiders.get("data"))) throw new OutdatedDataException(data);
 		
@@ -89,7 +89,7 @@ public class SRR {
 		if(!ver.equals(clientVersion)) {
 			printVerErr(clientVersion, ver);
 			this.clientVersion = ver;
-			raw = JsonParser.json(getUser());
+			raw = JsonParser.parseObj(getUser());
 			constructor(raw);
 			return ver;
 		} else {

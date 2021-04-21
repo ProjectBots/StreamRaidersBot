@@ -58,7 +58,7 @@ public class SRRHelper {
 	}
 	
 	private void updateDataPath(String dataPath) {
-		JsonObject data = JsonParser.json(SRR.getData(dataPath)).getAsJsonObject("sheets");
+		JsonObject data = JsonParser.parseObj(SRR.getData(dataPath)).getAsJsonObject("sheets");
 		StreamRaiders.set("obstacles", data.getAsJsonObject("Obstacles").toString());
 		StreamRaiders.set("quests", data.getAsJsonObject("Quests").toString());
 		StreamRaiders.set("mapNodes", data.getAsJsonObject("MapNodes").toString());
@@ -104,7 +104,7 @@ public class SRRHelper {
 	}
 	
 	public String placeUnit(Raid raid, Unit unit, boolean epic, int[] pos, boolean onPlanIcon) throws URISyntaxException, IOException, NoInternetException {
-		JsonElement je = JsonParser.json(req.addToRaid(raid.get(SRC.Raid.raidId),
+		JsonElement je = JsonParser.parseObj(req.addToRaid(raid.get(SRC.Raid.raidId),
 					createPlacementData(unit, epic, map.getAsSRCoords(pos), onPlanIcon)))
 				.get(SRC.errorMessage);
 		
@@ -128,9 +128,9 @@ public class SRRHelper {
 	public void loadMap(Raid raid) throws PvPException, URISyntaxException, IOException, NoInternetException {
 		String node = raid.get(SRC.Raid.nodeId);
 		if(node.contains("pvp")) throw new PvPException();
-		JsonElement je = JsonParser.json(req.getRaidPlan(raid.get(SRC.Raid.raidId))).get("data");
-		map = new Map(JsonParser.json(req.getMapData(raid.get(SRC.Raid.battleground))),
-				JsonParser.jsonArr(raid.get(SRC.Raid.placementsSerialized)),
+		JsonElement je = JsonParser.parseObj(req.getRaidPlan(raid.get(SRC.Raid.raidId))).get("data");
+		map = new Map(JsonParser.parseObj(req.getMapData(raid.get(SRC.Raid.battleground))),
+				JsonParser.parseArr(raid.get(SRC.Raid.placementsSerialized)),
 				(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null));
 	}
 	
@@ -210,7 +210,7 @@ public class SRRHelper {
 	}
 	
 	public String updateRaids() throws URISyntaxException, IOException, NoInternetException {
-		JsonObject jo = JsonParser.json(req.getActiveRaidsByUser());
+		JsonObject jo = JsonParser.parseObj(req.getActiveRaidsByUser());
 		JsonArray rs = jo.getAsJsonArray("data");
 		raids = new Raid[0];
 		for(int i=0; i<rs.size(); i++) {
@@ -227,7 +227,7 @@ public class SRRHelper {
 	}
 	
 	public JsonArray search(int page, int resultsPerPage, boolean fav, boolean live, boolean searchForCaptain, String name) throws URISyntaxException, IOException, NoInternetException {
-		JsonObject raw = JsonParser.json(req.getCaptainsForSearch(page, resultsPerPage, fav, live, searchForCaptain, name)).getAsJsonObject("data");
+		JsonObject raw = JsonParser.parseObj(req.getCaptainsForSearch(page, resultsPerPage, fav, live, searchForCaptain, name)).getAsJsonObject("data");
 		
 		pages = raw.getAsJsonPrimitive("lastPage").getAsInt();
 		
@@ -245,7 +245,7 @@ public class SRRHelper {
 	}
 	
 	public String setFavorite(JsonObject captain, boolean b) throws URISyntaxException, IOException, NoInternetException {
-		JsonElement err = JsonParser.json(req.updateFavoriteCaptains(captain.getAsJsonPrimitive(SRC.Raid.captainId).getAsString(), b))
+		JsonElement err = JsonParser.parseObj(req.updateFavoriteCaptains(captain.getAsJsonPrimitive(SRC.Raid.captainId).getAsString(), b))
 				.get(SRC.errorMessage);
 		if(err.isJsonPrimitive()) 
 			return err.getAsString();
@@ -254,7 +254,7 @@ public class SRRHelper {
 	}
 	
 	public String updateUnits() throws URISyntaxException, IOException, NoInternetException {
-		JsonObject jo = JsonParser.json(req.getUserUnits());
+		JsonObject jo = JsonParser.parseObj(req.getUserUnits());
 		JsonArray u = jo.getAsJsonArray("data");
 		units = new Unit[0];
 		for(int i=0; i<u.size(); i++) units = add(units, new Unit(u.get(i).getAsJsonObject()));

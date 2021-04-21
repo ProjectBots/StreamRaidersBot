@@ -87,7 +87,7 @@ public class MapConv {
 	
 	
 	public static Map load(String map) {
-		return new Map(JsonParser.jsonArr(map));
+		return new Map(JsonParser.parseArr(map));
 	}
 	
 	public static void save(String path, Map map) throws IOException {

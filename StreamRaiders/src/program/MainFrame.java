@@ -5,9 +5,6 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
@@ -29,7 +26,6 @@ import include.GUI.TextArea;
 import include.GUI.TextField;
 import include.GUI.WinLis;
 import include.JsonParser;
-import include.NEF;
 
 public class MainFrame {
 
@@ -137,11 +133,7 @@ public class MainFrame {
 							Thread t = new Thread(new Runnable() {
 								@Override
 								public void run() {
-									try {
-										new Browser(in);
-									} catch (Exception e1) {
-										e1.printStackTrace();
-									}
+									Browser.show(in);
 								}
 							});
 							t.start();
@@ -233,9 +225,9 @@ public class MainFrame {
 							JsonObject all = new JsonObject();
 							double hours = 0;
 							
-							for(String name : configs.keySet()) {
+							for(String name : Configs.keySet()) {
 								
-								JsonArray stats = configs.getAsJsonObject(name).getAsJsonArray("stats");
+								JsonArray stats = Configs.getArr(name, Configs.stats);
 								
 								for(int i=0; i<stats.size(); i++) {
 									JsonObject stat = stats.get(i).getAsJsonObject();
@@ -338,8 +330,8 @@ public class MainFrame {
 						@Override
 						public void actionPerformed(ActionEvent e) {
 							if(opt.showConfirmationBox("Reset all the Stats?")) 
-								for(String key : configs.keySet())
-									getConfig(key).add("stats", new JsonArray());
+								for(String key : Configs.keySet())
+									Configs.getProfile(key).add(Configs.stats.get(), new JsonArray());
 						}
 					});
 					opt.addBut(resStats);
@@ -364,34 +356,14 @@ public class MainFrame {
 	}
 	
 	private static void forget(String name) {
-		File pro = new File("profiles/" + name + ".app");
-		File con = new File("configs/" + name + ".app");
-		try {
-			pro.delete();
-			con.delete();
-			gui.remove(name + "::part");
-			remove(name);
-		} catch (Exception e) {
-			gui.msg("Error", "Error while trying to forget:\n" + name, GUI.MsgConst.ERROR);
-			e.printStackTrace();
-		}
+		Configs.remProfile(name);
+		gui.remove(name + "::part");
+		remove(name);
 	}
 	
 	private static int pos = 1;
 	
-	private static JsonObject configs = new JsonObject();
-	
-	public static JsonObject getConfig(String name) {
-		return configs.getAsJsonObject(name);
-	}
-	
 	private static void addProfile(String name) {
-		JsonObject defConfig = JsonParser.json(StreamRaiders.get("defConfig"));
-		try {
-			configs.add(name, JsonParser.json(NEF.read("configs/" + name + ".app"), defConfig, true));
-		} catch (IOException e) {
-			configs.add(name, defConfig);
-		}
 		
 		Container both = new Container();
 		both.setPos(0, pos++);
@@ -407,6 +379,7 @@ public class MainFrame {
 		Label profileName = new Label();
 		profileName.setPos(0, 0);
 		profileName.setText(name);
+		profileName.setTooltip("profile name");
 		top.addLabel(profileName);
 		
 		Label s2 = new Label();
@@ -476,6 +449,7 @@ public class MainFrame {
 			Label name1 = new Label();
 			name1.setText(""+i);
 			name1.setPos(2, i);
+			name1.setTooltip("name - wins|loyalty");
 			part.addLabel(name1, name+"::name::"+i);
 			
 			final int ii = i;
@@ -486,7 +460,7 @@ public class MainFrame {
 			lockBut.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					JsonArray locked = getConfig(name).getAsJsonArray("locked");
+					JsonArray locked = Configs.getArr(name, Configs.locked);
 					SRRHelper srrh = profiles.get(name).getSRRH();
 					if(srrh != null) {
 						Raid[] raids = srrh.getRaids();
@@ -515,7 +489,7 @@ public class MainFrame {
 			fav.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					JsonArray favs = getConfig(name).getAsJsonArray("favs");
+					JsonArray favs = Configs.getArr(name, Configs.favs);
 					SRRHelper srrh = profiles.get(name).getSRRH();
 					if(srrh != null) {
 						Raid[] raids = srrh.getRaids();
@@ -552,6 +526,7 @@ public class MainFrame {
 			Image chest = new Image("data/ChestPics/nochest.png");
 			chest.setPos(6, i);
 			chest.setSquare(30);
+			chest.setTooltip("the chest type this raid will bring");
 			part.addImage(chest, name+"::chest::"+i);
 			
 		}
@@ -621,11 +596,10 @@ public class MainFrame {
 				
 				JsonObject types = Unit.getTypes();
 				
-				JsonObject config = configs.getAsJsonObject(name);
-				JsonObject uCon = config.getAsJsonObject("units");
-				JsonObject sCon = config.getAsJsonObject("specs");
-				JsonObject cCon = config.getAsJsonObject("chests");
-				JsonObject clmm = config.getAsJsonObject("clmm");
+				JsonObject uCon = Configs.getObj(name, Configs.units);
+				JsonObject sCon = Configs.getObj(name, Configs.specs);
+				JsonObject cCon = Configs.getObj(name, Configs.chests);
+				JsonObject clmm = Configs.getObj(name, Configs.clmm);
 				
 				Container units = new Container();
 				units.setPos(0, 0);
@@ -679,7 +653,7 @@ public class MainFrame {
 					spec.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							final JsonArray uids = JsonParser.json(StreamRaiders.get("specUIDs")).getAsJsonArray(type);
+							final JsonArray uids = JsonParser.parseObj(StreamRaiders.get("specUIDs")).getAsJsonArray(type);
 							
 							String old = sCon.getAsJsonPrimitive(type).getAsString();
 							
@@ -728,7 +702,7 @@ public class MainFrame {
 				sgui.addContainer(units);
 				
 
-				JsonArray chestTypes = JsonParser.jsonArr(StreamRaiders.get("chests"));
+				JsonArray chestTypes = JsonParser.parseArr(StreamRaiders.get("chests"));
 				
 				Container chests = new Container();
 				chests.setPos(0, 1);
@@ -827,7 +801,7 @@ public class MainFrame {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						if(sgui.showConfirmationBox("Reset Stats?"))
-							getConfig(name).add("stats", new JsonArray());
+							Configs.getProfile(name).add(Configs.stats.get(), new JsonArray());
 					}
 				});
 				sgui.addBut(resStat);
@@ -861,34 +835,13 @@ public class MainFrame {
 	
 	private static final String[] rewBefore = new String[] {"gold", "token", "potion", "meat"};
 	
-	private static String[] getAppFiles(String folderpath) {
-		class Filter implements FilenameFilter {
-			@Override
-			public boolean accept(File dir, String name) {
-				if(!name.endsWith(".app")) return false;
-				return true;
-			}
-		}
-		
-		File folder = new File(folderpath);
-		
-		return folder.list(new Filter());
-	}
 	
 	public static void refresh() {
 		if(gui != null) {
-			String[] proFiles = getAppFiles("profiles");
-			if(proFiles == null) return;
-			for(int i=0; i<proFiles.length; i++) {
-				String name = proFiles[i].replace(".app", "");
-				if(!profiles.keySet().contains(name)) {
-					try {
-						add(name, new Run(name, NEF.read("profiles/" + proFiles[i]).replace("\n", "; ")));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
+			for(String key : Configs.keySet()) 
+				if(!profiles.keySet().contains(key)) 
+					add(key, new Run(key, Configs.getStr(key, Configs.cookies)));
+				
 			gui.refresh();
 		}
 	}
@@ -898,15 +851,12 @@ public class MainFrame {
 			gui.close();
 		} catch (Exception e) {}
 		
-		Set<String> keys = profiles.keySet();
-		for(String key : keys) {
+		Browser.dispose();
+		
+		for(String key : profiles.keySet()) 
 			profiles.get(key).setRunning(false);
-			try {
-				NEF.save("configs/" + key + ".app", JsonParser.prettyJson(configs.get(key)));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+		
+		Configs.save();
 		
 		System.exit(0);
 	}

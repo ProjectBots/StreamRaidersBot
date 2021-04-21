@@ -137,7 +137,7 @@ public class Map {
 			
 			String name = place.getAsJsonPrimitive("ObstacleName").getAsString();
 			
-			JsonObject obst = JsonParser.json(StreamRaiders.get("obstacles")).getAsJsonObject(name);
+			JsonObject obst = JsonParser.parseObj(StreamRaiders.get("obstacles")).getAsJsonObject(name);
 			
 			set(x, y, SRC.Map.isObstacle, true);
 			set(x, y, "name", name);

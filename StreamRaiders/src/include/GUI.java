@@ -403,6 +403,10 @@ public class GUI{
 		return JOptionPane.showConfirmDialog(frame.getContentPane(), msg, title, JOptionPane.OK_CANCEL_OPTION) == 0;
 	}
 	
+	public static boolean showConfirmationBoxStatic(String title, String msg) {
+		return JOptionPane.showConfirmDialog(null, msg, title, JOptionPane.OK_CANCEL_OPTION) == 0;
+	}
+	
 	//	Menu
 	public static class Menu {
 		
@@ -504,6 +508,7 @@ public class GUI{
 		private boolean scroll = false;
 		private int[] alignment = new int[] {GridBagConstraints.NONE, GridBagConstraints.WEST};
 		private double[] weight = new double[] {0, 0};
+		private String tooltip = null;
 		
 		
 		public void setInsets(int top, int left, int bottom, int right) {
@@ -584,6 +589,10 @@ public class GUI{
 		public void setWeightY(double y) {
 			weight[1] = y;
 		}
+		
+		public void setTooltip(String tooltip) {
+			this.tooltip = tooltip;
+		}
 
 
 		public Insets getIn() {
@@ -608,6 +617,10 @@ public class GUI{
 		
 		public double[] getWeight() {
 			return weight;
+		}
+		
+		public String getTooltip() {
+			return tooltip;
 		}
 	}
 	
@@ -660,7 +673,6 @@ public class GUI{
 		private Color back = null;
 		private Border border = null;
 		private Font font = null;
-		private String tooltip = null;
 		
 		public void setText(String text) {
 			this.text = text;
@@ -717,15 +729,6 @@ public class GUI{
 		public Font getFont() {
 			return font;
 		}
-
-		public String getTooltip() {
-			return tooltip;
-		}
-
-		public void setTooltip(String tooltip) {
-			this.tooltip = tooltip;
-		}
-
 	}
 	
 	public void addLabel(Label opt, String id) {
@@ -1416,9 +1419,13 @@ public class GUI{
 			
 			addObj(opt, imgl, id);
 			
-			if(id != null) {
+			String tt = opt.getTooltip();
+			if(tt != null)
+				imgl.setToolTipText(tt);
+			
+			if(id != null) 
 				addComp("image::"+id, img);
-			}
+			
 		} catch (Exception e) {
 			e(e);
 		}

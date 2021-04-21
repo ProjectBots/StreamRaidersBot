@@ -15,7 +15,7 @@ public class Unit {
 	private int rank = 0;
 	private JsonArray ptags = null;
 	
-	public static final JsonObject uTypes = JsonParser.json(StreamRaiders.get("unitTypes"));
+	public static final JsonObject uTypes = JsonParser.parseObj(StreamRaiders.get("unitTypes"));
 	
 	public static JsonArray getAllPlanTypes() {
 		return uTypes.getAsJsonArray("allTypes").deepCopy();

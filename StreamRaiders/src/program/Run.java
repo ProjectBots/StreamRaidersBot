@@ -124,7 +124,7 @@ public class Run {
 		jo.addProperty("time", sec);
 		jo.add("rewards", rews.deepCopy());
 
-		JsonArray stats = MainFrame.getConfig(name).getAsJsonArray("stats");
+		JsonArray stats = Configs.getArr(name, Configs.stats);
 		stats.add(jo);
 		
 		resetDateTime();
@@ -352,7 +352,7 @@ public class Run {
 	
 	private void upgradeUnits() throws URISyntaxException, IOException, NoInternetException {
 		
-		JsonObject sCon = MainFrame.getConfig(name).getAsJsonObject("specs");
+		JsonObject sCon = Configs.getObj(name, Configs.specs);
 		
 		Unit[] us = srrh.getUnits(SRC.Helper.canUpgradeUnit);
 		for(int i=0; i<us.length; i++) {
@@ -371,14 +371,12 @@ public class Run {
 	private boolean raids() throws URISyntaxException, IOException, NoInternetException {
 		boolean ret = false;
 		
-		JsonObject uCon = MainFrame.getConfig(name).getAsJsonObject("units");
-		JsonArray locked = MainFrame.getConfig(name).getAsJsonArray("locked");
-		JsonArray favs = MainFrame.getConfig(name).getAsJsonArray("favs");
+		JsonObject uCon = Configs.getObj(name, Configs.units);
+		JsonArray locked = Configs.getArr(name, Configs.locked);
+		JsonArray favs = Configs.getArr(name, Configs.favs);
 		
 		Unit[] units = srrh.getUnits(SRC.Helper.canPlaceUnit);
-
 		Raid[] plra = srrh.getRaids(SRC.Helper.canPlaceUnit);
-
 		Raid[] all = srrh.getRaids();
 
 		for(int i=0; i<4; i++) {
@@ -550,11 +548,11 @@ public class Run {
 			if(Time.isAfter(bannedCaps.getAsJsonPrimitive(cap).getAsString(), srrh.getServerTime()))
 				bannedCaps.remove(cap);
 		
-		JsonArray locked = MainFrame.getConfig(name).getAsJsonArray("locked");
+		JsonArray locked = Configs.getArr(name, Configs.locked);
 		
 		boolean changed = false;
-		JsonObject cCon = MainFrame.getConfig(name).getAsJsonObject("chests");
-		JsonObject clmm = MainFrame.getConfig(name).getAsJsonObject("clmm");
+		JsonObject cCon = Configs.getObj(name, Configs.chests);
+		JsonObject clmm = Configs.getObj(name, Configs.clmm);
 		JsonArray caps = new JsonArray();
 		int pages = 3;
 		for(int i=1; i<pages && i<=15; i++) {
@@ -612,7 +610,7 @@ public class Run {
 		JsonObject cap = null;
 		int oldLoy = -1;
 
-		JsonArray favs = MainFrame.getConfig(name).getAsJsonArray("favs");
+		JsonArray favs = Configs.getArr(name, Configs.favs);
 		boolean fav = false;
 		
 		for(int i=0; i<caps.size(); i++) {

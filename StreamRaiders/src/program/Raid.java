@@ -18,7 +18,7 @@ public class Raid {
 	private JsonObject node = null;
 	
 	public void addNode(String node) {
-		this.node = JsonParser.json(StreamRaiders.get("mapNodes")).getAsJsonObject(node);
+		this.node = JsonParser.parseObj(StreamRaiders.get("mapNodes")).getAsJsonObject(node);
 	}
 	
 	public String getFromNode(String con) {
@@ -93,7 +93,7 @@ public class Raid {
 	public JsonObject getChest(SRR req) throws URISyntaxException, IOException, NoInternetException {
 		JsonObject ret = new JsonObject();
 		
-		JsonObject rawData = JsonParser.json(req.getRaidStatsByUser(raid.getAsJsonPrimitive("raidId").getAsString())).getAsJsonObject("data");
+		JsonObject rawData = JsonParser.parseObj(req.getRaidStatsByUser(raid.getAsJsonPrimitive("raidId").getAsString())).getAsJsonObject("data");
 		
 		JsonElement chest = rawData.get("chestAwarded");
 		if(chest.isJsonPrimitive()) ret.addProperty(chest.getAsString(), 1);

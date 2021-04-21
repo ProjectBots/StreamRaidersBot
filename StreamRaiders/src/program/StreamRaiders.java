@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Hashtable;
 
+import include.GUI;
 import include.NEF;
 
 public class StreamRaiders {
@@ -76,6 +77,29 @@ public class StreamRaiders {
 				+ "Version: " + get("botVersion") + "\r\n");
 		
 		Raid.loadTypViewChestRews();
+		try {
+			Browser.create();
+		} catch (IOException | RuntimeException e) {
+			System.err.println("Couldnt initialize embeded Browser");
+			return;
+		}
+		try {
+			Configs.load();
+		} catch (IOException e) {
+			log("load configs", e);
+			if(GUI.showConfirmationBoxStatic("Loading Configs", "config file is corrupted\r\nreset?")) {
+				try {
+					Configs.load(true);
+				} catch (IOException e1) {}
+			} else {
+				return;
+			}
+				
+		}
 		MainFrame.open();
+	}
+	
+	public static void close() {
+		//TODO
 	}
 }

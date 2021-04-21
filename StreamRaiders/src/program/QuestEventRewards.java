@@ -57,7 +57,7 @@ public class QuestEventRewards {
 		}
 		
 		public String claim(SRR req) throws URISyntaxException, IOException, NoInternetException {
-			JsonElement err = JsonParser.json(req.collectQuestReward(slot)).get(SRC.errorMessage);
+			JsonElement err = JsonParser.parseObj(req.collectQuestReward(slot)).get(SRC.errorMessage);
 			if(err.isJsonPrimitive()) return err.getAsString();
 			return null;
 		}
@@ -81,9 +81,9 @@ public class QuestEventRewards {
 	
 	
 	public void updateQuests(SRR req) throws URISyntaxException, IOException, NoInternetException {
-		questTypes = JsonParser.json(StreamRaiders.get("quests"));
+		questTypes = JsonParser.parseObj(StreamRaiders.get("quests"));
 		
-		JsonArray raw = JsonParser.json(req.getUserQuests()).getAsJsonArray("data");
+		JsonArray raw = JsonParser.parseObj(req.getUserQuests()).getAsJsonArray("data");
 		quests = new Quest[0];
 		
 		for(int i=0; i<raw.size(); i++) {
@@ -104,7 +104,7 @@ public class QuestEventRewards {
 	
 	
 	public void updateEvent(SRR req) throws URISyntaxException, IOException, NoInternetException {
-		JsonObject raw = JsonParser.json(req.getUserEventProgression()).getAsJsonArray("data").get(0).getAsJsonObject();
+		JsonObject raw = JsonParser.parseObj(req.getUserEventProgression()).getAsJsonArray("data").get(0).getAsJsonObject();
 		
 		currentEvent = raw.getAsJsonPrimitive("eventUid").getAsString();
 		hasBattlePass = raw.getAsJsonPrimitive("hasBattlePass").getAsInt() == 1;
@@ -156,7 +156,7 @@ public class QuestEventRewards {
 	
 	public String collectEvent(int p, boolean battlePass, SRR req) throws URISyntaxException, IOException, NoInternetException {
 		if(!canCollectEvent(p, battlePass)) return "cant collect";
-		JsonElement err = JsonParser.json(req.grantEventReward(currentEvent, ""+p, battlePass)).get(SRC.errorMessage);
+		JsonElement err = JsonParser.parseObj(req.grantEventReward(currentEvent, ""+p, battlePass)).get(SRC.errorMessage);
 		return err.isJsonPrimitive() ? err.getAsString() : null;
 	}
 	
