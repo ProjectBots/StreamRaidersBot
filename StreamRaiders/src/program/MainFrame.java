@@ -172,6 +172,7 @@ public class MainFrame {
 					fm.setPos(0, 0);
 					fm.setText("forget me");
 					fm.setTooltip("deletes all profiles");
+					fm.setInsets(20, 2, 2, 2);
 					fm.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
@@ -186,26 +187,9 @@ public class MainFrame {
 					s1.setText("");
 					opt.addLabel(s1);
 					
-					TextArea don = new TextArea();
-					don.setPos(0, 2);
-					don.setEditable(false);
-					don.setText("Donations:\n"
-							+ "Bitcoin:\n"
-							+ "3FUVTkAijeuNgDyvrvvcGiAXhbxGhyCGBR\n"
-							+ "\n"
-							+ "Litecoin:\n"
-							+ "MP8Y6X6irqarK8KpL6LkWnZpW4LZgGZgWU\n"
-							+ "\n"
-							+ "Ethereum:\n"
-							+ "0x0c9a44a9b6388f030d91dec2ed50b6d3139418a1\n"
-							+ "\n"
-							+ "Monero:\n"
-							+ "49Jk21tDSxsHGvzK7JrMu5UxrKhvkXu3xCXsrrNyqGJc1Kus27PUHZDDSK13fCQL8S7BcokBM3tbX7fwg1cFt6QeE3ycaYT\n"
-					);
-					opt.addTextArea(don);
 					
 					Button cai = new Button();
-					cai.setPos(0, 3);
+					cai.setPos(0, 2);
 					cai.setText("show stats");
 					cai.setAL(new ActionListener() {
 						
@@ -312,7 +296,7 @@ public class MainFrame {
 					opt.addBut(cai);
 					
 					Button udas = new Button();
-					udas.setPos(0, 4);
+					udas.setPos(0, 3);
 					udas.setText("update stats");
 					udas.setAL(new ActionListener() {
 						@Override
@@ -324,7 +308,7 @@ public class MainFrame {
 					opt.addBut(udas);
 					
 					Button resStats = new Button();
-					resStats.setPos(0, 5);
+					resStats.setPos(0, 4);
 					resStats.setText("Reset all Stats");
 					resStats.setAL(new ActionListener() {
 						@Override
@@ -335,6 +319,30 @@ public class MainFrame {
 						}
 					});
 					opt.addBut(resStats);
+					
+					
+					opt.addContainer(Donators.getContainer(0, 5));
+					
+					TextArea don = new TextArea();
+					don.setPos(0, 6);
+					don.setEditable(false);
+					don.setText("Donations:\n"
+							+ "Paypal:\n"
+							+ "https://paypal.me/projectbots\n"
+							+ "\n"
+							+ "Bitcoin:\n"
+							+ "3FUVTkAijeuNgDyvrvvcGiAXhbxGhyCGBR\n"
+							+ "\n"
+							+ "Litecoin:\n"
+							+ "MP8Y6X6irqarK8KpL6LkWnZpW4LZgGZgWU\n"
+							+ "\n"
+							+ "Ethereum:\n"
+							+ "0x0c9a44a9b6388f030d91dec2ed50b6d3139418a1\n"
+							+ "\n"
+							+ "Monero:\n"
+							+ "49Jk21tDSxsHGvzK7JrMu5UxrKhvkXu3xCXsrrNyqGJc1Kus27PUHZDDSK13fCQL8S7BcokBM3tbX7fwg1cFt6QeE3ycaYT\n"
+					);
+					opt.addTextArea(don);
 				}
 			});
 			head.addBut(opt);

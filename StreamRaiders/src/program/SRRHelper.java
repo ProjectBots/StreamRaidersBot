@@ -227,7 +227,10 @@ public class SRRHelper {
 	}
 	
 	public JsonArray search(int page, int resultsPerPage, boolean fav, boolean live, boolean searchForCaptain, String name) throws URISyntaxException, IOException, NoInternetException {
-		JsonObject raw = JsonParser.parseObj(req.getCaptainsForSearch(page, resultsPerPage, fav, live, searchForCaptain, name)).getAsJsonObject("data");
+		JsonObject rawd = JsonParser.parseObj(req.getCaptainsForSearch(page, resultsPerPage, fav, live, searchForCaptain, name));
+		if(rawd == null) return new JsonArray();
+		
+		JsonObject raw = rawd.getAsJsonObject("data");
 		
 		pages = raw.getAsJsonPrimitive("lastPage").getAsInt();
 		

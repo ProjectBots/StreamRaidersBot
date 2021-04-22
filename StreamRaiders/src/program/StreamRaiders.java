@@ -98,8 +98,4 @@ public class StreamRaiders {
 		}
 		MainFrame.open();
 	}
-	
-	public static void close() {
-		//TODO
-	}
 }

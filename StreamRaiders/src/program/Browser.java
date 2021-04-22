@@ -7,6 +7,7 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import javax.swing.JFrame;
 import org.cef.CefApp;
+import org.cef.CefApp.CefAppState;
 import org.cef.CefClient;
 import org.cef.CefSettings;
 import org.cef.CefSettings.LogSeverity;
@@ -41,11 +42,16 @@ public class Browser {
 	public static void create() throws IOException, RuntimeException {
 		
 		
-		CefApp.addAppHandler(new CefAppHandlerAdapter(null) {});
+		CefApp.addAppHandler(new CefAppHandlerAdapter(null) {
+			@Override
+            public void stateHasChanged(org.cef.CefApp.CefAppState state) {
+                if (state == CefAppState.TERMINATED) System.exit(0);
+            }
+		});
 		CefSettings settings = new CefSettings();
 		settings.windowless_rendering_enabled = useOSR;
 		settings.log_severity = LogSeverity.LOGSEVERITY_DISABLE;
-			
+		
 		
 		GUI load = new GUI("Embeded Browser", 300, 300);
 			
