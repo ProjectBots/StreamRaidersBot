@@ -11,6 +11,7 @@ let the website load, then just close the browser.
 wait a few seconds until you see the profile.  
 press the play button and watch how it farms for you.  
 
+
 to prevent bans this bot will wait 100 - 720 sec before it checks the raids again.
 
 you can skip the wait by pressing the next button.  
