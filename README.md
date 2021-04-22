@@ -9,7 +9,7 @@ enter a profilename (dont need to be the account name).
 hit enter, a browser will open where you login to StreamRaiders.  
 let the website load, then just close the browser.  
 wait a few seconds until you see the profile.  
-press the play button and whatch how it farms for you.  
+press the play button and watch how it farms for you.  
 
 to prevent bans this bot will wait 100 - 720 sec before it checks the raids again.
 
@@ -70,4 +70,4 @@ TODO:
 - much more options to customise (preferred Units, ~captains~, ~chests~)  
 - automatic update?  
 - mod support?  
-- better readme file
+- better readme file  
