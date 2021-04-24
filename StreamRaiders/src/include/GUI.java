@@ -8,10 +8,12 @@ import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -27,6 +29,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -47,6 +50,7 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.JTextComponent;
@@ -235,27 +239,37 @@ public class GUI{
 		this.title = title;
 		size[0] = sizex;
 		size[1] = sizey;
-		window(false, null);
+		window(false, null, null);
 	}
 	
 	// Constructor, setting the options then do window
-		public GUI(String title, int sizex, int sizey, GUI relativeTo) {
+		public GUI(String title, int sizex, int sizey, GUI relativeTo, Point p) {
 			this.title = title;
 			size[0] = sizex;
 			size[1] = sizey;
-			window(false, relativeTo);
+			window(false, relativeTo, p);
 		}
 	
 	private GUI(boolean container) {
-		window(true, null);
+		window(true, null, null);
 	}
 	
-	private void window(boolean container, GUI relativeTo) {
+	private void window(boolean container, GUI relativeTo, Point pos) {
 		if(!container) {
 			//	make a JFrame
 			frame.setTitle(title);
 			frame.setSize(size[0], size[1]);
-			frame.setLocationRelativeTo(relativeTo == null ? null : relativeTo.getFrame());
+			if(pos == null) {
+				frame.setLocationRelativeTo(relativeTo == null ? null : relativeTo.getFrame());
+			} else {
+				if(relativeTo == null) {
+					frame.setLocation(pos);
+				} else {
+					Point p = relativeTo.getFrame().getLocation();
+					p.translate(pos.x, pos.y);
+					frame.setLocation(p);
+				}
+			}
 			
 			//	set the default close operation
 			frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -305,6 +319,11 @@ public class GUI{
 			}
 		});
 	}
+	
+	public void addKeyListener(KeyListener kl) {
+		frame.addKeyListener(kl);
+	}
+	
 	
 	public JPanel getPane() {
 		return pane;
@@ -405,6 +424,18 @@ public class GUI{
 	
 	public static boolean showConfirmationBoxStatic(String title, String msg) {
 		return JOptionPane.showConfirmDialog(null, msg, title, JOptionPane.OK_CANCEL_OPTION) == 0;
+	}
+	
+	public String showFileChooser(String title, boolean save) {
+		JFileChooser fc = new JFileChooser();
+		fc.setDialogTitle(title);
+		
+		int selected = save ? fc.showSaveDialog(frame) : fc.showOpenDialog(frame);
+		
+		if(selected == JFileChooser.APPROVE_OPTION) 
+			return fc.getSelectedFile().getAbsolutePath();
+		
+		return null;
 	}
 	
 	//	Menu
@@ -509,6 +540,7 @@ public class GUI{
 		private int[] alignment = new int[] {GridBagConstraints.NONE, GridBagConstraints.WEST};
 		private double[] weight = new double[] {0, 0};
 		private String tooltip = null;
+		private KeyListener kl = null;
 		
 		
 		public void setInsets(int top, int left, int bottom, int right) {
@@ -594,6 +626,9 @@ public class GUI{
 			this.tooltip = tooltip;
 		}
 
+		public void setKeyLis(KeyListener kl) {
+			this.kl = kl;
+		}
 
 		public Insets getIn() {
 			return in;
@@ -622,6 +657,10 @@ public class GUI{
 		public String getTooltip() {
 			return tooltip;
 		}
+		
+		public KeyListener getKeyLis() {
+			return kl;
+		}
 	}
 	
 	//	very often used
@@ -643,20 +682,27 @@ public class GUI{
 	}
 	
 	//	adds the components to the pane
-	private void addObj(Object opt, Object obj, String id) {
+	private void addObj(BlankForm opt, Component obj, String id) {
+		KeyListener kl = opt.getKeyLis();
+		if(kl != null)
+			obj.addKeyListener(kl);
+		
 		//	tests if scroll is enabled for the component
-		if(((GUI.BlankForm) opt).getScroll()) {
+		if(opt.getScroll()) {
 			//	add a new scrollpanel with setViewportView on the component
 			JScrollPane sp = new JScrollPane();
-			sp.setViewportView((Component) obj);
-			pane.add(sp, getc(((GUI.BlankForm) opt).getIn(), ((GUI.BlankForm) opt).getIpad(), ((GUI.BlankForm) opt).getGrid(), ((BlankForm) opt).getAlignment(), ((BlankForm) opt).getWeight()));
+			sp.setViewportView(obj);
+			pane.add(sp, getc(opt.getIn(), opt.getIpad(), opt.getGrid(), opt.getAlignment(), opt.getWeight()));
 			if(id != null) {
 				addComp("sp::"+id, sp);
 			}
 		} else {
 			//	adds the component without scroll
-			pane.add((Component) obj, getc(((GUI.BlankForm) opt).getIn(), ((GUI.BlankForm) opt).getIpad(), ((GUI.BlankForm) opt).getGrid(), ((BlankForm) opt).getAlignment(), ((BlankForm) opt).getWeight()));
+			pane.add(obj, getc(opt.getIn(), opt.getIpad(), opt.getGrid(), opt.getAlignment(), opt.getWeight()));
 		}
+		
+		
+		
 		//	saves the component if id != null
 		if(id != null) {
 			addComp(id, obj);
@@ -932,6 +978,9 @@ public class GUI{
 	//	TextArea
 	public static class TextArea extends Label {
 		private boolean editable = true;
+		private DocumentListener tal = null;
+		private int tabSize = -1;
+		private Insets margin = null;
 		
 		public void setEditable(boolean b) {
 			editable = b;
@@ -939,6 +988,30 @@ public class GUI{
 		
 		public boolean isEditable() {
 			return editable;
+		}
+		
+		public void setLis(DocumentListener tal) {
+			this.tal = tal;
+		}
+		
+		public DocumentListener getLis() {
+			return tal;
+		}
+		
+		public void setTabSize(int size) {
+			tabSize = size;
+		}
+		
+		public int getTabSize() {
+			return tabSize;
+		}
+		
+		public void setMargin(Insets margin) {
+			this.margin = margin;
+		}
+		
+		public Insets getMargin() {
+			return margin;
 		}
 	}
 	
@@ -948,6 +1021,18 @@ public class GUI{
 		
 		Color back = opt.getBackground();
 		if(back != null) ta.setBackground(back);
+		
+		DocumentListener tal = opt.getLis();
+		if(tal != null) 
+			ta.getDocument().addDocumentListener(tal);
+		
+		int ts = opt.getTabSize();
+		if(ts != -1) 
+			ta.setTabSize(ts);
+		
+		Insets margin = opt.getMargin();
+		if(margin != null)
+			ta.setMargin(margin);
 		
 		addObj(opt, ta, id);
 	}
@@ -963,6 +1048,14 @@ public class GUI{
 	
 	public static void setEditable(String id, boolean b) {
 		((JTextComponent) getComp(id)).setEditable(b);
+	}
+	
+	public static int getCaretPos(String id) {
+		return ((JTextComponent) getComp(id)).getCaretPosition();
+	}
+	
+	public static void setCaretPos(String id, int pos) {
+		((JTextComponent) getComp(id)).setCaretPosition(pos);
 	}
 	
 	//	TextField

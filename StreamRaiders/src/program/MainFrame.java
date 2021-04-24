@@ -114,7 +114,7 @@ public class MainFrame {
 			addPro.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					GUI np = new GUI("New Profile", 300, 400, gui);
+					GUI np = new GUI("New Profile", 300, 400, gui, null);
 					
 					
 					Label lab1 = new Label();
@@ -166,7 +166,7 @@ public class MainFrame {
 			opt.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					GUI opt = new GUI("Options", 400, 500, gui);
+					GUI opt = new GUI("Options", 400, 500, gui, null);
 					
 					Button fm = new Button();
 					fm.setPos(0, 0);
@@ -283,7 +283,7 @@ public class MainFrame {
 							text.append("\n(tested for " + Math.round(hours) + " hours and " + min + " minutes)  ");
 							
 							
-							GUI ai = new GUI("Average Income per hour per profile", 400, 500, opt);
+							GUI ai = new GUI("Average Income per hour per profile", 400, 500, opt, null);
 							
 							TextArea ta = new TextArea();
 							ta.setEditable(false);
@@ -578,7 +578,7 @@ public class MainFrame {
 					text += "|" + key + " " + rews.getAsJsonPrimitive(key).getAsString() + "\n";
 				}
 				
-				GUI guir = new GUI("Rewards for " + name, 300, 300, gui);
+				GUI guir = new GUI("Rewards for " + name, 300, 300, gui, null);
 				
 				TextArea ta = new TextArea();
 				ta.setEditable(false);
@@ -600,7 +600,7 @@ public class MainFrame {
 		stngs.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				GUI sgui = new GUI("Profile Settings", 900, 800, gui);
+				GUI sgui = new GUI("Profile Settings", 900, 800, gui, null);
 				
 				JsonObject types = Unit.getTypes();
 				
@@ -665,7 +665,7 @@ public class MainFrame {
 							
 							String old = sCon.getAsJsonPrimitive(type).getAsString();
 							
-							GUI gspec = new GUI("specialize " + type, 400, 300, sgui);
+							GUI gspec = new GUI("specialize " + type, 400, 300, sgui, null);
 							
 							
 							for(int i=0; i<3; i++) {
