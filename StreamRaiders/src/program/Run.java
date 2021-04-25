@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.apache.http.conn.HttpHostConnectException;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -180,6 +182,7 @@ public class Run {
 			
 			sleep((int) Math.round(Math.random()*620) + 100);
 		} catch (Exception e) {
+			saveStats();
 			reload(20, part, e);
 		}
 	}
@@ -230,22 +233,16 @@ public class Run {
 						
 						GUI.setBackground(name+"::start", Color.green);
 						isReloading = false;
+						resetDateTime();
 						sleep(10);
-					} catch (NoInternetException e2) {
+					} catch (NoInternetException | HttpHostConnectException e2) {
 						StreamRaiders.log(name + ": Run -> Maybe your internet connection failed", e2, true);
-						GUI.setBackground(name+"::start", Color.red);
-						setRunning(false);
+
+						setReloading(part, e);
 					} catch (Exception e1) {
 						StreamRaiders.log("failed to reload srrh for " + name, e1);
 						
-						if(isReloading) {
-							GUI.setBackground(name+"::start", Color.red);
-							setRunning(false);
-						} else {
-							StreamRaiders.log("critical error happened for " + name + " at \"" + part + "\" -> try to reload again", e);
-							isReloading = true;
-							reload(15*60, part, e);
-						}
+						setReloading(part, e);
 					}
 				}
 				
@@ -254,6 +251,17 @@ public class Run {
 				time--;
 			}
 		}, 0, 1000);
+	}
+	
+	private void setReloading(String part, Exception e) {
+		if(isReloading) {
+			GUI.setBackground(name+"::start", Color.red);
+			setRunning(false);
+		} else {
+			StreamRaiders.log("critical error happened for " + name + " at \"" + part + "\" -> try to reload again", e);
+			isReloading = true;
+			reload(15*60, part, e);
+		}
 	}
 	
 

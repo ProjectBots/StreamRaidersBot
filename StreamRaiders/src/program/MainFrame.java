@@ -31,6 +31,10 @@ public class MainFrame {
 
 	private static GUI gui = null;
 	
+	public static GUI getGUI() {
+		return gui;
+	}
+	
 	private static Hashtable<String, Run> profiles = new Hashtable<>();
 	
 	private static void add(String name, Run run) {

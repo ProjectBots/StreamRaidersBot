@@ -34,22 +34,25 @@ public class StreamRaiders {
 	
 	synchronized public static void log(String text, Exception e, boolean silent) {
 		try {
+			String out = "";
 			if(e != null) {
 				StringWriter sw = new StringWriter();
 				e.printStackTrace(new PrintWriter(sw));
 				
 				if(text != null) {
-					System.err.println(text);
-					NEF.log("logs.app", text + "\n" + sw.toString());
-				} else {
-					NEF.log("logs.app", sw.toString());
+					out = text;
 				}
 				
-				if(!silent) System.err.println(sw.toString());
+				if(!silent) out += "\n" + sw.toString();
 			} else {
-				System.err.println(text);
-				NEF.log("logs.app", text);
+				if(text == null) {
+					out = "critical error happend";
+				} else {
+					out = text;
+				}
 			}
+			MainFrame.getGUI().msg("Error occured", out, GUI.MsgConst.ERROR);
+			NEF.log("logs.app", out);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
