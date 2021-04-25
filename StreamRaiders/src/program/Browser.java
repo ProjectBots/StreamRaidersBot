@@ -54,12 +54,12 @@ public class Browser {
 		
 		
 		GUI load = new GUI("Embeded Browser", 300, 300);
-			
 		Label l1 = new Label();
-		l1.setText("loading ...\nthis can take a bit");
-			
+		l1.setText("<html><center>loading...<br>this can take a bit</center></html>");
 		load.addLabel(l1);
-			
+		load.refresh();
+		
+		
 		cefApp = JCefLoader.installAndLoadCef(settings);
 		
 		load.close();
