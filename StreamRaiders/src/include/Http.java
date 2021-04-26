@@ -41,6 +41,13 @@ public class Http {
 		urlArgs = add(urlArgs, new String[] {name, value});
 	}
 	
+	public String getUrlArg(String name) {
+		for(int i=0; i< urlArgs.length; i++) {
+			if(urlArgs[i][0].equals(name)) return urlArgs[i][1];
+		}
+		return null;
+	}
+	
 	public void addEncArg(String name, String value) {
 		encArgs.add(new BasicNameValuePair(name, value));
 	}
@@ -66,12 +73,16 @@ public class Http {
 				.collect(Collectors.joining("\n"));
 		
 		client.close();
-		return text;	
+		return text;
 		
 	}
 	
 	
+	private String lastEntity = null;
 	
+	public String getLastEntity() {
+		return lastEntity;
+	}
 	
 	public String sendUrlEncoded() throws URISyntaxException, IOException {
 		
@@ -91,6 +102,12 @@ public class Http {
 		}
 		
 		httppost.setEntity(entity);
+		
+		lastEntity = new BufferedReader(new InputStreamReader(entity
+				.getContent(), StandardCharsets.UTF_8))
+			.lines()
+			.collect(Collectors.joining("\n")).replace("&", ", ");
+		
 		
 		CloseableHttpClient client = HttpClients.createDefault();
 		CloseableHttpResponse response = client.execute(httppost);

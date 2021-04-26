@@ -52,6 +52,7 @@ public class StreamRaiders {
 				}
 			}
 			MainFrame.getGUI().msg("Error occured", out, GUI.MsgConst.ERROR);
+			System.err.println(out);
 			NEF.log("logs.app", out);
 		} catch (IOException e1) {
 			e1.printStackTrace();

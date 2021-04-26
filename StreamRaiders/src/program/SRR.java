@@ -121,7 +121,7 @@ public class SRR {
 		
 		if(userId != null && addUser) {
 			post.addEncArg("userId", userId);
-			post.addEncArg("isCaptain", isCaptain);
+			post.addEncArg("isCaptain", "0");
 		}
 		post.addEncArg("gameDataVersion", gameDataVersion);
 		post.addEncArg("command", cn);
@@ -133,7 +133,16 @@ public class SRR {
 	
 	private String sendPost(Http post) throws IOException, NoInternetException, URISyntaxException  {
 		try {
-			return post.sendUrlEncoded();
+			
+			String p = post.sendUrlEncoded();
+			/*
+			String f = "";
+			try {
+				f = NEF.read("out.txt");
+			} catch (IOException e) {}
+			NEF.save("out.txt", f + "\n\n\n" + post.getUrlArg("cn") + "\n" + post.getLastEntity() + "\n" + p);
+			*/
+			return p;
 		} catch (UnknownHostException e) {
 			throw new NoInternetException();
 		}

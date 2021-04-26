@@ -62,6 +62,7 @@ public class SRRHelper {
 		StreamRaiders.set("obstacles", data.getAsJsonObject("Obstacles").toString());
 		StreamRaiders.set("quests", data.getAsJsonObject("Quests").toString());
 		StreamRaiders.set("mapNodes", data.getAsJsonObject("MapNodes").toString());
+		StreamRaiders.set("events", data.getAsJsonObject("Events").toString());
 		StreamRaiders.set("data", dataPath);
 		StreamRaiders.save();
 	}
@@ -89,6 +90,10 @@ public class SRRHelper {
 	
 	public void updateEvent() throws URISyntaxException, IOException, NoInternetException {
 		qer.updateEvent(req);
+	}
+	
+	public boolean isEvent() {
+		return qer.isEvent();
 	}
 	
 	public int getEventTier() {
@@ -169,11 +174,11 @@ public class SRRHelper {
 		return serverTime;
 	}
 	
-	public Raid[] getRaids(int arg) throws URISyntaxException, IOException, NoInternetException {
+	public Raid[] getRaids(int con) throws URISyntaxException, IOException, NoInternetException {
 		serverTime = updateRaids();
 		Raid[] ret = new Raid[0];
 		for(int i=0; i<raids.length; i++) {
-			switch(arg) {
+			switch(con) {
 			case SRC.Helper.canPlaceUnit:
 				if(raids[i].canPlaceUnit(serverTime)) ret = add(ret, raids[i]);
 				break;

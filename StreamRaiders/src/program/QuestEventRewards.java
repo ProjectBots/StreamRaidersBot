@@ -7,6 +7,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import include.JsonParser;
+import include.Time;
 import program.QuestEventRewards.Quest.NoQuestException;
 import program.SRR.NoInternetException;
 
@@ -16,6 +17,11 @@ public class QuestEventRewards {
 	private JsonObject collected = new JsonObject();
 	private int tier = 0;
 	private String currentEvent = null;
+	private boolean isEvent = false;
+	
+	public boolean isEvent() {
+		return isEvent;
+	}
 	
 	private JsonObject questTypes = null;
 	private Quest[] quests = null;
@@ -104,9 +110,25 @@ public class QuestEventRewards {
 	
 	
 	public void updateEvent(SRR req) throws URISyntaxException, IOException, NoInternetException {
-		JsonObject raw = JsonParser.parseObj(req.getUserEventProgression()).getAsJsonArray("data").get(0).getAsJsonObject();
+		JsonObject fullRaw = JsonParser.parseObj(req.getUserEventProgression());
+		String st = fullRaw.getAsJsonObject("info").getAsJsonPrimitive("serverTime").getAsString();
+		JsonArray data = fullRaw.getAsJsonArray("data");
 		
+		if(data.size() == 0) {
+			isEvent = false;
+			return;
+		}
+		
+		JsonObject raw = data.get(0).getAsJsonObject();
 		currentEvent = raw.getAsJsonPrimitive("eventUid").getAsString();
+		
+		if(Time.isAfter(st, JsonParser.parseObj(StreamRaiders.get("events")).getAsJsonObject(currentEvent).getAsJsonPrimitive("EndTime").getAsString())) {
+			isEvent = false;
+			return;
+		}
+		
+		isEvent = true;
+		
 		hasBattlePass = raw.getAsJsonPrimitive("hasBattlePass").getAsInt() == 1;
 		tier = raw.getAsJsonPrimitive("currentTier").getAsInt();
 		

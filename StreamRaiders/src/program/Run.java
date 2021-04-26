@@ -319,6 +319,8 @@ public class Run {
 	private void collectEvent() throws URISyntaxException, IOException, NoInternetException {
 		srrh.updateEvent();
 		
+		if(!srrh.isEvent()) return;
+		
 		boolean bp = srrh.hasBattlePass();
 		int tier = srrh.getEventTier();
 		for(int i=1; i<tier; i++) {
@@ -623,7 +625,9 @@ public class Run {
 		
 		for(int i=0; i<caps.size(); i++) {
 			JsonObject icap = caps.get(i).getAsJsonObject();
-			if(bannedCaps.has(icap.getAsJsonPrimitive(SRC.Raid.captainId).getAsString())) continue;
+			
+			if(bannedCaps.has(icap.getAsJsonPrimitive(SRC.Raid.captainId).getAsString()))
+				continue;
 			
 			if(favs.contains(icap.getAsJsonPrimitive(SRC.Raid.twitchDisplayName))) {
 				if(fav) {
@@ -645,7 +649,10 @@ public class Run {
 			}
 		}
 		
-		if(cap == null) StreamRaiders.log(name+": Run -> switchRaid: err=No captain matches", null);
+		if(cap == null) {
+			StreamRaiders.log(name+": Run -> switchRaid: err=No captain matches", null);
+			return;
+		}
 		
 		if(rem) {
 			srrh.switchRaid(cap, sortIndex);
