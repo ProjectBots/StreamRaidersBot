@@ -114,50 +114,52 @@ public class QuestEventRewards {
 		String st = fullRaw.getAsJsonObject("info").getAsJsonPrimitive("serverTime").getAsString();
 		JsonArray data = fullRaw.getAsJsonArray("data");
 		
-		if(data.size() == 0) {
-			isEvent = false;
-			return;
-		}
-		
-		JsonObject raw = data.get(0).getAsJsonObject();
-		currentEvent = raw.getAsJsonPrimitive("eventUid").getAsString();
-		
-		if(Time.isAfter(st, JsonParser.parseObj(StreamRaiders.get("events")).getAsJsonObject(currentEvent).getAsJsonPrimitive("EndTime").getAsString())) {
-			isEvent = false;
-			return;
-		}
-		
-		isEvent = true;
-		
-		hasBattlePass = raw.getAsJsonPrimitive("hasBattlePass").getAsInt() == 1;
-		tier = raw.getAsJsonPrimitive("currentTier").getAsInt();
-		
-		JsonElement rbc = raw.get("basicRewardsCollected");
-		if(rbc.isJsonPrimitive()) {
-			String[] bc = rbc.getAsString().split(",");
-			for(String t : bc) {
-				JsonObject c = new JsonObject();
-				c.addProperty("basic", true);
-				collected.add(t, c);
-			}
-		}
-		
-		JsonElement rpc = raw.get("battlePassRewardsCollected");
-		if(rpc.isJsonPrimitive()) {
-			String[] pc = rpc.getAsString().split(",");
-			for(String t : pc) {
-				JsonElement je = collected.get(t);
-				if(je == null) {
+		for(int i=0; i<data.size(); i++) {
+			JsonObject raw = data.get(i).getAsJsonObject();
+			currentEvent = raw.getAsJsonPrimitive("eventUid").getAsString();
+			
+			if(Time.isAfter(st, JsonParser.parseObj(
+					StreamRaiders.get("events"))
+						.getAsJsonObject(currentEvent)
+						.getAsJsonPrimitive("EndTime")
+						.getAsString())) 
+				continue;
+			
+			
+			isEvent = true;
+			
+			hasBattlePass = raw.getAsJsonPrimitive("hasBattlePass").getAsInt() == 1;
+			tier = raw.getAsJsonPrimitive("currentTier").getAsInt();
+			
+			JsonElement rbc = raw.get("basicRewardsCollected");
+			if(rbc.isJsonPrimitive()) {
+				String[] bc = rbc.getAsString().split(",");
+				for(String t : bc) {
 					JsonObject c = new JsonObject();
-					c.addProperty("pass", true);
+					c.addProperty("basic", true);
 					collected.add(t, c);
-				} else {
-					je.getAsJsonObject().addProperty("pass", true);
 				}
-				
 			}
+			
+			JsonElement rpc = raw.get("battlePassRewardsCollected");
+			if(rpc.isJsonPrimitive()) {
+				String[] pc = rpc.getAsString().split(",");
+				for(String t : pc) {
+					JsonElement je = collected.get(t);
+					if(je == null) {
+						JsonObject c = new JsonObject();
+						c.addProperty("pass", true);
+						collected.add(t, c);
+					} else {
+						je.getAsJsonObject().addProperty("pass", true);
+					}
+					
+				}
+			}
+			
+			return;
 		}
-		
+		isEvent = false;
 	}
 	
 	public boolean canCollectEvent(int p, boolean battlePass) {
