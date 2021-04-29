@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
@@ -73,6 +74,7 @@ public class MainFrame {
 		Container head = new Container();
 		head.setPos(0, 0);
 		head.setFill('h');
+		head.setInsets(20, 2, 2, 10);
 		
 			Button nextAll = new Button();
 			nextAll.setPos(0, 0);
@@ -105,7 +107,8 @@ public class MainFrame {
 			refresh.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					refresh();
+					if(gui.showConfirmationBox("<html><center>Settings took since last<br>restart will be removed!<br>reload config file?</center></html>"))
+						refresh(true);
 				}
 			});
 			head.addBut(refresh);
@@ -351,9 +354,23 @@ public class MainFrame {
 			});
 			head.addBut(opt);
 			
+			
+			Button help = new Button();
+			help.setPos(5, 0);
+			help.setText("?");
+			help.setTooltip("Guide");
+			help.setFont(new Font(null, Font.PLAIN, 20));
+			help.setAL(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					GuideContent.show();
+				}
+			});
+			//head.addBut(help);
+			
 			gui.addContainer(head);
 			
-			refresh();
+			refresh(false);
 	}
 	
 	private static void forgetMe() {
@@ -808,6 +825,7 @@ public class MainFrame {
 				
 				Button resStat = new Button();
 				resStat.setPos(0, 3);
+				resStat.setInsets(2, 10, 10, 2);
 				resStat.setText("Reset Stats");
 				resStat.setAL(new ActionListener() {
 					@Override
@@ -848,14 +866,19 @@ public class MainFrame {
 	private static final String[] rewBefore = new String[] {"gold", "token", "potion", "meat"};
 	
 	
-	public static void refresh() {
-		if(gui != null) {
-			for(String key : Configs.keySet()) 
-				if(!profiles.keySet().contains(key)) 
-					add(key, new Run(key, Configs.getStr(key, Configs.cookies)));
+	public static void refresh(boolean reload) {
+		try {
+			if(reload)
+				Configs.load();
+			if(gui != null) {
+				for(String key : Configs.keySet()) 
+					if(!profiles.keySet().contains(key)) 
+						add(key, new Run(key, Configs.getStr(key, Configs.cookies)));
 				
-			gui.refresh();
-		}
+				gui.refresh();
+			}
+		} catch (IOException e) {}
+		
 	}
 
 	public static void close() {

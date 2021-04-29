@@ -1,0 +1,372 @@
+{
+  "chestboostedgold": {
+    "BonusBoostedGold": {
+      "goldbag_1000": 75,
+      "goldbag_300": 25
+    },
+    "BonusBoss": {
+      "goldbag_50": 10,
+      "rarescrolls_1": 60,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10
+    },
+    "BonusBoss_": {
+      "goldbag_50": 10,
+      "rarescrolls_1": 60,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10
+    },
+    "ViewerBoostedGold1": {
+      "goldbag_1000": 75,
+      "goldbag_250": 20,
+      "goldbag_300true": 5
+    },
+    "ViewerBoostedGold2": {
+      "goldbag_100real": 5,
+      "goldbag_20": 25,
+      "goldbag_25": 30,
+      "goldbag_50": 10,
+      "rarescrolls_3": 10,
+      "rarescrolls_5": 20
+    },
+    "ViewerBoosted2": {
+      "goldbag_100real": 5,
+      "goldbag_150": 5,
+      "goldbag_50": 10,
+      "goldbag_75real": 10,
+      "rarescrolls_4": 20,
+      "rarescrolls_6": 25,
+      "rarescrolls_7": 25
+    }
+  },
+  "chestboostedskin": {
+    "BonusBoostedGold": {
+      "goldbag_1000": 75,
+      "goldbag_300": 25
+    },
+    "BonusBoss": {
+      "goldbag_50": 10,
+      "rarescrolls_1": 60,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10
+    },
+    "BonusBoss_": {
+      "goldbag_50": 10,
+      "rarescrolls_1": 60,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10
+    },
+    "ViewerBoosted2": {
+      "goldbag_100real": 5,
+      "goldbag_150": 5,
+      "goldbag_50": 10,
+      "goldbag_75real": 10,
+      "rarescrolls_4": 20,
+      "rarescrolls_6": 25,
+      "rarescrolls_7": 25
+    },
+    "ViewerBoostedSkin1": {
+      "goldbag_100": 15,
+      "goldbag_75": 20,
+      "rarescrolls_6": 30,
+      "rarescrolls_7": 20,
+      "skinfullbarbarianorcdromeda": 1,
+      "skinfullbustercyberfall": 8,
+      "skinfullmagespacewestern": 8,
+      "skinfullmonkcyberfall": 7,
+      "skinfullmusketeerspacewestern": 7,
+      "skinfullpaladincyberfall": 7
+    },
+    "ViewerBoostedSkin2": {
+      "goldbag_100": 10,
+      "rarescrolls_6": 10,
+      "rarescrolls_7": 15,
+      "skinfullbustercyberfall": 20,
+      "skinfullmagespacewestern": 20,
+      "skinfullmonkcyberfall": 15,
+      "skinfullmusketeerspacewestern": 15,
+      "skinfullpaladincyberfall": 15
+    }
+  },
+  "chestboostedtoken": {
+    "BonusGold": {
+      "goldbag_50": 30,
+      "rarescrolls_1": 20,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10,
+      "uncommonscrolls_3": 20
+    },
+    "BonusGold_": {
+      "goldbag_50": 30,
+      "rarescrolls_1": 20,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10,
+      "uncommonscrolls_3": 20
+    },
+    "BonusGold__": {
+      "goldbag_50": 30,
+      "rarescrolls_1": 20,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10,
+      "uncommonscrolls_3": 20
+    },
+    "ViewerBoostedToken1": {
+      "eventtoken_4": 50,
+      "eventtoken_6": 40
+    },
+    "ViewerBoostedToken2": {
+      "eventtoken_10": 50,
+      "goldbag_100": 25,
+      "rarescrolls_7": 15,
+      "rarescrolls_8": 10
+    },
+    "ViewerBoosted3": {
+      "goldbag_100real": 20,
+      "goldbag_150": 5,
+      "goldbag_250": 15,
+      "goldbag_50": 10,
+      "rarescrolls_6": 10,
+      "rarescrolls_7": 20,
+      "rarescrolls_8": 20
+    }
+  },
+  "chestboss": {
+    "BonusBoss": {
+      "goldbag_50": 10,
+      "rarescrolls_1": 60,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10
+    },
+    "BonusBoss_": {
+      "goldbag_50": 10,
+      "rarescrolls_1": 60,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10
+    },
+    "BonusBoss__": {
+      "goldbag_50": 10,
+      "rarescrolls_1": 60,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10
+    },
+    "ViewerBoosted2": {
+      "goldbag_100real": 5,
+      "goldbag_150": 5,
+      "goldbag_50": 10,
+      "goldbag_75real": 10,
+      "rarescrolls_4": 20,
+      "rarescrolls_6": 25,
+      "rarescrolls_7": 25
+    },
+    "ViewerBoss1": {
+      "cooldown_3": 5,
+      "goldbag_25": 10,
+      "goldbag_50": 5,
+      "rarescrolls_2": 65,
+      "rarescrolls_3": 15
+    },
+    "ViewerBoss2": {
+      "goldbag_25": 10,
+      "goldbag_50": 30,
+      "goldbag_75real": 5,
+      "rarescrolls_4": 15,
+      "rarescrolls_6": 20,
+      "rarescrolls_7": 10,
+      "uncommonscrolls_10": 10
+    }
+  },
+  "chestbosssuper": {
+    "ViewerSuperBoss": {
+      "rarescrolls_30": 80,
+      "rarescrolls_50": 20,
+      "skinfullbarbarianorcdromeda": 2
+    },
+    "ViewerSuperBoss_": {
+      "rarescrolls_30": 80,
+      "rarescrolls_50": 20,
+      "skinfullbarbarianorcdromeda": 2
+    },
+    "ViewerSuperBoss__": {
+      "rarescrolls_30": 80,
+      "rarescrolls_50": 20,
+      "skinfullbarbarianorcdromeda": 2
+    },
+    "ViewerSuperBoss___": {
+      "rarescrolls_30": 80,
+      "rarescrolls_50": 20,
+      "skinfullbarbarianorcdromeda": 2
+    },
+    "ViewerSuperBoss____": {
+      "rarescrolls_30": 80,
+      "rarescrolls_50": 20,
+      "skinfullbarbarianorcdromeda": 2
+    },
+    "ViewerSuperBoss_____": {
+      "rarescrolls_30": 80,
+      "rarescrolls_50": 20,
+      "skinfullbarbarianorcdromeda": 2
+    }
+  },
+  "chestbronze": {
+    "BonusBronze": {
+      "commonscrolls_5": 35,
+      "goldbag_10": 10,
+      "goldbag_15": 20,
+      "goldbag_20": 5,
+      "uncommonscrolls_1": 25,
+      "uncommonscrolls_2": 5
+    },
+    "BonusBronze_": {
+      "commonscrolls_5": 35,
+      "goldbag_10": 10,
+      "goldbag_15": 20,
+      "goldbag_20": 5,
+      "uncommonscrolls_1": 25,
+      "uncommonscrolls_2": 5
+    },
+    "BonusBronze__": {
+      "commonscrolls_5": 35,
+      "goldbag_10": 10,
+      "goldbag_15": 20,
+      "goldbag_20": 5,
+      "uncommonscrolls_1": 25,
+      "uncommonscrolls_2": 5
+    },
+    "ViewerBronze1": {
+      "commonscrolls_2": 30,
+      "commonscrolls_5": 5,
+      "goldbag_3": 20,
+      "goldbag_5": 25,
+      "goldbag_7": 10,
+      "uncommonscrolls_1": 5,
+      "uncommonscrolls_2": 5
+    },
+    "ViewerBronze2": {
+      "goldbag_3": 50,
+      "goldbag_5": 30,
+      "goldbag_7": 20
+    },
+    "ViewerBronze3": {
+      "commonscrolls_2": 60,
+      "commonscrolls_5": 15,
+      "commonscrolls_7": 5,
+      "uncommonscrolls_1": 20
+    }
+  },
+  "chestgold": {
+    "BonusGold": {
+      "goldbag_50": 30,
+      "rarescrolls_1": 20,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10,
+      "uncommonscrolls_3": 20
+    },
+    "BonusGold_": {
+      "goldbag_50": 30,
+      "rarescrolls_1": 20,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10,
+      "uncommonscrolls_3": 20
+    },
+    "BonusGold__": {
+      "goldbag_50": 30,
+      "rarescrolls_1": 20,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10,
+      "uncommonscrolls_3": 20
+    },
+    "ViewerGold1": {
+      "cooldown_1": 1,
+      "cooldown_3": 1,
+      "goldbag_10": 5,
+      "goldbag_15": 5,
+      "goldbag_20": 22,
+      "goldbag_25": 21,
+      "rarescrolls_1": 20,
+      "uncommonscrolls_2": 20,
+      "uncommonscrolls_3": 5
+    },
+    "ViewerGold2": {
+      "goldbag_10": 20,
+      "goldbag_15": 20,
+      "goldbag_20": 25,
+      "goldbag_25": 35
+    },
+    "ViewerGold3": {
+      "rarescrolls_1": 40,
+      "uncommonscrolls_2": 45,
+      "uncommonscrolls_3": 15
+    }
+  },
+  "chestsalvage": {
+    "BonusSalvage": {
+      "epicpotion_10": 10,
+      "epicpotion_3": 25,
+      "epicpotion_4": 15
+    },
+    "ViewerSalvage1": {
+      "epicpotion_10": 20,
+      "epicpotion_4": 30,
+      "goldbag_1": 20,
+      "goldbag_2": 20,
+      "goldbag_3": 10
+    },
+    "ViewerSalvage2": {
+      "epicpotion_1": 20,
+      "epicpotion_10": 20,
+      "epicpotion_2": 20,
+      "epicpotion_3": 20,
+      "epicpotion_4": 20
+    },
+    "ViewerSalvage3": {
+      "goldbag_2": 60,
+      "goldbag_3": 20,
+      "goldbag_5": 20
+    }
+  },
+  "chestsilver": {
+    "BonusSilver": {
+      "goldbag_25": 10,
+      "goldbag_50": 10,
+      "rarescrolls_1": 10,
+      "uncommonscrolls_1": 20,
+      "uncommonscrolls_2": 30,
+      "uncommonscrolls_3": 20
+    },
+    "BonusSilver_": {
+      "goldbag_25": 10,
+      "goldbag_50": 10,
+      "rarescrolls_1": 10,
+      "uncommonscrolls_1": 20,
+      "uncommonscrolls_2": 30,
+      "uncommonscrolls_3": 20
+    },
+    "BonusSilver__": {
+      "goldbag_25": 10,
+      "goldbag_50": 10,
+      "rarescrolls_1": 10,
+      "uncommonscrolls_1": 20,
+      "uncommonscrolls_2": 30,
+      "uncommonscrolls_3": 20
+    },
+    "ViewerSilver1": {
+      "cooldown_1": 1,
+      "goldbag_10": 25,
+      "goldbag_15": 4,
+      "goldbag_7": 20,
+      "uncommonscrolls_1": 40,
+      "uncommonscrolls_2": 5,
+      "uncommonscrolls_3": 5
+    },
+    "ViewerSilver2": {
+      "goldbag_10": 30,
+      "goldbag_15": 20,
+      "goldbag_7": 50
+    },
+    "ViewerSilver3": {
+      "uncommonscrolls_1": 75,
+      "uncommonscrolls_2": 20,
+      "uncommonscrolls_3": 5
+    }
+  }
+}

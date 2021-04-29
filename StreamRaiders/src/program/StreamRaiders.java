@@ -6,6 +6,8 @@ import java.io.StringWriter;
 import java.util.Hashtable;
 
 import include.GUI;
+import include.GUI.Image;
+import include.GUI.Label;
 import include.NEF;
 
 public class StreamRaiders {
@@ -51,7 +53,15 @@ public class StreamRaiders {
 					out = text;
 				}
 			}
-			MainFrame.getGUI().msg("Error occured", out, GUI.MsgConst.ERROR);
+			GUI err = new GUI("Error occured", 400, 200, MainFrame.getGUI(), null);
+			Image img = new Image("data/Other/error.png");
+			err.addImage(img);
+			Label l = new Label();
+			l.setPos(1, 0);
+			l.setText("<html>" + out.replace("\n", "<br>") + "</html>");
+			l.setInsets(2, 10, 2, 2);
+			err.addLabel(l);
+			err.refresh();
 			System.err.println(out);
 			NEF.log("logs.app", out);
 		} catch (IOException e1) {

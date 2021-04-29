@@ -63,6 +63,7 @@ public class SRRHelper {
 		StreamRaiders.set("quests", data.getAsJsonObject("Quests").toString());
 		StreamRaiders.set("mapNodes", data.getAsJsonObject("MapNodes").toString());
 		StreamRaiders.set("events", data.getAsJsonObject("Events").toString());
+		GuideContent.saveChestRewards(data);
 		StreamRaiders.set("data", dataPath);
 		StreamRaiders.save();
 	}

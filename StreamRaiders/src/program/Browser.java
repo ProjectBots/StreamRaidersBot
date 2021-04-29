@@ -104,7 +104,7 @@ public class Browser {
 				
 				Configs.add(name, cookies);
 				
-				MainFrame.refresh();
+				MainFrame.refresh(false);
 			}
 		});
 	}
