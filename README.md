@@ -13,6 +13,7 @@ press the play button and watch how it farms for you.
   
 to prevent bans this bot will wait 100 - 720 sec before it checks the raids again.
 
+to open the Guide, click the ? in the top right  
 you can skip the wait by pressing the next button.  
 the Map buttons will show the current map.  
 you can seewhich chest a raid will bring on the right of the map buttons.  
