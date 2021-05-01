@@ -398,12 +398,8 @@ public class GUI{
 	}
 	
 	public void remove(String id) {
-		try {
-			pane.remove((Component) getComp(id));
-			refresh();
-		} catch (Exception e) {
-			e(e);
-		}
+		pane.remove((Component) getComp(id));
+		refresh();
 	}
 	
 	public static class MsgConst {
@@ -1118,6 +1114,19 @@ public class GUI{
 		return null;
 	}
 	
+	
+	public static void setSelected(String id, int index) {
+		if(getComp(id) instanceof JComboBox<?>) {
+			JComboBox<?> cb = (JComboBox<?>) getComp(id);
+			ItemListener[] lis = cb.getItemListeners();
+			cb.removeItemListener(lis[0]);
+			cb.setSelectedIndex(index);
+			cb.addItemListener(lis[0]);
+		} else if(getComp(id) instanceof JList<?>) {
+			((JList<?>) getComp(id)).setSelectedIndex(index);
+		}
+	}
+	
 	//	ComboBox
 	public static interface CombListener {
 		public void selected(String id, ItemEvent e);
@@ -1191,12 +1200,15 @@ public class GUI{
 		if(obj instanceof JComboBox<?>) {
 			@SuppressWarnings("unchecked")
 			JComboBox<String> cb = (JComboBox<String>) obj;
+			ItemListener[] lis = cb.getItemListeners();
+			cb.removeItemListener(lis[0]);
 			//	remove all items
 			cb.removeAllItems();
 			//	add new items
 			for(int i=0; i<list.length; i++) {
 				cb.addItem(list[i]);
 			}
+			cb.addItemListener(lis[0]);
 		}
 	}
 	
@@ -1283,9 +1295,6 @@ public class GUI{
 		return items;
 	}
 	
-	public static void setSelected(String id, int index) {
-		((JList<?>) getComp(id)).setSelectedIndex(index);
-	}
 	
 	//	ProgressBar
 	public static class ProgressBar extends BlankForm {

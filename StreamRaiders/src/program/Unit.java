@@ -48,14 +48,21 @@ public class Unit {
 		ptags = uType.getAsJsonArray("role");
 	}
 	
-	private Unit(String unitType) {
+	private Unit(String unitType, boolean dupe) {
 		JsonObject unit = new JsonObject();
 		unit.addProperty(SRC.Unit.unitType, unitType);
+		this.dupe = dupe;
 		this.unit = unit;
 	}
 	
-	public static Unit createTypeOnly(String unitType) {
-		return new Unit(unitType);
+	private boolean dupe = false;
+	
+	public boolean isDupe() {
+		return dupe;
+	}
+	
+	public static Unit createTypeOnly(String unitType, boolean dupe) {
+		return new Unit(unitType, dupe);
 	}
 
 	public String get(String con) {

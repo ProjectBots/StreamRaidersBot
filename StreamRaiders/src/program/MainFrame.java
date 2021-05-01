@@ -366,7 +366,7 @@ public class MainFrame {
 					GuideContent.show();
 				}
 			});
-			//head.addBut(help);
+			head.addBut(help);
 			
 			gui.addContainer(head);
 			

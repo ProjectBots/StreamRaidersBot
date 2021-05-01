@@ -4,10 +4,12 @@ import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import include.GUI.Button;
 import include.GUI.Container;
 import include.GUI.Label;
 import include.GUI.Menu;
+import include.GUI.WinLis;
 
 public class Guide {
 	
@@ -44,6 +46,7 @@ public class Guide {
 	private static class Subject {
 		private String name;
 		private Section[] secs = new Section[0];
+		private OnLoad ol = null;
 		
 		public Subject(String name) {
 			this.name = name;
@@ -59,9 +62,19 @@ public class Guide {
 		public void addReference(String name) {
 			secs[secs.length-1].addRef(name);
 		}
+		
+		public void setOnLoad(OnLoad ol) {
+			this.ol = ol;
+		}
 
 		public String getName() {
 			return name;
+		}
+		
+		public void load() {
+			if(ol != null) {
+				ol.run();
+			}
 		}
 
 		public Container getCon(Guide instance) {
@@ -138,6 +151,12 @@ public class Guide {
 			return con;
 		}
 		
+		
+		
+	}
+	
+	public static interface OnLoad {
+		public void run();
 	}
 	
 	private static class Section {
@@ -156,7 +175,7 @@ public class Guide {
 			refs2[refs.length] = name;
 			refs = refs2;
 		}
-
+		
 		public String getTitle() {
 			return title;
 		}
@@ -168,6 +187,7 @@ public class Guide {
 		public String[] getRefs() {
 			return refs;
 		}
+		
 	}
 	
 	
@@ -198,6 +218,7 @@ public class Guide {
 	private void switchCon(Subject sub) {
 		guide.remove("guide::con");
 		guide.addContainer(sub.getCon(this), "guide::con");
+		sub.load();
 		guide.refresh();
 	}
 	
@@ -205,6 +226,14 @@ public class Guide {
 	
 	public void addReference(String name) {
 		subs[subs.length-1].addReference(name);
+	}
+	
+	public void setOnLoad(OnLoad ol) {
+		subs[subs.length-1].setOnLoad(ol);
+	}
+	
+	public void setWindowEvent(WinLis wl) {
+		guide.addWinLis(wl);
 	}
 	
 	

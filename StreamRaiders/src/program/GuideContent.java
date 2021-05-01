@@ -1,14 +1,29 @@
 package program;
 
+import include.GUI.CButListener;
+import include.GUI.CButton;
+import include.GUI.CombListener;
+import include.GUI.ComboBox;
 import include.GUI.Container;
 import include.GUI.Image;
 import include.GUI.Label;
+import include.GUI.TextArea;
+import include.GUI.WinLis;
 
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.regex.Pattern;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import include.GUI;
 import include.Guide;
+import include.Guide.OnLoad;
 import include.JsonParser;
 import include.NEF;
 
@@ -76,16 +91,75 @@ public class GuideContent {
 		g.addSection(null, chestTypes());
 		
 		g.addSubject("Unit-Types");
-		
-		
-		
-		
+		g.addSection(null, genUnits());
+		g.setOnLoad(new OnLoad() {
+			@Override
+			public void run() {
+				resetUnits();
+				GUI.setEnabled("guide::spec", false);
+				update(-1);
+			}
+		});
 		
 		g.addSubject("Other Projects");
+		g.addSection("JsonExplorer", jsonexplorer());
+		g.addSection("JHtmlEditor", jhtmleditor());
 		
 		g.create(MainFrame.getGUI(), null);
+		
+		g.setWindowEvent(new WinLis() {
+			@Override
+			public void onIconfied(WindowEvent e) {}
+			@Override
+			public void onFocusLost(WindowEvent e) {}
+			@Override
+			public void onFocusGained(WindowEvent e) {}
+			@Override
+			public void onDeIconfied(WindowEvent e) {}
+			@Override
+			public void onClose(WindowEvent e) {
+				epic = false;
+			}
+		});
 	}
 	
+
+	private static Container jhtmleditor() {
+		Container c = new Container();
+		Image img = new Image(path + "jhtmleditor.png");
+		img.setWidth(400);
+		c.addImage(img);
+		Label l = new Label();
+		l.setPos(0, 1);
+		l.setText("<html>Html Editor for Java Applications<br><br>Have you always wanted an editor that shows you what an html page looks like in a JLabel in java?<br>Then this little program is for you!<br><br>features:<br>- adjustable autocomplete<br>- real time outcome</html>");
+		c.addLabel(l);
+		TextArea ta = new TextArea();
+		ta.setPos(0, 2);
+		ta.setText("https://github.com/ProjectBots/JHtml-Editor");
+		ta.setEditable(false);
+		c.addTextArea(ta);
+		return c;
+	}
+
+
+	private static Container jsonexplorer() {
+		Container c = new Container();
+		Image img = new Image(path + "jsonexplorer.png");
+		img.setWidth(400);
+		c.addImage(img);
+		Label l = new Label();
+		l.setPos(0, 1);
+		l.setText("<html>simple commandline based JsonExplorer<br><br>explore and edit realy big jsons without crashing your computer<br>(tested it with a 733.595 lines long file)<br><br>features:<br>exploring like a file system in cmd<br>easy changing of values<br>very customizeable search<br>saving as \"pretty\" json or as \"one line\" json<br>exporting objects/arrays into a new file (search compatible!)</html>");
+		c.addLabel(l);
+		TextArea ta = new TextArea();
+		ta.setPos(0, 2);
+		ta.setText("https://github.com/ProjectBots/JsonExplorer");
+		ta.setEditable(false);
+		ta.setInsets(2, 2, 20, 2);
+		c.addTextArea(ta);
+		return c;
+	}
+
 
 	private static Container genBasicLabel(String text) {
 		Container c = new Container();
@@ -230,6 +304,260 @@ public class GuideContent {
 		
 		try {
 			NEF.save(path + "chestRewards.json", JsonParser.prettyJson(complete));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static JsonObject stats;
+	private static String uid = "";
+	private static int lvl = -1;
+	private static String spec = null;
+	private static boolean epic = false;
+	
+	
+	private static JsonObject specs = JsonParser.parseObj(StreamRaiders.get("specUIDs"));
+	
+	private static void resetUnits() {
+		uid = "archer";
+		lvl = 0;
+		spec = null;
+		if(epic) {
+			GUI.setBackground("epic", Color.green);
+		}
+	}
+	
+	private static Container genUnits() {
+
+		Container c = new Container();
+		
+		JsonObject names;
+		try {
+			stats = JsonParser.parseObj(NEF.read(path + "units.json"));
+			names = JsonParser.parseObj(NEF.read(path + "unitDisName.json")).getAsJsonObject("byName");
+		} catch (IOException e) {
+			e.printStackTrace();
+			return c;
+		}
+		
+		String[] nameList = new String[names.size()];
+		int i = 0;
+		for(String key : names.keySet()) {
+			nameList[i++] = key;
+		}
+		
+		ComboBox unit = new ComboBox("guide::unit");
+		unit.setPos(0, 0);
+		unit.setList(nameList);
+		unit.setCL(new CombListener() {
+			@Override
+			public void unselected(String id, ItemEvent e) {}
+			@Override
+			public void selected(String id, ItemEvent e) {
+				uid = names.getAsJsonPrimitive(GUI.getSelected(id)).getAsString();
+				Image img = new Image("data/UnitPics/" + uid + ".gif");
+				img.setSquare(200);
+				GUI.setImage("guide::unit::img", img);
+				update(-1);
+			}
+		});
+		c.addComboBox(unit);
+		
+		ComboBox level = new ComboBox("guide::level");
+		level.setPos(1, 0);
+		level.setList("1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30".split(" "));
+		level.setCL(new CombListener() {
+			@Override
+			public void unselected(String id, ItemEvent e) {}
+			@Override
+			public void selected(String id, ItemEvent e) {
+				lvl = Integer.parseInt(GUI.getSelected(id)) - 1;
+				String sel = GUI.getSelected("guide::spec");
+				if(spec != null) {
+					spec = getSpec(uid, sel);
+					update(Arrays.asList(GUI.getCombItems("guide::spec")).indexOf(sel));
+				} else {
+					update(-1);
+				}
+			}
+		});
+		c.addComboBox(level);
+		
+		
+		JsonArray ss = specs.getAsJsonArray("archer");
+		String[] list = new String[3];
+		for(int j=0; j<3; j++) 
+			list[j] = ss.get(j).getAsJsonObject().getAsJsonPrimitive("name").getAsString();
+		
+		ComboBox speccb = new ComboBox("guide::spec");
+		speccb.setPos(0, 1);
+		speccb.setSpan(2, 1);
+		speccb.setList(list);
+		speccb.setCL(new CombListener() {
+			@Override
+			public void unselected(String id, ItemEvent e) {}
+			@Override
+			public void selected(String id, ItemEvent e) {
+				String sel = GUI.getSelected(id);
+				spec = getSpec(uid, sel);
+				update(Arrays.asList(GUI.getCombItems(id)).indexOf(sel));
+			}
+		});
+		c.addComboBox(speccb);
+		
+		CButton epic = new CButton("epic");
+		epic.setPos(0, 2);
+		epic.setText("epic");
+		epic.setCBL(new CButListener() {
+			@Override
+			public void unselected(String id, ActionEvent e) {
+				GuideContent.epic = false;
+				GUI.setBackground("epic", GUI.getDefButCol());
+				String sel = GUI.getSelected("guide::spec");
+				if(spec != null) {
+					spec = getSpec(uid, sel);
+					update(Arrays.asList(GUI.getCombItems("guide::spec")).indexOf(sel));
+				} else {
+					update(-1);
+				}
+			}
+			@Override
+			public void selected(String id, ActionEvent e) {
+				GuideContent.epic = true;
+				GUI.setBackground("epic", Color.green);
+				String sel = GUI.getSelected("guide::spec");
+				if(spec != null) {
+					spec = getSpec(uid, sel);
+					update(Arrays.asList(GUI.getCombItems("guide::spec")).indexOf(sel));
+				} else {
+					update(-1);
+				}
+			}
+		});
+		c.addCButton(epic);
+		
+		
+		Image img = new Image("data/UnitPics/archer.gif");
+		img.setSquare(200);
+		img.setPos(0, 3);
+		img.setSpan(2, 1);
+		c.addImage(img, "guide::unit::img");
+		
+		
+		Label out = new Label();
+		out.setPos(0, 4);
+		out.setSpan(2, 1);
+		out.setText("");
+		c.addLabel(out, "out");
+		
+		return c;
+	}
+	
+	private static void update(int specIndex) {
+		
+		GUI.setEnabled("guide::spec", false);
+		
+		JsonObject unit = stats.getAsJsonArray((epic ? "epic" : "") + uid).get(lvl).getAsJsonObject().deepCopy();
+		
+		if(lvl >= 19) {
+			GUI.setEnabled("guide::spec", true);
+			JsonArray ss = specs.getAsJsonArray(uid);
+			String[] list = new String[3];
+			for(int i=0; i<3; i++) 
+				list[i] = ss.get(i).getAsJsonObject().getAsJsonPrimitive("name").getAsString();
+			
+			GUI.setCombList("guide::spec", list);
+			
+			if(specIndex != -1) {
+				spec = getSpec(uid, list[specIndex]);
+				GUI.setSelected("guide::spec", specIndex);
+			} else {
+				spec = getSpec(uid, list[0]);
+			}
+			
+			JsonObject specStats = JsonParser.parseObj(StreamRaiders.get("specsRaw")).getAsJsonObject((epic ? "epic" : "") + spec);
+			
+			for(String key : unit.keySet()) {
+				String val = specStats.getAsJsonPrimitive(key).getAsString();
+				if(!val.equals(""))
+					unit.addProperty(key, val);
+			}
+			
+		} else {
+			spec = null;
+		}
+		
+		StringBuilder sb = new StringBuilder("<html><table>");
+		
+		for(String key : unit.keySet()) {
+			StringBuilder value = new StringBuilder(unit.getAsJsonPrimitive(key).getAsString());
+			for(int i=40; i<value.length(); i+=40) {
+				int index = value.indexOf(" ", i);
+				if(index == -1) break;
+				value.replace(index, index+1, "<br>");
+			}
+			sb.append("<tr><td>" + key + "</td><td>" + value.toString() + "</td></tr>");
+		}
+		
+		sb.append("</table></html>");
+		
+		GUI.setText("out", sb.toString());
+	}
+
+
+	private static String getSpec(String unitUID, String name) {
+		for(int i=0; i<3; i++) {
+			JsonObject jo = specs.getAsJsonArray(unitUID).get(i).getAsJsonObject();
+			if(jo.getAsJsonPrimitive("name").getAsString().equals(name)) {
+				return jo.getAsJsonPrimitive("uid").getAsString();
+			}
+		}
+		return null;
+	}
+	
+	
+	private static String[] props = new String[] {
+			"DisplayName", "Level", "Rarity", "Role",
+			"HP", "Damage", "Heal", "AttackRate", "AttackType", "Speed", "Range",
+			"IsFlying", "Power",
+			"TargetTeam", "TargetPriorityTagsList", "TargetingPriorityRange", "UnitTargetingType",
+			"Description", "SpecialAbilityDescription", "SpecialAbilityRate"
+	};
+	
+	public static void gainStats(JsonObject units) {
+		
+		JsonObject typesraw = JsonParser.parseObj(StreamRaiders.get("unitTypes"));
+		
+		JsonArray types = new JsonArray();
+		for(String key : typesraw.keySet()) {
+			if(key.equals("allTypes")) continue;
+			types.add(key);
+			types.add("epic"+key);
+		}
+		
+		JsonObject us = new JsonObject();
+		
+		for(int i=0; i<types.size(); i++) {
+			String type = types.get(i).getAsString();
+			JsonArray u = new JsonArray();
+			for(int j=0; j<30; j++)
+				u.add(0);
+			
+			for(String key : units.keySet()) {
+				if(Pattern.matches(type + "[0-9]+", key)) {
+					JsonObject ru = units.getAsJsonObject(key);
+					JsonObject pu = new JsonObject();
+					for(int j=0; j<props.length; j++) 
+						pu.add(props[j], ru.get(props[j]));
+					
+					u.set(Integer.parseInt(key.replace(type, ""))-1, pu);
+				}
+			}
+			us.add(type, u);
+		}
+		
+		try {
+			NEF.save(path + "units.json", us.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

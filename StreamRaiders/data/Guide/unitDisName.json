@@ -1,0 +1,25 @@
+{
+  "byName": {
+    "Archer": "archer",
+    "Tank": "tank",
+    "Warrior": "warrior",
+    "Flagbearer": "flagbearer",
+    "Rogue": "rogue",
+    "Buster": "buster",
+    "Bomber": "bomber",
+    "Healer": "healer",
+    "Barbarian": "barbarian",
+    "Paladin": "alliespaladin",
+    "Musketeer": "musketeer",
+    "Centurion": "centurion",
+    "Monk": "monk",
+    "Berserker": "berserker",
+    "Flying Rogue": "flyingarcher",
+    "Mage": "mage",
+    "Warbeast": "warbeast",
+    "Templar": "templar",
+    "Orcslayer": "orcslayer",
+    "Balloon Buster": "alliesballoonbuster",
+    "Artillery": "artillery"
+  }
+}

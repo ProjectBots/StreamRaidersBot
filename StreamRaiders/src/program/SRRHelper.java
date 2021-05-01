@@ -63,7 +63,9 @@ public class SRRHelper {
 		StreamRaiders.set("quests", data.getAsJsonObject("Quests").toString());
 		StreamRaiders.set("mapNodes", data.getAsJsonObject("MapNodes").toString());
 		StreamRaiders.set("events", data.getAsJsonObject("Events").toString());
+		StreamRaiders.set("specsRaw", data.getAsJsonObject("Specialization").toString());
 		GuideContent.saveChestRewards(data);
+		GuideContent.gainStats(data.getAsJsonObject("Units"));
 		StreamRaiders.set("data", dataPath);
 		StreamRaiders.save();
 	}
@@ -303,7 +305,7 @@ public class SRRHelper {
 	}
 	
 	public String unlockUnit(Unit unit) throws URISyntaxException, IOException, NoInternetException {
-		return store.unlockUnit(unit.get(SRC.Unit.unitType), req);
+		return store.unlockUnit(unit.get(SRC.Unit.unitType), unit.isDupe(), req);
 	}
 	
 	public String upgradeUnit(Unit unit, String specUID) throws URISyntaxException, IOException, NoInternetException {

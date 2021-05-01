@@ -564,11 +564,7 @@ public class Run {
 		JsonObject cCon = Configs.getObj(name, Configs.chests);
 		JsonObject clmm = Configs.getObj(name, Configs.clmm);
 		JsonArray caps = new JsonArray();
-		int pages = 3;
-		for(int i=1; i<pages && i<=15; i++) {
-			caps.addAll(srrh.search(i, 6, false, true, false, null));
-			pages = srrh.getPagesFromLastSearch();
-		}
+		
 		boolean ctNull = true;
 		while(true) {
 			boolean breakout = true;
@@ -581,6 +577,7 @@ public class Run {
 				if(ct == null) {
 					if(ctNull)
 						StreamRaiders.log(name + ": Run -> captains: ct=null", null);
+					getCaps(caps);
 					ctNull = false;
 					bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
 					switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, caps);
@@ -594,6 +591,7 @@ public class Run {
 						((ct.contains("boosted") || ct.contains("super"))
 								? loy < clmm.getAsJsonPrimitive("loyChestLoyMin").getAsInt()
 								: loy > clmm.getAsJsonPrimitive("normChestLoyMax").getAsInt())) {
+					getCaps(caps);
 					bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
 					switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, caps);
 					changed = true;
@@ -603,6 +601,7 @@ public class Run {
 			
 			for(int i=0; i<got.length; i++) {
 				if(!got[i]) {
+					getCaps(caps);
 					switchRaid(""+i, false, caps);
 					changed = true;
 					breakout = false;
@@ -614,6 +613,15 @@ public class Run {
 			raids = srrh.getRaids(SRC.Helper.all);
 		}
 		return changed;
+	}
+	
+	private void getCaps(JsonArray empty) throws URISyntaxException, IOException, NoInternetException {
+		if(empty.size() != 0) return;
+		int pages = 3;
+		for(int i=1; i<pages && i<=30; i++) {
+			empty.addAll(srrh.search(i, 6, false, true, false, null));
+			pages = srrh.getPagesFromLastSearch();
+		}
 	}
 	
 	private void switchRaid(String sortIndex, boolean rem, JsonArray caps) throws URISyntaxException, IOException, NoInternetException {

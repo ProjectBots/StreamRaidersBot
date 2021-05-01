@@ -71,21 +71,16 @@
       "rarescrolls_6": 30,
       "rarescrolls_7": 20,
       "skinfullbarbarianorcdromeda": 1,
-      "skinfullbustercyberfall": 8,
-      "skinfullmagespacewestern": 8,
-      "skinfullmonkcyberfall": 7,
-      "skinfullmusketeerspacewestern": 7,
-      "skinfullpaladincyberfall": 7
+      "skinfullmagespacewestern": 7,
+      "skinfullmusketeerspacewestern": 7
     },
     "ViewerBoostedSkin2": {
       "goldbag_100": 10,
       "rarescrolls_6": 10,
       "rarescrolls_7": 15,
-      "skinfullbustercyberfall": 20,
+      "skinfullbarbarianorcdromeda": 3,
       "skinfullmagespacewestern": 20,
-      "skinfullmonkcyberfall": 15,
-      "skinfullmusketeerspacewestern": 15,
-      "skinfullpaladincyberfall": 15
+      "skinfullmusketeerspacewestern": 15
     }
   },
   "chestboostedtoken": {

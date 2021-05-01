@@ -9,6 +9,7 @@ import java.util.List;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import include.JsonParser;
 import program.SRR.NoInternetException;
@@ -50,9 +51,13 @@ public class Store {
 		return true;
 	}
 	
-	public boolean canUnlockUnit(String type) {
-		String[] cost = (Unit.isLegendary(type) ? lLevelCost[0] : nLevelCost[0]).split(",");
-		
+	public boolean canUnlockUnit(String type, boolean dupe) {
+		String[] cost;
+		if(dupe) {
+			cost = "1000 300".split(" ");
+		} else {
+			cost = (Unit.isLegendary(type) ? lLevelCost[0] : nLevelCost[0]).split(",");
+		}
 		if(currency.get("gold") < Integer.parseInt(cost[0])) return false;
 		if(currency.get(type.replace("allies", "")) < Integer.parseInt(cost[1])) return false;
 		
@@ -81,7 +86,31 @@ public class Store {
 				Integer gotScrolls = currency.get(type.replace("allies", ""));
 				if(gotScrolls == null) continue;
 				if(scrolls <= gotScrolls.intValue()) {
-					ret = add(ret, Unit.createTypeOnly(type));
+					ret = add(ret, Unit.createTypeOnly(type, false));
+				}
+			} else {
+				
+			}
+		}
+		
+		JsonArray ndupes = new JsonArray();
+		
+		for(Unit unit : units) {
+			String type = unit.get(SRC.Unit.unitType);
+			if(ndupes.contains(new JsonPrimitive(type))) {
+				ndupes.remove(new JsonPrimitive(type));
+			} else {
+				ndupes.add(type);
+			}
+		}
+		
+		for(Unit unit : units) {
+			String type = unit.get(SRC.Unit.unitType);
+			if(!ndupes.contains(new JsonPrimitive(type))) continue;
+			if(unit.get(SRC.Unit.level).equals("30")) {
+				Integer scrolls = currency.get(type.replace("allies", ""));
+				if(scrolls >= 300) {
+					ret = add(ret, Unit.createTypeOnly(type, true));
 				}
 			}
 		}
@@ -117,10 +146,10 @@ public class Store {
 	}
 	
 	
-	public String unlockUnit(String type, SRR req) throws URISyntaxException, IOException, NoInternetException {
+	public String unlockUnit(String type, boolean dupe, SRR req) throws URISyntaxException, IOException, NoInternetException {
 		
 		int price = 0;
-		if(!canUnlockUnit(type)) return "not enough gold";
+		if(!canUnlockUnit(type, dupe)) return "not enough gold";
 
 		String text = req.unlockUnit(type);
 		if(text == null) return "critical request error";
