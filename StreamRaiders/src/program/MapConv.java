@@ -146,8 +146,12 @@ public class MapConv {
 				
 				String plan = map.getPlanType(x, y);
 				if(plan != null && map.is(x, y, SRC.Map.isEmpty)) {
-					String c1 = plan.replace("assassin", "").toUpperCase().substring(0, 1);
-					l.setText(c1);
+					if(plan.equals("assassin")) {
+						l.setText("I");
+					} else {
+						String c1 = plan.replace("assassin", "").toUpperCase().substring(0, 1);
+						l.setText(c1);
+					}
 					l.setFont(new Font(Font.SERIF, Font.PLAIN, 10));
 				}
 				
