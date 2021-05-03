@@ -10,16 +10,6 @@ import include.Http;
 import include.JsonParser;
 
 public class SRR {
-	private static boolean ver_err = false;
-	
-	synchronized private static void printVerErr(String clientVersion, String ver) {
-		if(!ver_err) {
-			ver_err = true;
-			System.err.println("Client version is outdated " + clientVersion + " -> " + ver);
-			System.err.println("not critical but can cause issues");
-		}
-	}
-	
 	private static String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0";
 	private String cookies = "";
 	
@@ -87,7 +77,6 @@ public class SRR {
 		
 		String ver = raw.getAsJsonObject("info").getAsJsonPrimitive("version").getAsString();
 		if(!ver.equals(clientVersion)) {
-			printVerErr(clientVersion, ver);
 			this.clientVersion = ver;
 			raw = JsonParser.parseObj(getUser());
 			constructor(raw);

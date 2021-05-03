@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 import org.apache.http.Consts;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -64,7 +66,9 @@ public class Http {
 			get.setHeader(headers[i]);
 		}
 		
-		CloseableHttpClient client = HttpClients.createDefault();
+		CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(
+					RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build())
+				.build();
 		CloseableHttpResponse response = client.execute(get);
 		
 		String text = new BufferedReader(new InputStreamReader(response.getEntity()

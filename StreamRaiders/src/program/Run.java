@@ -224,11 +224,8 @@ public class Run {
 						String ver = srrh.reload();
 						
 						System.out.println("completed reloading srrh for " + name);
-						if(ver != null) {
-							System.out.println("client outdated: " + ver);
-						} else {
+						if(ver == null) 
 							StreamRaiders.log("critical error happened for " + name + " at \"" + part + "\" -> skipped this round", e);
-						}
 						
 						GUI.setBackground(name+"::start", Color.green);
 						isReloading = false;
@@ -361,9 +358,8 @@ public class Run {
 				if(err != null && !err.equals("not enough gold"))
 					StreamRaiders.log(name + ": Run -> store: item=" + items.get(i) + ", err=" + err, null);
 			} catch (NullPointerException e) {
-				System.out.println(items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString());
+				StreamRaiders.log(name + ": Run -> store: item=" + items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString(), e);	
 			}
-			
 		}
 	}
 	
