@@ -158,6 +158,7 @@ public class Run {
 			while(raids()) {
 				part = "captains 2";
 				captains();
+				part = "raids 2";
 			}
 			
 			part = "collectEvent";
