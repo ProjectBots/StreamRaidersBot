@@ -353,12 +353,17 @@ public class Run {
 		
 		JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
 		for(int i=0; i<items.size(); i++) {
-			String type = items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString().split("pack")[0];
-			if(!buy.getAsJsonPrimitive(type).getAsBoolean())
-				continue;
-			String err = srrh.buyItem(items.get(i).getAsJsonObject());
-			if(err != null && !err.equals("not enough gold"))
-				StreamRaiders.log(name + ": Run -> store: item=" + items.get(i) + ", err=" + err, null);
+			String type = items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString().split("pack")[0].replace("scroll", "");
+			try {
+				if(!buy.getAsJsonPrimitive(type).getAsBoolean())
+					continue;
+				String err = srrh.buyItem(items.get(i).getAsJsonObject());
+				if(err != null && !err.equals("not enough gold"))
+					StreamRaiders.log(name + ": Run -> store: item=" + items.get(i) + ", err=" + err, null);
+			} catch (NullPointerException e) {
+				System.out.println(items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString());
+			}
+			
 		}
 	}
 	
