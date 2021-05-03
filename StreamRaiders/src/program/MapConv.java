@@ -44,18 +44,13 @@ public class MapConv {
 			}
 		}
 		
-		if(!found) {
-			for(int x=0; x<width; x++) {
-				for(int y=0; y<length; y++) {
-					if(map.is(x, y, SRC.Map.isPlayerRect)) {
-						String pt = map.getPlanType(x, y);
-						if(pt != null && !pt.equals("noPlacement")) {
+		if(!found)
+			for(int x=0; x<width; x++)
+				for(int y=0; y<length; y++)
+					if(map.is(x, y, SRC.Map.isPlayerRect))
+						if(map.getPlanType(x, y) == null) 
 							setFin(ret, map, x, y, banned);
-						}
-					}
-				}
-			}
-		}
+		
 		
 		if(!found) 
 			for(int x=0; x<width; x++) 
@@ -70,14 +65,17 @@ public class MapConv {
 	
 	private static void setFin(Field[][] ret, Map map, int x, int y, int[][] banned) {
 		
-		for(int i=0; i< banned.length; i++) 
+		for(int i=0; i< banned.length; i++)
 			if(banned[i][0] == x && banned[i][1] == y) return;
 		
 		if(!map.is(x, y, SRC.Map.isEmpty)) return;
 		
-		for(int i=-1; i<2; i++) 
-			for(int j=-1; j<2; j++) 
+		for(int i=-1; i<2; i++) {
+			for(int j=-1; j<2; j++) {
 				if(map.is(x+i, y+j, SRC.Map.isEnemy)) return;
+				if(map.is(x+i, y+j, SRC.Map.isObstacle)) return;
+			}
+		}
 		
 		ret[x][y].setFinish(true);
 		found = true;
@@ -99,7 +97,7 @@ public class MapConv {
 		
 		Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
 		
-		GUI gui = new GUI("Map", (int) Math.round(size.getWidth()), (int) Math.round(size.getHeight()));
+		GUI gui = new GUI("Map " + map.getName(), (int) Math.round(size.getWidth()), (int) Math.round(size.getHeight()));
 		
 		for(int x=0; x<map.width(); x++) {
 			for(int y=0; y<map.length(); y++) {

@@ -629,6 +629,7 @@ public class MainFrame {
 				JsonObject sCon = Configs.getObj(name, Configs.specs);
 				JsonObject cCon = Configs.getObj(name, Configs.chests);
 				JsonObject clmm = Configs.getObj(name, Configs.clmm);
+				JsonObject buy = Configs.getObj(name, Configs.buyStore);
 				
 				Container units = new Container();
 				units.setPos(0, 0);
@@ -655,6 +656,7 @@ public class MainFrame {
 					c.setPos(0, 0);
 					c.setContainer(cimg);
 					c.setFill('h');
+					c.setTooltip("Whitelist/Blacklist this Unit");
 					if(uCon.getAsJsonPrimitive(type).getAsBoolean()) {
 						c.setBackground(Color.green);
 					} else {
@@ -679,6 +681,7 @@ public class MainFrame {
 					spec.setText("\u23E3 specialize");
 					spec.setFont(new Font(null, Font.PLAIN, 19));
 					spec.setFill('h');
+					spec.setTooltip("choose a Specialization for this Unit");
 					spec.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
@@ -719,8 +722,33 @@ public class MainFrame {
 					});
 					unit.addBut(spec);
 					
+					if(!Unit.isLegendary(type)) {
+						Button bs = new Button();
+						bs.setPos(0, 2);
+						bs.setText("\u26C1 Buyable");
+						bs.setTooltip("Set if this Unit can be bought in the store");
+						bs.setFont(new Font(null, Font.PLAIN, 19));
+						bs.setFill('h');
+						if(buy.getAsJsonPrimitive(type.replace("allies", "")).getAsBoolean())
+							bs.setBackground(Color.green);
+						bs.setAL(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								if(buy.getAsJsonPrimitive(type.replace("allies", "")).getAsBoolean()) {
+									buy.addProperty(type.replace("allies", ""), false);
+									GUI.setBackground(name + "::buy::" + type, GUI.getDefButCol());
+								} else {
+									buy.addProperty(type.replace("allies", ""), true);
+									GUI.setBackground(name + "::buy::" + type, Color.green);
+								}
+							}
+						});
+						unit.addBut(bs, name + "::buy::" + type);
+					}
+					
+					
 					Label space = new Label();
-					space.setPos(0, 2);
+					space.setPos(0, 3);
 					space.setText("");
 					space.setSize(1, 20);
 					unit.addLabel(space);

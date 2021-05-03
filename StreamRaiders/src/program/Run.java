@@ -155,11 +155,9 @@ public class Run {
 			captains();
 
 			part = "raids";
-			if(raids()) {
+			while(raids()) {
 				part = "captains 2";
 				captains();
-				part = "raids 2";
-				raids();
 			}
 			
 			part = "collectEvent";
@@ -349,10 +347,14 @@ public class Run {
 	}
 	
 	
-	
 	private void store() throws URISyntaxException, IOException, NoInternetException {
+		JsonObject buy = Configs.getObj(name, Configs.buyStore);
+		
 		JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
 		for(int i=0; i<items.size(); i++) {
+			String type = items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString().split("pack")[0];
+			if(!buy.getAsJsonPrimitive(type).getAsBoolean())
+				continue;
 			String err = srrh.buyItem(items.get(i).getAsJsonObject());
 			if(err != null && !err.equals("not enough gold"))
 				StreamRaiders.log(name + ": Run -> store: item=" + items.get(i) + ", err=" + err, null);

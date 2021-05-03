@@ -59,6 +59,7 @@ public class Configs {
 	public static final Obj specs = new Obj("specs");
 	public static final Obj chests = new Obj("chests");
 	public static final Obj clmm = new Obj("clmm");
+	public static final Obj buyStore = new Obj("buyStore");
 	
 	public static JsonObject getObj(String name, Obj con) {
 		return configs.getAsJsonObject(name).getAsJsonObject(con.get());

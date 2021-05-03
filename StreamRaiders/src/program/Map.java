@@ -53,7 +53,14 @@ public class Map {
 		length = map.get(0).getAsJsonArray().size();
 	}
 	
-	public Map(JsonObject mapData, JsonArray placements, JsonObject plan) {
+	private String name = "";
+	
+	public String getName() {
+		return name;
+	}
+	
+	public Map(JsonObject mapData, JsonArray placements, JsonObject plan, String name) {
+		this.name = name;
 		float mapScale = mapData.getAsJsonPrimitive("MapScale").getAsFloat();
 		if(mapScale < 0) {
 			width = (int) (mapData.getAsJsonPrimitive("GridWidth").getAsInt());
@@ -220,7 +227,6 @@ public class Map {
 					set(j, k, prop, true);
 				}
 			}
-			
 		}
 		return map;
 	}
@@ -299,11 +305,5 @@ public class Map {
 		}
 		return ret;
 	}
-	
-	public boolean plan(Unit u) {
-		
-		return false;
-	}
-	
 	
 }

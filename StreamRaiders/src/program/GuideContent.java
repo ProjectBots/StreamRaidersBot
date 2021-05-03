@@ -76,6 +76,7 @@ public class GuideContent {
 		g.addSection(null, genBasicImage("profilesettings.png"));
 		g.addSection("Units", genBasicLabel("<html>Only whitelisted Units will be placed on a raid.<br>The Button is green when the Unit is whitelisted.</html>"));
 		g.addSection("Specialize", genBasicLabel("<html>Opens a new window where a specialization can be choosed.</html>"));
+		g.addSection("Buyable", genBasicLabel("<html>Set if the Bot can buy Scrolls for this Unit from the Store.<br>The Button is green when allowed.</html>"));
 		g.addSection("Chests", genBasicLabel("<html>Only Raids with whitelisted Chests will be choosen .<br>The Button is green when the Chest is whitelisted.</html>"));
 		g.addSection("Normal Chests max Loyalty", genBasicLabel("<html>The highest Loyalty for Normal Chests.<br>A Raid will be switched when the condition is not met.</html>"));
 		g.addSection("Loyalty Chests min Loyalty", genBasicLabel("<html>The lowest Loyalty for Loyalty Chests.<br>A Raid will be switched when the condition is not met.</html>"));

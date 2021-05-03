@@ -137,9 +137,10 @@ public class SRRHelper {
 		String node = raid.get(SRC.Raid.nodeId);
 		if(node.contains("pvp")) throw new PvPException();
 		JsonElement je = JsonParser.parseObj(req.getRaidPlan(raid.get(SRC.Raid.raidId))).get("data");
-		map = new Map(JsonParser.parseObj(req.getMapData(raid.get(SRC.Raid.battleground))),
+		String mapName = raid.get(SRC.Raid.battleground);
+		map = new Map(JsonParser.parseObj(req.getMapData(mapName)),
 				JsonParser.parseArr(raid.get(SRC.Raid.placementsSerialized)),
-				(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null));
+				(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null), mapName);
 	}
 	
 	public boolean testPos(boolean epic, int x, int y) {
