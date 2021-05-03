@@ -19,7 +19,7 @@ the Map buttons will show the current map.
 you can seewhich chest a raid will bring on the right of the map buttons.  
 the option button in the top left will open a new menu where you can delete all profiles.  
 the trashcan will delete the dedicated profile.  
-the option buttons in the profile section will open a menu where you can whitelist units and chests (and choose a specialization if you want).  
+the option buttons in the profile section will open a menu with further Configs for the Profile.  
 the lock button prevents the streamer from being changed  
 the heart button favorites a streamer (only local)  
 
