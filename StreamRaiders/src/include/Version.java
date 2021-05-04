@@ -58,11 +58,11 @@ public class Version {
 				for(String key : cl.keySet()) {
 					if(key.equals("newest"))
 						continue;
-					if(Version.dif(ver, bver) >= 0) {
+					if(Version.dif(key, bver) >= 0) {
 						Label l = new Label();
 						l.setPos(0, y++);
 						l.setText(cl.getAsJsonPrimitive(key).getAsString());
-						l.setInsets(2, 2, 20, 2);
+						l.setInsets(2, 2, 40, 2);
 						verg.addLabel(l);
 					}
 				}
