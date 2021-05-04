@@ -36,7 +36,7 @@ public class Raid {
 			if(con.equals(SRC.Raid.users)) 
 				return raid.getAsJsonArray(con).toString();
 			return raid.getAsJsonPrimitive(con).getAsString();
-		} catch (ClassCastException e) {
+		} catch (ClassCastException | NullPointerException e) {
 			return null;
 		}
 	}
