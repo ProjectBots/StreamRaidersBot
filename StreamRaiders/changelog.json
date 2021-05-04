@@ -1,4 +1,4 @@
 {
 	"newest" : "5.0.0",
-	"5.0.0" : ""
+	"5.0.0" : "<html>added:<br>- more settings:<br>1. (dis)allow auto upgrade of Units<br>2. (dis)allow auto dupe of Units<br>3. (dis)allow auto unlock of Units<br>- block slots from auto farming<br><br>changed:<br>- Config System<br>- new Version Notifier</html>"
 }
