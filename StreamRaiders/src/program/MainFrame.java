@@ -650,9 +650,7 @@ public class MainFrame {
 					c.setPos(x++, y);
 					c.setContainer(cimg);
 					c.setFill('h');
-					c.setTooltip("Whitelist/Blacklist this Unit");
-					if(Configs.getUnitBoolean(name, type, Configs.place))
-						c.setBackground(Color.green);
+					c.setTooltip("Unit settings for " + type);
 					c.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
@@ -721,6 +719,7 @@ public class MainFrame {
 							spec.setText("\u23E3 specialize");
 							spec.setFont(new Font(null, Font.PLAIN, 19));
 							spec.setFill('h');
+							spec.setInsets(2, 2, 20, 2);
 							spec.setTooltip("choose a Specialization for this Unit");
 							spec.setAL(new ActionListener() {
 								@Override
