@@ -3,13 +3,11 @@ package program;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.URISyntaxException;
 import java.util.Hashtable;
 
 import include.GUI;
 import include.GUI.Image;
 import include.GUI.Label;
-import include.Http;
 import include.NEF;
 
 public class StreamRaiders {
@@ -91,34 +89,6 @@ public class StreamRaiders {
 		
 		System.out.println("by ProjectBots https://github.com/ProjectBots/StreamRaiderBot\r\n"
 				+ "Version: " + get("botVersion") + "\r\n");
-		
-		
-		Http get = new Http();
-		get.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0");
-		get.setUrl("https://github.com/ProjectBots/StreamRaidersBot/blob/master/StreamRaiders/data/opt.app");
-		
-		try {
-			StringBuilder ret = new StringBuilder(get.sendGet());
-			
-			int index = ret.indexOf("botVersion=");
-			
-			String ver = ret.substring(index+11, ret.indexOf("</td>", index));
-			
-			if(!get("botVersion").equals(ver)) {
-				System.err.println("This Bot Version is outdated.\n"
-						+ "Not problematic, but consider updating.\n"
-						+ "Newest Version: " + ver);
-				
-				GUI verg = new GUI("Outdated Bot Version", 500, 250);
-				Label l = new Label();
-				l.setText("<html>This Bot Version is outdated.<br>Not problematic, but consider updating.<br>Newest Version: " + ver + "</html>");
-				verg.addLabel(l);
-				verg.refresh();
-			}
-		} catch (URISyntaxException | IOException e2) {
-			log("StreamRaiders -> main: err=Couldnt get current version", e2);
-		}
-		
 		
 		
 		Raid.loadTypViewChestRews();

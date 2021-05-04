@@ -31,7 +31,13 @@ public class GuideContent {
 
 	private static final String path = "data/Guide/";
 	
+	private static boolean uptodate = false;
+	
 	public static void show() {
+		if(!uptodate)
+			if(!MainFrame.getGUI().showConfirmationBox("The Guide isn't up to date\r\nopen anyways?"))
+				return;
+		
 		Guide g = new Guide();
 		
 		g.addSubject("Home");

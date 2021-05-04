@@ -68,8 +68,8 @@ known Issues:
 TODO:  
 - ~Guide/Help~  
 - internal debug tool  
-- more options to cutomise (~buying~, unlocking, upgrading and ~specializing~ units)  
-- much more options to customise (preferred Units, ~captains~, ~chests~)  
+- ~more options to cutomise (buying, unlocking, upgrading and specializing units)~  
+- ~much more options to customise (preferred Units, captains, chests)~  
 - automatic update?  
 - mod support?  
 - better readme file  

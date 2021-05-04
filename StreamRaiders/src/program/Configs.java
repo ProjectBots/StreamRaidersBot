@@ -28,13 +28,19 @@ public class Configs {
 		configs.remove(name);
 	}
 	
-	public static class Str {
+	private static class All {
 		private String con = null;
-		public Str(String con) {
+		public All(String con) {
 			this.con = con;
 		}
 		public String get() {
 			return con;
+		}
+	}
+	
+	private static class Str extends All {
+		public Str(String con) {
+			super(con);
 		}
 	}
 	
@@ -45,34 +51,9 @@ public class Configs {
 	}
 	
 	
-	public static class Obj {
-		private String con = null;
-		public Obj(String con) {
-			this.con = con;
-		}
-		public String get() {
-			return con;
-		}
-	}
-	
-	public static final Obj units = new Obj("units");
-	public static final Obj specs = new Obj("specs");
-	public static final Obj chests = new Obj("chests");
-	public static final Obj clmm = new Obj("clmm");
-	public static final Obj buyStore = new Obj("buyStore");
-	
-	public static JsonObject getObj(String name, Obj con) {
-		return configs.getAsJsonObject(name).getAsJsonObject(con.get());
-	}
-	
-	
-	public static class Arr {
-		private String con = null;
+	public static class Arr extends All {
 		public Arr(String con) {
-			this.con = con;
-		}
-		public String get() {
-			return con;
+			super(con);
 		}
 	}
 	
@@ -82,6 +63,108 @@ public class Configs {
 	
 	public static JsonArray getArr(String name, Arr con) {
 		return configs.getAsJsonObject(name).getAsJsonArray(con.get());
+	}
+	
+	
+	public static class B extends All {
+		public B(String con) {
+			super(con);
+		}
+	}
+	
+	public static final B place = new B("place");
+	public static final B upgrade = new B("upgrade");
+	public static final B unlock = new B("unlock");
+	public static final B dupe = new B("dupe");
+	public static final B buy = new B("buy");
+	
+	public static boolean getUnitBoolean(String name, String uType, B con) {
+		return configs.getAsJsonObject(name)
+				.getAsJsonObject("units")
+				.getAsJsonObject(uType)
+				.getAsJsonPrimitive(con.get())
+				.getAsBoolean();
+	}
+	
+	public static void setUnitBoolean(String name, String uType, B con, boolean b) {
+		configs.getAsJsonObject(name)
+				.getAsJsonObject("units")
+				.getAsJsonObject(uType)
+				.addProperty(con.get(), b);
+	}
+	
+	
+	private static class S extends All {
+		public S(String con) {
+			super(con);
+		}
+	}
+	
+	public static final S spec = new S("spec");
+	
+	public static String getUnitString(String name, String uType, S con) {
+		return configs.getAsJsonObject(name)
+				.getAsJsonObject("units")
+				.getAsJsonObject(uType)
+				.getAsJsonPrimitive(con.get())
+				.getAsString();
+	}
+	
+	public static void setUnitString(String name, String uType, S con, String str) {
+		configs.getAsJsonObject(name)
+				.getAsJsonObject("units")
+				.getAsJsonObject(uType)
+				.addProperty(con.get(), str);
+	}
+	
+	public static boolean getChestBoolean(String name, String cType) {
+		return configs.getAsJsonObject(name)
+				.getAsJsonObject("chests")
+				.getAsJsonPrimitive(cType)
+				.getAsBoolean();
+	}
+	
+	public static void setChestBoolean(String name, String cType, boolean b) {
+		configs.getAsJsonObject(name)
+				.getAsJsonObject("chests")
+				.addProperty(cType, b);
+	}
+	
+	
+	private static class C extends All {
+		public C(String con) {
+			super(con);
+		}
+	}
+	
+	public static final C normChestLoyMax = new C("normChestLoyMax");
+	public static final C loyChestLoyMin = new C("loyChestLoyMin");
+	
+	public static int getChestInt(String name, C con) {
+		return configs.getAsJsonObject(name)
+				.getAsJsonObject("chests")
+				.getAsJsonPrimitive(con.get())
+				.getAsInt();
+	}
+	
+	public static void setChestInt(String name, C con, int val) {
+		configs.getAsJsonObject(name)
+				.getAsJsonObject("chests")
+				.addProperty(con.get(), val);
+	}
+	
+	
+	public static boolean isSlotBlocked(String name, String slot) {
+		return configs.getAsJsonObject(name)
+				.getAsJsonObject("blockedSlots")
+				.getAsJsonPrimitive(""+slot)
+				.getAsBoolean();
+	}
+	
+	public static void setSlotBlocked(String name, String slot, boolean b) {
+		configs.getAsJsonObject(name)
+				.getAsJsonObject("blockedSlots")
+				.addProperty(""+slot, b);
 	}
 	
 	

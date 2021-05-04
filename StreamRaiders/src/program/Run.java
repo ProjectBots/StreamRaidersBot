@@ -336,8 +336,9 @@ public class Run {
 	
 	private void unlock() throws URISyntaxException, IOException, NoInternetException {
 		Unit[] unlockable = srrh.getUnits(SRC.Helper.canUnlockUnit);
-		
 		for(int i=0; i<unlockable.length; i++) {
+			if(!Configs.getUnitBoolean(name, unlockable[i].get(SRC.Unit.unitType), unlockable[i].isDupe() ? Configs.dupe : Configs.unlock))
+				continue;
 			String err = srrh.unlockUnit(unlockable[i]);
 			if(err != null && !err.equals("not enough gold"))
 				StreamRaiders.log(name + ": Run -> unlock: type=" + unlockable[i].get(SRC.Unit.unitType) + ", err=" + err, null);
@@ -346,13 +347,16 @@ public class Run {
 	
 	
 	private void store() throws URISyntaxException, IOException, NoInternetException {
-		JsonObject buy = Configs.getObj(name, Configs.buyStore);
-		
 		JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
 		for(int i=0; i<items.size(); i++) {
-			String type = items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString().split("pack")[0].replace("scroll", "");
+			String type = items.get(i).getAsJsonObject()
+					.getAsJsonPrimitive("itemId")
+					.getAsString()
+					.split("pack")[0]
+					.replace("scroll", "")
+					.replace("paladin", "alliespaladin");
 			try {
-				if(!buy.getAsJsonPrimitive(type).getAsBoolean())
+				if(!Configs.getUnitBoolean(name, type, Configs.buy))
 					continue;
 				String err = srrh.buyItem(items.get(i).getAsJsonObject());
 				if(err != null && !err.equals("not enough gold"))
@@ -365,12 +369,11 @@ public class Run {
 	
 	
 	private void upgradeUnits() throws URISyntaxException, IOException, NoInternetException {
-		
-		JsonObject sCon = Configs.getObj(name, Configs.specs);
-		
 		Unit[] us = srrh.getUnits(SRC.Helper.canUpgradeUnit);
 		for(int i=0; i<us.length; i++) {
-			String err = srrh.upgradeUnit(us[i], sCon.getAsJsonPrimitive(us[i].get(SRC.Unit.unitType)).getAsString());
+			if(!Configs.getUnitBoolean(name, us[i].get(SRC.Unit.unitType), Configs.upgrade))
+				continue;
+			String err = srrh.upgradeUnit(us[i], Configs.getUnitString(name, us[i].get(SRC.Unit.unitType), Configs.spec));
 			if(err != null) {
 				if(!(err.equals("no specUID") || err.equals("cant upgrade unit"))) {
 					StreamRaiders.log(name + ": Run -> upgradeUnits: type=" + us[i].get(SRC.Unit.unitType) + " err=" + err, null);
@@ -385,7 +388,6 @@ public class Run {
 	private boolean raids() throws URISyntaxException, IOException, NoInternetException {
 		boolean ret = false;
 		
-		JsonObject uCon = Configs.getObj(name, Configs.units);
 		JsonArray locked = Configs.getArr(name, Configs.locked);
 		JsonArray favs = Configs.getArr(name, Configs.favs);
 		
@@ -395,30 +397,48 @@ public class Run {
 
 		for(int i=0; i<4; i++) {
 			if(i<all.length) {
-				int wins = Integer.parseInt(all[i].get(SRC.Raid.pveWins));
-				int lvl = Integer.parseInt(all[i].get(SRC.Raid.pveLoyaltyLevel));
-				String disName = all[i].get(SRC.Raid.twitchDisplayName);
-				GUI.setText(name+"::name::"+i, disName + " - " + wins + "|" + pveloy[lvl]);
-				String ct = all[i].getFromNode(SRC.MapNode.chestType);
-				if(ct == null) ct = "nochest";
-				Image img = new Image("data/ChestPics/" + ct + ".png");
-				img.setSquare(30);
-				GUI.setImage(name+"::chest::"+i, img);
-				if(locked.contains(new JsonPrimitive(disName))) {
-					GUI.setText(name+"::lockBut::"+i, "\uD83D\uDD12");
-					GUI.setBackground(name+"::lockBut::"+i, Color.green);
-				} else {
+				if(Configs.isSlotBlocked(name, all[i].get(SRC.Raid.userSortIndex))) {
+					GUI.setText(name+"::name::"+i, "Blocked Raid!");
+					GUI.setForeground(name+"::name::"+i, Color.red);
+					Image img = new Image("data/ChestPics/nochest.png");
+					img.setSquare(30);
+					GUI.setImage(name+"::chest::"+i, img);
 					GUI.setText(name+"::lockBut::"+i, "\uD83D\uDD13");
 					GUI.setBackground(name+"::lockBut::"+i, GUI.getDefButCol());
-				}
-				if(favs.contains(new JsonPrimitive(disName))) {
-					GUI.setText(name+"::favBut::"+i, "\u2764");
-					GUI.setForeground(name+"::favBut::"+i, new Color(227,27,35));
-				} else {
+					GUI.setEnabled(name+"::lockBut::"+i, false);
 					GUI.setText(name+"::favBut::"+i, "\uD83D\uDC94");
 					GUI.setForeground(name+"::favBut::"+i, Color.black);
+					GUI.setEnabled(name+"::favBut::"+i, false);
+					GUI.setEnabled(name+"::map::"+i, false);
+				} else {
+					int wins = Integer.parseInt(all[i].get(SRC.Raid.pveWins));
+					int lvl = Integer.parseInt(all[i].get(SRC.Raid.pveLoyaltyLevel));
+					String disName = all[i].get(SRC.Raid.twitchDisplayName);
+					GUI.setText(name+"::name::"+i, disName + " - " + wins + "|" + pveloy[lvl]);
+					GUI.setForeground(name+"::name::"+i, Color.black);
+					String ct = all[i].getFromNode(SRC.MapNode.chestType);
+					if(ct == null) ct = "nochest";
+					Image img = new Image("data/ChestPics/" + ct + ".png");
+					img.setSquare(30);
+					GUI.setImage(name+"::chest::"+i, img);
+					GUI.setEnabled(name+"::lockBut::"+i, true);
+					if(locked.contains(new JsonPrimitive(disName))) {
+						GUI.setText(name+"::lockBut::"+i, "\uD83D\uDD12");
+						GUI.setBackground(name+"::lockBut::"+i, Color.green);
+					} else {
+						GUI.setText(name+"::lockBut::"+i, "\uD83D\uDD13");
+						GUI.setBackground(name+"::lockBut::"+i, GUI.getDefButCol());
+					}
+					GUI.setEnabled(name+"::favBut::"+i, true);
+					if(favs.contains(new JsonPrimitive(disName))) {
+						GUI.setText(name+"::favBut::"+i, "\u2764");
+						GUI.setForeground(name+"::favBut::"+i, new Color(227,27,35));
+					} else {
+						GUI.setText(name+"::favBut::"+i, "\uD83D\uDC94");
+						GUI.setForeground(name+"::favBut::"+i, Color.black);
+					}
+					GUI.setEnabled(name+"::map::"+i, true);
 				}
-				
 			} else {
 				GUI.setText(name+"::name::"+i, "");
 				Image img = new Image("data/ChestPics/nochest.png");
@@ -429,6 +449,8 @@ public class Run {
 		
 		if(plra.length != 0) {
 			for(int i=0; i<plra.length; i++) {
+				if(Configs.isSlotBlocked(name, plra[i].get(SRC.Raid.userSortIndex)))
+					continue;
 				try {
 					if(units.length == 0) {
 						break;
@@ -447,8 +469,8 @@ public class Run {
 					loop:
 					while(true) {
 						fpt = null;
-						Unit unit = findUnit(units, apt, ppt, uCon);
-						if(unit == null) unit = findUnit(units, false, ppt, uCon);
+						Unit unit = findUnit(units, apt, ppt);
+						if(unit == null) unit = findUnit(units, false, ppt);
 						if(unit == null) break;
 						JsonArray allowedPlanTypes = new JsonArray();
 						allowedPlanTypes.add(fpt);
@@ -490,7 +512,7 @@ public class Run {
 	
 	private String fpt = null;
 	
-	private Unit findUnit(Unit[] units, boolean apt, JsonArray ppt, JsonObject uCon) {
+	private Unit findUnit(Unit[] units, boolean apt, JsonArray ppt) {
 		Unit unit = null;
 		for(int j=0; j<units.length; j++) {
 			String tfpt = null;
@@ -507,7 +529,7 @@ public class Run {
 				unit = units[j];
 				break;
 			}
-			if(!uCon.getAsJsonPrimitive(units[j].get(SRC.Unit.unitType)).getAsBoolean()) continue;
+			if(!Configs.getUnitBoolean(name, units[j].get(SRC.Unit.unitType), Configs.place)) continue;
 			if(unit == null) {
 				unit = units[j];
 				fpt = tfpt;
@@ -532,8 +554,9 @@ public class Run {
 	private boolean chests() throws URISyntaxException, IOException, NoInternetException {
 		Raid[] rera = srrh.getRaids(SRC.Helper.isReward);
 		if(rera.length != 0) {
-			
 			for(int i=0; i<rera.length; i++) {
+				if(Configs.isSlotBlocked(name, rera[i].get(SRC.Raid.userSortIndex)))
+					continue;
 				
 				JsonObject jo = rera[i].getChest(srrh.getSRR());
 				
@@ -565,8 +588,6 @@ public class Run {
 		JsonArray locked = Configs.getArr(name, Configs.locked);
 		
 		boolean changed = false;
-		JsonObject cCon = Configs.getObj(name, Configs.chests);
-		JsonObject clmm = Configs.getObj(name, Configs.clmm);
 		JsonArray caps = new JsonArray();
 		
 		boolean ctNull = true;
@@ -574,6 +595,8 @@ public class Run {
 			boolean breakout = true;
 			boolean[] got = new boolean[] {false, uCount < 5, uCount < 8, !srrh.hasBattlePass()};
 			for(int i=0; i<raids.length; i++) {
+				if(Configs.isSlotBlocked(name, raids[i].get(SRC.Raid.userSortIndex)))
+					continue;
 				got[Integer.parseInt(raids[i].get(SRC.Raid.userSortIndex))] = true;
 				if(locked.contains(new JsonPrimitive(raids[i].get(SRC.Raid.twitchDisplayName)))) continue;
 				if(!raids[i].isSwitchable(srrh.getServerTime(), true, 10)) continue;
@@ -591,10 +614,10 @@ public class Run {
 				}
 				int loy = Integer.parseInt(raids[i].get(SRC.Raid.pveLoyaltyLevel));
 				if((raids[i].isOffline(srrh.getServerTime(), true, 10)) ||
-						(ct.contains("bone") || !cCon.getAsJsonPrimitive(ct).getAsBoolean()) ||
+						(ct.contains("bone") || !Configs.getChestBoolean(name, ct)) ||
 						((ct.contains("boosted") || ct.contains("super"))
-								? loy < clmm.getAsJsonPrimitive("loyChestLoyMin").getAsInt()
-								: loy > clmm.getAsJsonPrimitive("normChestLoyMax").getAsInt())) {
+								? loy < Configs.getChestInt(name, Configs.loyChestLoyMin)
+								: loy > Configs.getChestInt(name, Configs.normChestLoyMax))) {
 					getCaps(caps);
 					bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
 					switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, caps);
@@ -605,6 +628,8 @@ public class Run {
 			
 			for(int i=0; i<got.length; i++) {
 				if(!got[i]) {
+					if(Configs.isSlotBlocked(name, ""+i))
+						continue;
 					getCaps(caps);
 					switchRaid(""+i, false, caps);
 					changed = true;

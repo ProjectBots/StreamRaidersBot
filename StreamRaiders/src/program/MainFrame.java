@@ -27,6 +27,7 @@ import include.GUI.TextArea;
 import include.GUI.TextField;
 import include.GUI.WinLis;
 import include.JsonParser;
+import include.Version;
 
 public class MainFrame {
 
@@ -371,6 +372,8 @@ public class MainFrame {
 			gui.addContainer(head);
 			
 			refresh(false);
+			
+			Version.check();
 	}
 	
 	private static void forgetMe() {
@@ -549,7 +552,7 @@ public class MainFrame {
 					profiles.get(name).showMap(ii);
 				}
 			});
-			part.addBut(map);
+			part.addBut(map, name+"::map::"+i);
 			
 			
 			Image chest = new Image("data/ChestPics/nochest.png");
@@ -625,12 +628,6 @@ public class MainFrame {
 				
 				JsonObject types = Unit.getTypes();
 				
-				JsonObject uCon = Configs.getObj(name, Configs.units);
-				JsonObject sCon = Configs.getObj(name, Configs.specs);
-				JsonObject cCon = Configs.getObj(name, Configs.chests);
-				JsonObject clmm = Configs.getObj(name, Configs.clmm);
-				JsonObject buy = Configs.getObj(name, Configs.buyStore);
-				
 				Container units = new Container();
 				units.setPos(0, 0);
 				
@@ -644,116 +641,128 @@ public class MainFrame {
 						x = 0;
 					}
 					
-					Container unit = new Container();
-					unit.setPos(x++, y);
-					
 					Container cimg = new Container();
 					Image img = new Image("data/UnitPics/" + type + ".gif");
 					img.setSquare(100);
 					cimg.addImage(img);
 					
 					Button c = new Button();
-					c.setPos(0, 0);
+					c.setPos(x++, y);
 					c.setContainer(cimg);
 					c.setFill('h');
 					c.setTooltip("Whitelist/Blacklist this Unit");
-					if(uCon.getAsJsonPrimitive(type).getAsBoolean()) {
+					if(Configs.getUnitBoolean(name, type, Configs.place))
 						c.setBackground(Color.green);
-					} else {
-						c.setBackground(GUI.getDefButCol());
-					}
 					c.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							if(uCon.getAsJsonPrimitive(type).getAsBoolean()) {
-								uCon.addProperty(type, false);
-								GUI.setBackground(name + "::" + type, GUI.getDefButCol());
-							} else {
-								uCon.addProperty(type, true);
-								GUI.setBackground(name + "::" + type, Color.green);
-							}
-						}
-					});
-					unit.addBut(c, name + "::" + type);
-					
-					Button spec = new Button();
-					spec.setPos(0, 1);
-					spec.setText("\u23E3 specialize");
-					spec.setFont(new Font(null, Font.PLAIN, 19));
-					spec.setFill('h');
-					spec.setTooltip("choose a Specialization for this Unit");
-					spec.setAL(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							final JsonArray uids = JsonParser.parseObj(StreamRaiders.get("specUIDs")).getAsJsonArray(type);
 							
-							String old = sCon.getAsJsonPrimitive(type).getAsString();
+							GUI uset = new GUI("Unit settings " + type, 400, 500, sgui, null);
+							int y = 0;
 							
-							GUI gspec = new GUI("specialize " + type, 400, 300, sgui, null);
+							Image img = new Image("data/UnitPics/" + type + ".gif");
+							img.setPos(0, y++);
+							img.setSquare(300);
+							uset.addImage(img);
 							
+							String[] ts = "place upgrade unlock dupe".split(" ");
 							
-							for(int i=0; i<3; i++) {
-								final String u = uids.get(i).getAsJsonObject().getAsJsonPrimitive("uid").getAsString();
-								final String uName = uids.get(i).getAsJsonObject().getAsJsonPrimitive("name").getAsString();
+							for(int i=0; i<ts.length; i++) {
 								final int ii = i;
-								Button uid = new Button();
-								uid.setPos(0, i);
-								uid.setText(uName);
-								if(old.equals(u)) uid.setBackground(Color.green);
-								uid.setFill('h');
-								uid.setAL(new ActionListener() {
+								Button place = new Button();
+								place.setPos(0, y++);
+								place.setText("can " + ts[i]);
+								place.setTooltip("Set if the Bot can " + ts[i] + " this Unit");
+								place.setFont(new Font(null, Font.PLAIN, 19));
+								place.setFill('h');
+								if(Configs.getUnitBoolean(name, type, new Configs.B(ts[i])))
+									place.setBackground(Color.green);
+								place.setAL(new ActionListener() {
 									@Override
 									public void actionPerformed(ActionEvent e) {
-										if(sCon.getAsJsonPrimitive(type).getAsString().equals(u)) {
-											sCon.addProperty(type, "null");
-											GUI.setBackground(name + "::spec::" + type + "::" + ii, GUI.getDefButCol());
+										if(Configs.getUnitBoolean(name, type, new Configs.B(ts[ii]))) {
+											Configs.setUnitBoolean(name, type, new Configs.B(ts[ii]), false);
+											GUI.setBackground(name + "::" + type + "::uset::" + ts[ii], GUI.getDefButCol());
 										} else {
-											sCon.addProperty(type, u);
-											GUI.setBackground(name + "::spec::" + type + "::" + ii, Color.green);
-											GUI.setBackground(name + "::spec::" + type + "::" + ((ii+1)%3), GUI.getDefButCol());
-											GUI.setBackground(name + "::spec::" + type + "::" + ((ii+2)%3), GUI.getDefButCol());
+											Configs.setUnitBoolean(name, type, new Configs.B(ts[ii]), true);
+											GUI.setBackground(name + "::" + type + "::uset::" + ts[ii], Color.green);
 										}
 									}
 								});
-								gspec.addBut(uid, name + "::spec::" + type + "::" + i);
+								uset.addBut(place, name + "::" + type + "::uset::" + ts[i]);
 							}
 							
+							if(!Unit.isLegendary(type)) {
+								Button bs = new Button();
+								bs.setPos(0, y++);
+								bs.setText("can buy scrolls");
+								bs.setTooltip("Set if Scrolls for this Unit can be bought in the store");
+								bs.setFont(new Font(null, Font.PLAIN, 19));
+								bs.setFill('h');
+								if(Configs.getUnitBoolean(name, type, Configs.buy))
+									bs.setBackground(Color.green);
+								bs.setAL(new ActionListener() {
+									@Override
+									public void actionPerformed(ActionEvent e) {
+										if(Configs.getUnitBoolean(name, type, Configs.buy)) {
+											Configs.setUnitBoolean(name, type, Configs.buy, false);
+											GUI.setBackground(name + "::buy::" + type, GUI.getDefButCol());
+										} else {
+											Configs.setUnitBoolean(name, type, Configs.buy, true);
+											GUI.setBackground(name + "::buy::" + type, Color.green);
+										}
+									}
+								});
+								uset.addBut(bs, name + "::buy::" + type);
+							}
+							
+							Button spec = new Button();
+							spec.setPos(0, y++);
+							spec.setText("\u23E3 specialize");
+							spec.setFont(new Font(null, Font.PLAIN, 19));
+							spec.setFill('h');
+							spec.setTooltip("choose a Specialization for this Unit");
+							spec.setAL(new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									final JsonArray uids = JsonParser.parseObj(StreamRaiders.get("specUIDs")).getAsJsonArray(type);
+									
+									String old = Configs.getUnitString(name, type, Configs.spec);
+									
+									GUI gspec = new GUI("specialize " + type, 400, 300, sgui, null);
+									
+									for(int i=0; i<3; i++) {
+										final String u = uids.get(i).getAsJsonObject().getAsJsonPrimitive("uid").getAsString();
+										final String uName = uids.get(i).getAsJsonObject().getAsJsonPrimitive("name").getAsString();
+										final int ii = i;
+										Button uid = new Button();
+										uid.setPos(0, i);
+										uid.setText(uName);
+										if(old.equals(u)) uid.setBackground(Color.green);
+										uid.setFill('h');
+										uid.setAL(new ActionListener() {
+											@Override
+											public void actionPerformed(ActionEvent e) {
+												if(Configs.getUnitString(name, type, Configs.spec).equals(u)) {
+													Configs.setUnitString(name, type, Configs.spec, "null");
+													GUI.setBackground(name + "::spec::" + type + "::" + ii, GUI.getDefButCol());
+												} else {
+													Configs.setUnitString(name, type, Configs.spec, u);
+													GUI.setBackground(name + "::spec::" + type + "::" + ii, Color.green);
+													GUI.setBackground(name + "::spec::" + type + "::" + ((ii+1)%3), GUI.getDefButCol());
+													GUI.setBackground(name + "::spec::" + type + "::" + ((ii+2)%3), GUI.getDefButCol());
+												}
+											}
+										});
+										gspec.addBut(uid, name + "::spec::" + type + "::" + i);
+									}
+									
+								}
+							});
+							uset.addBut(spec);
 						}
 					});
-					unit.addBut(spec);
-					
-					if(!Unit.isLegendary(type)) {
-						Button bs = new Button();
-						bs.setPos(0, 2);
-						bs.setText("\u26C1 Buyable");
-						bs.setTooltip("Set if this Unit can be bought in the store");
-						bs.setFont(new Font(null, Font.PLAIN, 19));
-						bs.setFill('h');
-						if(buy.getAsJsonPrimitive(type.replace("allies", "")).getAsBoolean())
-							bs.setBackground(Color.green);
-						bs.setAL(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								if(buy.getAsJsonPrimitive(type.replace("allies", "")).getAsBoolean()) {
-									buy.addProperty(type.replace("allies", ""), false);
-									GUI.setBackground(name + "::buy::" + type, GUI.getDefButCol());
-								} else {
-									buy.addProperty(type.replace("allies", ""), true);
-									GUI.setBackground(name + "::buy::" + type, Color.green);
-								}
-							}
-						});
-						unit.addBut(bs, name + "::buy::" + type);
-					}
-					
-					
-					Label space = new Label();
-					space.setPos(0, 3);
-					space.setText("");
-					space.setSize(1, 20);
-					unit.addLabel(space);
-					
-					units.addContainer(unit);
+					units.addBut(c);
 				}
 				
 				sgui.addContainer(units);
@@ -780,19 +789,16 @@ public class MainFrame {
 					chest.setContainer(cimg);
 					chest.setFill('h');
 					chest.setInsets(0, 10, 10, 0);
-					if(cCon.getAsJsonPrimitive(type).getAsBoolean()) {
+					if(Configs.getChestBoolean(name, type))
 						chest.setBackground(Color.green);
-					} else {
-						chest.setBackground(GUI.getDefButCol());
-					}
 					chest.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							if(cCon.getAsJsonPrimitive(type).getAsBoolean()) {
-								cCon.addProperty(type, false);
+							if(Configs.getChestBoolean(name, type)) {
+								Configs.setChestBoolean(name, type, false);
 								GUI.setBackground(name + "::" + type, GUI.getDefButCol());
 							} else {
-								cCon.addProperty(type, true);
+								Configs.setChestBoolean(name, type, true);
 								GUI.setBackground(name + "::" + type, Color.green);
 							}
 						}
@@ -822,7 +828,7 @@ public class MainFrame {
 					minMax.addLabel(mml);
 					
 					final int ii = i;
-					int ml = clmm.getAsJsonPrimitive(i==0 ? "normChestLoyMax" : "loyChestLoyMin").getAsInt();
+					int ml = Configs.getChestInt(name, i==0 ? Configs.normChestLoyMax : Configs.loyChestLoyMin);
 
 					Container cimg = new Container();
 					Image img = new Image("data\\LoyaltyPics\\"+Run.pveloy[ml]+".png");
@@ -836,9 +842,9 @@ public class MainFrame {
 					bl.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							int ml = clmm.getAsJsonPrimitive(ii==0 ? "normChestLoyMax" : "loyChestLoyMin").getAsInt() + 1;
+							int ml = Configs.getChestInt(name, ii==0 ? Configs.normChestLoyMax : Configs.loyChestLoyMin) + 1;
 							if(ml > 3) ml = 1;
-							clmm.addProperty(ii==0 ? "normChestLoyMax" : "loyChestLoyMin", ml);
+							Configs.setChestInt(name, ii==0 ? Configs.normChestLoyMax : Configs.loyChestLoyMin, ml);
 							Image img = new Image("data\\LoyaltyPics\\"+Run.pveloy[ml]+".png");
 							img.setSquare(35);
 							GUI.setImage(name+"::loyImg::"+ii, img);
@@ -851,9 +857,44 @@ public class MainFrame {
 				
 				sgui.addContainer(minMax);
 				
+				Label bsl = new Label();
+				bsl.setPos(0, 3);
+				bsl.setInsets(20, 2, 2, 2);
+				bsl.setText("Exlude Slots from auto farming:");
+				bsl.setFont(new Font(null, Font.PLAIN, 25));
+				sgui.addLabel(bsl);
+				
+				Container cbs = new Container();
+				cbs.setPos(0, 4);
+				
+				for(int i=0; i<4; i++) {
+					final int ii = i;
+					Button bs = new Button();
+					bs.setPos(i, 0);
+					bs.setText(""+i);
+					bs.setFont(new Font(null, Font.PLAIN, 25));
+					if(Configs.isSlotBlocked(name, ""+i))
+						bs.setBackground(Color.green);
+					bs.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							if(Configs.isSlotBlocked(name, ""+ii)) {
+								Configs.setSlotBlocked(name, ""+ii, false);
+								GUI.setBackground(name+"::slots::"+ii, GUI.getDefButCol());
+							} else {
+								Configs.setSlotBlocked(name, ""+ii, true);
+								GUI.setBackground(name+"::slots::"+ii, Color.green);
+							}
+						}
+					});
+					cbs.addBut(bs, name+"::slots::"+i);
+				}
+				
+				sgui.addContainer(cbs);
+				
 				Button resStat = new Button();
-				resStat.setPos(0, 3);
-				resStat.setInsets(2, 10, 10, 2);
+				resStat.setPos(0, 5);
+				resStat.setInsets(20, 10, 20, 2);
 				resStat.setText("Reset Stats");
 				resStat.setAL(new ActionListener() {
 					@Override
