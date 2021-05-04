@@ -33,8 +33,10 @@ public class Raid {
 	
 	public String get(String con) {
 		try {
+			if(con.equals(SRC.Raid.users)) 
+				return raid.getAsJsonArray(con).toString();
 			return raid.getAsJsonPrimitive(con).getAsString();
-		} catch (Exception e) {
+		} catch (ClassCastException e) {
 			return null;
 		}
 	}

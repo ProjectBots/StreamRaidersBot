@@ -141,6 +141,8 @@ public class MapConv {
 					if(!map.is(x, y, SRC.Map.isPlayer)) {
 						l.setText("X");
 						l.setFont(new Font(Font.SERIF, Font.PLAIN, 10));
+					} else {
+						l.setTooltip(map.getUserName(x, y));
 					}
 				}
 				

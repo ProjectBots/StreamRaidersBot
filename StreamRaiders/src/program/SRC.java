@@ -59,6 +59,7 @@ public class SRC {
 		public static final String hasRecievedRewards = "hasRecievedRewards";
 		public static final String placementCount = "placementCount";
 		public static final String placementsSerialized = "placementsSerialized";
+		public static final String users = "users";
 		public static final String pveWins = "pveWins";
 		public static final String pveLoyaltyLevel = "pveLoyaltyLevel";
 		public static final String nodeId = "nodeId";

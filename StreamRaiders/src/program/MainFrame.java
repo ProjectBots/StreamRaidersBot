@@ -655,7 +655,7 @@ public class MainFrame {
 						@Override
 						public void actionPerformed(ActionEvent e) {
 							
-							GUI uset = new GUI("Unit settings " + type, 400, 500, sgui, null);
+							GUI uset = new GUI("Unit settings " + type, 400, 600, sgui, null);
 							int y = 0;
 							
 							Image img = new Image("data/UnitPics/" + type + ".gif");
@@ -787,6 +787,7 @@ public class MainFrame {
 					chest.setPos(x, y);
 					chest.setContainer(cimg);
 					chest.setFill('h');
+					chest.setTooltip("whitelist/blacklist this chest type");
 					chest.setInsets(0, 10, 10, 0);
 					if(Configs.getChestBoolean(name, type))
 						chest.setBackground(Color.green);
@@ -823,7 +824,7 @@ public class MainFrame {
 					Label mml = new Label();
 					mml.setPos(0, i);
 					mml.setText(i==0 ? "Normal Chests max Loyalty:" : "Loyalty Chests min Loyalty:");
-					mml.setFont(new Font("Calibri", Font.PLAIN, 25));
+					mml.setFont(new Font(null, Font.PLAIN, 25));
 					minMax.addLabel(mml);
 					
 					final int ii = i;
@@ -838,6 +839,7 @@ public class MainFrame {
 					bl.setPos(1, i);
 					bl.setContainer(cimg);
 					bl.setBackground(loyCols[ml]);
+					bl.setTooltip("Loyalty Level");
 					bl.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
@@ -871,6 +873,7 @@ public class MainFrame {
 					Button bs = new Button();
 					bs.setPos(i, 0);
 					bs.setText(""+i);
+					bs.setTooltip("exclude slot " + i);
 					bs.setFont(new Font(null, Font.PLAIN, 25));
 					if(Configs.isSlotBlocked(name, ""+i))
 						bs.setBackground(Color.green);
@@ -895,6 +898,7 @@ public class MainFrame {
 				resStat.setPos(0, 5);
 				resStat.setInsets(20, 10, 20, 2);
 				resStat.setText("Reset Stats");
+				resStat.setTooltip("Reset the stats for this profile");
 				resStat.setAL(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {

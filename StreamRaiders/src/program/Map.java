@@ -59,7 +59,7 @@ public class Map {
 		return name;
 	}
 	
-	public Map(JsonObject mapData, JsonArray placements, JsonObject plan, String name) {
+	public Map(JsonObject mapData, JsonArray placements, JsonArray users, JsonObject plan, String name) {
 		this.name = name;
 		float mapScale = mapData.getAsJsonPrimitive("MapScale").getAsFloat();
 		if(mapScale < 0) {
@@ -81,7 +81,7 @@ public class Map {
 			}
 		}
 		
-		updateMap(mapData, placements, plan);
+		updateMap(mapData, placements, users, plan);
 	}
 	
 	public boolean testPos(boolean epic, int[] coords) {
@@ -112,13 +112,13 @@ public class Map {
 		return new double[] {x, y};
 	}
 	
-	public void updateMap(JsonObject mapData, JsonArray placements, JsonObject plan) {
+	public void updateMap(JsonObject mapData, JsonArray placements, JsonArray users, JsonObject plan) {
 		map = addRects(map, mapData.getAsJsonArray("PlayerPlacementRects"), SRC.Map.isPlayerRect);
 		map = addRects(map, mapData.getAsJsonArray("EnemyPlacementRects"), SRC.Map.isEnemyRect);
 		map = addRects(map, mapData.getAsJsonArray("HoldingZoneRects"), SRC.Map.isHoldRect);
 		
-		map = addEntity(map, placements);
-		map = addEntity(map, mapData.getAsJsonArray("PlacementData"));
+		map = addEntity(map, placements, users);
+		map = addEntity(map, mapData.getAsJsonArray("PlacementData"), null);
 		map = addObstacle(map, mapData.getAsJsonArray("ObstaclePlacementData"));
 		
 		if(plan == null) return;
@@ -156,7 +156,7 @@ public class Map {
 		return map;
 	}
 
-	private JsonArray addEntity(JsonArray map, JsonArray places) {
+	private JsonArray addEntity(JsonArray map, JsonArray places, JsonArray users) {
 		if(places == null) return map;
 		for(int i=0; i<places.size(); i++) {
 			JsonObject place = places.get(i).getAsJsonObject();
@@ -194,7 +194,16 @@ public class Map {
 				}
 				set(x, y, SRC.Map.isAllied, true);
 				set(x, y, "spec", place.getAsJsonPrimitive("specializationUid").getAsString());
-				set(x, y, "userId", place.getAsJsonPrimitive("userId").getAsString());
+				String userId = place.getAsJsonPrimitive("userId").getAsString();
+				if(!userId.equals("") && users != null) {
+					set(x, y, "userId", userId);
+					for(int u=0; u<users.size(); u++) {
+						if(userId.equals(users.get(u).getAsJsonObject().getAsJsonPrimitive("userId").getAsString())) {
+							set(x, y, "twitchUserName", users.get(u).getAsJsonObject().getAsJsonPrimitive("twitchUserName").getAsString());
+						}
+					}
+				}
+				//TODO
 				
 				break;
 			case "Enemy":
@@ -306,4 +315,10 @@ public class Map {
 		return ret;
 	}
 	
+	public String getUserName(int x, int y) {
+		JsonObject f = get(x, y);
+		if(f.has("twitchUserName"))
+			return f.getAsJsonPrimitive("twitchUserName").getAsString();
+		return null;
+	}
 }

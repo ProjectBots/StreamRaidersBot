@@ -140,6 +140,7 @@ public class SRRHelper {
 		String mapName = raid.get(SRC.Raid.battleground);
 		map = new Map(JsonParser.parseObj(req.getMapData(mapName)),
 				JsonParser.parseArr(raid.get(SRC.Raid.placementsSerialized)),
+				JsonParser.parseArr(raid.get(SRC.Raid.users)),
 				(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null), mapName);
 	}
 	
