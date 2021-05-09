@@ -31,7 +31,7 @@ public class GuideContent {
 
 	private static final String path = "data/Guide/";
 	
-	private static boolean uptodate = false;
+	private static boolean uptodate = true;
 	
 	public static void show() {
 		if(!uptodate)
@@ -80,15 +80,23 @@ public class GuideContent {
 
 		g.addSubject("Profile Settings");
 		g.addSection(null, genBasicImage("profilesettings.png"));
-		g.addSection("Units", genBasicLabel("<html>Only whitelisted Units will be placed on a raid.<br>The Button is green when the Unit is whitelisted.</html>"));
-		g.addSection("Specialize", genBasicLabel("<html>Opens a new window where a specialization can be choosed.</html>"));
-		g.addSection("Buyable", genBasicLabel("<html>Set if the Bot can buy Scrolls for this Unit from the Store.<br>The Button is green when allowed.</html>"));
+		g.addSection("Units", genBasicLabel("<html>Will open a Menu with differnt options about this specific Unit.</html>"));
 		g.addSection("Chests", genBasicLabel("<html>Only Raids with whitelisted Chests will be choosen .<br>The Button is green when the Chest is whitelisted.</html>"));
 		g.addSection("Normal Chests max Loyalty", genBasicLabel("<html>The highest Loyalty for Normal Chests.<br>A Raid will be switched when the condition is not met.</html>"));
 		g.addSection("Loyalty Chests min Loyalty", genBasicLabel("<html>The lowest Loyalty for Loyalty Chests.<br>A Raid will be switched when the condition is not met.</html>"));
+		g.addSection("Exlude Slots", genBasicLabel("<html>Specify the slots that the bot should not use.</html>"));
 		g.addSection("Reset Stats", genBasicLabel("<html>Removes the Stats for this Profile from existence</html>"));
+		g.addReference("Unit Settings");
 		g.addReference("Unit-Types");
 		g.addReference("Chest-Types");
+		
+		g.addSubject("Unit Settings");
+		g.addSection(null, genBasicImage("usettings.png"));
+		g.addSection("can place", genBasicLabel("<html>Set if the Bot can place this Unit.</html>"));
+		g.addSection("can upgrade", genBasicLabel("<html>Set if the Bot can upgrade this Unit.</html>"));
+		g.addSection("can unlock", genBasicLabel("<html>Set if the Bot can unlock this Unit.</html>"));
+		g.addSection("can dupe", genBasicLabel("<html>Set if the Bot can unlock the dupe of this Unit.</html>"));
+		g.addSection("specialize", genBasicLabel("<html>Opens a new window where a specialization can be choosen.</html>"));
 		
 		g.addSubject("Map");
 		g.addSection(null, genBasicImage("map.png"));

@@ -91,6 +91,20 @@ public class StreamRaiders {
 		System.out.println("by ProjectBots https://github.com/ProjectBots/StreamRaiderBot\r\n"
 				+ "Version: " + get("botVersion") + "\r\n");
 		
+		if(!System.getProperty("java.version").equals("16.0.1")) {
+			System.err.println("Incompatible java Version\nRestarting with new Version\n");
+			
+			StringBuilder sb = new StringBuilder();
+			for(int i=0; i<args.length; i++)
+				sb.append(" " + args[i]);
+			try {
+				Runtime.getRuntime().exec("cmd.exe /c jdk-16\\bin\\java.exe -jar StreamRaidersBot.jar" + sb.toString());
+			} catch (IOException e) {
+				StreamRaiders.log("StreamRaiders -> main: err=failed to restart with jdk-16", e);
+			}
+			
+			return;
+		}
 
 		if(args.length != 0) {
 			String[] argss = args[0].split("=");

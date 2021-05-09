@@ -414,6 +414,10 @@ public class GUI{
 		JOptionPane.showMessageDialog(frame.getContentPane(), msg, title, con);
 	}
 	
+	public static void msgStatic(String title, String msg, int con) {
+		JOptionPane.showMessageDialog(null, msg, title, con);
+	}
+	
 	public boolean showConfirmationBox(String msg) {
 		return JOptionPane.showConfirmDialog(frame.getContentPane(), msg, title, JOptionPane.OK_CANCEL_OPTION) == 0;
 	}

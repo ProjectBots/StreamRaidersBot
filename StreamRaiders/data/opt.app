@@ -1,4 +1,4 @@
-botVersion=5.0.2debug
+botVersion=5.1.0
 clientVersion=0.155.3
 
 ## default config
