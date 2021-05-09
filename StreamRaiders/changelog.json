@@ -1,5 +1,5 @@
 {
-	"newest" : "5.0.0",
+	"newest" : "5.1.0",
 	"5.0.0" : "<html><font size=5>SRB v5.0.0</font><br><br>added:<br>- more settings:<br>1. (dis)allow auto upgrade of Units<br>2. (dis)allow auto dupe of Units<br>3. (dis)allow auto unlock of Units<br>- block slots from auto farming<br><br>changed:<br>- Config System<br>- new Version Notifier</html>",
 	"5.0.1" : "<html><font size=5>SRB v5.0.1</font><br><br>bug fixes</html>",
 	"5.1.0": "<html><font size=5>SRB v5.1.0</font><br><br>added:<br>- internal Debug tool<br><br>changed:<br>- bug fixes<br>- updated Guide</html>"
