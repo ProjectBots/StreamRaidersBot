@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 
 import include.JsonParser;
 import program.QuestEventRewards.Quest;
+import program.Run.SilentException;
 import program.SRR.NoInternetException;
 import program.SRR.OutdatedDataException;
 
@@ -179,7 +180,7 @@ public class SRRHelper {
 		return serverTime;
 	}
 	
-	public Raid[] getRaids(int con) throws URISyntaxException, IOException, NoInternetException {
+	public Raid[] getRaids(int con) throws URISyntaxException, IOException, NoInternetException, SilentException {
 		serverTime = updateRaids();
 		Raid[] ret = new Raid[0];
 		for(int i=0; i<raids.length; i++) {
@@ -209,7 +210,7 @@ public class SRRHelper {
 		req.addPlayerToRaid(captain.getAsJsonPrimitive("userId").getAsString(), userSortIndex);
 	}
 	
-	public void switchRaid(JsonObject captain, String userSortIndex) throws URISyntaxException, IOException, NoInternetException {
+	public void switchRaid(JsonObject captain, String userSortIndex) throws URISyntaxException, IOException, NoInternetException, SilentException {
 		updateRaids();
 		for(int i=0; i<raids.length; i++) {
 			if(raids[i].get(SRC.Raid.userSortIndex).equals(userSortIndex)) {
@@ -219,15 +220,21 @@ public class SRRHelper {
 		}
 	}
 	
-	public String updateRaids() throws URISyntaxException, IOException, NoInternetException {
+	public String updateRaids() throws URISyntaxException, IOException, SilentException, NoInternetException {
 		JsonObject jo = JsonParser.parseObj(req.getActiveRaidsByUser());
-		JsonArray rs = jo.getAsJsonArray("data");
-		raids = new Raid[0];
-		for(int i=0; i<rs.size(); i++) {
-			raids = add(raids, new Raid(rs.get(i).getAsJsonObject()));
-			raids[i].addNode(raids[i].get(SRC.Raid.nodeId));
+		try {
+			JsonArray rs = jo.getAsJsonArray("data");
+			raids = new Raid[0];
+			for(int i=0; i<rs.size(); i++) {
+				raids = add(raids, new Raid(rs.get(i).getAsJsonObject()));
+				raids[i].addNode(raids[i].get(SRC.Raid.nodeId));
+			}
+			return jo.getAsJsonObject("info").getAsJsonPrimitive("serverTime").getAsString();
+		} catch (ClassCastException e) {
+			StreamRaiders.log("SRRHelper -> updateRaids: jo=" + jo, null);
+			throw new Run.SilentException();
 		}
-		return jo.getAsJsonObject("info").getAsJsonPrimitive("serverTime").getAsString();
+		
 	}
 	
 	private int pages = 0;

@@ -55,7 +55,9 @@ public class MainFrame {
 	public static void open() {
 		
 		
-		gui = new GUI("StreamRaider Bot " + StreamRaiders.get("botVersion"), 900, 700);
+		String bver = StreamRaiders.get("botVersion");
+		
+		gui = new GUI("StreamRaider Bot v" + bver, 900, 700);
 		
 		gui.addWinLis(new WinLis() {
 			@Override
@@ -372,6 +374,20 @@ public class MainFrame {
 			gui.addContainer(head);
 			
 			refresh(false);
+			
+			if(bver.contains("beta")) {
+				GUI beta = new GUI("Beta warn", 400, 200, gui, null);
+				Label l = new Label();
+				l.setText("This version is a beta version!");
+				beta.addLabel(l);
+				beta.refresh();
+			} else if(bver.contains("debug")) {
+				GUI debug = new GUI("Debug warn", 400, 200, gui, null);
+				Label l = new Label();
+				l.setText("This version is a debug version!");
+				debug.addLabel(l);
+				debug.refresh();
+			}
 			
 			Version.check();
 	}
@@ -965,6 +981,7 @@ public class MainFrame {
 		
 		Configs.save();
 		
+		Debug.print("System exit", Debug.general);
 		System.exit(0);
 	}
 	

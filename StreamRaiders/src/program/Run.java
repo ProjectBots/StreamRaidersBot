@@ -15,6 +15,7 @@ import java.util.TimerTask;
 import org.apache.http.conn.HttpHostConnectException;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
@@ -100,6 +101,7 @@ public class Run {
 						StreamRaiders.log(name + ": Run -> Maybe your internet connection failed", e, true);
 						GUI.setBackground(name+"::start", Color.red);
 						setRunning(false);
+					} catch (SilentException e) {
 					} catch (Exception e) {
 						StreamRaiders.log(name + ": Run -> setRunning", e);
 						GUI.setBackground(name+"::start", Color.red);
@@ -144,39 +146,39 @@ public class Run {
 		try {
 			if(!isRunning()) return;
 			
-			part = "chests";
+			part = Debug.print("chests", Debug.run);
 			if(chests()) {
 				try {
 					Thread.sleep(5000);
 				} catch (Exception e) {}
 			}
 			
-			part = "captains";
+			part = Debug.print("captains", Debug.run);
 			captains();
 
-			part = "raids";
+			part = Debug.print("raids", Debug.run);
 			while(raids()) {
-				part = "captains 2";
+				part = Debug.print("captains 2", Debug.run);
 				captains();
-				part = "raids 2";
+				part = Debug.print("raids 2", Debug.run);
 			}
 			
-			part = "collectEvent";
+			part = Debug.print("collectEvent", Debug.run);
 			collectEvent();
 			
-			part = "claimQuests";
+			part = Debug.print("claimQuests", Debug.run);
 			claimQuests();
 			
-			part = "reloadStore";
+			part = Debug.print("reloadStore", Debug.run);
 			srrh.reloadStore();
 
-			part = "store";
+			part = Debug.print("store", Debug.run);
 			store();
 
-			part = "unlock";
+			part = Debug.print("unlock", Debug.run);
 			unlock();
 			
-			part = "upgradeUnits";
+			part = Debug.print("upgradeUnits", Debug.run);
 			upgradeUnits();
 			
 			sleep((int) Math.round(Math.random()*620) + 100);
@@ -191,7 +193,6 @@ public class Run {
 	private void reload(int sec, String part, Exception e) {
 
 		if(isReloading) saveStats();
-		
 		
 		LocalTime lt = LocalTime.now();
 		System.out.println("reload srrh in 20 sec for " + name + " at " + lt.getHour() + ":" + lt.getMinute());
@@ -225,7 +226,8 @@ public class Run {
 						
 						System.out.println("completed reloading srrh for " + name);
 						if(ver == null) 
-							StreamRaiders.log("critical error happened for " + name + " at \"" + part + "\" -> skipped this round", e);
+							if(!e.getClass().equals(SilentException.class))
+								StreamRaiders.log("critical error happened for " + name + " at \"" + part + "\" -> skipped this round", e);
 						
 						GUI.setBackground(name+"::start", Color.green);
 						isReloading = false;
@@ -236,7 +238,8 @@ public class Run {
 
 						setReloading(part, e);
 					} catch (Exception e1) {
-						StreamRaiders.log("failed to reload srrh for " + name, e1);
+						if(!e1.getClass().equals(SilentException.class))
+							StreamRaiders.log("failed to reload srrh for " + name, e1);
 						
 						setReloading(part, e);
 					}
@@ -249,12 +252,20 @@ public class Run {
 		}, 0, 1000);
 	}
 	
+	public static class SilentException extends Exception {
+		private static final long serialVersionUID = 6180078222808617728L;
+		public SilentException() {
+			super("this is a silent exception");
+		}
+	}
+	
 	private void setReloading(String part, Exception e) {
 		if(isReloading) {
 			GUI.setBackground(name+"::start", Color.red);
 			setRunning(false);
 		} else {
-			StreamRaiders.log("critical error happened for " + name + " at \"" + part + "\" -> try to reload again", e);
+			if(!e.getClass().equals(SilentException.class))
+				StreamRaiders.log("critical error happened for " + name + " at \"" + part + "\" -> try to reload again", e);
 			isReloading = true;
 			reload(15*60, part, e);
 		}
@@ -349,20 +360,27 @@ public class Run {
 	private void store() throws URISyntaxException, IOException, NoInternetException {
 		JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
 		for(int i=0; i<items.size(); i++) {
-			String type = items.get(i).getAsJsonObject()
-					.getAsJsonPrimitive("itemId")
-					.getAsString()
-					.split("pack")[0]
-					.replace("scroll", "")
-					.replace("paladin", "alliespaladin");
 			try {
+				String type = items.get(i).getAsJsonObject()
+						.getAsJsonPrimitive("itemId")
+						.getAsString()
+						.split("pack")[0]
+						.replace("scroll", "")
+						.replace("paladin", "alliespaladin");
+			
 				if(!Configs.getUnitBoolean(name, type, Configs.buy))
 					continue;
 				String err = srrh.buyItem(items.get(i).getAsJsonObject());
 				if(err != null && !err.equals("not enough gold"))
 					StreamRaiders.log(name + ": Run -> store: item=" + items.get(i) + ", err=" + err, null);
 			} catch (NullPointerException e) {
-				StreamRaiders.log(name + ": Run -> store: item=" + items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString(), e);	
+				JsonElement itemId = items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId");
+				
+				if(itemId != null) {
+					StreamRaiders.log(name + ": Run -> store: item=" + items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString() + ", err=item is not correct", e);
+				} else {
+					StreamRaiders.log(name + ": Run -> store: itemObj=" + items.get(i).getAsJsonObject().toString() + ", err=item dont exist? (Unknown err +10 Points for finding)", e);
+				}
 			}
 		}
 	}
@@ -385,7 +403,7 @@ public class Run {
 	
 	public static final String[] pveloy = "? bronze silver gold".split(" ");
 	
-	private boolean raids() throws URISyntaxException, IOException, NoInternetException {
+	private boolean raids() throws URISyntaxException, IOException, NoInternetException, SilentException {
 		boolean ret = false;
 		
 		JsonArray locked = Configs.getArr(name, Configs.locked);
@@ -551,7 +569,7 @@ public class Run {
 	}
 	
 	
-	private boolean chests() throws URISyntaxException, IOException, NoInternetException {
+	private boolean chests() throws URISyntaxException, IOException, NoInternetException, SilentException {
 		Raid[] rera = srrh.getRaids(SRC.Helper.isReward);
 		if(rera.length != 0) {
 			for(int i=0; i<rera.length; i++) {
@@ -577,7 +595,7 @@ public class Run {
 	
 	private JsonObject bannedCaps = new JsonObject();
 	
-	private boolean captains() throws URISyntaxException, IOException, NoInternetException {
+	private boolean captains() throws URISyntaxException, IOException, NoInternetException, SilentException {
 		int uCount = srrh.getUnits(SRC.Helper.all).length;
 		Raid[] raids = srrh.getRaids(SRC.Helper.all);
 		Set<String> set = bannedCaps.deepCopy().keySet();
@@ -588,72 +606,88 @@ public class Run {
 		JsonArray locked = Configs.getArr(name, Configs.locked);
 		
 		boolean changed = false;
-		JsonArray caps = new JsonArray();
+		JsonArray caps = null;
 		
 		boolean ctNull = true;
-		while(true) {
-			boolean breakout = true;
-			boolean[] got = new boolean[] {false, uCount < 5, uCount < 8, !srrh.hasBattlePass()};
-			for(int i=0; i<raids.length; i++) {
-				if(Configs.isSlotBlocked(name, raids[i].get(SRC.Raid.userSortIndex)))
-					continue;
-				got[Integer.parseInt(raids[i].get(SRC.Raid.userSortIndex))] = true;
-				if(locked.contains(new JsonPrimitive(raids[i].get(SRC.Raid.twitchDisplayName)))) continue;
-				if(!raids[i].isSwitchable(srrh.getServerTime(), true, 10)) continue;
-				String ct = raids[i].getFromNode(SRC.MapNode.chestType);
-				if(ct == null) {
-					if(ctNull)
-						StreamRaiders.log(name + ": Run -> captains: ct=null", null);
-					getCaps(caps);
-					ctNull = false;
-					bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
-					switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, caps);
-					changed = true;
-					breakout = false;
-					continue;
-				}
-				int loy = Integer.parseInt(raids[i].get(SRC.Raid.pveLoyaltyLevel));
-				if((raids[i].isOffline(srrh.getServerTime(), true, 10)) ||
-						(ct.contains("bone") || !Configs.getChestBoolean(name, ct)) ||
-						((ct.contains("boosted") || ct.contains("super"))
-								? loy < Configs.getChestInt(name, Configs.loyChestLoyMin)
-								: loy > Configs.getChestInt(name, Configs.normChestLoyMax))) {
-					getCaps(caps);
-					bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
-					switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, caps);
-					changed = true;
-					breakout = false;
-				}
-			}
-			
-			for(int i=0; i<got.length; i++) {
-				if(!got[i]) {
-					if(Configs.isSlotBlocked(name, ""+i))
+		try {
+			while(true) {
+				boolean breakout = true;
+				boolean[] got = new boolean[] {false, uCount < 5, uCount < 8, !srrh.hasBattlePass()};
+				for(int i=0; i<raids.length; i++) {
+					if(Configs.isSlotBlocked(name, raids[i].get(SRC.Raid.userSortIndex)))
 						continue;
-					getCaps(caps);
-					switchRaid(""+i, false, caps);
-					changed = true;
-					breakout = false;
+					got[Integer.parseInt(raids[i].get(SRC.Raid.userSortIndex))] = true;
+					if(locked.contains(new JsonPrimitive(raids[i].get(SRC.Raid.twitchDisplayName)))) continue;
+					if(!raids[i].isSwitchable(srrh.getServerTime(), true, 10)) continue;
+					String ct = raids[i].getFromNode(SRC.MapNode.chestType);
+					if(ct == null) {
+						if(ctNull)
+							StreamRaiders.log(name + ": Run -> captains: ct=null", null);
+						caps = getCaps(caps);
+						ctNull = false;
+						bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
+						switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, caps);
+						changed = true;
+						breakout = false;
+						continue;
+					}
+					int loy = Integer.parseInt(raids[i].get(SRC.Raid.pveLoyaltyLevel));
+					if((raids[i].isOffline(srrh.getServerTime(), true, 10)) ||
+							(ct.contains("bone") || !Configs.getChestBoolean(name, ct)) ||
+							((ct.contains("boosted") || ct.contains("super"))
+									? loy < Configs.getChestInt(name, Configs.loyChestLoyMin)
+									: loy > Configs.getChestInt(name, Configs.normChestLoyMax))) {
+						caps = getCaps(caps);
+						bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
+						switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, caps);
+						changed = true;
+						breakout = false;
+					}
 				}
+				
+				for(int i=0; i<got.length; i++) {
+					if(!got[i]) {
+						if(Configs.isSlotBlocked(name, ""+i))
+							continue;
+						caps = getCaps(caps);
+						switchRaid(""+i, false, caps);
+						changed = true;
+						breakout = false;
+					}
+				}
+				
+				if(breakout) break;
+				
+				raids = srrh.getRaids(SRC.Helper.all);
 			}
-			
-			if(breakout) break;
-			
-			raids = srrh.getRaids(SRC.Helper.all);
+		} catch (NoCapMatchException e) {
+			StreamRaiders.log(name + ": Run -> captains: err=" + e.getMessage(), e);
 		}
 		return changed;
 	}
 	
-	private void getCaps(JsonArray empty) throws URISyntaxException, IOException, NoInternetException {
-		if(empty.size() != 0) return;
-		int pages = 3;
-		for(int i=1; i<pages && i<=30; i++) {
-			empty.addAll(srrh.search(i, 6, false, true, false, null));
-			pages = srrh.getPagesFromLastSearch();
+	
+	public static class NoCapMatchException extends Exception {
+		private static final long serialVersionUID = 8399974494981759517L;
+		public NoCapMatchException() {
+			super("No Captain Matches");
 		}
 	}
 	
-	private void switchRaid(String sortIndex, boolean rem, JsonArray caps) throws URISyntaxException, IOException, NoInternetException {
+	private JsonArray getCaps(JsonArray empty) throws URISyntaxException, IOException, NoInternetException, NoCapMatchException {
+		if(empty == null) {
+			empty = new JsonArray();
+			int pages = 3;
+			for(int i=1; i<pages && i<=30; i++) {
+				empty.addAll(srrh.search(i, 6, false, true, false, null));
+				pages = srrh.getPagesFromLastSearch();
+			}
+		}
+		if(empty.size() == 0) throw new NoCapMatchException();
+		return empty;
+	}
+	
+	private void switchRaid(String sortIndex, boolean rem, JsonArray caps) throws URISyntaxException, IOException, NoInternetException, SilentException {
 		JsonObject cap = null;
 		int oldLoy = -1;
 

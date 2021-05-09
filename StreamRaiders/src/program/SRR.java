@@ -8,18 +8,21 @@ import com.google.gson.JsonObject;
 
 import include.Http;
 import include.JsonParser;
+import program.Run.SilentException;
 
 public class SRR {
 	private static boolean ver_error = true;
 	
 	synchronized private static void printVerError(String ver) {
+		StreamRaiders.set("clientVersion", ver);
+		StreamRaiders.save();
 		if(ver_error) {
 			ver_error = false;
-			System.err.println("new Client Version: " + ver);
+			System.out.println("new Client Version: " + ver);
 		}
 	}
 	
-	private static String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0";
+	private static String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/0.0";
 	private String cookies = "";
 	
 	private String userId = null;
@@ -34,7 +37,6 @@ public class SRR {
 	
 	
 	public static String getData(String dataPath) {
-		
 		Http get = new Http();
 		get.setUrl(dataPath);
 		get.addHeader("User-Agent", userAgent);
@@ -70,13 +72,13 @@ public class SRR {
 	}
 	
 	
-	public SRR(String cookies, String clientVersion) throws Exception {
+	public SRR(String cookies, String clientVersion) throws URISyntaxException, IOException, NoInternetException, OutdatedDataException, SilentException {
 		this.cookies = cookies;
 		this.clientVersion = clientVersion;
 		reload();
 	}
 	
-	public String reload() throws URISyntaxException, IOException, NoInternetException, OutdatedDataException {
+	public String reload() throws URISyntaxException, IOException, NoInternetException, OutdatedDataException, SilentException {
 		userId = null;
 		gameDataVersion = "";
 		isCaptain = "";
@@ -97,11 +99,17 @@ public class SRR {
 		}
 	}
 	
-	private void constructor(JsonObject getUser) {
+	private void constructor(JsonObject getUser) throws SilentException {
 		this.gameDataVersion = getUser.getAsJsonObject("info").getAsJsonPrimitive("dataVersion").getAsString();
-		getUser = getUser.getAsJsonObject("data");
-		this.userId = getUser.getAsJsonPrimitive("userId").getAsString();
-		this.isCaptain = getUser.getAsJsonPrimitive("isCaptain").getAsString();
+		try {
+			JsonObject data = getUser.getAsJsonObject("data");
+			this.userId = data.getAsJsonPrimitive("userId").getAsString();
+			this.isCaptain = data.getAsJsonPrimitive("isCaptain").getAsString();
+		} catch (ClassCastException e) {
+			StreamRaiders.log("SRR -> constructor: getUser=" + getUser, e);
+			throw new Run.SilentException();
+		}
+		
 	}
 	
 	
@@ -132,15 +140,10 @@ public class SRR {
 	
 	private String sendPost(Http post) throws IOException, NoInternetException, URISyntaxException  {
 		try {
-			
 			String p = post.sendUrlEncoded();
-			/*
-			String f = "";
-			try {
-				f = NEF.read("out.txt");
-			} catch (IOException e) {}
-			NEF.save("out.txt", f + "\n\n\n" + post.getUrlArg("cn") + "\n" + post.getLastEntity() + "\n" + p);
-			*/
+			
+			Debug.print(post.getUrlArg("cn") + "\n" + post.getLastEntity() + "\n" + p, Debug.srlog);
+			
 			return p;
 		} catch (UnknownHostException e) {
 			throw new NoInternetException();

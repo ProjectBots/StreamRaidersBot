@@ -71,6 +71,7 @@ public class StreamRaiders {
 	}
 	
 	public static void main(String[] args) {
+		
 		System.out.println("\r\n"
 				+ "\u0009███████╗██████╗     ██████╗  ██████╗ ████████╗\r\n"
 				+ "\u0009██╔════╝██╔══██╗    ██╔══██╗██╔═══██╗╚══██╔══╝\r\n"
@@ -90,6 +91,29 @@ public class StreamRaiders {
 		System.out.println("by ProjectBots https://github.com/ProjectBots/StreamRaiderBot\r\n"
 				+ "Version: " + get("botVersion") + "\r\n");
 		
+
+		if(args.length != 0) {
+			String[] argss = args[0].split("=");
+			if(argss.length == 2 && argss[0].equals("-debug")) {
+				args[0] = argss[0];
+				try {
+					NEF.save(argss[1], "");
+				} catch (IOException e) {
+					log("StreamRaiders -> main: err=failed to create debug file, path=" + argss[1], e);
+				}
+				Debug.setOutputFile(argss[1]);
+			}
+			if(args[0].toLowerCase().equals("-debug")) 
+				if(args.length == 1) 
+					Debug.addScope("general");
+				else 
+					for(int i=1; i<args.length; i++)
+						Debug.addScope(args[i]);
+			
+		}
+		
+		
+		Debug.print("started", Debug.general);
 		
 		Raid.loadTypViewChestRews();
 		try {
