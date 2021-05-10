@@ -191,7 +191,7 @@ public class Configs {
 		}
 	}
 	
-	private static final List<String> cookiesa = Arrays.asList("ACCESS_INFO _ga scsession _gid".split(" "));
+	private static final List<String> cookiesa = Arrays.asList("ACCESS_INFO scsession".split(" "));
 	
 	public static void add(String name, JsonObject cookies) {
 		StringBuilder sb = new StringBuilder();
@@ -203,6 +203,13 @@ public class Configs {
 			}
 		}
 		if(c != Configs.cookiesa.size()) {
+			int index = 0;
+			while(true) {
+				index = sb.indexOf("=", index)+1;
+				if(index == 0)
+					break;
+				sb.replace(index, sb.indexOf(";", index), "{hidden}");
+			}
 			StreamRaiders.log("Not enough cookies, got: "+sb.toString(), null);
 			return;
 		}

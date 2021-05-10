@@ -36,7 +36,7 @@ public class Version {
 			
 			String bver = StreamRaiders.get("botVersion").replace("beta", "").replace("debug", "");
 			
-			if(Version.dif(ver, bver) >= 1) {
+			if(Version.dif(ver, bver) == 1) {
 				GUI verg = new GUI("New Version is out", 500, 700, MainFrame.getGUI(), null);
 				
 				int y = 0;
