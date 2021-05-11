@@ -4,7 +4,11 @@ Disclaimer: this program is not from Stream Raiders nor affiliated with them. Us
 
 A bot for automated farming in Stream Raiders
 
-first click the "+" to add a profile (this bot can handle a lot of accounts for auto farming).  
+We now have a [Discord Server](https://discord.gg/uC6sKcpuTX)!
+
+
+First Steps:  
+click the "+" to add a profile (this bot can handle a lot of accounts for auto farming).  
 enter a profilename (dont need to be the account name).  
 hit enter, a browser will open where you login to StreamRaiders.  
 let the website load, then just close the browser.  
