@@ -4,7 +4,7 @@ Disclaimer: this program is not from Stream Raiders nor affiliated with them. Us
 
 A bot for automated farming in Stream Raiders
 
-We now have a [Discord Server](https://discord.gg/uC6sKcpuTX)!
+We now have a [Discord Server](https://discord.gg/u7e5nTRaZQ)!
 
 
 First Steps:  
