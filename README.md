@@ -30,50 +30,46 @@ the heart button favorites a streamer (only local)
 ***
 
 average income per hour per profile (without quest and event rewards):  
-
+  
 chests:  
-- boss 2.019  
-boostedskin 1.291  
-boostedgold 0.659  
-bosssuper 0.2  
-gold 2.381  
-salvage 0.079  
-boostedtoken 0.107  
-bronze 0.005  
+- gold 4.967  
+boostedskin 0.368  
+boostedtoken 0.214  
+salvage 0.179  
+boostedgold 0.258  
+bosssuper 0.185  
+silver 0.001  
+bronze 0.004  
   
 basic:  
-- gold 758.336  
-token 28.503  
-potion 32.31  
-meat 0.074  
+- gold 438.884  
+token 24.827  
+potion 35.715  
+meat 0.189  
   
-skins (rare but possible): n/a
-
+skins (rare but possible):  
+- fullmagespacewestern 0.001  
+fullbarbarianorcdromeda 0.008  
+fullmusketeerspacewestern 0.003  
+  
 scrolls:  
-- berserker 4.484  
-centurion 5.506  
-musketeer 4.679  
-flyingarcher 5.756  
-monk 5.362  
-barbarian 1.035  
-paladin 1.184  
-healer 0.984  
-buster 0.812  
-bomber 0.919  
-rogue 0.009  
+- musketeer 4.381  
+flyingarcher 4.302  
+bomber 1.884  
+barbarian 1.994  
+monk 5.106  
+centurion 4.783  
+paladin 1.883  
+buster 1.859  
+healer 1.867  
+berserker 4.266  
+tank 0.007  
+warrior 0.007  
 
-(tested for 215 hours and 25 minutes)  
+(tested for 747 hours and 48 minutes)  
 <br><br>
 ***
 known Issues:  
 - earning normal gold chest even when blacklisted (SR has a chest limit for boosted and boss chests. They replace them with gold chests)  
 
-***  
-TODO:  
-- ~Guide/Help~  
-- internal debug tool  
-- ~more options to cutomise (buying, unlocking, upgrading and specializing units)~  
-- ~much more options to customise (preferred Units, captains, chests)~  
-- automatic update?  
-- mod support?  
-- better readme file  
+
