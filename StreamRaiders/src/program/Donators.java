@@ -20,12 +20,12 @@ public class Donators {
 		public static final String currency = "\u20AC";
 		
 		private String name = null;
-		private int amount = -1;
+		private float amount = -1;
 		private String link = null;
 		private String text = null;
 		
 		
-		public static Don c(String name, int amount) {
+		public static Don c(String name, float amount) {
 			return new Don().setName(name).setAmount(amount);
 		}
 		
@@ -39,7 +39,7 @@ public class Donators {
 			return this;
 		}
 		
-		public Don setAmount(int amount) {
+		public Don setAmount(float amount) {
 			this.amount = amount;
 			return this;
 		}
@@ -57,7 +57,7 @@ public class Donators {
 			return link;
 		}
 		
-		public int getAmount() {
+		public float getAmount() {
 			return amount;
 		}
 		
@@ -67,7 +67,8 @@ public class Donators {
 	}
 	
 	private static Don[] dons = new Don[] {
-			Don.c("Noa3", 10).setLink("https://github.com/Noa3")
+			Don.c("Noa3", 10).setLink("https://github.com/Noa3"),
+			Don.c("candyknack", (float) 4.73).setText("He didn't want to say anything")
 	};
 	
 	public static Container getContainer(int x, int y) {

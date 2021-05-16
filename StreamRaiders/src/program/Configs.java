@@ -1,14 +1,28 @@
 package program;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.apache.commons.io.FilenameUtils;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import include.GUI;
+import include.GUI.Button;
+import include.GUI.CButton;
+import include.GUI.ComboBox;
+import include.GUI.Container;
+import include.GUI.Label;
+import include.GUI.TextField;
 import include.JsonParser;
 import include.NEF;
 
@@ -51,19 +65,53 @@ public class Configs {
 	}
 	
 	
+	private static class Int extends All {
+		public Int(String con) {
+			super(con);
+		}
+	}
+	
+	public static final Int maxPage = new Int("maxPage");
+	
+	public static int getInt(String name, Int con) {
+		return configs.getAsJsonObject(name).getAsJsonPrimitive(con.get()).getAsInt();
+	}
+	
+	public static void setInt(String name, Int con, int val) {
+		configs.getAsJsonObject(name).addProperty(con.get(), val);
+	}
+	
+	
 	public static class Arr extends All {
 		public Arr(String con) {
 			super(con);
 		}
 	}
 	
-	public static final Arr locked = new Arr("locked");
-	public static final Arr favs = new Arr("favs");
 	public static final Arr stats = new Arr("stats");
 	
 	public static JsonArray getArr(String name, Arr con) {
 		return configs.getAsJsonObject(name).getAsJsonArray(con.get());
 	}
+	
+	
+	
+	public static class Obj extends All {
+		public Obj(String con) {
+			super(con);
+		}
+	}
+	
+	public static final Obj favs = new Obj("favs");
+	
+	public static JsonObject getObj(String name, Obj con) {
+		return configs.getAsJsonObject(name).getAsJsonObject(con.get());
+	}
+	
+	public static void setObj(String name, Obj con, JsonObject val) {
+		configs.getAsJsonObject(name).add(con.get(), val);
+	}
+	
 	
 	
 	public static class B extends All {
@@ -154,6 +202,29 @@ public class Configs {
 	}
 	
 	
+	private static class T extends All {
+		public T(String con) {
+			super(con);
+		}
+	}
+	
+	public static final T max = new T("max");
+	public static final T min = new T("min");
+	
+	public static int getTime(String name, T con) {
+		return configs.getAsJsonObject(name)
+				.getAsJsonObject("time")
+				.getAsJsonPrimitive(con.get()).getAsInt();
+	}
+	
+	public static void setTime(String name, T con, int val) {
+		configs.getAsJsonObject(name)
+				.getAsJsonObject("time")
+				.addProperty(con.get(), val);
+	}
+	
+	
+	
 	public static boolean isSlotBlocked(String name, String slot) {
 		return configs.getAsJsonObject(name)
 				.getAsJsonObject("blockedSlots")
@@ -164,6 +235,20 @@ public class Configs {
 	public static void setSlotBlocked(String name, String slot, boolean b) {
 		configs.getAsJsonObject(name)
 				.getAsJsonObject("blockedSlots")
+				.addProperty(""+slot, b);
+	}
+	
+	
+	public static boolean isSlotLocked(String name, String slot) {
+		return configs.getAsJsonObject(name)
+				.getAsJsonObject("lockedSlots")
+				.getAsJsonPrimitive(""+slot)
+				.getAsBoolean();
+	}
+	
+	public static void setSlotLocked(String name, String slot, boolean b) {
+		configs.getAsJsonObject(name)
+				.getAsJsonObject("lockedSlots")
 				.addProperty(""+slot, b);
 	}
 	
@@ -219,6 +304,12 @@ public class Configs {
 		configs.add(name, JsonParser.check(jo, JsonParser.parseObj(StreamRaiders.get("defConfig"))));
 	}
 	
+	private static void add(String name, String cookies) {
+		JsonObject jo = new JsonObject();
+		jo.addProperty("cookies", cookies);
+		configs.add(name, JsonParser.check(jo, JsonParser.parseObj(StreamRaiders.get("defConfig"))));
+	}
+	
 	
 	public static void save() {
 		try {
@@ -226,6 +317,413 @@ public class Configs {
 		} catch (IOException e) {
 			StreamRaiders.log("Failed to save configs", e);
 		}
+	}
+	
+	
+	private static String[] exopts = "cookies unit_place unit_upgrade unit_unlock unit_dupe unit_buy unit_spec chests blockedSlots lockedSlots time maxPage favs stats".split(" ");
+	
+	public static void exportConfig(GUI parent) {
+		
+		GUI gui = new GUI("Export Config", 500, 600, parent, null);
+		int y = 0;
+		
+		
+		Label lpros = new Label();
+		lpros.setText("Profiles:");
+		lpros.setPos(0, y++);
+		lpros.setInsets(40, 2, 2, 2);
+		gui.addLabel(lpros);
+		
+		for(String key : configs.keySet()) {
+			CButton cb = new CButton("ex::" + key + "::cb");
+			cb.setText(key);
+			cb.setPos(0, y++);
+			gui.addCheckBox(cb);
+		}
+		
+
+		y = 0;
+		
+		Label lopts = new Label();
+		lopts.setText("Settings:");
+		lopts.setPos(1, y++);
+		lopts.setInsets(40, 40, 2, 2);
+		gui.addLabel(lopts);
+		
+		for(String key : exopts) {
+			CButton cb = new CButton("ex::" + key);
+			cb.setText(key);
+			cb.setPos(1, y++);
+			cb.setInsets(2, 40, 2, 2);
+			gui.addCheckBox(cb);
+			
+			GUI.setCButSelected("ex::" + key, true);
+		}
+		
+		
+		Container c = new Container();
+		c.setPos(2, 1);
+		c.setSpan(1, 3);
+		
+		Button ex = new Button();
+		ex.setText("export selected");
+		ex.setPos(0, 0);
+		ex.setInsets(2, 20, 2, 2);
+		ex.setAL(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(GUI.isCButSelected("ex::cookies"))
+					if(!gui.showConfirmationBox("You are about to export your cookie values.\nWith these anyone can login into your StreamRaiders Account.\nExport anyway?"))
+						return;
+				
+				saveExportedConfig(gui, false);
+				
+			}
+		});
+		c.addBut(ex);
+		
+		Button exall = new Button();
+		exall.setText("export all");
+		exall.setPos(0, 1);
+		exall.setInsets(2, 20, 2, 2);
+		exall.setAL(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(!gui.showConfirmationBox("You are about to export your cookie values.\nWith these anyone can login into your StreamRaiders Account.\nExport anyway?"))
+					return;
+				
+				saveExportedConfig(gui, true);
+			}
+		});
+		c.addBut(exall);
+		
+		gui.addContainer(c);
+		
+		gui.refresh();
+		
+		
+	}
+	
+	private static String[] units_opt = "place upgrade unlock dupe buy spec".split(" ");
+	
+	private static void saveExportedConfig(GUI gui, boolean b) {
+		File file = gui.showFileChooser("Export Config", false, new FileNameExtensionFilter("Json Files", "json"));
+		if(file == null)
+			return;
+		if(!FilenameUtils.getExtension(file.getName()).equalsIgnoreCase("json")) 
+		    file = new File(file.toString() + ".json");
+		
+		
+		JsonObject ret = new JsonObject();
+		for(String key : configs.keySet()) {
+			if(!(b || GUI.isCButSelected("ex::" + key + "::cb"))) continue;
+			
+			JsonObject con = configs.getAsJsonObject(key);
+			JsonObject pro = new JsonObject();
+			
+			if(b || GUI.isCButSelected("ex::cookies")) 
+				pro.add("cookies", con.get("cookies"));
+			
+			JsonObject units = con.getAsJsonObject("units");
+			for(int i=0; i<units_opt.length; i++) {
+				if(b || GUI.isCButSelected("ex::unit_"+units_opt[i])) {
+					for(String u : units.keySet()) {
+						pro.add("unit_"+u+"_"+units_opt[i], units.getAsJsonObject(u).get(units_opt[i]));
+					}
+				}
+			}
+			
+			if(b || GUI.isCButSelected("ex::chests")) {
+				JsonObject chests = con.getAsJsonObject("chests");
+				for(String c : chests.keySet()) {
+					pro.add("chest_"+c, chests.get(c));
+				}
+			}
+			
+			for(int i=0; i<2; i++) {
+				if(b || GUI.isCButSelected("ex::" + (i==1?"":"b") + "lockedSlots")) {
+					JsonObject bss = con.getAsJsonObject((i==1?"":"b") + "lockedSlots");
+					for(String bs : bss.keySet()) {
+						pro.add((i==1?"":"b") + "lockedSlots_"+bs, bss.get(bs));
+					}
+				}
+			}
+			
+			if(b || GUI.isCButSelected("ex::time")) {
+				JsonObject time = con.getAsJsonObject("time");
+				pro.add("time_max", time.get("max"));
+				pro.add("time_min", time.get("min"));
+			}
+			
+			if(b || GUI.isCButSelected("ex::maxPage")) {
+				pro.add("maxPage", con.get("maxPage"));
+			}
+			
+			if(b || GUI.isCButSelected("ex::favs")) {
+				pro.addProperty("favs", con.getAsJsonArray("favs").toString());
+			}
+			
+			if(b || GUI.isCButSelected("ex::stats")) {
+				pro.addProperty("stats", con.getAsJsonArray("stats").toString());
+			}
+			
+			ret.add(key, pro);
+		}
+		
+		try {
+			NEF.save(file.getAbsolutePath(), JsonParser.prettyJson(ret));
+		} catch (IOException e1) {
+			StreamRaiders.log("Configs -> export: err=unable to save export", e1);
+		}
+		
+		gui.close();
+	}
+	
+	
+	private static class InPro {
+		private static StringBuilder names = new StringBuilder();
+		public static String getNames() {
+			return names.toString();
+		}
+		
+		private static StringBuilder cnames = new StringBuilder();
+		public static String getCNames() {
+			return cnames.toString();
+		}
+		
+		
+		private JsonObject content;
+		private String name;
+		
+		public InPro(String name, JsonObject content) {
+			this.content = content;
+			this.name = name;
+			names.append(" " + name);
+			if(content.has("cookies"))
+				cnames.append(name + " ");
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public JsonObject getContent() {
+			return content;
+		}
+		
+	}
+
+	private static int pos;
+	private static int gpos;
+	private static GUI gin;
+	
+	private static String[] pros;
+	private static InPro[] inPros;
+	
+	public static void importConfig(GUI parent) {
+		JsonObject in;
+		try {
+			in = JsonParser.parseObj(NEF.read(parent.showFileChooser("Export Config", false, new FileNameExtensionFilter("Json Files", "json")).getAbsolutePath()));
+		} catch (IOException e1) {
+			StreamRaiders.log("Configs -> importConfig: err=failed to load config file", e1);
+			return;
+		}
+		
+		inPros = new InPro[in.size()];
+		int i = 0;
+		for(String key : in.keySet()) 
+			inPros[i++] = new InPro(key, in.getAsJsonObject(key));
+		
+		pros = configs.keySet().toArray(new String[configs.size()]);
+		
+		String[] vals = ("(none)" + InPro.getNames()).split(" ");
+		
+		
+		gin = new GUI("import config", 500, 600, parent, null);
+		
+		for(i=0; i<pros.length; i++) {
+			Label l = new Label();
+			l.setPos(0, i);
+			l.setText(pros[i]);
+			gin.addLabel(l);
+			
+			ComboBox cb = new ComboBox("im::"+pros[i]);
+			cb.setPos(1, i);
+			cb.setList(vals);
+			gin.addComb(cb);
+		}
+		
+		pos = i;
+		gpos = i;
+		
+		genAddRemBut();
+		
+	}
+	
+	private static void genAddRemBut() {
+		Container c = new Container();
+		c.setPos(0, pos);
+		c.setSpan(2, 1);
+		
+		Button add = new Button();
+		add.setPos(0, 0);
+		add.setText("+");
+		add.setAL(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				shift(true);
+			}
+		});
+		c.addBut(add);
+		
+		Button rem = new Button();
+		rem.setPos(1, 0);
+		rem.setText("-");
+		rem.setAL(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				shift(false);
+			}
+		});
+		c.addBut(rem);
+		
+		Button im = new Button();
+		im.setPos(2, 0);
+		im.setText("import");
+		im.setAL(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				imports();
+			}
+		});
+		c.addBut(im);
+		
+		gin.addContainer(c, "im::addrem");
+	}
+
+	private static void shift(boolean down) {
+		if(down) {
+			gin.remove("im::addrem");
+			
+			TextField ta = new TextField();
+			ta.setText("");
+			ta.setSize(80, 20);
+			ta.setPos(0, pos);
+			gin.addTextField(ta, "im::add::"+pos);
+			
+			ComboBox cb = new ComboBox("im::cb::"+pos);
+			cb.setList(InPro.getCNames().split(" "));
+			cb.setPos(1, pos);
+			gin.addComb(cb);
+			
+			pos++;
+			genAddRemBut();
+			
+		} else {
+			if(pos == gpos) return;
+			gin.remove("im::add::" + --pos);
+			gin.remove("im::cb::"+pos);
+		}
+		
+		gin.refresh();
+	}
+	
+	private static void imports() {
+		
+		for(int i=0; i<pros.length; i++) {
+			String sel = GUI.getSelected("im::"+pros[i]);
+			if(sel.equals("(none)"))
+				continue;
+			
+			JsonObject imp = null;
+			for(int j=0; j<inPros.length; j++) {
+				if(!sel.equals(inPros[j].getName()))
+					continue;
+				imp = inPros[j].getContent();
+				break;
+			}
+			
+			if(imp == null) {
+				StreamRaiders.log("Configs -> imports: imp=null", null);
+				continue;
+			}
+			
+			conMerge(pros[i], imp);
+		}
+		
+		for(int i=gpos; i<pos; i++) {
+			String sel = GUI.getSelected("im::cb::"+i);
+			
+			for(int j=0; j<inPros.length; j++) {
+				if(!sel.equals(inPros[j].getName()))
+					continue;
+				
+				String name = GUI.getInputText("im::add::"+i);
+				add(name, inPros[j].getContent().getAsJsonPrimitive("cookies").getAsString());
+				conMerge(name, inPros[j].getContent());
+				break;
+			}
+		}
+		
+		gin.close();
+		MainFrame.refresh(false);
+	}
+	
+	private static void conMerge(String name, JsonObject imp) {
+		
+		B[] bs = new B[] {buy, dupe, unlock, upgrade, place};
+		List<String> sbs = Arrays.asList("buy dupe unlock upgrade place".split(" "));
+		
+		for(String key : imp.keySet()) {
+			String[] keys = key.split("_");
+			
+			switch(keys[0]) {
+			case "cookies":
+				configs.getAsJsonObject(name).add("cookies", imp.get(key));
+				break;
+			case "unit":
+				if(keys[2].equals("spec")) {
+					setUnitString(name, keys[1], spec, imp.getAsJsonPrimitive(key).getAsString());
+				} else {
+					setUnitBoolean(name, keys[1], bs[sbs.indexOf(keys[2])], imp.getAsJsonPrimitive(key).getAsBoolean());
+				}
+				break;
+			case "chest":
+				if(keys[1].equals("normChestLoyMax")) {
+					setChestInt(name, normChestLoyMax, imp.getAsJsonPrimitive(key).getAsInt());
+				} else if(keys[1].equals("loyChestLoyMin")) {
+					setChestInt(name, loyChestLoyMin, imp.getAsJsonPrimitive(key).getAsInt());
+				}
+				break;
+			case "blockedSlots":
+				setSlotBlocked(name, keys[1], imp.getAsJsonPrimitive(key).getAsBoolean());
+				break;
+			case "lockedSlots":
+				setSlotLocked(name, keys[1], imp.getAsJsonPrimitive(key).getAsBoolean());
+				break;
+			case "time":
+				if(keys[1].equals("max")) {
+					setTime(name, max, imp.getAsJsonPrimitive(key).getAsInt());
+				} else {
+					setTime(name, min, imp.getAsJsonPrimitive(key).getAsInt());
+				}
+				break;
+			case "maxTime":
+				setInt(name, maxPage, imp.getAsJsonPrimitive(key).getAsInt());
+				break;
+			case "favs":
+				setObj(name, favs, JsonParser.parseObj(imp.getAsJsonPrimitive(key).getAsString()));
+				break;
+			case "stats":
+				getArr(name, stats).addAll(JsonParser.parseArr(imp.getAsJsonPrimitive(key).getAsString()));
+				break;
+			default:
+				StreamRaiders.log("Configs -> conMerge: err=can't recognize key, key="+key, null);
+			}
+		}
+		
+		
+		
 	}
 	
 }

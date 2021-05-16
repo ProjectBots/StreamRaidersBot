@@ -53,6 +53,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.text.JTextComponent;
 
 
@@ -426,14 +427,24 @@ public class GUI{
 		return JOptionPane.showConfirmDialog(null, msg, title, JOptionPane.OK_CANCEL_OPTION) == 0;
 	}
 	
-	public String showFileChooser(String title, boolean save) {
+	public static class FileExtension {
+		
+	}
+	
+	public File showFileChooser(String title, boolean save, FileFilter filter) {
 		JFileChooser fc = new JFileChooser();
 		fc.setDialogTitle(title);
+		
+		if(filter != null)
+			fc.setFileFilter(filter);
+		
+		
 		
 		int selected = save ? fc.showSaveDialog(frame) : fc.showOpenDialog(frame);
 		
 		if(selected == JFileChooser.APPROVE_OPTION) 
-			return fc.getSelectedFile().getAbsolutePath();
+			return fc.getSelectedFile();
+		
 		
 		return null;
 	}
@@ -446,6 +457,7 @@ public class GUI{
 		private ActionListener[] als;
 		private boolean[] sep;
 		private Menu[] submenus;
+		private Font font = null;
 		
 		public Menu(String name, String[] items) {
 			this.name = name;
@@ -457,6 +469,9 @@ public class GUI{
 		}
 		
 		
+		public void setFont(Font f) {
+			font = f;
+		}
 
 		public void setAL(int pos, ActionListener al) {
 			als[pos] = al;
@@ -470,6 +485,10 @@ public class GUI{
 			submenus[pos] = submenu;
 		}
 		
+		
+		public Font getFont() {
+			return font;
+		}
 		
 		public String getName() {
 			return name;
@@ -506,6 +525,7 @@ public class GUI{
 	private JMenu addSubMenu(Menu submenus) {
 		//	new menu
 		JMenu menu = new JMenu(submenus.getName());
+		menu.setFont(submenus.getFont());
 		//	goes through every item in the menu
 		for(int i=0; i<submenus.getItems().length; i++) {
 			//	adds a seperator if placed
@@ -717,6 +737,7 @@ public class GUI{
 		private int[] size = null;
 		private boolean opaque = false;
 		private Color back = null;
+		private Color fore = null;
 		private Border border = null;
 		private Font font = null;
 		
@@ -758,6 +779,14 @@ public class GUI{
 		
 		public Color getBackground() {
 			return back;
+		}
+		
+		public void setForeground(Color col) {
+			fore = col;
+		}
+		
+		public Color getForeground() {
+			return fore;
 		}
 		
 		public void setBorder(Color col, int thickness) {
@@ -829,7 +858,12 @@ public class GUI{
 	}
 	
 	public static class CButton extends Label {
-		private ActionListener Al;
+		private ActionListener al = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				cbut.put(id, !cbut.get(id));
+			}
+		};
 		private String id;
 		
 		public CButton(String id) {
@@ -839,7 +873,7 @@ public class GUI{
 		
 		public void setCBL(CButListener opt) {
 			//	new listener
-			Al = new ActionListener() {
+			al = new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					//	changes the value in the hashtable
@@ -855,7 +889,7 @@ public class GUI{
 		}
 		
 		public ActionListener getAl() {
-			return Al;
+			return al;
 		}
 		
 		public String getId() {
@@ -882,6 +916,11 @@ public class GUI{
 	
 	public static boolean isCButSelected(String id) {
 		return cbut.get(id);
+	}
+	
+	public static void setCButSelected(String id, boolean b) {
+		if(isCButSelected(id) == b) return;
+		((AbstractButton) getComp(id)).doClick();
 	}
 	
 	
@@ -939,6 +978,10 @@ public class GUI{
 		Color back = opt.getBackground();
 		if(back != null) {
 			but.setBackground(back);
+		}
+		Color fore = opt.getForeground();
+		if(fore != null) {
+			but.setForeground(fore);
 		}
 		Font f = opt.getFont();
 		if(f != null) {
@@ -1083,6 +1126,9 @@ public class GUI{
 		if(size != null) {
 			tf.setPreferredSize(new Dimension(size[0], size[1]));
 		}
+		String tt = opt.getTooltip();
+		if(tt != null)
+			tf.setToolTipText(tt);
 		tf.addActionListener(opt.getAL());
 		addObj(opt, tf, id);
 	}
@@ -1139,12 +1185,7 @@ public class GUI{
 	
 	public static class ComboBox extends BlankList {
 		String id;
-		private ItemListener il = new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				System.out.println("no ItemListener");
-			}
-		};
+		private ItemListener il = null;
 		
 		public ComboBox(String id) {
 			this.id = id;
@@ -1177,7 +1218,10 @@ public class GUI{
 	public void addComb(ComboBox opt) {
 		//	new string combobox with a array of strings
 		JComboBox<String> comb = new JComboBox<String>(opt.getList());
-		comb.addItemListener(opt.getIL());
+		ItemListener il = opt.getIL();
+		if(il != null) 
+			comb.addItemListener(il);
+		
 		addObj(opt, comb, opt.getId());
 	}
 	
@@ -1777,7 +1821,7 @@ public class GUI{
 			textFields = textFields2;
 		}
 		
-		public void addTextFiels(TextField opt) {
+		public void addTextField(TextField opt) {
 			addTextField(opt, null);
 		}
 		

@@ -6,13 +6,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
@@ -23,11 +23,13 @@ import include.GUI.CButton;
 import include.GUI.Container;
 import include.GUI.Image;
 import include.GUI.Label;
+import include.GUI.Menu;
 import include.GUI.TextArea;
 import include.GUI.TextField;
 import include.GUI.WinLis;
 import include.JsonParser;
 import include.Version;
+import program.SRR.NoInternetException;
 
 public class MainFrame {
 
@@ -74,106 +76,16 @@ public class MainFrame {
 			}
 		});
 		
-		Container head = new Container();
-		head.setPos(0, 0);
-		head.setFill('h');
-		head.setInsets(20, 2, 2, 10);
-		
-			Button nextAll = new Button();
-			nextAll.setPos(0, 0);
-			nextAll.setText("\u23E9");
-			nextAll.setFont(new Font(null, Font.PLAIN, 20));
-			nextAll.setTooltip("skip time for all profiles");
-			nextAll.setAL(new ActionListener() {
+			int m = 0;
+			Menu bot = new Menu("Bot", "Guide  General  Add a Profile  start all  stop all  skip time all  reload Config".split("  "));
+			bot.setFont(new Font(null, Font.BOLD, 25));
+			bot.setAL(m++, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					for(String key : profiles.keySet()) {
-						try {
-							profiles.get(key).interrupt();
-						} catch (Exception e1) {}
-					}
+					GuideContent.show();
 				}
 			});
-			head.addBut(nextAll);
-		
-			Label s1 = new Label();
-			s1.setPos(1, 0);
-			s1.setText("");
-			s1.setWeightX(1);
-			head.addLabel(s1);
-			
-			Button refresh = new Button();
-			refresh.setPos(2, 0);
-			refresh.setText("\u27F3");
-			refresh.setFont(new Font(null, Font.PLAIN, 20));
-			refresh.setTooltip("refresh");
-			refresh.setAL(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					if(gui.showConfirmationBox("<html><center>Settings took since last<br>restart will be removed!<br>reload config file?</center></html>"))
-						refresh(true);
-				}
-			});
-			head.addBut(refresh);
-			
-			Button addPro = new Button();
-			addPro.setPos(3, 0);
-			addPro.setText("+");
-			addPro.setFont(new Font(null, Font.PLAIN, 20));
-			addPro.setTooltip("add profile");
-			addPro.setAL(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					GUI np = new GUI("New Profile", 300, 400, gui, null);
-					
-					
-					Label lab1 = new Label();
-					lab1.setPos(0, 0);
-					lab1.setText("Profilename");
-					np.addLabel(lab1);
-					
-					ActionListener openBrowser = new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							String in = GUI.getInputText("newName");
-							if(in.equals("")) 
-								if(!np.showConfirmationBox("go ahead without a name for the profile?")) 
-									return;
-							
-							Thread t = new Thread(new Runnable() {
-								@Override
-								public void run() {
-									Browser.show(in);
-								}
-							});
-							t.start();
-							np.close();
-						}
-					};
-					
-					TextField name = new TextField();
-					name.setPos(0, 1);
-					name.setText("");
-					name.setFill('h');
-					name.setAL(openBrowser);
-					np.addTextField(name, "newName");
-					
-					Button open = new Button();
-					open.setPos(0, 2);
-					open.setText("open Browser to Login");
-					open.setAL(openBrowser);
-					np.addBut(open);
-					
-				}
-			});
-			head.addBut(addPro);
-			
-			Button opt = new Button();
-			opt.setPos(4, 0);
-			opt.setText("\u23E3");
-			opt.setFont(new Font(null, Font.PLAIN, 20));
-			opt.setTooltip("general stuff");
-			opt.setAL(new ActionListener() {
+			bot.setAL(m++, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					GUI opt = new GUI("Options", 400, 500, gui, null);
@@ -355,23 +267,108 @@ public class MainFrame {
 					opt.addTextArea(don);
 				}
 			});
-			head.addBut(opt);
-			
-			
-			Button help = new Button();
-			help.setPos(5, 0);
-			help.setText("?");
-			help.setTooltip("Guide");
-			help.setFont(new Font(null, Font.PLAIN, 20));
-			help.setAL(new ActionListener() {
+			bot.setAL(m++, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					GuideContent.show();
+					GUI np = new GUI("New Profile", 300, 400, gui, null);
+					
+					Label lab1 = new Label();
+					lab1.setPos(0, 0);
+					lab1.setText("Profilename");
+					np.addLabel(lab1);
+					
+					ActionListener openBrowser = new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							String in = GUI.getInputText("newName");
+							if(in.equals("")) 
+								if(!np.showConfirmationBox("go ahead without a name for the profile?")) 
+									return;
+							
+							Thread t = new Thread(new Runnable() {
+								@Override
+								public void run() {
+									Browser.show(in);
+								}
+							});
+							t.start();
+							np.close();
+						}
+					};
+					
+					TextField name = new TextField();
+					name.setPos(0, 1);
+					name.setText("");
+					name.setFill('h');
+					name.setAL(openBrowser);
+					np.addTextField(name, "newName");
+					
+					Button open = new Button();
+					open.setPos(0, 2);
+					open.setText("open Browser to Login");
+					open.setAL(openBrowser);
+					np.addBut(open);
 				}
 			});
-			head.addBut(help);
+			bot.setAL(m++, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					for(String key: profiles.keySet()) {
+						GUI.setCButSelected(key+"::start", true);
+					}
+				}
+			});
+			bot.setAL(m++, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					for(String key: profiles.keySet()) {
+						GUI.setCButSelected(key+"::start", false);
+					}
+				}
+			});
+			bot.setAL(m++, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					for(String key : profiles.keySet()) {
+						try {
+							profiles.get(key).interrupt();
+						} catch (Exception e1) {}
+					}
+				}
+			});
+			bot.setAL(m++, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if(gui.showConfirmationBox("<html><center>Settings took since last<br>restart will be removed!<br>reload config file?</center></html>"))
+						refresh(true);
+				}
+			});
+			bot.setSep(3);
+			bot.setSep(6);
+			gui.addMenu(bot);
 			
-			gui.addContainer(head);
+			Menu sep = new Menu("|", new String[0]);
+			sep.setFont(new Font(null, Font.BOLD, 25));
+			gui.addMenu(sep);
+			
+			
+			m = 0;
+			Menu config = new Menu("Config", "export  import".split("  "));
+			config.setFont(new Font(null, Font.BOLD, 25));
+			config.setAL(m++, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Configs.exportConfig(gui);
+					
+				}
+			});
+			config.setAL(m++, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Configs.importConfig(gui);
+				}
+			});
+			gui.addMenu(config);
 			
 			refresh(false);
 			
@@ -508,18 +505,17 @@ public class MainFrame {
 			lockBut.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					JsonArray locked = Configs.getArr(name, Configs.locked);
 					SRRHelper srrh = profiles.get(name).getSRRH();
 					if(srrh != null) {
 						Raid[] raids = srrh.getRaids();
 						if(ii < raids.length) {
-							JsonElement disName = new JsonPrimitive(raids[ii].get(SRC.Raid.twitchDisplayName));
-							if(locked.contains(disName)) {
-								locked.remove(disName);
+							String usi = raids[ii].get(SRC.Raid.userSortIndex);
+							if(Configs.isSlotLocked(name, usi)) {
+								Configs.setSlotLocked(name, usi, false);
 								GUI.setText(name+"::lockBut::"+ii, "\uD83D\uDD13");
 								GUI.setBackground(name+"::lockBut::"+ii, GUI.getDefButCol());
 							} else {
-								locked.add(disName);
+								Configs.setSlotLocked(name, usi, true);
 								GUI.setText(name+"::lockBut::"+ii, "\uD83D\uDD12");
 								GUI.setBackground(name+"::lockBut::"+ii, Color.green);
 							}
@@ -537,18 +533,18 @@ public class MainFrame {
 			fav.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					JsonArray favs = Configs.getArr(name, Configs.favs);
+					JsonObject favs = Configs.getObj(name, Configs.favs);
 					SRRHelper srrh = profiles.get(name).getSRRH();
 					if(srrh != null) {
 						Raid[] raids = srrh.getRaids();
 						if(ii < raids.length) {
-							JsonElement disName = new JsonPrimitive(raids[ii].get(SRC.Raid.twitchDisplayName));
-							if(favs.contains(disName)) {
+							String disName = new JsonPrimitive(raids[ii].get(SRC.Raid.twitchDisplayName)).getAsString();
+							if(favs.has(disName)) {
 								favs.remove(disName);
 								GUI.setText(name+"::favBut::"+ii, "\uD83D\uDC94");
 								GUI.setForeground(name+"::favBut::"+ii, Color.black);
 							} else {
-								favs.add(disName);
+								favs.addProperty(disName, false);
 								GUI.setText(name+"::favBut::"+ii, "\u2764");
 								GUI.setForeground(name+"::favBut::"+ii, new Color(227,27,35));
 							}
@@ -910,8 +906,100 @@ public class MainFrame {
 				
 				sgui.addContainer(cbs);
 				
+				Container time = new Container();
+				time.setPos(0, 5);
+				time.setInsets(20, 10, 10, 2);
+				
+					Label lt1 = new Label();
+					lt1.setText("Time:");
+					lt1.setFont(new Font(null, Font.PLAIN, 20));
+					lt1.setPos(0, 0);
+					lt1.setSpan(3, 1);
+					time.addLabel(lt1);
+					
+					TextField tfmin = new TextField();
+					tfmin.setText(""+Configs.getTime(name, Configs.min));
+					tfmin.setSize(40, 20);
+					tfmin.setTooltip("min");
+					tfmin.setPos(0, 1);
+					tfmin.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							changeTime(sgui, name);
+						}
+					});
+					time.addTextField(tfmin, name + "::time::min");
+					
+					Label lt2 = new Label();
+					lt2.setText("s - ");
+					lt2.setPos(1, 1);
+					time.addLabel(lt2);
+					
+					TextField tfmax = new TextField();
+					tfmax.setText(""+Configs.getTime(name, Configs.max));
+					tfmax.setSize(40, 20);
+					tfmax.setTooltip("max");
+					tfmax.setPos(2, 1);
+					tfmax.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							changeTime(sgui, name);
+						}
+					});
+					time.addTextField(tfmax, name + "::time::max");
+					
+					Label lt3 = new Label();
+					lt3.setText("s");
+					lt3.setPos(3, 1);
+					time.addLabel(lt3);
+					
+					Button tbut = new Button();
+					tbut.setText("update");
+					tbut.setPos(4, 1);
+					tbut.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							changeTime(sgui, name);
+						}
+					});
+					time.addBut(tbut);
+					
+				sgui.addContainer(time);
+				
+				int posFav = 6;
+				
+				createFavCon(sgui, name, posFav);
+				
+				Container search = new Container();
+				search.setPos(0, 7);
+				search.setInsets(20, 10, 10, 2);
+				
+					TextField stf = new TextField();
+					stf.setPos(0, 0);
+					stf.setSize(100, 28);
+					stf.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							searchCap(sgui, name, posFav);
+						}
+					});
+					search.addTextField(stf, name+"::search::cap");
+					
+					Button sbut = new Button();
+					sbut.setText("search");
+					sbut.setPos(1, 0);
+					sbut.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							searchCap(sgui, name, posFav);
+						}
+					});
+					search.addBut(sbut);
+					
+				sgui.addContainer(search);
+				
 				Button resStat = new Button();
-				resStat.setPos(0, 5);
+				resStat.setPos(0, 8);
 				resStat.setInsets(20, 10, 20, 2);
 				resStat.setText("Reset Stats");
 				resStat.setTooltip("Reset the stats for this profile");
@@ -947,6 +1035,156 @@ public class MainFrame {
 		both.addContainer(part);
 		
 		gui.addContainer(both, name + "::part");
+	}
+	
+	private static void searchCap(GUI parent, String name, int posFav) {
+		String dname = GUI.getInputText(name+"::search::cap");
+		
+		JsonArray caps;
+		try {
+			caps = profiles.get(name).getSRRH().search(1, 8, false, false, true, dname);
+		} catch (URISyntaxException | IOException | NoInternetException e) {
+			StreamRaiders.log(name + " -> MainFrame -> searchCap: err=failed to search captain", e);
+			return;
+		} catch (NullPointerException e) {
+			parent.msg("Error", "The Profile has to be\nrunning for this to work", GUI.MsgConst.ERROR);
+			return;
+		}
+		
+		JsonObject favs = Configs.getObj(name, Configs.favs);
+		
+		GUI sea = new GUI("Search Captain", 300, 400, parent, null);
+		
+		sea.addWinLis(new WinLis() {
+			@Override
+			public void onIconfied(WindowEvent e) {}
+			@Override
+			public void onFocusLost(WindowEvent e) {}
+			@Override
+			public void onFocusGained(WindowEvent e) {}
+			@Override
+			public void onDeIconfied(WindowEvent e) {}
+			@Override
+			public void onClose(WindowEvent e) {
+				parent.remove(name+"::fav::c");
+				createFavCon(parent, name, posFav);
+				parent.refresh();
+			}
+		});
+		
+		for(int i=0; i<caps.size(); i++) {
+			JsonObject cap = caps.get(i).getAsJsonObject();
+			
+			String tdn = cap.getAsJsonPrimitive(SRC.Raid.twitchDisplayName).getAsString();
+			
+			Label sl = new Label();
+			sl.setPos(0, i);
+			sl.setText(tdn);
+			sea.addLabel(sl);
+			
+			Button fav = new Button();
+			fav.setPos(1, i);
+			if(favs.has(tdn)) {
+				fav.setText("\u2764");
+				fav.setForeground(new Color(227,27,35));
+			} else {
+				fav.setText("\uD83D\uDC94");
+			}
+			fav.setAL(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if(favs.has(tdn)) {
+						favs.remove(tdn);
+						GUI.setForeground(name+"::search::"+tdn, Color.black);
+					} else {
+						favs.addProperty(tdn, false);
+						GUI.setForeground(name+"::search::"+tdn, new Color(227,27,35));
+					}
+				}
+			});
+			sea.addBut(fav, name+"::search::"+tdn);
+			
+		}
+	}
+	
+	private static void createFavCon(GUI sgui, String name, int y) {
+		Container favc = new Container();
+		favc.setPos(0, y);
+		favc.setInsets(20, 10, 10, 2);
+		
+			JsonObject favs = Configs.getObj(name, Configs.favs);
+			int y1 = 0;
+			for(String key : favs.keySet()) {
+				Label favl = new Label();
+				favl.setPos(0, y1);
+				favl.setText(key);
+				favl.setFont(new Font(null, Font.PLAIN, 20));
+				favc.addLabel(favl, name+"::fav::lab::"+key);
+				
+				Button ic = new Button();
+				ic.setPos(1, y1);
+				ic.setText("ic");
+				ic.setTooltip("ignore Config");
+				if(favs.getAsJsonPrimitive(key).getAsBoolean())
+					ic.setBackground(Color.green);
+				ic.setAL(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						if(favs.getAsJsonPrimitive(key).getAsBoolean()) {
+							favs.addProperty(key, false);
+							GUI.setBackground(name+"::fav::ic::"+key, GUI.getDefButCol());
+						} else {
+							favs.addProperty(key, true);
+							GUI.setBackground(name+"::fav::ic::"+key, Color.green);
+						}
+					}
+				});
+				favc.addBut(ic, name+"::fav::ic::"+key);
+				
+				Button favb = new Button();
+				favb.setPos(2, y1);
+				favb.setText("\u2764");
+				favb.setForeground(new Color(227,27,35));
+				favb.setAL(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						favs.remove(key);
+						sgui.remove(name+"::fav::c");
+						createFavCon(sgui, name, y);
+						sgui.refresh();
+					}
+				});
+				favc.addBut(favb, name+"::fav::heart::"+key);
+				
+				y1++;
+			}
+		
+		sgui.addContainer(favc, name+"::fav::c");
+	}
+	
+	
+	private static void changeTime(GUI sgui, String name) {
+		int min;
+		int max;
+		try {
+			min = Integer.parseInt(GUI.getInputText(name+"::time::min"));
+			max = Integer.parseInt(GUI.getInputText(name+"::time::max"));
+		} catch (NumberFormatException e1) {
+			sgui.msg("Update time", "Please enter numbers", GUI.MsgConst.ERROR);
+			return;
+		}
+		if(min > max) {
+			sgui.msg("Update time", "max have to be higher than min", GUI.MsgConst.ERROR);
+			return;
+		}
+		
+		if(min + max < 500) {
+			if(!sgui.showConfirmationBox("lower time between checks\ncan result in bans.\nchange anyway?"))
+				return;
+		}
+		
+		Configs.setTime(name, Configs.max, max);
+		Configs.setTime(name, Configs.min, min);
 	}
 	
 	private static final Color[] loyCols = new Color[] {null, new Color(192, 137, 112), new Color(192,192,192), new Color(212, 175, 55)};

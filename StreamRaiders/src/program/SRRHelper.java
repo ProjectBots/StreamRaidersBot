@@ -113,11 +113,15 @@ public class SRRHelper {
 	}
 	
 	public String placeUnit(Raid raid, Unit unit, boolean epic, int[] pos, boolean onPlanIcon) throws URISyntaxException, IOException, NoInternetException {
-		JsonElement je = JsonParser.parseObj(req.addToRaid(raid.get(SRC.Raid.raidId),
-					createPlacementData(unit, epic, map.getAsSRCoords(pos), onPlanIcon)))
-				.get(SRC.errorMessage);
+		String atr = req.addToRaid(raid.get(SRC.Raid.raidId),
+				createPlacementData(unit, epic, map.getAsSRCoords(pos), onPlanIcon));
 		
-		if(je.isJsonPrimitive()) return je.getAsString();
+		try {
+			JsonElement je = JsonParser.parseObj(atr).get(SRC.errorMessage);
+			if(je.isJsonPrimitive()) return je.getAsString();
+		} catch (NullPointerException e) {
+			StreamRaiders.log("SRRHelper -> placeUnit: err=failed to place Unit, atr=" + atr == null ? "null" : atr, e);
+		}
 		
 		return null;
 	}
@@ -134,15 +138,22 @@ public class SRRHelper {
 		}
 	}
 	
-	public void loadMap(Raid raid) throws PvPException, URISyntaxException, IOException, NoInternetException {
+	public void loadMap(Raid raid) throws PvPException, URISyntaxException, IOException, NoInternetException, SilentException {
 		String node = raid.get(SRC.Raid.nodeId);
 		if(node.contains("pvp")) throw new PvPException();
-		JsonElement je = JsonParser.parseObj(req.getRaidPlan(raid.get(SRC.Raid.raidId))).get("data");
-		String mapName = raid.get(SRC.Raid.battleground);
-		map = new Map(JsonParser.parseObj(req.getMapData(mapName)),
-				JsonParser.parseArr(raid.get(SRC.Raid.placementsSerialized)),
-				JsonParser.parseArr(raid.get(SRC.Raid.users)),
-				(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null), mapName);
+		String raidplan = req.getRaidPlan(raid.get(SRC.Raid.raidId));
+		try {
+			JsonElement je = JsonParser.parseObj(raidplan).get("data");
+			String mapName = raid.get(SRC.Raid.battleground);
+			map = new Map(JsonParser.parseObj(req.getMapData(mapName)),
+					JsonParser.parseArr(raid.get(SRC.Raid.placementsSerialized)),
+					JsonParser.parseArr(raid.get(SRC.Raid.users)),
+					(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null), mapName);
+		} catch (NullPointerException e) {
+			StreamRaiders.log("SRRHelper -> loadMap: raidplan=" + raidplan, e);
+			throw new SilentException();
+		}
+		
 	}
 	
 	public boolean testPos(boolean epic, int x, int y) {

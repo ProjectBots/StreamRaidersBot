@@ -53,16 +53,14 @@ public class Pathfinding {
 		}
 	}
 	
-	private static Field[][] lastMap = null;
 	
-	public static Field[][] getLastMap() {
-		return lastMap;
-	}
+	private static int width; 
+	private static int height;
 	
 	public static int[] search(Field[][] map) {
 		
-		int width = map.length;
-		int height = map[0].length;
+		width = map.length;
+		height = map[0].length;
 		
 		int x, y, min, ox, oy, omin;
 		
@@ -109,18 +107,29 @@ public class Pathfinding {
 			map[x][y].explore();
 			
 			
-			if(x+1 < width) if(map[x+1][y].setCost(min+10)) return new int[] {x+1, y};
-			if(x-1 >= 0) if(map[x-1][y].setCost(min+10)) return new int[] {x-1, y};
-			if(y+1 < height) if(map[x][y+1].setCost(min+10)) return new int[] {x, y+1};
-			if(y-1 >= 0) if(map[x][y-1].setCost(min+10)) return new int[] {x, y-1};
-
-			if(x+1 < width && y+1 < height) if(map[x+1][y+1].setCost(min+14)) return new int[] {x+1, y+1};
-			if(x+1 < width && y-1 >= 0) if(map[x+1][y-1].setCost(min+14)) return new int[] {x+1, y-1};
-			if(x-1 >= 0 && y+1 < height) if(map[x-1][y+1].setCost(min+14)) return new int[] {x-1, y+1};
-			if(x-1 >= 0 && y-1 >= 0) if(map[x-1][y-1].setCost(min+14)) return new int[] {x-1, y-1};
+			for(int i=-1; i<2; i++) {
+				for(int j=-1; j<2; j++) {
+					if(i==0 && j==0) continue;
+					
+					if(check(x+i, y+j)) {
+						if(i==0 || j==0) {
+							if(map[x+i][y+j].setCost(min+ranInt(7, 12))) return new int[] {x+i, y+j};
+						} else {
+							if(map[x+i][y+j].setCost(min+ranInt(10, 15))) return new int[] {x+i, y+j};
+						}
+					}
+				}
+			}
 			
 		}
-		
 	}
 	
+	private static int ranInt(int min, int max) {
+		return (int) Math.round((Math.random()*(max-min))+min);
+	}
+	
+	private static boolean check(int x, int y) {
+		if(x<0 || y<0 || x>=width || y>=height) return false;
+		return true;
+	}
 }

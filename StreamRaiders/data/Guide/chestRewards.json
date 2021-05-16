@@ -83,6 +83,50 @@
       "skinfullmusketeerspacewestern": 15
     }
   },
+  "chestboostedskinalternate": {
+    "BonusBoostedGold": {
+      "goldbag_1000": 75,
+      "goldbag_300": 25
+    },
+    "BonusBoss": {
+      "goldbag_50": 10,
+      "rarescrolls_1": 60,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10
+    },
+    "BonusBoss_": {
+      "goldbag_50": 10,
+      "rarescrolls_1": 60,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10
+    },
+    "ViewerBoosted2": {
+      "goldbag_100real": 5,
+      "goldbag_150": 5,
+      "goldbag_50": 10,
+      "goldbag_75real": 10,
+      "rarescrolls_4": 20,
+      "rarescrolls_6": 25,
+      "rarescrolls_7": 25
+    },
+    "ViewerBoostedSkinAlternate1": {
+      "goldbag_100": 15,
+      "goldbag_75": 20,
+      "rarescrolls_6": 30,
+      "rarescrolls_7": 20,
+      "skinfullbarbarianorcdromeda": 1,
+      "skinfullmagespacewestern": 7,
+      "skinfullmusketeerspacewestern": 7
+    },
+    "ViewerBoostedSkinAlternate2": {
+      "goldbag_100": 10,
+      "rarescrolls_6": 10,
+      "rarescrolls_7": 15,
+      "skinfullbarbarianorcdromeda": 3,
+      "skinfullmagespacewestern": 20,
+      "skinfullmusketeerspacewestern": 15
+    }
+  },
   "chestboostedtoken": {
     "BonusGold": {
       "goldbag_50": 30,

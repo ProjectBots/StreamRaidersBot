@@ -181,7 +181,10 @@ public class Run {
 			part = Debug.print("upgradeUnits", Debug.run);
 			upgradeUnits();
 			
-			sleep((int) Math.round(Math.random()*620) + 100);
+			int min = Configs.getTime(name, Configs.min);
+			int max = Configs.getTime(name, Configs.max);
+			
+			sleep((int) Math.round(Math.random()*(max-min)) + min);
 		} catch (Exception e) {
 			saveStats();
 			reload(20, part, e);
@@ -406,8 +409,8 @@ public class Run {
 	private boolean raids() throws URISyntaxException, IOException, NoInternetException, SilentException {
 		boolean ret = false;
 		
-		JsonArray locked = Configs.getArr(name, Configs.locked);
-		JsonArray favs = Configs.getArr(name, Configs.favs);
+		JsonObject favs = Configs.getObj(name, Configs.favs);
+		
 		
 		Unit[] units = srrh.getUnits(SRC.Helper.canPlaceUnit);
 		Raid[] plra = srrh.getRaids(SRC.Helper.canPlaceUnit);
@@ -440,7 +443,7 @@ public class Run {
 					img.setSquare(30);
 					GUI.setImage(name+"::chest::"+i, img);
 					GUI.setEnabled(name+"::lockBut::"+i, true);
-					if(locked.contains(new JsonPrimitive(disName))) {
+					if(Configs.isSlotLocked(name, all[i].get(SRC.Raid.userSortIndex))) {
 						GUI.setText(name+"::lockBut::"+i, "\uD83D\uDD12");
 						GUI.setBackground(name+"::lockBut::"+i, Color.green);
 					} else {
@@ -448,7 +451,7 @@ public class Run {
 						GUI.setBackground(name+"::lockBut::"+i, GUI.getDefButCol());
 					}
 					GUI.setEnabled(name+"::favBut::"+i, true);
-					if(favs.contains(new JsonPrimitive(disName))) {
+					if(favs.has(disName)) {
 						GUI.setText(name+"::favBut::"+i, "\u2764");
 						GUI.setForeground(name+"::favBut::"+i, new Color(227,27,35));
 					} else {
@@ -603,10 +606,10 @@ public class Run {
 			if(Time.isAfter(bannedCaps.getAsJsonPrimitive(cap).getAsString(), srrh.getServerTime()))
 				bannedCaps.remove(cap);
 		
-		JsonArray locked = Configs.getArr(name, Configs.locked);
-		
 		boolean changed = false;
 		JsonArray caps = null;
+		
+		JsonObject favs = Configs.getObj(name, Configs.favs);
 		
 		boolean ctNull = true;
 		try {
@@ -614,10 +617,15 @@ public class Run {
 				boolean breakout = true;
 				boolean[] got = new boolean[] {false, uCount < 5, uCount < 8, !srrh.hasBattlePass()};
 				for(int i=0; i<raids.length; i++) {
+					got[Integer.parseInt(raids[i].get(SRC.Raid.userSortIndex))] = true;
 					if(Configs.isSlotBlocked(name, raids[i].get(SRC.Raid.userSortIndex)))
 						continue;
-					got[Integer.parseInt(raids[i].get(SRC.Raid.userSortIndex))] = true;
-					if(locked.contains(new JsonPrimitive(raids[i].get(SRC.Raid.twitchDisplayName)))) continue;
+					if(Configs.isSlotLocked(name, raids[i].get(SRC.Raid.userSortIndex)))
+						continue;
+					if(favs.has(raids[i].get(SRC.Raid.twitchDisplayName)))
+						if(favs.getAsJsonPrimitive(raids[i].get(SRC.Raid.twitchDisplayName)).getAsBoolean())
+							if(!raids[i].isOffline(srrh.getServerTime(), false, 10))
+								continue;
 					if(!raids[i].isSwitchable(srrh.getServerTime(), true, 10)) continue;
 					String ct = raids[i].getFromNode(SRC.MapNode.chestType);
 					if(ct == null) {
@@ -678,7 +686,7 @@ public class Run {
 		if(empty == null) {
 			empty = new JsonArray();
 			int pages = 3;
-			for(int i=1; i<pages && i<=30; i++) {
+			for(int i=1; i<pages && i<=Configs.getInt(name, Configs.maxPage); i++) {
 				empty.addAll(srrh.search(i, 6, false, true, false, null));
 				pages = srrh.getPagesFromLastSearch();
 			}
@@ -691,7 +699,7 @@ public class Run {
 		JsonObject cap = null;
 		int oldLoy = -1;
 
-		JsonArray favs = Configs.getArr(name, Configs.favs);
+		JsonObject favs = Configs.getObj(name, Configs.favs);
 		boolean fav = false;
 		
 		for(int i=0; i<caps.size(); i++) {
@@ -700,7 +708,7 @@ public class Run {
 			if(bannedCaps.has(icap.getAsJsonPrimitive(SRC.Raid.captainId).getAsString()))
 				continue;
 			
-			if(favs.contains(icap.getAsJsonPrimitive(SRC.Raid.twitchDisplayName))) {
+			if(favs.has(icap.getAsJsonPrimitive(SRC.Raid.twitchDisplayName).getAsString())) {
 				if(fav) {
 					if(Integer.parseInt(icap.getAsJsonPrimitive(SRC.Raid.pveWins).getAsString()) > oldLoy) {
 						cap = icap;

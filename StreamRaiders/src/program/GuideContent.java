@@ -31,7 +31,7 @@ public class GuideContent {
 
 	private static final String path = "data/Guide/";
 	
-	private static boolean uptodate = true;
+	private static boolean uptodate = false;
 	
 	public static void show() {
 		if(!uptodate)
