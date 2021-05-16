@@ -460,7 +460,7 @@ public class Configs {
 			}
 			
 			if(b || GUI.isCButSelected("ex::favs")) {
-				pro.addProperty("favs", con.getAsJsonArray("favs").toString());
+				pro.addProperty("favs", con.getAsJsonObject("favs").toString());
 			}
 			
 			if(b || GUI.isCButSelected("ex::stats")) {

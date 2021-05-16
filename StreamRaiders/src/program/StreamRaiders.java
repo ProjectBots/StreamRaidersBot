@@ -91,7 +91,7 @@ public class StreamRaiders {
 		System.out.println("by ProjectBots https://github.com/ProjectBots/StreamRaiderBot\r\n"
 				+ "Version: " + get("botVersion") + "\r\n");
 		
-		if(!System.getProperty("java.version").equals("16.0.1")) {
+		if(!System.getProperty("java.version").startsWith("16")) {
 			System.err.println("Incompatible java Version\nRestarting with new Version\n");
 			
 			StringBuilder sb = new StringBuilder();
