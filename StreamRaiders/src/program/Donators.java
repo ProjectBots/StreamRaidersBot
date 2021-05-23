@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 import include.GUI;
 import include.GUI.Button;
@@ -67,9 +68,10 @@ public class Donators {
 	}
 	
 	private static Don[] dons = new Don[] {
+			Don.c("Snugsel", 20).setText("<html>She wanted to let me decide.<br>Little does she know, I'm not creative ;)<br><br>Never gonna give you up<br><br><img src=\"rickroll.jpg\" width=\"400\" height=\"250\"></html>"),
 			Don.c("Noa3", 10).setLink("https://github.com/Noa3"),
 			Don.c("candyknack", (float) 4.73).setText("He didn't want to say anything")
-	};
+		};
 	
 	public static Container getContainer(int x, int y) {
 		
@@ -101,10 +103,15 @@ public class Donators {
 							e1.printStackTrace();
 						}
 					}
-					if(don.getText() != null) {
+					String text = don.getText();
+					if(text != null) {
 						GUI gui = new GUI(don.getName(), 400, 500);
 						Label l = new Label();
-						l.setText(don.getText());
+						if(text.startsWith("<html>")) {
+							l.setText(htmlTestImg(text));
+						} else {
+							l.setText(text);
+						}
 						gui.addLabel(l);
 					}
 					
@@ -114,6 +121,23 @@ public class Donators {
 		}
 		
 		return con;
+	}
+	
+	
+	public static String htmlTestImg(String text) {
+		StringBuilder sb = new StringBuilder(text);
+		int index = 0;
+		while(true) {
+			index = sb.indexOf("<img src=\"", index) + 10;
+			if(index == 9) break;
+			int lin = sb.indexOf("\"", index);
+			if(lin != -1) {
+				URL src = StreamRaiders.class.getResource("/" + sb.substring(index, lin));
+				if(src == null) continue;
+				sb.replace(index, lin, src.toString());
+			}
+		}
+		return sb.toString();
 	}
 	
 	

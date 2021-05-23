@@ -19,9 +19,14 @@ public class JsonParser {
 	public static JsonObject check(JsonObject json, JsonObject def) {
 		for(String key : def.keySet()) {
 			JsonElement je = json.get(key);
-			
+			JsonElement de = def.get(key);
 			if(je == null) {
-				json.add(key, def.get(key));
+				json.add(key, de);
+			} else if(!((je.isJsonObject() && de.isJsonObject()) ||
+						(je.isJsonArray() && de.isJsonArray()) ||
+						(je.isJsonPrimitive() && de.isJsonPrimitive())
+					)) {
+				json.add(key, de);
 			} else if(je.isJsonObject()) {
 				check(json.getAsJsonObject(key), def.getAsJsonObject(key));
 			}

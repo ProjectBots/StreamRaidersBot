@@ -8,65 +8,58 @@ We now have a [Discord Server](https://discord.gg/u7e5nTRaZQ)!
 
 
 First Steps:  
-click the "+" to add a profile (this bot can handle a lot of accounts for auto farming).  
+click the "add a profile" under "Bot" to add a profile (this bot can handle a lot of accounts for auto farming).  
 enter a profilename (dont need to be the account name).  
 hit enter, a browser will open where you login to StreamRaiders.  
 let the website load, then just close the browser.  
 wait a few seconds until you see the profile.  
-press the play button and watch how it farms for you.  
+press the play button and watch how it farms for you.   
   
 to prevent bans this bot will wait 100 - 720 sec before it checks the raids again.
 
-to open the Guide, click the ? in the top right  
-you can skip the wait by pressing the next button.  
-the Map buttons will show the current map.  
-you can seewhich chest a raid will bring on the right of the map buttons.  
-the option button in the top left will open a new menu where you can delete all profiles.  
-the trashcan will delete the dedicated profile.  
-the option buttons in the profile section will open a menu with further Configs for the Profile.  
-the lock button prevents the streamer from being changed  
-the heart button favorites a streamer (only local)  
+the guide can be opened under "Bot" (the guide is not up to date at the moment)  
 
 ***
 
 average income per hour per profile (without quest and event rewards):  
   
 chests:  
-- gold 4.967  
-boostedskin 0.368  
-boostedtoken 0.214  
-salvage 0.179  
-boostedgold 0.258  
-bosssuper 0.185  
-silver 0.001  
-bronze 0.004  
+- gold 4.885  
+boostedskin 0.349  
+boostedtoken 0.195  
+salvage 0.193  
+boostedgold 0.2  
+bosssuper 0.082  
+silver 0.106  
+bronze 0.003  
   
 basic:  
-- gold 438.884  
-token 24.827  
-potion 35.715  
-meat 0.189  
+- gold 391.655  
+token 26.236  
+potion 36.785  
+meat 0.185  
   
 skins (rare but possible):  
 - fullmagespacewestern 0.001  
-fullbarbarianorcdromeda 0.008  
-fullmusketeerspacewestern 0.003  
+fullbarbarianorcdromeda 0.003  
+fullmusketeerspacewestern 0.001  
   
 scrolls:  
-- musketeer 4.381  
-flyingarcher 4.302  
-bomber 1.884  
-barbarian 1.994  
-monk 5.106  
-centurion 4.783  
-paladin 1.883  
-buster 1.859  
-healer 1.867  
-berserker 4.266  
-tank 0.007  
-warrior 0.007  
+- musketeer 2.904  
+flyingarcher 2.89  
+bomber 1.936  
+barbarian 1.988  
+monk 3.037  
+centurion 2.962  
+paladin 1.882  
+buster 1.888  
+healer 1.921  
+berserker 2.825  
+tank 0.003  
+rogue 0.004  
+warrior 0.003  
 
-(tested for 747 hours and 48 minutes)  
+(tested for 1766 hours and 54 minutes)  
 <br><br>
 ***
 known Issues:  

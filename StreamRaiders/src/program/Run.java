@@ -22,10 +22,12 @@ import com.google.gson.JsonPrimitive;
 import include.Time;
 import include.GUI;
 import include.GUI.Image;
+import include.GUI.Label;
 import include.Heatmap;
 import include.Pathfinding;
 import program.QuestEventRewards.Quest;
 import program.SRR.NoInternetException;
+import program.SRR.NotAuthorizedException;
 import program.SRRHelper.PvPException;
 
 public class Run {
@@ -102,6 +104,14 @@ public class Run {
 						GUI.setBackground(name+"::start", Color.red);
 						setRunning(false);
 					} catch (SilentException e) {
+					} catch (NotAuthorizedException e3) {
+							GUI err = new GUI("User not authorized", 500, 200, MainFrame.getGUI(), null);
+							Label l = new Label();
+							l.setText("<html>Your Account is not authorized.<br>Please remove and add it again</html>");
+							err.addLabel(l);
+							err.refresh();
+							setRunning(false);
+							GUI.setBackground(name+"::start", Color.red);
 					} catch (Exception e) {
 						StreamRaiders.log(name + ": Run -> setRunning", e);
 						GUI.setBackground(name+"::start", Color.red);
@@ -238,12 +248,18 @@ public class Run {
 						sleep(10);
 					} catch (NoInternetException | HttpHostConnectException e2) {
 						StreamRaiders.log(name + ": Run -> Maybe your internet connection failed", e2, true);
-
 						setReloading(part, e);
+					} catch (NotAuthorizedException e3) {
+							GUI err = new GUI("User not authorized", 500, 200, MainFrame.getGUI(), null);
+							Label l = new Label();
+							l.setText("<html>Your Account is not authorized.<br>Please remove and add it again</html>");
+							err.addLabel(l);
+							err.refresh();
+							setRunning(false);
+							GUI.setBackground(name+"::start", Color.red);
 					} catch (Exception e1) {
 						if(!e1.getClass().equals(SilentException.class))
 							StreamRaiders.log("failed to reload srrh for " + name, e1);
-						
 						setReloading(part, e);
 					}
 				}
@@ -484,7 +500,7 @@ public class Run {
 					
 					boolean apt = !(ppt.size() == 0);
 					
-					int[] maxheat = Heatmap.getMaxHeat(map, 5);
+					int[] maxheat = Heatmap.getMaxHeat(map);
 					int[][] banned = new int[0][0];
 					
 					loop:
@@ -523,7 +539,7 @@ public class Run {
 						}
 					}
 				} catch (PvPException e) {
-					switchRaid(plra[i].get(SRC.Raid.userSortIndex), true, srrh.search(1, 240, false, true, false, null));
+					switchRaid(plra[i].get(SRC.Raid.userSortIndex), true, srrh.search(1, 10, false, true, false, null));
 					ret = true;
 				}
 			}
@@ -626,7 +642,8 @@ public class Run {
 						if(favs.getAsJsonPrimitive(raids[i].get(SRC.Raid.twitchDisplayName)).getAsBoolean())
 							if(!raids[i].isOffline(srrh.getServerTime(), false, 10))
 								continue;
-					if(!raids[i].isSwitchable(srrh.getServerTime(), true, 10)) continue;
+					if(!raids[i].isSwitchable(srrh.getServerTime(), true, 10)) 
+						continue;
 					String ct = raids[i].getFromNode(SRC.MapNode.chestType);
 					if(ct == null) {
 						if(ctNull)

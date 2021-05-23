@@ -5,24 +5,32 @@ import program.SRC;
 
 public class Heatmap {
 
-	public static int[] getMaxHeat(Map map, int r) {
-		int[] maxheat = new int[] {0, 0, -100000};
-		int ec = 0;
-		for(int x=0; x<map.width(); x++) {
-			for(int y=0; y<map.length(); y++) {
+	public static int[] getMaxHeat(Map map) {
+		double[][] hmap = new double[map.length()][map.width()];
+		for(int x=0; x<hmap.length; x++) {
+			for(int y=0; y<hmap[x].length; y++) {
 				if(map.is(x, y, SRC.Map.isObstacle)) continue;
-				int heat = 0;
-				if(map.is(x, y, SRC.Map.isEnemy)) ec++;
-				for(int i=x-r; i<x+r; i++) {
-					for(int j=y-r; j<y+r; j++) {
-						if(Vector2.dis(x, y, i, j) > r+0.001) continue;
-						if(map.is(i, j, SRC.Map.isEnemy)) heat++;
+				if(map.is(x, y, SRC.Map.isEnemy)) {
+					for(int i=0; i<hmap.length; i++) {
+						for(int j=0; j<hmap[i].length; j++) {
+							hmap[i][j] += (double) 1 / Vector2.dis(x, y, i, j);
+						}
 					}
 				}
-				if(heat > maxheat[2]) maxheat = new int[] {x, y, heat};
 			}
 		}
-		return (maxheat[2] <= 2 && ec >= 3 ? getMaxHeat(map, r+1) : maxheat);
+
+		int[] maxheat = new int[] {0, 0};
+		double heat = -1;
+		for(int i=0; i<hmap.length; i++) {
+			for(int j=0; j<hmap[i].length; j++) {
+				if(hmap[i][j] > heat) {
+					maxheat = new int[] {i, j};
+					heat = hmap[i][j];
+				}
+			}
+		}
+		return maxheat;
 	}
 	
 	

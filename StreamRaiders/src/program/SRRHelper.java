@@ -242,8 +242,14 @@ public class SRRHelper {
 			}
 			return jo.getAsJsonObject("info").getAsJsonPrimitive("serverTime").getAsString();
 		} catch (ClassCastException e) {
-			StreamRaiders.log("SRRHelper -> updateRaids: jo=" + jo, null);
-			throw new Run.SilentException();
+			JsonElement je = jo.get(SRC.errorMessage);
+			if(je.isJsonPrimitive() && je.getAsString().equals("Game data mismatch.")) {
+				updateDataPath(jo.getAsJsonObject("info").getAsJsonPrimitive("dataPath").getAsString());
+				return updateRaids();
+			} else {
+				StreamRaiders.log("SRRHelper -> updateRaids: jo=" + jo, null);
+				throw new Run.SilentException();
+			}
 		}
 		
 	}

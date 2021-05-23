@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.Http;
@@ -71,14 +72,18 @@ public class SRR {
 		private static final long serialVersionUID = 1L;
 	}
 	
+	public static class NotAuthorizedException extends Exception {
+		private static final long serialVersionUID = 1L;
+	}
 	
-	public SRR(String cookies, String clientVersion) throws URISyntaxException, IOException, NoInternetException, OutdatedDataException, SilentException {
+	
+	public SRR(String cookies, String clientVersion) throws URISyntaxException, IOException, NoInternetException, OutdatedDataException, SilentException, NotAuthorizedException {
 		this.cookies = cookies;
 		this.clientVersion = clientVersion;
 		reload();
 	}
 	
-	public String reload() throws URISyntaxException, IOException, NoInternetException, OutdatedDataException, SilentException {
+	public String reload() throws URISyntaxException, IOException, NoInternetException, OutdatedDataException, SilentException, NotAuthorizedException {
 		userId = null;
 		gameDataVersion = "";
 		isCaptain = "";
@@ -99,15 +104,22 @@ public class SRR {
 		}
 	}
 	
-	private void constructor(JsonObject getUser) throws SilentException {
+	private void constructor(JsonObject getUser) throws SilentException, NotAuthorizedException {
 		this.gameDataVersion = getUser.getAsJsonObject("info").getAsJsonPrimitive("dataVersion").getAsString();
 		try {
 			JsonObject data = getUser.getAsJsonObject("data");
 			this.userId = data.getAsJsonPrimitive("userId").getAsString();
 			this.isCaptain = data.getAsJsonPrimitive("isCaptain").getAsString();
 		} catch (ClassCastException e) {
-			StreamRaiders.log("SRR -> constructor: getUser=" + getUser, e);
-			throw new Run.SilentException();
+			JsonElement err = getUser.get(SRC.errorMessage);
+			if(err.isJsonPrimitive() && err.getAsString().equals("User is not authorized.")) {
+				throw new NotAuthorizedException();
+			} else {
+				StreamRaiders.log("SRR -> constructor: getUser=" + getUser, e);
+				throw new Run.SilentException();
+			}
+			
+			
 		}
 		
 	}

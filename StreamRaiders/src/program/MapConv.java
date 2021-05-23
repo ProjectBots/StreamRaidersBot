@@ -73,7 +73,6 @@ public class MapConv {
 		for(int i=-1; i<2; i++) {
 			for(int j=-1; j<2; j++) {
 				if(map.is(x+i, y+j, SRC.Map.isEnemy)) return;
-				if(map.is(x+i, y+j, SRC.Map.isObstacle)) return;
 			}
 		}
 		
