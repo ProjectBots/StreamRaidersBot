@@ -77,7 +77,7 @@ public class MainFrame {
 		});
 		
 			int m = 0;
-			Menu bot = new Menu("Bot", "Guide  General  Add a Profile  start all  stop all  skip time all  reload Config".split("  "));
+			Menu bot = new Menu("Bot", "Guide  General  Add a Profile  start all  start all delayed  stop all  skip time all  reload Config".split("  "));
 			bot.setFont(new Font(null, Font.BOLD, 25));
 			bot.setAL(m++, new ActionListener() {
 				@Override
@@ -133,20 +133,18 @@ public class MainFrame {
 							
 							for(String name : Configs.keySet()) {
 								
-								JsonArray stats = Configs.getArr(name, Configs.stats);
+								JsonObject stats = Configs.getObj(name, Configs.stats);
 								
-								for(int i=0; i<stats.size(); i++) {
-									JsonObject stat = stats.get(i).getAsJsonObject();
-									hours += (double) stat.getAsJsonPrimitive("time").getAsLong() / 60 / 60;
-									
-									JsonObject rews = stat.getAsJsonObject("rewards");
-									
-									for(String key : rews.keySet()) {
-										if(all.has(key)) {
-											all.addProperty(key, all.getAsJsonPrimitive(key).getAsInt() + rews.getAsJsonPrimitive(key).getAsInt());
-										} else {
-											all.addProperty(key, rews.getAsJsonPrimitive(key).getAsInt());
-										}
+								hours += (double) stats.getAsJsonPrimitive("time").getAsLong() / 60 / 60;
+								
+								JsonObject rews = stats.getAsJsonObject("rewards");
+								System.out.println(rews.toString());
+								for(String key : rews.keySet()) {
+									System.out.println(key);
+									if(all.has(key)) {
+										all.addProperty(key, all.getAsJsonPrimitive(key).getAsInt() + rews.getAsJsonPrimitive(key).getAsInt());
+									} else {
+										all.add(key, rews.get(key).deepCopy());
 									}
 								}
 							}
@@ -235,9 +233,14 @@ public class MainFrame {
 					resStats.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							if(opt.showConfirmationBox("Reset all the Stats?")) 
-								for(String key : Configs.keySet())
-									Configs.getProfile(key).add(Configs.stats.get(), new JsonArray());
+							if(opt.showConfirmationBox("Reset all the Stats?")) {
+								for(String key : Configs.keySet()) {
+									JsonObject nstats = new JsonObject();
+									nstats.addProperty("time", 0);
+									nstats.add("rewards", new JsonObject());
+									Configs.getProfile(key).add(Configs.stats.get(), nstats);
+								}
+							}
 						}
 					});
 					opt.addBut(resStats);
@@ -316,6 +319,61 @@ public class MainFrame {
 					for(String key: profiles.keySet()) {
 						GUI.setCButSelected(key+"::start", true);
 					}
+				}
+			});
+			bot.setAL(m++, new ActionListener() {
+				GUI t = null;
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					
+					t = new GUI("Time", 500, 200, gui, null);
+					
+					TextField tf = new TextField();
+					tf.setPos(0, 0);
+					tf.setText("0");
+					tf.setSize(60, 23);
+					tf.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							go();
+						}
+					});
+					t.addTextField(tf, "start::delayed::tf");
+					
+					Button but = new Button();
+					but.setPos(0, 1);
+					but.setText("start all delayed");
+					but.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							go();
+						}
+					});
+					t.addBut(but, "start::delayed::but");
+					
+				}
+				
+				private void go() {
+					Thread th = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								int time = (int) (Float.parseFloat(GUI.getInputText("start::delayed::tf")) * 1000);
+								
+								for(String key: profiles.keySet()) {
+									GUI.setCButSelected(key+"::start", true);
+									try {
+										Thread.sleep(time);
+									} catch (InterruptedException e) {}
+								}
+							} catch (NumberFormatException e) {
+								t.msg("Wrong Input", "You can't do that", GUI.MsgConst.WARNING);
+							}
+						}
+					});
+					th.start();
+					t.close();
 				}
 			});
 			bot.setAL(m++, new ActionListener() {

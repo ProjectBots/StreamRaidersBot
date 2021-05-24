@@ -133,13 +133,19 @@ public class Run {
 		long sec = Duration.between(s, now).toSeconds();
 		if(sec < 3600) return;
 		
+		JsonObject stats = Configs.getObj(name, Configs.stats);
+		stats.addProperty("time", (long) stats.get("time").getAsLong() + sec);
 		
-		JsonObject jo = new JsonObject();
-		jo.addProperty("time", sec);
-		jo.add("rewards", rews.deepCopy());
-
-		JsonArray stats = Configs.getArr(name, Configs.stats);
-		stats.add(jo);
+		JsonObject crews = stats.getAsJsonObject("rewards");
+		
+		for(String rew : rews.keySet()) {
+			JsonElement je = stats.get(rew);
+			if(je != null) {
+				crews.addProperty(rew, je.getAsInt() + rews.get(rew).getAsInt());
+			} else {
+				crews.add(rew, rews.get(rew).deepCopy());
+			}
+		}
 		
 		resetDateTime();
 	}
@@ -152,47 +158,51 @@ public class Run {
 
 	
 	public void runs() {
-		String part = "null";
+		String part = Debug.print(name+" started round", Debug.run);;
 		try {
 			if(!isRunning()) return;
 			
-			part = Debug.print("chests", Debug.run);
+			part = Debug.print(name+" chests", Debug.run);
 			if(chests()) {
 				try {
 					Thread.sleep(5000);
 				} catch (Exception e) {}
 			}
 			
-			part = Debug.print("captains", Debug.run);
+			part = Debug.print(name+" captains", Debug.run);
 			captains();
 
-			part = Debug.print("raids", Debug.run);
+			int c = 1;
+			part = Debug.print(name+" raids", Debug.run);
 			while(raids()) {
-				part = Debug.print("captains 2", Debug.run);
+				Debug.print("[" + name + "] Run runs " + c++, Debug.loop);
+				part = Debug.print(name+" captains 2", Debug.run);
 				captains();
-				part = Debug.print("raids 2", Debug.run);
+				part = Debug.print(name+" raids 2", Debug.run);
 			}
 			
-			part = Debug.print("collectEvent", Debug.run);
+			part = Debug.print(name+" collectEvent", Debug.run);
 			collectEvent();
 			
-			part = Debug.print("claimQuests", Debug.run);
+			part = Debug.print(name+" claimQuests", Debug.run);
 			claimQuests();
 			
-			part = Debug.print("reloadStore", Debug.run);
+			part = Debug.print(name+" reloadStore", Debug.run);
 			srrh.reloadStore();
 
-			part = Debug.print("store", Debug.run);
+			part = Debug.print(name+" store", Debug.run);
 			store();
 
-			part = Debug.print("unlock", Debug.run);
+			part = Debug.print(name+" unlock", Debug.run);
 			unlock();
 			
-			part = Debug.print("upgradeUnits", Debug.run);
+			part = Debug.print(name+" upgradeUnits", Debug.run);
 			upgradeUnits();
 			
 			int min = Configs.getTime(name, Configs.min);
 			int max = Configs.getTime(name, Configs.max);
+			
+			part = Debug.print(name+" finished round", Debug.run);
 			
 			sleep((int) Math.round(Math.random()*(max-min)) + min);
 		} catch (Exception e) {
@@ -485,6 +495,9 @@ public class Run {
 		}
 		
 		if(plra.length != 0) {
+			
+			int c = 1;
+			
 			for(int i=0; i<plra.length; i++) {
 				if(Configs.isSlotBlocked(name, plra[i].get(SRC.Raid.userSortIndex)))
 					continue;
@@ -513,7 +526,10 @@ public class Run {
 						allowedPlanTypes.add(fpt);
 						
 						while(true) {
-							int[] pos = Pathfinding.search(MapConv.asField(map, unit.canFly(), allowedPlanTypes, maxheat, banned));
+							
+							Debug.print("[" + name + "] Run raids " + c++, Debug.loop);
+							
+							int[] pos = Pathfinding.search(MapConv.asField(map, unit.canFly(), allowedPlanTypes, maxheat, banned), name);
 							
 							if(pos == null) {
 								if(fpt == null) break loop;
@@ -528,7 +544,8 @@ public class Run {
 								break loop;
 							}
 							
-							if(err.equals("PERIOD_ENDED") || err.equals("AT_POPULATION_LIMIT")) break loop;
+							if(err.equals("PERIOD_ENDED") || err.equals("AT_POPULATION_LIMIT")) 
+								break loop;
 							
 							if(banned.length >= 5) {
 								StreamRaiders.log(name + ": Run -> raids -> unitPlacement: tdn=" + plra[i].get(SRC.Raid.twitchDisplayName) + ", err=" + err, null);
@@ -628,8 +645,10 @@ public class Run {
 		JsonObject favs = Configs.getObj(name, Configs.favs);
 		
 		boolean ctNull = true;
+		int c = 1;
 		try {
 			while(true) {
+				Debug.print("[" + name + "] Run captains " + c++, Debug.loop);
 				boolean breakout = true;
 				boolean[] got = new boolean[] {false, uCount < 5, uCount < 8, !srrh.hasBattlePass()};
 				for(int i=0; i<raids.length; i++) {

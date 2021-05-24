@@ -13,7 +13,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.io.FilenameUtils;
 
-import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.GUI;
@@ -82,20 +82,6 @@ public class Configs {
 	}
 	
 	
-	public static class Arr extends All {
-		public Arr(String con) {
-			super(con);
-		}
-	}
-	
-	public static final Arr stats = new Arr("stats");
-	
-	public static JsonArray getArr(String name, Arr con) {
-		return configs.getAsJsonObject(name).getAsJsonArray(con.get());
-	}
-	
-	
-	
 	public static class Obj extends All {
 		public Obj(String con) {
 			super(con);
@@ -103,6 +89,7 @@ public class Configs {
 	}
 	
 	public static final Obj favs = new Obj("favs");
+	public static final Obj stats = new Obj("stats");
 	
 	public static JsonObject getObj(String name, Obj con) {
 		return configs.getAsJsonObject(name).getAsJsonObject(con.get());
@@ -464,7 +451,7 @@ public class Configs {
 			}
 			
 			if(b || GUI.isCButSelected("ex::stats")) {
-				pro.addProperty("stats", con.getAsJsonArray("stats").toString());
+				pro.addProperty("stats1", con.get("stats").toString());
 			}
 			
 			ret.add(key, pro);
@@ -714,11 +701,23 @@ public class Configs {
 			case "favs":
 				setObj(name, favs, JsonParser.parseObj(imp.getAsJsonPrimitive(key).getAsString()));
 				break;
-			case "stats":
-				getArr(name, stats).addAll(JsonParser.parseArr(imp.getAsJsonPrimitive(key).getAsString()));
+			case "stats1":
+				JsonObject stat = getObj(name, stats);
+				JsonObject ostat = JsonParser.parseObj(imp.getAsJsonPrimitive(key).getAsString());
+				stat.addProperty("time", (long) stat.getAsJsonPrimitive("time").getAsLong() + ostat.getAsJsonPrimitive("time").getAsLong());
+				
+				JsonObject rews = stat.getAsJsonObject("rewards");
+				JsonObject orews = ostat.getAsJsonObject("rewards");
+				
+				for(String rew : orews.keySet()) {
+					JsonElement je = rews.get(rew);
+					if(je != null) {
+						rews.addProperty(rew, je.getAsInt() + orews.get(rew).getAsInt());
+					} else {
+						rews.add(rew, orews.get(rew).deepCopy());
+					}
+				}
 				break;
-			default:
-				StreamRaiders.log("Configs -> conMerge: err=can't recognize key, key="+key, null);
 			}
 		}
 		

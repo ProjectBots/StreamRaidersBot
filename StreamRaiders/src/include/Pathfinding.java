@@ -1,5 +1,7 @@
 package include;
 
+import program.Debug;
+
 public class Pathfinding {
 
 	
@@ -37,7 +39,7 @@ public class Pathfinding {
 		}
 		
 		public boolean setCost(int cost) {
-			if(this.cost > cost) {
+			if(this.cost > cost && !isObstacle) {
 				this.cost = cost;
 				isExplored = false;
 			}
@@ -55,7 +57,7 @@ public class Pathfinding {
 	
 	private static Field[][] map;
 	
-	public static int[] search(Field[][] map) {
+	public static int[] search(Field[][] map, String name) {
 		
 		Pathfinding.map = map;
 		
@@ -63,7 +65,13 @@ public class Pathfinding {
 		
 		int[] last = null;
 		
+		int c = 1;
+		
 		while(true) {
+			
+			if(++c % 500 == 0) {
+				Debug.print("[" + name + "] Pathfinding search " + c, Debug.loop);
+			}
 			
 			boolean stuck = true;
 			
@@ -78,6 +86,9 @@ public class Pathfinding {
 			for(int i=0; i<map.length; i++) {
 				for(int j=0; j<map[i].length; j++) {
 					if(map[i][j].isExplored) continue;
+					
+					if(map[i][j].isObstacle)
+						map[i][j].explore();
 					
 					stuck = false;
 					
@@ -103,8 +114,10 @@ public class Pathfinding {
 				min = omin;
 			}
 			
-			map[x][y].explore();
+			if(x == -1 || y == -1)
+				return last;
 			
+			map[x][y].explore();
 			
 			for(int i=-1; i<2; i++) {
 				for(int j=-1; j<2; j++) {

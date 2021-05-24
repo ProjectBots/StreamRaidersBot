@@ -41,10 +41,11 @@ public class Debug {
 		}
 	}
 
-	public static final Scope all = new Scope("all general run srlog".split(" "));
+	public static final Scope all = new Scope("all general run srlog loop".split(" "));
 	public static final Scope general = new Scope("general run".split(" "));
 	public static final Scope run = new Scope("run".split(" "));
 	public static final Scope srlog = new Scope("srlog".split(" "));
+	public static final Scope loop = new Scope("loop".split(" "));
 	
 	private static JsonArray scopes = new JsonArray();
 	private static String path = null;
@@ -86,12 +87,12 @@ public class Debug {
 	
 	synchronized public static String print(String in, Scope scope) {
 		LocalDateTime now = LocalDateTime.now();
-		String ins = "[Debug] [" + now.getHour() + ":" + now.getMinute() + ":" + now.getSecond() + "] " + in.replace("\n", "\n        ");
+		String ins = "[Debug] [" + now.getHour() + ":" + now.getMinute() + ":" + now.getSecond() + "] [" + scope.getScopes()[0] + "] " + in.replace("\n", "\n        ");
 		String[] scopes = scope.getScopes();
 		for(int i=0; i<scopes.length; i++) {
 			if(Debug.scopes.contains(new JsonPrimitive(scopes[i]))) {
 				if(path == null)
-					System.out.println("[Debug] " + ins);
+					System.out.println(ins);
 				else
 					try {
 						NEF.save(path, NEF.read(path) + "\n\n" + ins);
