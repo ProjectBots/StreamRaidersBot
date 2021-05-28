@@ -735,8 +735,10 @@ public class Run {
 						continue;
 					}
 					int loy = Integer.parseInt(raids[i].get(SRC.Raid.pveWins));
-					
-					int max = Configs.getChestInt(name, ct, Configs.maxc);
+					int max = 0;
+					try {
+						max = Configs.getChestInt(name, ct, Configs.maxc);
+					} catch (NullPointerException e) {}
 					
 					if(		raids[i].isOffline(srrh.getServerTime(), true, 10) ||
 							ct.contains("bone") ||
