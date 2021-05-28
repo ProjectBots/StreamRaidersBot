@@ -228,7 +228,8 @@ public class GuideContent {
 		
 		int i=-1;
 		for(String chest : chests.keySet()) {
-			Image img = new Image("data/ChestPics/" + chest + ".png");
+			
+			Image img = new Image("data/ChestPics/" + chest.replace("alternate", "") + ".png");
 			img.setSquare(100);
 			img.setPos(0, ++i);
 			c.addImage(img);
@@ -370,7 +371,7 @@ public class GuideContent {
 			@Override
 			public void selected(String id, ItemEvent e) {
 				uid = names.getAsJsonPrimitive(GUI.getSelected(id)).getAsString();
-				Image img = new Image("data/UnitPics/" + uid + ".gif");
+				Image img = new Image("data/UnitPics/" + uid.toLowerCase().replace("allies", "") + ".png");
 				img.setSquare(200);
 				GUI.setImage("guide::unit::img", img);
 				update(-1);
@@ -452,7 +453,7 @@ public class GuideContent {
 		c.addCButton(epic);
 		
 		
-		Image img = new Image("data/UnitPics/archer.gif");
+		Image img = new Image("data/UnitPics/archer.png");
 		img.setSquare(200);
 		img.setPos(0, 3);
 		img.setSpan(2, 1);

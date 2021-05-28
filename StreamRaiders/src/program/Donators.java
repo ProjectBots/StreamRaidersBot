@@ -69,8 +69,8 @@ public class Donators {
 	
 	private static Don[] dons = new Don[] {
 			Don.c("Snugsel", 20).setText("<html>She wanted to let me decide.<br>Little does she know, I'm not creative ;)<br><br>Never gonna give you up<br><br><img src=\"rickroll.jpg\" width=\"400\" height=\"250\"></html>"),
-			Don.c("Noa3", 10).setLink("https://github.com/Noa3"),
-			Don.c("candyknack", (float) 4.73).setText("He didn't want to say anything")
+			Don.c("candyknack", (float) 12.58).setText("He didn't want to say anything"),
+			Don.c("Noa3", 10).setLink("https://github.com/Noa3")
 		};
 	
 	public static Container getContainer(int x, int y) {

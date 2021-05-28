@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 public class JsonParser {
 
@@ -27,6 +28,15 @@ public class JsonParser {
 						(je.isJsonPrimitive() && de.isJsonPrimitive())
 					)) {
 				json.add(key, de);
+			} else if(de.isJsonPrimitive()) {
+				JsonPrimitive dp = de.getAsJsonPrimitive();
+				JsonPrimitive jp = je.getAsJsonPrimitive();
+				if(	!(	(dp.isBoolean() && jp.isBoolean()) ||
+						(dp.isNumber() && jp.isNumber()) ||
+						(dp.isString() && jp.isString())
+						)) {
+					json.add(key, de);
+				}
 			} else if(je.isJsonObject()) {
 				check(json.getAsJsonObject(key), def.getAsJsonObject(key));
 			}

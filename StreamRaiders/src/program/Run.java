@@ -28,6 +28,7 @@ import include.Pathfinding;
 import program.QuestEventRewards.Quest;
 import program.SRR.NoInternetException;
 import program.SRR.NotAuthorizedException;
+import program.SRRHelper.DungeonException;
 import program.SRRHelper.PvPException;
 
 public class Run {
@@ -139,9 +140,8 @@ public class Run {
 		JsonObject crews = stats.getAsJsonObject("rewards");
 		
 		for(String rew : rews.keySet()) {
-			JsonElement je = stats.get(rew);
-			if(je != null) {
-				crews.addProperty(rew, je.getAsInt() + rews.get(rew).getAsInt());
+			if(crews.has(rew)) {
+				crews.addProperty(rew, crews.get(rew).getAsInt() + rews.get(rew).getAsInt());
 			} else {
 				crews.add(rew, rews.get(rew).deepCopy());
 			}
@@ -376,18 +376,37 @@ public class Run {
 	
 	private void unlock() throws URISyntaxException, IOException, NoInternetException {
 		Unit[] unlockable = srrh.getUnits(SRC.Helper.canUnlockUnit);
-		for(int i=0; i<unlockable.length; i++) {
-			if(!Configs.getUnitBoolean(name, unlockable[i].get(SRC.Unit.unitType), unlockable[i].isDupe() ? Configs.dupe : Configs.unlock))
-				continue;
-			String err = srrh.unlockUnit(unlockable[i]);
-			if(err != null && !err.equals("not enough gold"))
-				StreamRaiders.log(name + ": Run -> unlock: type=" + unlockable[i].get(SRC.Unit.unitType) + ", err=" + err, null);
+		if(unlockable.length == 0)
+			return;
+		
+		int[] ps = new int[unlockable.length];
+		for(int i=0; i<unlockable.length; i++)
+			ps[i] = Configs.getUnitInt(name, unlockable[i].get(SRC.Unit.unitType), unlockable[i].isDupe() ? Configs.dupe : Configs.unlock);
+		
+		while(true) {
+			int ind = 0;
+			for(int i=1; i<ps.length; i++)
+				if(ps[i] > ps[ind]) 
+					ind = i;
+			
+			if(ps[ind] < 0)
+				break;
+			
+			String err = srrh.unlockUnit(unlockable[ind]);
+			if(err != null && !err.equals("not enough gold")) 
+				StreamRaiders.log(name + ": Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, null);
+			
+			ps[ind] = -1;
 		}
 	}
 	
 	
 	private void store() throws URISyntaxException, IOException, NoInternetException {
 		JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
+		if(items.size() == 0)
+			return;
+		
+		int[] ps = new int[items.size()];
 		for(int i=0; i<items.size(); i++) {
 			try {
 				String type = items.get(i).getAsJsonObject()
@@ -397,11 +416,8 @@ public class Run {
 						.replace("scroll", "")
 						.replace("paladin", "alliespaladin");
 			
-				if(!Configs.getUnitBoolean(name, type, Configs.buy))
-					continue;
-				String err = srrh.buyItem(items.get(i).getAsJsonObject());
-				if(err != null && !err.equals("not enough gold"))
-					StreamRaiders.log(name + ": Run -> store: item=" + items.get(i) + ", err=" + err, null);
+				ps[i] = Configs.getUnitInt(name, type, Configs.buy);
+				
 			} catch (NullPointerException e) {
 				JsonElement itemId = items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId");
 				
@@ -410,23 +426,56 @@ public class Run {
 				} else {
 					StreamRaiders.log(name + ": Run -> store: itemObj=" + items.get(i).getAsJsonObject().toString() + ", err=item dont exist? (Unknown err +10 Points for finding)", e);
 				}
+				ps[i] = -1;
 			}
 		}
+		
+		while(true) {
+			int ind = 0;
+			for(int i=1; i<ps.length; i++)
+				if(ps[i] > ps[ind]) 
+					ind = i;
+			
+			if(ps[ind] < 0)
+				break;
+			
+			String err = srrh.buyItem(items.get(ind).getAsJsonObject());
+			if(err != null && !err.equals("not enough gold"))
+				StreamRaiders.log(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, null);
+			
+			ps[ind] = -1;
+		}
+		
 	}
 	
 	
 	private void upgradeUnits() throws URISyntaxException, IOException, NoInternetException {
 		Unit[] us = srrh.getUnits(SRC.Helper.canUpgradeUnit);
-		for(int i=0; i<us.length; i++) {
-			if(!Configs.getUnitBoolean(name, us[i].get(SRC.Unit.unitType), Configs.upgrade))
-				continue;
-			String err = srrh.upgradeUnit(us[i], Configs.getUnitString(name, us[i].get(SRC.Unit.unitType), Configs.spec));
+		if(us.length == 0)
+			return;
+		
+		int[] ps = new int[us.length];
+		for(int i=0; i<us.length; i++) 
+			ps[i] = Configs.getUnitInt(name, us[i].get(SRC.Unit.unitType), Configs.upgrade);
+		
+		while(true) {
+			int ind = 0;
+			for(int i=1; i<ps.length; i++)
+				if(ps[i] > ps[ind]) 
+					ind = i;
+			
+			if(ps[ind] < 0)
+				break;
+			
+			String err = srrh.upgradeUnit(us[ind], Configs.getUnitString(name, us[ind].get(SRC.Unit.unitType), Configs.spec));
 			if(err != null) {
 				if(!(err.equals("no specUID") || err.equals("cant upgrade unit"))) {
-					StreamRaiders.log(name + ": Run -> upgradeUnits: type=" + us[i].get(SRC.Unit.unitType) + " err=" + err, null);
+					StreamRaiders.log(name + ": Run -> upgradeUnits: type=" + us[ind].get(SRC.Unit.unitType) + " err=" + err, null);
 					break;
 				}
 			}
+			
+			ps[ind] = -1;
 		}
 	}
 	
@@ -529,7 +578,7 @@ public class Run {
 							
 							Debug.print("[" + name + "] Run raids " + c++, Debug.loop);
 							
-							int[] pos = Pathfinding.search(MapConv.asField(map, unit.canFly(), allowedPlanTypes, maxheat, banned), name);
+							int[] pos = new Pathfinding().search(MapConv.asField(map, unit.canFly(), allowedPlanTypes, maxheat, banned), name);
 							
 							if(pos == null) {
 								if(fpt == null) break loop;
@@ -555,9 +604,8 @@ public class Run {
 							banned = add(banned, pos);
 						}
 					}
-				} catch (PvPException e) {
-					switchRaid(plra[i].get(SRC.Raid.userSortIndex), true, srrh.search(1, 10, false, true, false, null));
-					ret = true;
+				} catch (PvPException | DungeonException e) {
+					if(!ret) ret = switchRaid(plra[i].get(SRC.Raid.userSortIndex), true, srrh.search(1, 10, false, true, false, null));
 				}
 			}
 		}
@@ -568,33 +616,44 @@ public class Run {
 	
 	private Unit findUnit(Unit[] units, boolean apt, JsonArray ppt) {
 		Unit unit = null;
+		
+		int[] ps = new int[units.length];
+		String[] sps = new String[units.length];
+		
 		for(int j=0; j<units.length; j++) {
 			String tfpt = null;
 			if(apt) {
 				JsonArray pts = units[j].getPlanTypes();
 				for(int k=0; k<pts.size(); k++) {
 					String pt = pts.get(k).getAsString();
-					if(ppt.contains(new JsonPrimitive(pt))) tfpt = pt;
+					if(ppt.contains(new JsonPrimitive(pt)))
+						tfpt = pt;
 				}
-				if(tfpt == null) continue;
+				if(tfpt == null)
+					continue;
+				
+				sps[j] = tfpt;
 			}
 			
 			if(Arrays.asList(neededUnits).contains(units[j].get(SRC.Unit.unitType))) {
 				unit = units[j];
 				break;
 			}
-			if(!Configs.getUnitBoolean(name, units[j].get(SRC.Unit.unitType), Configs.place)) continue;
-			if(unit == null) {
-				unit = units[j];
-				fpt = tfpt;
-			} else {
-				int rank = Integer.parseInt(units[j].get(SRC.Unit.rank));
-				if(rank > Integer.parseInt(unit.get(SRC.Unit.rank))) {
-					unit = units[j];
-					fpt = tfpt;
-				}
+			ps[j] = Configs.getUnitInt(name, units[j].get(SRC.Unit.unitType), Configs.place);
+		}
+		
+		if(unit == null) {
+			int ind = 0;
+			for(int i=1; i<ps.length; i++)
+				if(ps[i] > ps[ind])
+					ind = i;
+			
+			if(ps[ind] > -1) {
+				unit = units[ind];
+				fpt = sps[ind];
 			}
 		}
+		
 		return unit;
 	}
 	
@@ -675,12 +734,17 @@ public class Run {
 						breakout = false;
 						continue;
 					}
-					int loy = Integer.parseInt(raids[i].get(SRC.Raid.pveLoyaltyLevel));
-					if((raids[i].isOffline(srrh.getServerTime(), true, 10)) ||
-							(ct.contains("bone") || !Configs.getChestBoolean(name, ct)) ||
-							((ct.contains("boosted") || ct.contains("super"))
-									? loy < Configs.getChestInt(name, Configs.loyChestLoyMin)
-									: loy > Configs.getChestInt(name, Configs.normChestLoyMax))) {
+					int loy = Integer.parseInt(raids[i].get(SRC.Raid.pveWins));
+					
+					int max = Configs.getChestInt(name, ct, Configs.maxc);
+					
+					if(		raids[i].isOffline(srrh.getServerTime(), true, 10) ||
+							ct.contains("bone") ||
+							ct.contains("dungeon") ||
+							!Configs.getChestBoolean(name, ct, Configs.enabled) ||
+							loy < Configs.getChestInt(name, ct, Configs.minc) ||
+							loy > (max < 0 ? Integer.MAX_VALUE : max)
+							) {
 						caps = getCaps(caps);
 						bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
 						switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, caps);
@@ -731,12 +795,15 @@ public class Run {
 		return empty;
 	}
 	
-	private void switchRaid(String sortIndex, boolean rem, JsonArray caps) throws URISyntaxException, IOException, NoInternetException, SilentException {
+	private boolean switchRaid(String sortIndex, boolean rem, JsonArray caps) throws URISyntaxException, IOException, NoInternetException, SilentException {
 		JsonObject cap = null;
 		int oldLoy = -1;
 
 		JsonObject favs = Configs.getObj(name, Configs.favs);
 		boolean fav = false;
+		
+		if(Configs.isSlotLocked(name, sortIndex))
+			return false;
 		
 		for(int i=0; i<caps.size(); i++) {
 			JsonObject icap = caps.get(i).getAsJsonObject();
@@ -766,7 +833,7 @@ public class Run {
 		
 		if(cap == null) {
 			StreamRaiders.log(name+": Run -> switchRaid: err=No captain matches", null);
-			return;
+			return false;
 		}
 		
 		if(rem) {
@@ -775,6 +842,7 @@ public class Run {
 			srrh.addRaid(cap, sortIndex);
 		}
 		caps.remove(cap);
+		return true;
 	}
 	
 	

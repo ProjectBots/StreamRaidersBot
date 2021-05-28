@@ -70,15 +70,15 @@
       "goldbag_75": 20,
       "rarescrolls_6": 30,
       "rarescrolls_7": 20,
-      "skinfullbarbarianorcdromeda": 1,
-      "skinfullmagespacewestern": 7,
+      "skinfullbarbarianorcdromeda": 7,
+      "skinfullmagespacewestern": 8,
       "skinfullmusketeerspacewestern": 7
     },
     "ViewerBoostedSkin2": {
       "goldbag_100": 10,
       "rarescrolls_6": 10,
       "rarescrolls_7": 15,
-      "skinfullbarbarianorcdromeda": 3,
+      "skinfullbarbarianorcdromeda": 15,
       "skinfullmagespacewestern": 20,
       "skinfullmusketeerspacewestern": 15
     }
@@ -114,17 +114,17 @@
       "goldbag_75": 20,
       "rarescrolls_6": 30,
       "rarescrolls_7": 20,
-      "skinfullbarbarianorcdromeda": 1,
-      "skinfullmagespacewestern": 7,
-      "skinfullmusketeerspacewestern": 7
+      "skinfullcenturionprimordia": 8,
+      "skinfullflyingrogueprimordia": 7,
+      "skinfullpaladinprimordia": 7
     },
     "ViewerBoostedSkinAlternate2": {
       "goldbag_100": 10,
       "rarescrolls_6": 10,
       "rarescrolls_7": 15,
-      "skinfullbarbarianorcdromeda": 3,
-      "skinfullmagespacewestern": 20,
-      "skinfullmusketeerspacewestern": 15
+      "skinfullcenturionprimordia": 20,
+      "skinfullflyingrogueprimordia": 15,
+      "skinfullpaladinprimordia": 15
     }
   },
   "chestboostedtoken": {
@@ -406,6 +406,73 @@
       "uncommonscrolls_1": 75,
       "uncommonscrolls_2": 20,
       "uncommonscrolls_3": 5
+    }
+  },
+  "dungeonchest": {
+    "BonusDungeon": {
+      "commonscrolls_5": 35,
+      "goldbag_10": 10,
+      "goldbag_15": 20,
+      "goldbag_20": 5,
+      "uncommonscrolls_1": 25,
+      "uncommonscrolls_2": 5
+    },
+    "ViewerDungeon1": {
+      "scrollvampire_1": 85,
+      "scrollvampire_3": 15
+    },
+    "ViewerDungeon2": {
+      "commonscrolls_11": 3,
+      "commonscrolls_8": 5,
+      "cooldown_1": 5,
+      "cooldown_20": 1,
+      "cooldown_3": 5,
+      "epicpotion_10": 8,
+      "goldbag_20": 4,
+      "goldbag_25": 3,
+      "goldbag_50": 2,
+      "rarescrolls_1": 10,
+      "rarescrolls_2": 2,
+      "scrollvampire_1": 10,
+      "scrollvampire_3": 10,
+      "uncommonscrolls_1": 5,
+      "uncommonscrolls_10": 1,
+      "uncommonscrolls_2": 10,
+      "uncommonscrolls_3": 10,
+      "uncommonscrolls_5": 4,
+      "uncommonscrolls_6": 2
+    },
+    "ViewerDungeon3": {
+      "commonscrolls_10": 5,
+      "commonscrolls_7": 9,
+      "epicpotion_10": 5,
+      "goldbag_10": 5,
+      "goldbag_100": 1,
+      "goldbag_15": 4,
+      "goldbag_20": 5,
+      "goldbag_75": 2,
+      "rarescrolls_4": 8,
+      "rarescrolls_6": 7,
+      "rarescrolls_7": 2,
+      "scrollvampire_1": 10,
+      "scrollvampire_3": 10,
+      "uncommonscrolls_1": 10,
+      "uncommonscrolls_10": 3,
+      "uncommonscrolls_2": 5,
+      "uncommonscrolls_5": 5,
+      "uncommonscrolls_6": 4
+    },
+    "ViewerDungeon4": {
+      "eventtoken_2": 53,
+      "goldbag_20": 8,
+      "goldbag_25": 6,
+      "goldbag_50": 4,
+      "goldbag_75real": 1,
+      "rarescrolls_1": 10,
+      "rarescrolls_2": 5,
+      "rarescrolls_3": 2,
+      "skinfullrisingsunvampire": 1,
+      "uncommonscrolls_3": 10
     }
   }
 }

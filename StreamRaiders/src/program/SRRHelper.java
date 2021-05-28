@@ -138,9 +138,17 @@ public class SRRHelper {
 		}
 	}
 	
-	public void loadMap(Raid raid) throws PvPException, URISyntaxException, IOException, NoInternetException, SilentException {
+	public static class DungeonException extends Exception {
+		private static final long serialVersionUID = 1L;
+		public DungeonException () {
+			super("This is a dungeon raid");
+		}
+	}
+	
+	public void loadMap(Raid raid) throws PvPException, URISyntaxException, IOException, NoInternetException, SilentException, DungeonException {
 		String node = raid.get(SRC.Raid.nodeId);
 		if(node.contains("pvp")) throw new PvPException();
+		if(node.contains("dungeon")) throw new DungeonException();
 		String raidplan = req.getRaidPlan(raid.get(SRC.Raid.raidId));
 		try {
 			JsonElement je = JsonParser.parseObj(raidplan).get("data");
@@ -262,7 +270,10 @@ public class SRRHelper {
 	
 	public JsonArray search(int page, int resultsPerPage, boolean fav, boolean live, boolean searchForCaptain, String name) throws URISyntaxException, IOException, NoInternetException {
 		JsonObject rawd = JsonParser.parseObj(req.getCaptainsForSearch(page, resultsPerPage, fav, live, searchForCaptain, name));
-		if(rawd == null) return new JsonArray();
+		if(rawd == null) {
+			StreamRaiders.log("SRRHelper -> search: rawd=null", null);
+			return new JsonArray();
+		}
 		
 		JsonObject raw = rawd.getAsJsonObject("data");
 		

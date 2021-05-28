@@ -12,6 +12,9 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -56,6 +59,7 @@ public class MainFrame {
 
 	public static void open() {
 		
+		GUI.setDefIcon("icon.png");
 		
 		String bver = StreamRaiders.get("botVersion");
 		
@@ -76,8 +80,10 @@ public class MainFrame {
 			}
 		});
 		
-			int m = 0;
-			Menu bot = new Menu("Bot", "Guide  General  Add a Profile  start all  start all delayed  stop all  skip time all  reload Config".split("  "));
+		
+		int m = 0;
+		Menu bot = new Menu("Bot", "Guide  General  Add a Profile  start all  start all delayed  stop all  skip time all  skip time all delayed  reload Config".split("  "));
+		
 			bot.setFont(new Font(null, Font.BOLD, 25));
 			bot.setAL(m++, new ActionListener() {
 				@Override
@@ -138,9 +144,7 @@ public class MainFrame {
 								hours += (double) stats.getAsJsonPrimitive("time").getAsLong() / 60 / 60;
 								
 								JsonObject rews = stats.getAsJsonObject("rewards");
-								System.out.println(rews.toString());
 								for(String key : rews.keySet()) {
-									System.out.println(key);
 									if(all.has(key)) {
 										all.addProperty(key, all.getAsJsonPrimitive(key).getAsInt() + rews.getAsJsonPrimitive(key).getAsInt());
 									} else {
@@ -395,6 +399,61 @@ public class MainFrame {
 				}
 			});
 			bot.setAL(m++, new ActionListener() {
+				GUI t = null;
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					
+					t = new GUI("Time", 500, 200, gui, null);
+					
+					TextField tf = new TextField();
+					tf.setPos(0, 0);
+					tf.setText("0");
+					tf.setSize(60, 23);
+					tf.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							go();
+						}
+					});
+					t.addTextField(tf, "start::delayed::tf");
+					
+					Button but = new Button();
+					but.setPos(0, 1);
+					but.setText("start all delayed");
+					but.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							go();
+						}
+					});
+					t.addBut(but, "start::delayed::but");
+					
+				}
+				
+				private void go() {
+					Thread th = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								int time = (int) (Float.parseFloat(GUI.getInputText("start::delayed::tf")) * 1000);
+								
+								for(String key: profiles.keySet()) {
+									try {
+										profiles.get(key).interrupt();
+										Thread.sleep(time);
+									} catch (Exception e) {}
+								}
+							} catch (NumberFormatException e) {
+								t.msg("Wrong Input", "You can't do that", GUI.MsgConst.WARNING);
+							}
+						}
+					});
+					th.start();
+					t.close();
+				}
+			});
+			bot.setAL(m++, new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if(gui.showConfirmationBox("<html><center>Settings took since last<br>restart will be removed!<br>reload config file?</center></html>"))
@@ -402,7 +461,7 @@ public class MainFrame {
 				}
 			});
 			bot.setSep(3);
-			bot.setSep(6);
+			bot.setSep(8);
 			gui.addMenu(bot);
 			
 			Menu sep = new Menu("|", new String[0]);
@@ -712,7 +771,7 @@ public class MainFrame {
 					}
 					
 					Container cimg = new Container();
-					Image img = new Image("data/UnitPics/" + type + ".gif");
+					Image img = new Image("data/UnitPics/" + type.toLowerCase().replace("allies", "") + ".png");
 					img.setSquare(100);
 					cimg.addImage(img);
 					
@@ -725,71 +784,102 @@ public class MainFrame {
 						@Override
 						public void actionPerformed(ActionEvent e) {
 							
-							GUI uset = new GUI("Unit settings " + type, 400, 600, sgui, null);
+							GUI uset = new GUI(type + " settings", 400, 650, sgui, null);
 							int y = 0;
 							
-							Image img = new Image("data/UnitPics/" + type + ".gif");
+							Image img = new Image("data/UnitPics/" + type.toLowerCase().replace("allies", "") + ".png");
 							img.setPos(0, y++);
-							img.setSquare(300);
+							img.setSpan(2, 1);
+							img.setSquare(200);
+							img.setInsets(2, 2, 20, 2);
 							uset.addImage(img);
 							
 							String[] ts = "place upgrade unlock dupe".split(" ");
 							
 							for(int i=0; i<ts.length; i++) {
-								final int ii = i;
-								Button place = new Button();
-								place.setPos(0, y++);
-								place.setText("can " + ts[i]);
-								place.setTooltip("Set if the Bot can " + ts[i] + " this Unit");
-								place.setFont(new Font(null, Font.PLAIN, 19));
-								place.setFill('h');
-								if(Configs.getUnitBoolean(name, type, new Configs.B(ts[i])))
-									place.setBackground(Color.green);
-								place.setAL(new ActionListener() {
-									@Override
-									public void actionPerformed(ActionEvent e) {
-										if(Configs.getUnitBoolean(name, type, new Configs.B(ts[ii]))) {
-											Configs.setUnitBoolean(name, type, new Configs.B(ts[ii]), false);
-											GUI.setBackground(name + "::" + type + "::uset::" + ts[ii], GUI.getDefButCol());
-										} else {
-											Configs.setUnitBoolean(name, type, new Configs.B(ts[ii]), true);
-											GUI.setBackground(name + "::" + type + "::uset::" + ts[ii], Color.green);
-										}
-									}
-								});
-								uset.addBut(place, name + "::" + type + "::uset::" + ts[i]);
+								Label l = new Label();
+								l.setPos(0, y);
+								l.setText(ts[i] + " prio");
+								l.setAnchor("e");
+								l.setFont(new Font(null, Font.PLAIN, 19));
+								uset.addLabel(l);
+								
+								TextField tf = new TextField();
+								tf.setPos(1, y++);
+								tf.setInsets(2, 15, 2, 2);
+								tf.setText(""+Configs.getUnitInt(name, type, new Configs.B(ts[i])));
+								tf.setFill('h');
+								tf.setFont(new Font(null, Font.PLAIN, 19));
+								uset.addTextField(tf, name + "::" + type + "::uset::" + ts[i]);
 							}
 							
 							if(!Unit.isLegendary(type)) {
-								Button bs = new Button();
-								bs.setPos(0, y++);
-								bs.setText("can buy scrolls");
-								bs.setTooltip("Set if Scrolls for this Unit can be bought in the store");
-								bs.setFont(new Font(null, Font.PLAIN, 19));
-								bs.setFill('h');
-								if(Configs.getUnitBoolean(name, type, Configs.buy))
-									bs.setBackground(Color.green);
-								bs.setAL(new ActionListener() {
-									@Override
-									public void actionPerformed(ActionEvent e) {
-										if(Configs.getUnitBoolean(name, type, Configs.buy)) {
-											Configs.setUnitBoolean(name, type, Configs.buy, false);
-											GUI.setBackground(name + "::buy::" + type, GUI.getDefButCol());
-										} else {
-											Configs.setUnitBoolean(name, type, Configs.buy, true);
-											GUI.setBackground(name + "::buy::" + type, Color.green);
+								Label l = new Label();
+								l.setPos(0, y);
+								l.setAnchor("e");
+								l.setText("buy prio");
+								l.setFont(new Font(null, Font.PLAIN, 19));
+								uset.addLabel(l);
+								
+								TextField tf = new TextField();
+								tf.setPos(1, y++);
+								tf.setText(""+Configs.getUnitInt(name, type, Configs.buy));
+								tf.setFill('h');
+								tf.setInsets(2, 15, 2, 2);
+								tf.setFont(new Font(null, Font.PLAIN, 19));
+								uset.addTextField(tf, name + "::" + type + "::uset::buy");
+								
+							}
+							
+							Button upd = new Button();
+							upd.setPos(0, y++);
+							upd.setSpan(2, 1);
+							upd.setInsets(10, 2, 20, 2);
+							upd.setText("\uD83D\uDDD8 update");
+							upd.setFont(new Font(null, Font.PLAIN, 19));
+							upd.setFill('h');
+							upd.setAL(new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									String[] tfids;
+									
+									if(Unit.isLegendary(type)) {
+										tfids = ts.clone();
+									} else {
+										tfids = new String[ts.length + 1];
+										System.arraycopy(ts, 0, tfids, 0, ts.length);
+										tfids[ts.length] = "buy";
+									}
+									
+									JsonArray wrong = new JsonArray();
+									for(int i=0; i<tfids.length; i++) {
+										try {
+											Configs.setUnitInt(name, type, new Configs.B(tfids[i]), Integer.parseInt(GUI.getInputText(name + "::" + type + "::uset::" + tfids[i])));
+										} catch (NumberFormatException e1) {
+											wrong.add(tfids[i]);
 										}
 									}
-								});
-								uset.addBut(bs, name + "::buy::" + type);
-							}
+									
+									if(wrong.size() == 0) {
+										uset.close();
+									} else {
+										StringBuilder sb = new StringBuilder("You can't do this:");
+										for(int i=0; i<wrong.size(); i++)
+											sb.append("\n" + wrong.get(i).getAsString() + " prio");
+										
+										uset.msg("Wrong input", sb.toString(), GUI.MsgConst.WARNING);
+									}
+								}
+							});
+							uset.addBut(upd);
 							
 							Button spec = new Button();
 							spec.setPos(0, y++);
+							spec.setInsets(2, 2, 20, 2);
+							spec.setSpan(2, 1);
 							spec.setText("\u23E3 specialize");
 							spec.setFont(new Font(null, Font.PLAIN, 19));
 							spec.setFill('h');
-							spec.setInsets(2, 2, 20, 2);
 							spec.setTooltip("choose a Specialization for this Unit");
 							spec.setAL(new ActionListener() {
 								@Override
@@ -857,20 +947,188 @@ public class MainFrame {
 					chest.setPos(x, y);
 					chest.setContainer(cimg);
 					chest.setFill('h');
-					chest.setTooltip("whitelist/blacklist this chest type");
+					chest.setTooltip("Chest settings for " + type.replace("chest", ""));
 					chest.setInsets(0, 10, 10, 0);
-					if(Configs.getChestBoolean(name, type))
-						chest.setBackground(Color.green);
 					chest.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							if(Configs.getChestBoolean(name, type)) {
-								Configs.setChestBoolean(name, type, false);
-								GUI.setBackground(name + "::" + type, GUI.getDefButCol());
-							} else {
-								Configs.setChestBoolean(name, type, true);
-								GUI.setBackground(name + "::" + type, Color.green);
+							GUI cgui = new GUI(type + " settings", 400, 650, sgui, null);
+							
+							int y = 0;
+							
+							Image imgc = new Image("data/ChestPics/" + type + ".png");
+							imgc.setSquare(150);
+							imgc.setAnchor("c");
+							imgc.setPos(0, y++);
+							imgc.setSpan(3, 1);
+							imgc.setInsets(2, 2, 20, 2);
+							cgui.addImage(imgc);
+							
+							
+							String[] mm = "min max".split(" ");
+							
+							for(String key : mm) {
+								
+								int wins = Configs.getChestInt(name, type, key.equals("min") ? Configs.minc : Configs.maxc);
+								
+								Label lmm = new Label();
+								lmm.setPos(0, y);
+								lmm.setText(key+" wins");
+								lmm.setFont(new Font(null, Font.PLAIN, 20));
+								cgui.addLabel(lmm);
+								
+								TextField tmm = new TextField();
+								tmm.setPos(1, y);
+								tmm.setText(""+wins);
+								tmm.setSize(80, 40);
+								tmm.setInsets(2, 10, 2, 2);
+								tmm.setFont(new Font(null, Font.PLAIN, 20));
+								tmm.setDocLis(new DocumentListener() {
+									@Override
+									public void removeUpdate(DocumentEvent e) {
+										changed();
+									}
+									@Override
+									public void insertUpdate(DocumentEvent e) {
+										changed();
+									}
+									@Override
+									public void changedUpdate(DocumentEvent e) {
+										changed();
+									}
+									public void changed() {
+										try {
+											int wins = Integer.parseInt(GUI.getInputText(name+"::chest::"+type+"::"+key));
+											int w;
+											if(wins < 0) 
+												if(key.equals("min"))
+													w = 1;
+												else
+													w = 3;
+											else if(wins < 15) 
+												w = 1;
+											else if(wins < 50) 
+												w = 2;
+											else 
+												w = 3;
+											
+											Image img = new Image("data/LoyaltyPics/" + Run.pveloy[w] +".png");
+											img.setSquare(35);
+											GUI.setImage(name+"::chest::"+type+"::loyImg::"+key, img);
+											GUI.setBackground(name+"::chest::"+type+"::loyBut::"+key, loyCols[w]);
+										} catch (NumberFormatException e) {}
+									}
+								});
+								cgui.addTextField(tmm, name+"::chest::"+type+"::"+key);
+								
+								
+								int w;
+								if(wins < 0) 
+									if(key.equals("min"))
+										w = 1;
+									else
+										w = 3;
+								else if(wins < 15) 
+									w = 1;
+								else if(wins < 50) 
+									w = 2;
+								else 
+									w = 3;
+								
+								
+								Container cimg = new Container();
+								Image img = new Image("data/LoyaltyPics/" + Run.pveloy[w] +".png");
+								img.setSquare(35);
+								cimg.addImage(img, name+"::chest::"+type+"::loyImg::"+key);
+								
+								Button bmm = new Button();
+								bmm.setPos(2, y);
+								bmm.setBackground(loyCols[w]);
+								bmm.setContainer(cimg);
+								bmm.setAL(new ActionListener() {
+									@Override
+									public void actionPerformed(ActionEvent e) {
+										try {
+											int w = Integer.parseInt(GUI.getInputText(name+"::chest::"+type+"::"+key));
+											int n;
+											if(key.equals("min")) 
+												if(w < 15) 
+													n = 15;
+												else if(w < 50)
+													n = 50;
+												else 
+													n = -1;
+											else 
+												if(w < 0 || w > 49)
+													n = 14;
+												else if(w < 15) 
+													n = 49;
+												else
+													n = -1;
+											
+											GUI.setText(name+"::chest::"+type+"::"+key, ""+n);
+											
+										} catch (NumberFormatException e1) {}
+									}
+								});
+								cgui.addBut(bmm, name+"::chest::"+type+"::loyBut::"+key);
+								
+								y++;
 							}
+							
+							Button upd = new Button();
+							upd.setPos(0, y++);
+							upd.setSpan(3, 1);
+							upd.setFill('h');
+							upd.setText("\uD83D\uDDD8 update");
+							upd.setFont(new Font(null, Font.PLAIN, 20));
+							upd.setInsets(20, 2, 20, 2);
+							upd.setAL(new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									try {
+										int min = Integer.parseInt(GUI.getInputText(name+"::chest::"+type+"::min"));
+										int max = Integer.parseInt(GUI.getInputText(name+"::chest::"+type+"::max"));
+										if(min > max && max > -1)
+											throw new NumberFormatException();
+										Configs.setChestInt(name, type, Configs.minc, min);
+										Configs.setChestInt(name, type, Configs.maxc, max);
+										cgui.close();
+									} catch (NumberFormatException e1) {
+										cgui.msg("Wrong input", "You cant do that", GUI.MsgConst.WARNING);
+									}
+								}
+							});
+							cgui.addBut(upd);
+							
+							
+							Button en = new Button();
+							en.setPos(0, y++);
+							en.setSpan(3, 1);
+							en.setFill('h');
+							if(Configs.getChestBoolean(name, type, Configs.enabled)) {
+								en.setText("Enabled");
+								en.setBackground(Color.green);
+							} else {
+								en.setText("Disabled");
+							}
+							en.setFont(new Font(null, Font.PLAIN, 20));
+							en.setAL(new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									if(Configs.getChestBoolean(name, type, Configs.enabled)) {
+										Configs.setChestBoolean(name, type, Configs.enabled, false);
+										GUI.setBackground(name+"::chest::"+type+"::enable", GUI.getDefButCol());
+										GUI.setText(name+"::chest::"+type+"::enable", "Disabled");
+									} else {
+										Configs.setChestBoolean(name, type, Configs.enabled, true);
+										GUI.setBackground(name+"::chest::"+type+"::enable", Color.green);
+										GUI.setText(name+"::chest::"+type+"::enable", "Enabled");
+									}
+								}
+							});
+							cgui.addBut(en, name+"::chest::"+type+"::enable");
+							
 						}
 					});
 					chests.addBut(chest, name + "::" + type);
@@ -885,58 +1143,16 @@ public class MainFrame {
 				
 				sgui.addContainer(chests);
 				
-				Container minMax = new Container();
-				minMax.setPos(0, 2);
-				minMax.setInsets(20, 2, 2, 2);
-				
-				
-				for(int i=0; i<2; i++) {
-					Label mml = new Label();
-					mml.setPos(0, i);
-					mml.setText(i==0 ? "Normal Chests max Loyalty:" : "Loyalty Chests min Loyalty:");
-					mml.setFont(new Font(null, Font.PLAIN, 25));
-					minMax.addLabel(mml);
-					
-					final int ii = i;
-					int ml = Configs.getChestInt(name, i==0 ? Configs.normChestLoyMax : Configs.loyChestLoyMin);
-
-					Container cimg = new Container();
-					Image img = new Image("data\\LoyaltyPics\\"+Run.pveloy[ml]+".png");
-					img.setSquare(35);
-					cimg.addImage(img, name+"::loyImg::"+i);
-					
-					Button bl = new Button();
-					bl.setPos(1, i);
-					bl.setContainer(cimg);
-					bl.setBackground(loyCols[ml]);
-					bl.setTooltip("Loyalty Level");
-					bl.setAL(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							int ml = Configs.getChestInt(name, ii==0 ? Configs.normChestLoyMax : Configs.loyChestLoyMin) + 1;
-							if(ml > 3) ml = 1;
-							Configs.setChestInt(name, ii==0 ? Configs.normChestLoyMax : Configs.loyChestLoyMin, ml);
-							Image img = new Image("data\\LoyaltyPics\\"+Run.pveloy[ml]+".png");
-							img.setSquare(35);
-							GUI.setImage(name+"::loyImg::"+ii, img);
-							GUI.setBackground(name+"::loyMinMax::"+ii, loyCols[ml]);
-						}
-					});
-					minMax.addBut(bl, name+"::loyMinMax::"+i);
-					
-				}
-				
-				sgui.addContainer(minMax);
 				
 				Label bsl = new Label();
-				bsl.setPos(0, 3);
+				bsl.setPos(0, 2);
 				bsl.setInsets(20, 2, 2, 2);
 				bsl.setText("Exlude Slots from auto farming:");
 				bsl.setFont(new Font(null, Font.PLAIN, 25));
 				sgui.addLabel(bsl);
 				
 				Container cbs = new Container();
-				cbs.setPos(0, 4);
+				cbs.setPos(0, 3);
 				
 				for(int i=0; i<4; i++) {
 					final int ii = i;
@@ -965,7 +1181,7 @@ public class MainFrame {
 				sgui.addContainer(cbs);
 				
 				Container time = new Container();
-				time.setPos(0, 5);
+				time.setPos(0, 4);
 				time.setInsets(20, 10, 10, 2);
 				
 					Label lt1 = new Label();
@@ -1012,7 +1228,7 @@ public class MainFrame {
 					time.addLabel(lt3);
 					
 					Button tbut = new Button();
-					tbut.setText("update");
+					tbut.setText("\uD83D\uDDD8 update");
 					tbut.setPos(4, 1);
 					tbut.setAL(new ActionListener() {
 						@Override
@@ -1024,12 +1240,12 @@ public class MainFrame {
 					
 				sgui.addContainer(time);
 				
-				int posFav = 6;
+				int posFav = 5;
 				
 				createFavCon(sgui, name, posFav);
 				
 				Container search = new Container();
-				search.setPos(0, 7);
+				search.setPos(0, 6);
 				search.setInsets(20, 10, 10, 2);
 				
 					TextField stf = new TextField();
@@ -1055,6 +1271,39 @@ public class MainFrame {
 					search.addBut(sbut);
 					
 				sgui.addContainer(search);
+				
+				Container mpc = new Container();
+				mpc.setPos(0, 7);
+				
+				Label lmp = new Label();
+				lmp.setPos(0, 0);
+				lmp.setText("Max Page");
+				mpc.addLabel(lmp);
+				
+				TextField tmp = new TextField();
+				tmp.setPos(1, 0);
+				tmp.setText(""+Configs.getInt(name, Configs.maxPage));
+				tmp.setSize(80, 23);
+				tmp.setAL(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						setMaxPage(name, sgui);
+					}
+				});
+				mpc.addTextField(tmp, name+"::mp");
+				
+				Button bmp = new Button();
+				bmp.setPos(2, 0);
+				bmp.setText("\uD83D\uDDD8 update");
+				bmp.setAL(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						setMaxPage(name, sgui);
+					}
+				});
+				mpc.addBut(bmp);
+				
+				sgui.addContainer(mpc);
 				
 				Button resStat = new Button();
 				resStat.setPos(0, 8);
@@ -1093,6 +1342,17 @@ public class MainFrame {
 		both.addContainer(part);
 		
 		gui.addContainer(both, name + "::part");
+	}
+	
+	private static void setMaxPage(String name, GUI sgui) {
+		try {
+			int mp = Integer.parseInt(GUI.getInputText(name+"::mp"));
+			if(mp < 1)
+				throw new NumberFormatException();
+			Configs.setInt(name, Configs.maxPage, mp);
+		} catch (NumberFormatException e) {
+			sgui.msg("Wrong input", "You can't do this", GUI.MsgConst.WARNING);
+		}
 	}
 	
 	private static void searchCap(GUI parent, String name, int posFav) {

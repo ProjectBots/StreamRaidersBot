@@ -270,7 +270,7 @@ public class SRR {
 		filter.addProperty("favorite", (fav ? "true" : "false"));
 		if(name != null) filter.addProperty((searchForCaptain ? "twitchUserName" : "mainGame"), name);
 		if(live) filter.addProperty("isLive", "1");
-		filter.addProperty("mode", "pve");
+		filter.addProperty("mode", "campaign");
 		
 		Http post = getPost("getCaptainsForSearch");
 		post.addEncArg("page", ""+page);

@@ -113,19 +113,19 @@ public class Configs {
 	public static final B dupe = new B("dupe");
 	public static final B buy = new B("buy");
 	
-	public static boolean getUnitBoolean(String name, String uType, B con) {
+	public static int getUnitInt(String name, String uType, B con) {
 		return configs.getAsJsonObject(name)
 				.getAsJsonObject("units")
 				.getAsJsonObject(uType)
 				.getAsJsonPrimitive(con.get())
-				.getAsBoolean();
+				.getAsInt();
 	}
 	
-	public static void setUnitBoolean(String name, String uType, B con, boolean b) {
+	public static void setUnitInt(String name, String uType, B con, int val) {
 		configs.getAsJsonObject(name)
 				.getAsJsonObject("units")
 				.getAsJsonObject(uType)
-				.addProperty(con.get(), b);
+				.addProperty(con.get(), val);
 	}
 	
 	
@@ -152,39 +152,52 @@ public class Configs {
 				.addProperty(con.get(), str);
 	}
 	
-	public static boolean getChestBoolean(String name, String cType) {
-		return configs.getAsJsonObject(name)
-				.getAsJsonObject("chests")
-				.getAsJsonPrimitive(cType)
-				.getAsBoolean();
-	}
 	
-	public static void setChestBoolean(String name, String cType, boolean b) {
-		configs.getAsJsonObject(name)
-				.getAsJsonObject("chests")
-				.addProperty(cType, b);
-	}
-	
-	
-	private static class C extends All {
-		public C(String con) {
+	private static class CB extends All {
+		public CB(String con) {
 			super(con);
 		}
 	}
 	
-	public static final C normChestLoyMax = new C("normChestLoyMax");
-	public static final C loyChestLoyMin = new C("loyChestLoyMin");
+	public static final CB enabled = new CB("enabled");
 	
-	public static int getChestInt(String name, C con) {
+	public static boolean getChestBoolean(String name, String cType, CB con) {
 		return configs.getAsJsonObject(name)
 				.getAsJsonObject("chests")
+				.getAsJsonObject(cType)
+				.getAsJsonPrimitive(con.get())
+				.getAsBoolean();
+	}
+	
+	public static void setChestBoolean(String name, String cType, CB con, boolean b) {
+		configs.getAsJsonObject(name)
+				.getAsJsonObject("chests")
+				.getAsJsonObject(cType)
+				.addProperty(con.get(), b);
+	}
+	
+	
+	private static class CI extends All {
+		public CI(String con) {
+			super(con);
+		}
+	}
+	
+	public static final CI minc = new CI("min");
+	public static final CI maxc = new CI("max");
+	
+	public static int getChestInt(String name, String cType, CI con) {
+		return configs.getAsJsonObject(name)
+				.getAsJsonObject("chests")
+				.getAsJsonObject(cType)
 				.getAsJsonPrimitive(con.get())
 				.getAsInt();
 	}
 	
-	public static void setChestInt(String name, C con, int val) {
+	public static void setChestInt(String name, String cType, CI con, int val) {
 		configs.getAsJsonObject(name)
 				.getAsJsonObject("chests")
+				.getAsJsonObject(cType)
 				.addProperty(con.get(), val);
 	}
 	
@@ -307,7 +320,7 @@ public class Configs {
 	}
 	
 	
-	private static String[] exopts = "cookies unit_place unit_upgrade unit_unlock unit_dupe unit_buy unit_spec chests blockedSlots lockedSlots time maxPage favs stats".split(" ");
+	private static String[] exopts = "cookies unit_place unit_upgrade unit_unlock unit_dupe unit_buy unit_spec chests_min chests_max chests_enabled blockedSlots lockedSlots time maxPage favs stats".split(" ");
 	
 	public static void exportConfig(GUI parent) {
 		
@@ -392,6 +405,7 @@ public class Configs {
 	}
 	
 	private static String[] units_opt = "place upgrade unlock dupe buy spec".split(" ");
+	private static String[] chest_opt = "min max enabled".split(" ");
 	
 	private static void saveExportedConfig(GUI gui, boolean b) {
 		File file = gui.showFileChooser("Export Config", false, new FileNameExtensionFilter("Json Files", "json"));
@@ -415,15 +429,17 @@ public class Configs {
 			for(int i=0; i<units_opt.length; i++) {
 				if(b || GUI.isCButSelected("ex::unit_"+units_opt[i])) {
 					for(String u : units.keySet()) {
-						pro.add("unit_"+u+"_"+units_opt[i], units.getAsJsonObject(u).get(units_opt[i]));
+						pro.add("unit_"+u+"_"+units_opt[i] + (units_opt[i].equals("spec") ? "" : "1"), units.getAsJsonObject(u).get(units_opt[i]));
 					}
 				}
 			}
 			
-			if(b || GUI.isCButSelected("ex::chests")) {
-				JsonObject chests = con.getAsJsonObject("chests");
-				for(String c : chests.keySet()) {
-					pro.add("chest_"+c, chests.get(c));
+			JsonObject chests = con.getAsJsonObject("chests");
+			for(int i=0; i<chest_opt.length; i++) {
+				if(b || GUI.isCButSelected("ex::chests_"+chest_opt[i])) {
+					for(String c : chests.keySet()) {
+						pro.add("chests_"+c+"_"+chest_opt[i], chests.getAsJsonObject(c).get(chest_opt[i]));
+					}
 				}
 			}
 			
@@ -659,7 +675,7 @@ public class Configs {
 	private static void conMerge(String name, JsonObject imp) {
 		
 		B[] bs = new B[] {buy, dupe, unlock, upgrade, place};
-		List<String> sbs = Arrays.asList("buy dupe unlock upgrade place".split(" "));
+		List<String> sbs = Arrays.asList("buy1 dupe1 unlock1 upgrade1 place1".split(" "));
 		
 		for(String key : imp.keySet()) {
 			String[] keys = key.split("_");
@@ -671,15 +687,15 @@ public class Configs {
 			case "unit":
 				if(keys[2].equals("spec")) {
 					setUnitString(name, keys[1], spec, imp.getAsJsonPrimitive(key).getAsString());
-				} else {
-					setUnitBoolean(name, keys[1], bs[sbs.indexOf(keys[2])], imp.getAsJsonPrimitive(key).getAsBoolean());
+				} else if(keys[2].endsWith("1")) {
+					setUnitInt(name, keys[1], bs[sbs.indexOf(keys[2])], imp.getAsJsonPrimitive(key).getAsInt());
 				}
 				break;
-			case "chest":
-				if(keys[1].equals("normChestLoyMax")) {
-					setChestInt(name, normChestLoyMax, imp.getAsJsonPrimitive(key).getAsInt());
-				} else if(keys[1].equals("loyChestLoyMin")) {
-					setChestInt(name, loyChestLoyMin, imp.getAsJsonPrimitive(key).getAsInt());
+			case "chests":
+				if(keys[2].equals("enabled")) {
+					setChestBoolean(name, keys[1], enabled, imp.getAsJsonPrimitive(key).getAsBoolean());
+				} else {
+					setChestInt(name, keys[1], keys[2].equals("min") ? minc : maxc, imp.getAsJsonPrimitive(key).getAsInt());
 				}
 				break;
 			case "blockedSlots":
@@ -695,7 +711,7 @@ public class Configs {
 					setTime(name, min, imp.getAsJsonPrimitive(key).getAsInt());
 				}
 				break;
-			case "maxTime":
+			case "maxPage":
 				setInt(name, maxPage, imp.getAsJsonPrimitive(key).getAsInt());
 				break;
 			case "favs":

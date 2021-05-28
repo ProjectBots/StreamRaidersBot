@@ -9,6 +9,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -228,6 +229,11 @@ public class GUI{
 		GUI.defButCol = defButCol;
 	}
 	
+	private static java.awt.Image defIcon = null;//Toolkit.getDefaultToolkit().createImage(ClassLoader.getSystemResource(name));
+	
+	public static void setDefIcon(String name) {
+		defIcon = Toolkit.getDefaultToolkit().createImage(ClassLoader.getSystemResource(name));
+	}
 	
 	//	for the window
 	private String title = "default";
@@ -274,6 +280,10 @@ public class GUI{
 			
 			//	set the default close operation
 			frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+			
+			if(defIcon != null) {
+				frame.setIconImage(defIcon);
+			}
 			
 			frame.setVisible(true);
 			
@@ -333,6 +343,10 @@ public class GUI{
 	public void refresh() {
 		frame.setVisible(false);
 		frame.setVisible(true);
+	}
+	
+	public void setIcon(String name) {
+		frame.setIconImage(Toolkit.getDefaultToolkit().createImage(ClassLoader.getSystemResource(name)));
 	}
 	
 	
@@ -561,6 +575,7 @@ public class GUI{
 		private double[] weight = new double[] {0, 0};
 		private String tooltip = null;
 		private KeyListener kl = null;
+		private DocumentListener dl = null;
 		
 		
 		public void setInsets(int top, int left, int bottom, int right) {
@@ -649,6 +664,10 @@ public class GUI{
 		public void setKeyLis(KeyListener kl) {
 			this.kl = kl;
 		}
+		
+		public void setDocLis(DocumentListener dl) {
+			this.dl = dl;
+		}
 
 		public Insets getIn() {
 			return in;
@@ -681,6 +700,10 @@ public class GUI{
 		public KeyListener getKeyLis() {
 			return kl;
 		}
+		
+		public DocumentListener getDocLis() {
+			return dl;
+		}
 	}
 	
 	//	very often used
@@ -706,6 +729,9 @@ public class GUI{
 		KeyListener kl = opt.getKeyLis();
 		if(kl != null)
 			obj.addKeyListener(kl);
+		DocumentListener dl = opt.getDocLis();
+		if(dl != null)
+			((JTextComponent) obj).getDocument().addDocumentListener(dl);
 		
 		//	tests if scroll is enabled for the component
 		if(opt.getScroll()) {
@@ -1103,13 +1129,7 @@ public class GUI{
 	
 	//	TextField
 	public static class TextField extends Label {
-		//	default listener
-		ActionListener al = new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				System.out.println("no ActionListener");
-			}
-		};
+		ActionListener al = null;
 		
 		public void setAL(ActionListener al) {
 			this.al = al;
@@ -1129,7 +1149,12 @@ public class GUI{
 		String tt = opt.getTooltip();
 		if(tt != null)
 			tf.setToolTipText(tt);
-		tf.addActionListener(opt.getAL());
+		ActionListener al = opt.getAL();
+		if(al != null) 
+			tf.addActionListener(al);
+		Font f = opt.getFont();
+		if(f != null)
+			tf.setFont(f);
 		addObj(opt, tf, id);
 	}
 	

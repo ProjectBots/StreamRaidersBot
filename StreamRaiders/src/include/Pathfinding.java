@@ -55,11 +55,11 @@ public class Pathfinding {
 		}
 	}
 	
-	private static Field[][] map;
+	private Field[][] map;
 	
-	public static int[] search(Field[][] map, String name) {
+	public int[] search(Field[][] map, String name) {
 		
-		Pathfinding.map = map;
+		this.map = map;
 		
 		int x, y, min, ox, oy, omin;
 		
@@ -146,7 +146,7 @@ public class Pathfinding {
 		return (int) Math.round((Math.random()*(max-min))+min);
 	}
 	
-	private static boolean check(int x, int y) {
+	private boolean check(int x, int y) {
 		if(x<0 || x>=map.length) return false;
 		if(y<0 || y>=map[x].length) return false;
 		return true;
