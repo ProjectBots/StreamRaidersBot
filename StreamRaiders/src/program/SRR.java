@@ -265,12 +265,14 @@ public class SRR {
 	}
 	
 	
-	public String getCaptainsForSearch(int page, int resultsPerPage, boolean fav, boolean live, boolean searchForCaptain, String name) throws URISyntaxException, IOException, NoInternetException {
+	
+	public String getCaptainsForSearch(int page, int resultsPerPage, boolean fav, boolean live, String mode, boolean searchForCaptain, String name) throws URISyntaxException, IOException, NoInternetException {
 		JsonObject filter = new JsonObject();
 		filter.addProperty("favorite", (fav ? "true" : "false"));
 		if(name != null) filter.addProperty((searchForCaptain ? "twitchUserName" : "mainGame"), name);
 		if(live) filter.addProperty("isLive", "1");
-		filter.addProperty("mode", "campaign");
+		if(!mode.equals(SRC.Search.all))
+			filter.addProperty("mode", mode);
 		
 		Http post = getPost("getCaptainsForSearch");
 		post.addEncArg("page", ""+page);
@@ -283,6 +285,20 @@ public class SRR {
 	
 	public String getRaidPlan(String raidId) throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("getRaidPlan");
+		post.addEncArg("raidId", raidId);
+		return sendPost(post);
+	}
+	
+	//dungeonchest
+	public String purchaseChestItem(String itemId) throws URISyntaxException, IOException, NoInternetException {
+		Http post = getPost("purchaseChestItem");
+		post.addEncArg("itemId", itemId);
+		return sendPost(post);
+	}
+	
+	
+	public String getUserDungeonInfoForRaid(String raidId) throws URISyntaxException, IOException, NoInternetException {
+		Http post = getPost("getUserDungeonInfoForRaid");
 		post.addEncArg("raidId", raidId);
 		return sendPost(post);
 	}

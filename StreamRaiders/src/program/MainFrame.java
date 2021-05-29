@@ -1360,7 +1360,7 @@ public class MainFrame {
 		
 		JsonArray caps;
 		try {
-			caps = profiles.get(name).getSRRH().search(1, 8, false, false, true, dname);
+			caps = profiles.get(name).getSRRH().search(1, 8, false, false, SRC.Search.all, true, dname);
 		} catch (URISyntaxException | IOException | NoInternetException e) {
 			StreamRaiders.log(name + " -> MainFrame -> searchCap: err=failed to search captain", e);
 			return;

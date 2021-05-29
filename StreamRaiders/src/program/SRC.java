@@ -74,6 +74,12 @@ public class SRC {
 		public static final int all = 3;
 	}
 	
+	public static class Search {
+		public static final String all = "";
+		public static final String campaign = "campaign";
+		public static final String dungeons = "dungeons";
+	}
+	
 	public static class Unit {
 		public static final String unitType = "unitType";
 		public static final String level = "level";

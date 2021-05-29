@@ -554,8 +554,14 @@ public class Run {
 					if(units.length == 0) {
 						break;
 					}
-					
-					srrh.loadMap(plra[i]);
+					Unit[] dunUnits = null;
+					try {
+						srrh.loadMap(plra[i]);
+					} catch (DungeonException e) {
+						if(!plra[i].get(SRC.Raid.userSortIndex).equals(""+Configs.getInt(name, Configs.dungeonSlot)))
+							throw e;
+						dunUnits = srrh.getUnitsDungeons(plra[i]);
+					}
 					Map map = srrh.getMap();
 					
 					JsonArray ppt = map.getPresentPlanTypes();
@@ -568,8 +574,8 @@ public class Run {
 					loop:
 					while(true) {
 						fpt = null;
-						Unit unit = findUnit(units, apt, ppt);
-						if(unit == null) unit = findUnit(units, false, ppt);
+						Unit unit = findUnit(dunUnits == null ? units : dunUnits, apt, ppt);
+						if(unit == null) unit = findUnit(dunUnits == null ? units : dunUnits, false, ppt);
 						if(unit == null) break;
 						JsonArray allowedPlanTypes = new JsonArray();
 						allowedPlanTypes.add(fpt);
@@ -589,7 +595,8 @@ public class Run {
 							String err = srrh.placeUnit(plra[i], unit, false, pos, fpt != null);
 							
 							if(err == null) {
-								units = remove(units, unit);
+								if(dunUnits == null)
+									units = remove(units, unit);
 								break loop;
 							}
 							
@@ -605,7 +612,8 @@ public class Run {
 						}
 					}
 				} catch (PvPException | DungeonException e) {
-					if(!ret) ret = switchRaid(plra[i].get(SRC.Raid.userSortIndex), true, srrh.search(1, 10, false, true, false, null));
+					String usi = plra[i].get(SRC.Raid.userSortIndex);
+					if(!ret) ret = switchRaid(usi, true, srrh.search(1, 10, false, true, (""+Configs.getInt(name, Configs.dungeonSlot)).equals(usi) ? SRC.Search.dungeons : SRC.Search.campaign, false, null));
 				}
 			}
 		}
@@ -703,6 +711,8 @@ public class Run {
 		
 		JsonObject favs = Configs.getObj(name, Configs.favs);
 		
+		String di = ""+Configs.getInt(name, Configs.dungeonSlot);
+		
 		boolean ctNull = true;
 		int c = 1;
 		try {
@@ -720,13 +730,13 @@ public class Run {
 						if(favs.getAsJsonPrimitive(raids[i].get(SRC.Raid.twitchDisplayName)).getAsBoolean())
 							if(!raids[i].isOffline(srrh.getServerTime(), false, 10))
 								continue;
-					if(!raids[i].isSwitchable(srrh.getServerTime(), true, 10)) 
+					if(!raids[i].isSwitchable(srrh.getServerTime(), 10)) 
 						continue;
 					String ct = raids[i].getFromNode(SRC.MapNode.chestType);
 					if(ct == null) {
 						if(ctNull)
 							StreamRaiders.log(name + ": Run -> captains: ct=null", null);
-						caps = getCaps(caps);
+						caps = getCaps(raids[i]);
 						ctNull = false;
 						bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
 						switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, caps);
@@ -734,6 +744,9 @@ public class Run {
 						breakout = false;
 						continue;
 					}
+					if(raids[i].get(SRC.Raid.userSortIndex).equals(di) && !raids[i].isOffline(srrh.getServerTime(), true, 10) && ct.contains("dungeon"))
+						continue;
+						
 					int loy = Integer.parseInt(raids[i].get(SRC.Raid.pveWins));
 					int max = 0;
 					try {
@@ -747,7 +760,7 @@ public class Run {
 							loy < Configs.getChestInt(name, ct, Configs.minc) ||
 							loy > (max < 0 ? Integer.MAX_VALUE : max)
 							) {
-						caps = getCaps(caps);
+						caps = getCaps(raids[i]);
 						bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
 						switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, caps);
 						changed = true;
@@ -759,7 +772,7 @@ public class Run {
 					if(!got[i]) {
 						if(Configs.isSlotBlocked(name, ""+i))
 							continue;
-						caps = getCaps(caps);
+						caps = getCaps(""+i);
 						switchRaid(""+i, false, caps);
 						changed = true;
 						breakout = false;
@@ -773,6 +786,7 @@ public class Run {
 		} catch (NoCapMatchException e) {
 			StreamRaiders.log(name + ": Run -> captains: err=" + e.getMessage(), e);
 		}
+		resCaps();
 		return changed;
 	}
 	
@@ -784,17 +798,45 @@ public class Run {
 		}
 	}
 	
-	private JsonArray getCaps(JsonArray empty) throws URISyntaxException, IOException, NoInternetException, NoCapMatchException {
-		if(empty == null) {
-			empty = new JsonArray();
-			int pages = 3;
-			for(int i=1; i<pages && i<=Configs.getInt(name, Configs.maxPage); i++) {
-				empty.addAll(srrh.search(i, 6, false, true, false, null));
-				pages = srrh.getPagesFromLastSearch();
+	private JsonArray ncaps = null;
+	private JsonArray dcaps = null;
+	
+	private void resCaps() {
+		ncaps = null;
+		dcaps = null;
+	}
+	
+	
+	private JsonArray getCaps(Raid raid) throws URISyntaxException, IOException, NoInternetException, NoCapMatchException {
+		return getCaps(raid.get(SRC.Raid.userSortIndex));
+	}
+	
+	private JsonArray getCaps(String usi) throws URISyntaxException, IOException, NoInternetException, NoCapMatchException {
+		if(usi.equals(""+Configs.getInt(name, Configs.dungeonSlot))) {
+			if(dcaps == null) {
+				dcaps = new JsonArray();
+				searchCaps(dcaps, SRC.Search.dungeons);
 			}
+			if(dcaps.size() == 0)
+				throw new NoCapMatchException();
+			return dcaps;
+		} else {
+			if(ncaps == null) {
+				ncaps = new JsonArray();
+				searchCaps(ncaps, SRC.Search.campaign);
+			}
+			if(ncaps.size() == 0)
+				throw new NoCapMatchException();
+			return ncaps;
 		}
-		if(empty.size() == 0) throw new NoCapMatchException();
-		return empty;
+	}
+	
+	private void searchCaps(JsonArray caps, String mode) throws URISyntaxException, IOException, NoInternetException {
+		int pages = 3;
+		for(int i=1; i<pages && i<=Configs.getInt(name, Configs.maxPage); i++) {
+			caps.addAll(srrh.search(i, 6, false, true, mode, false, null));
+			pages = srrh.getPagesFromLastSearch();
+		}
 	}
 	
 	private boolean switchRaid(String sortIndex, boolean rem, JsonArray caps) throws URISyntaxException, IOException, NoInternetException, SilentException {

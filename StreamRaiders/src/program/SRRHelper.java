@@ -2,6 +2,10 @@ package program;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -148,7 +152,6 @@ public class SRRHelper {
 	public void loadMap(Raid raid) throws PvPException, URISyntaxException, IOException, NoInternetException, SilentException, DungeonException {
 		String node = raid.get(SRC.Raid.nodeId);
 		if(node.contains("pvp")) throw new PvPException();
-		if(node.contains("dungeon")) throw new DungeonException();
 		String raidplan = req.getRaidPlan(raid.get(SRC.Raid.raidId));
 		try {
 			JsonElement je = JsonParser.parseObj(raidplan).get("data");
@@ -161,7 +164,7 @@ public class SRRHelper {
 			StreamRaiders.log("SRRHelper -> loadMap: raidplan=" + raidplan, e);
 			throw new SilentException();
 		}
-		
+		if(node.contains("dungeon")) throw new DungeonException();
 	}
 	
 	public boolean testPos(boolean epic, int x, int y) {
@@ -268,8 +271,8 @@ public class SRRHelper {
 		return pages;
 	}
 	
-	public JsonArray search(int page, int resultsPerPage, boolean fav, boolean live, boolean searchForCaptain, String name) throws URISyntaxException, IOException, NoInternetException {
-		JsonObject rawd = JsonParser.parseObj(req.getCaptainsForSearch(page, resultsPerPage, fav, live, searchForCaptain, name));
+	public JsonArray search(int page, int resultsPerPage, boolean fav, boolean live, String mode, boolean searchForCaptain, String name) throws URISyntaxException, IOException, NoInternetException {
+		JsonObject rawd = JsonParser.parseObj(req.getCaptainsForSearch(page, resultsPerPage, fav, live, mode, searchForCaptain, name));
 		if(rawd == null) {
 			StreamRaiders.log("SRRHelper -> search: rawd=null", null);
 			return new JsonArray();
@@ -341,6 +344,47 @@ public class SRRHelper {
 		return ret;
 	}
 	
+	
+	private static final String[] dungeons_units_dis = "knockedUnits deadUnits exhaustedUnits".split(" ");
+	
+	public Unit[] getUnitsDungeons(Raid raid) throws URISyntaxException, IOException, NoInternetException {
+		updateUnits();
+		Unit[] ret = new Unit[0];
+		Unit[] all = getUnits(SRC.Helper.all);
+		
+		JsonObject data = JsonParser.parseObj(req.getUserDungeonInfoForRaid(raid.get(SRC.Raid.raidId))).getAsJsonObject("data");
+		
+		String[] bnd = new String[0];
+		
+		for(String key : dungeons_units_dis) {
+			JsonElement ku = data.get(key);
+			if(ku != null && ku.isJsonPrimitive()) {
+				String sku = ku.getAsString();
+				if(!sku.equals(""))
+					bnd = merge(bnd, sku.split(","));
+			}
+		}
+		
+		String uid = req.getUserId();
+		JsonArray pmnt = JsonParser.parseArr(raid.get(SRC.Raid.placementsSerialized));
+		for(int i=0; i<pmnt.size(); i++) {
+			JsonObject jo = pmnt.get(i).getAsJsonObject();
+			if(jo.getAsJsonPrimitive("userId").getAsString().equals(uid))
+				bnd = add(bnd, jo.getAsJsonPrimitive(SRC.Unit.unitId).getAsString());
+		}
+		
+		List<String> aban = Arrays.asList(bnd);
+		
+		for(int i=0; i<all.length; i++) {
+			if(aban.contains(all[i].get(SRC.Unit.unitId)))
+				continue;
+			
+			ret = add(ret, all[i]);
+		}
+		
+		return ret;
+	}
+	
 	public String unlockUnit(Unit unit) throws URISyntaxException, IOException, NoInternetException {
 		return store.unlockUnit(unit.get(SRC.Unit.unitType), unit.isDupe(), req);
 	}
@@ -395,7 +439,7 @@ public class SRRHelper {
 		return ret.toString();
 	}
 	
-	
+	/*
 	private static Unit[] add(Unit[] arr, Unit item) {
 		Unit[] arr2 = new Unit[arr.length + 1];
 		System.arraycopy(arr, 0, arr2, 0, arr.length);
@@ -408,6 +452,14 @@ public class SRRHelper {
 		System.arraycopy(arr, 0, arr2, 0, arr.length);
 		arr2[arr.length] = item;
 		return arr2;
+	}
+	*/
+	private static <T>T[] add(T[] arr, T item) {
+		return ArrayUtils.add(arr, item);
+	}
+	
+	private static <T>T[] merge(T[] arr1, T[] arr2) {
+		return ArrayUtils.addAll(arr1, arr2);
 	}
 	
 	

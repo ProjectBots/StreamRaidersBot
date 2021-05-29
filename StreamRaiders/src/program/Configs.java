@@ -72,6 +72,7 @@ public class Configs {
 	}
 	
 	public static final Int maxPage = new Int("maxPage");
+	public static final Int dungeonSlot = new Int("dungeonSlot");
 	
 	public static int getInt(String name, Int con) {
 		return configs.getAsJsonObject(name).getAsJsonPrimitive(con.get()).getAsInt();
@@ -320,7 +321,7 @@ public class Configs {
 	}
 	
 	
-	private static String[] exopts = "cookies unit_place unit_upgrade unit_unlock unit_dupe unit_buy unit_spec chests_min chests_max chests_enabled blockedSlots lockedSlots time maxPage favs stats".split(" ");
+	private static String[] exopts = "cookies unit_place unit_upgrade unit_unlock unit_dupe unit_buy unit_spec chests_min chests_max chests_enabled blockedSlots lockedSlots dungeonSlot time maxPage favs stats".split(" ");
 	
 	public static void exportConfig(GUI parent) {
 		
@@ -450,6 +451,10 @@ public class Configs {
 						pro.add((i==1?"":"b") + "lockedSlots_"+bs, bss.get(bs));
 					}
 				}
+			}
+			
+			if(b || GUI.isCButSelected("ex::dungeonSlot")) {
+				pro.add("dungeonSlot", con.get("dungeonSlot"));
 			}
 			
 			if(b || GUI.isCButSelected("ex::time")) {
@@ -703,6 +708,9 @@ public class Configs {
 				break;
 			case "lockedSlots":
 				setSlotLocked(name, keys[1], imp.getAsJsonPrimitive(key).getAsBoolean());
+				break;
+			case "dungeonSlot":
+				setInt(name, dungeonSlot, imp.getAsJsonPrimitive(key).getAsInt());
 				break;
 			case "time":
 				if(keys[1].equals("max")) {

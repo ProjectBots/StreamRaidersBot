@@ -41,10 +41,10 @@ public class Raid {
 		}
 	}
 	
-	public boolean isSwitchable(String serverTime, boolean whenNotLive, int treshold) {
+	public boolean isSwitchable(String serverTime, int treshold) {
 		JsonElement je = raid.get(SRC.Raid.lastUnitPlacedTime);
 		if(je.isJsonNull()) return true;
-		return isOffline(serverTime, whenNotLive, treshold);
+		return isOffline(serverTime, false, treshold);
 	}
 	
 	public boolean isOffline(String serverTime, boolean whenNotLive, int treshold) {
@@ -61,7 +61,7 @@ public class Raid {
 		}
 		if(treshold == -1) return false;
 		
-		return Time.isAfter(serverTime, Time.plusMinutes(get(SRC.Raid.creationDate), 30+treshold));
+		return Time.isAfter(serverTime, Time.plusMinutes(get(SRC.Raid.creationDate), (get(SRC.Raid.nodeId).contains("dungeons") ? 5 : 30) + treshold));
 		
 	}
 	
@@ -79,7 +79,8 @@ public class Raid {
 	private static final String[][] typChestRews = new String[][] {
 		{"gold", "goldAwarded"},
 		{"token", "eventTokensReceived"},
-		{"potion", "potionsAwarded"}
+		{"potion", "potionsAwarded"},
+		{"keys", "keysAwarded"}
 	};
 	
 	public static Hashtable<String, String> typViewChestRews = new Hashtable<>();
@@ -173,12 +174,13 @@ public class Raid {
 		if(raid.get(SRC.Raid.endTime).isJsonPrimitive()) return false;
 		if(raid.get(SRC.Raid.startTime).isJsonPrimitive()) return false;
 		
-		JsonElement date = raid.get("lastUnitPlacedTime");
+		JsonElement date = raid.get(SRC.Raid.lastUnitPlacedTime);
+		String node = raid.get(SRC.Raid.nodeId).getAsString();
 		if(date.isJsonPrimitive()) 
-			if(Time.isAfter(Time.plusMinutes(date.getAsString(), 5), serverTime)) 
+			if(Time.isAfter(Time.plusMinutes(date.getAsString(), node.contains("dungeons") ? 2 : 5), serverTime)) 
 				return false;
 		
-		if(Time.isAfter(serverTime, Time.plusMinutes(raid.getAsJsonPrimitive("creationDate").getAsString(), 30))) 
+		if(Time.isAfter(serverTime, Time.plusMinutes(raid.getAsJsonPrimitive("creationDate").getAsString(), node.contains("dungeons") ? 5 : 30))) 
 			return false;
 		
 		return true;
