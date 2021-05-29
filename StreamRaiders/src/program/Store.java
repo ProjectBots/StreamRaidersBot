@@ -12,6 +12,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import include.JsonParser;
+import include.Time;
 import program.SRR.NoInternetException;
 
 public class Store {
@@ -114,7 +115,6 @@ public class Store {
 				}
 			}
 		}
-		
 		return ret;
 	}
 	
@@ -201,6 +201,23 @@ public class Store {
 		if(!text.getAsJsonPrimitive("status").getAsString().equals("success")) return text.getAsJsonPrimitive(SRC.errorMessage).getAsString();
 		
 		shopItems = text.getAsJsonArray("data");
+		return null;
+	}
+	
+	public String buyDungeonChest(String serverTime, SRR req) throws URISyntaxException, IOException, NoInternetException {
+		if(Time.isAfter(serverTime, "2021-06-15 19:00:00"))
+			return "after end";
+		
+		int keys = currency.get("keys");
+		
+		if(keys < 10)
+			return "not enough keys";
+		
+		JsonElement err = JsonParser.parseObj(req.purchaseChestItem("dungeonchest")).get(SRC.errorMessage);
+		if(err.isJsonPrimitive())
+			return err.getAsString();
+		
+		currency.put("keys", keys - 10);
 		return null;
 	}
 	

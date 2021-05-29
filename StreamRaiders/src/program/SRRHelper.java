@@ -15,6 +15,7 @@ import include.JsonParser;
 import program.QuestEventRewards.Quest;
 import program.Run.SilentException;
 import program.SRR.NoInternetException;
+import program.SRR.NotAuthorizedException;
 import program.SRR.OutdatedDataException;
 
 public class SRRHelper {
@@ -62,7 +63,7 @@ public class SRRHelper {
 		return ret;
 	}
 	
-	private void updateDataPath(String dataPath) {
+	private void updateDataPath(String dataPath) throws URISyntaxException, IOException, NoInternetException, SilentException, NotAuthorizedException {
 		JsonObject data = JsonParser.parseObj(SRR.getData(dataPath)).getAsJsonObject("sheets");
 		StreamRaiders.set("obstacles", data.getAsJsonObject("Obstacles").toString());
 		StreamRaiders.set("quests", data.getAsJsonObject("Quests").toString());
@@ -73,6 +74,11 @@ public class SRRHelper {
 		GuideContent.gainStats(data.getAsJsonObject("Units"));
 		StreamRaiders.set("data", dataPath);
 		StreamRaiders.save();
+		try {
+			req.reload();
+		} catch (OutdatedDataException e) {
+			StreamRaiders.log("SRRHelper -> updateDataPath: err=failed to update data path", e);
+		}
 	}
 
 	public SRR getSRR() {
@@ -202,7 +208,7 @@ public class SRRHelper {
 		return serverTime;
 	}
 	
-	public Raid[] getRaids(int con) throws URISyntaxException, IOException, NoInternetException, SilentException {
+	public Raid[] getRaids(int con) throws URISyntaxException, IOException, NoInternetException, SilentException, NotAuthorizedException {
 		serverTime = updateRaids();
 		Raid[] ret = new Raid[0];
 		for(int i=0; i<raids.length; i++) {
@@ -232,7 +238,7 @@ public class SRRHelper {
 		req.addPlayerToRaid(captain.getAsJsonPrimitive("userId").getAsString(), userSortIndex);
 	}
 	
-	public void switchRaid(JsonObject captain, String userSortIndex) throws URISyntaxException, IOException, NoInternetException, SilentException {
+	public void switchRaid(JsonObject captain, String userSortIndex) throws URISyntaxException, IOException, NoInternetException, SilentException, NotAuthorizedException {
 		updateRaids();
 		for(int i=0; i<raids.length; i++) {
 			if(raids[i].get(SRC.Raid.userSortIndex).equals(userSortIndex)) {
@@ -242,7 +248,7 @@ public class SRRHelper {
 		}
 	}
 	
-	public String updateRaids() throws URISyntaxException, IOException, SilentException, NoInternetException {
+	public String updateRaids() throws URISyntaxException, IOException, SilentException, NoInternetException, NotAuthorizedException {
 		JsonObject jo = JsonParser.parseObj(req.getActiveRaidsByUser());
 		try {
 			JsonArray rs = jo.getAsJsonArray("data");
@@ -304,8 +310,13 @@ public class SRRHelper {
 		return null;
 	}
 	
-	public String updateUnits() throws URISyntaxException, IOException, NoInternetException {
-		JsonObject jo = JsonParser.parseObj(req.getUserUnits());
+	public String updateUnits() throws URISyntaxException, IOException, NoInternetException, SilentException {
+		String r = req.getUserUnits();
+		JsonObject jo = JsonParser.parseObj(r);
+		if(jo == null) {
+			StreamRaiders.log("SRRHelper -> updateUnits: jo=null, r="+r, null);
+			throw new Run.SilentException();
+		}
 		JsonArray u = jo.getAsJsonArray("data");
 		units = new Unit[0];
 		for(int i=0; i<u.size(); i++) units = add(units, new Unit(u.get(i).getAsJsonObject()));
@@ -324,7 +335,11 @@ public class SRRHelper {
 		return store.buyItem(item, req);
 	}
 	
-	public Unit[] getUnits(int con) throws URISyntaxException, IOException, NoInternetException {
+	public String buyDungeonChest() throws URISyntaxException, IOException, NoInternetException {
+		return store.buyDungeonChest(getServerTime(), req);
+	}
+	
+	public Unit[] getUnits(int con) throws URISyntaxException, IOException, NoInternetException, SilentException {
 		String serverTime = updateUnits();
 		Unit[] ret = new Unit[0];
 		for(int i=0; i<units.length; i++) {
@@ -347,7 +362,7 @@ public class SRRHelper {
 	
 	private static final String[] dungeons_units_dis = "knockedUnits deadUnits exhaustedUnits".split(" ");
 	
-	public Unit[] getUnitsDungeons(Raid raid) throws URISyntaxException, IOException, NoInternetException {
+	public Unit[] getUnitsDungeons(Raid raid) throws URISyntaxException, IOException, NoInternetException, SilentException {
 		updateUnits();
 		Unit[] ret = new Unit[0];
 		Unit[] all = getUnits(SRC.Helper.all);
@@ -367,11 +382,14 @@ public class SRRHelper {
 		
 		String uid = req.getUserId();
 		JsonArray pmnt = JsonParser.parseArr(raid.get(SRC.Raid.placementsSerialized));
-		for(int i=0; i<pmnt.size(); i++) {
-			JsonObject jo = pmnt.get(i).getAsJsonObject();
-			if(jo.getAsJsonPrimitive("userId").getAsString().equals(uid))
-				bnd = add(bnd, jo.getAsJsonPrimitive(SRC.Unit.unitId).getAsString());
+		if(pmnt != null) {
+			for(int i=0; i<pmnt.size(); i++) {
+				JsonObject jo = pmnt.get(i).getAsJsonObject();
+				if(jo.getAsJsonPrimitive("userId").getAsString().equals(uid))
+					bnd = add(bnd, jo.getAsJsonPrimitive(SRC.Unit.unitId).getAsString());
+			}
 		}
+		
 		
 		List<String> aban = Arrays.asList(bnd);
 		
@@ -393,7 +411,7 @@ public class SRRHelper {
 		return store.canUpgradeUnit(unit) ? store.upgradeUnit(unit, req, specUID) : "cant upgrade unit";
 	}
 	
-	public Unit[] getUnits(String con, String arg) throws URISyntaxException, IOException, NoInternetException {
+	public Unit[] getUnits(String con, String arg) throws URISyntaxException, IOException, NoInternetException, SilentException {
 		updateUnits();
 		Unit[] ret = new Unit[0];
 		for(int i=0; i<units.length; i++) 

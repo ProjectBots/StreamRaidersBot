@@ -576,6 +576,7 @@ public class GUI{
 		private String tooltip = null;
 		private KeyListener kl = null;
 		private DocumentListener dl = null;
+		private Font f = null;
 		
 		
 		public void setInsets(int top, int left, int bottom, int right) {
@@ -704,6 +705,14 @@ public class GUI{
 		public DocumentListener getDocLis() {
 			return dl;
 		}
+
+		public Font getFont() {
+			return f;
+		}
+
+		public void setFont(Font f) {
+			this.f = f;
+		}
 	}
 	
 	//	very often used
@@ -732,6 +741,9 @@ public class GUI{
 		DocumentListener dl = opt.getDocLis();
 		if(dl != null)
 			((JTextComponent) obj).getDocument().addDocumentListener(dl);
+		Font f = opt.getFont();
+		if(f != null)
+			obj.setFont(f);
 		
 		//	tests if scroll is enabled for the component
 		if(opt.getScroll()) {
@@ -765,7 +777,6 @@ public class GUI{
 		private Color back = null;
 		private Color fore = null;
 		private Border border = null;
-		private Font font = null;
 		
 		public void setText(String text) {
 			this.text = text;
@@ -823,13 +834,6 @@ public class GUI{
 			return border;
 		}
 		
-		public void setFont(Font f) {
-			font = f;
-		}
-		
-		public Font getFont() {
-			return font;
-		}
 	}
 	
 	public void addLabel(Label opt, String id) {
@@ -855,11 +859,6 @@ public class GUI{
 		Border border = opt.getBorder();
 		if(border != null) {
 			lab.setBorder(border);
-		}
-		
-		Font font = opt.getFont();
-		if(font != null) {
-			lab.setFont(font);
 		}
 		
 		String tt = opt.getTooltip();
@@ -929,10 +928,7 @@ public class GUI{
 	public void addCBut(CButton opt) {
 		JButton cbut = new JButton(opt.getText());
 		cbut.addActionListener(opt.getAl());
-		Font f = opt.getFont();
-		if(f != null) {
-			cbut.setFont(f);
-		}
+		
 		String tt = opt.getTooltip();
 		if(tt != null) {
 			cbut.setToolTipText(tt);
@@ -1008,10 +1004,6 @@ public class GUI{
 		Color fore = opt.getForeground();
 		if(fore != null) {
 			but.setForeground(fore);
-		}
-		Font f = opt.getFont();
-		if(f != null) {
-			but.setFont(f);
 		}
 		int[] size = opt.getSize();
 		if(size != null) {
@@ -1152,9 +1144,6 @@ public class GUI{
 		ActionListener al = opt.getAL();
 		if(al != null) 
 			tf.addActionListener(al);
-		Font f = opt.getFont();
-		if(f != null)
-			tf.setFont(f);
 		addObj(opt, tf, id);
 	}
 	

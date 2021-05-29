@@ -4,9 +4,11 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
@@ -23,6 +25,8 @@ import include.GUI;
 import include.GUI.Button;
 import include.GUI.CButListener;
 import include.GUI.CButton;
+import include.GUI.CombListener;
+import include.GUI.ComboBox;
 import include.GUI.Container;
 import include.GUI.Image;
 import include.GUI.Label;
@@ -171,7 +175,7 @@ public class MainFrame {
 							}
 							
 							
-							List<String> rewBefore = Arrays.asList(new String[] {"gold", "token", "potion", "meat"});
+							List<String> rewBefore = Arrays.asList("gold token potion meat keys".split(" "));
 							
 							text.append("  \nbasic:  \n- ");
 							
@@ -755,10 +759,12 @@ public class MainFrame {
 			public void actionPerformed(ActionEvent e) {
 				GUI sgui = new GUI("Profile Settings", 900, 800, gui, null);
 				
+				int g = 0;
+				
 				JsonObject types = Unit.getTypes();
 				
 				Container units = new Container();
-				units.setPos(0, 0);
+				units.setPos(0, g++);
 				
 				int x = 0;
 				int y = 1;
@@ -930,7 +936,7 @@ public class MainFrame {
 				JsonArray chestTypes = JsonParser.parseArr(StreamRaiders.get("chests"));
 				
 				Container chests = new Container();
-				chests.setPos(0, 1);
+				chests.setPos(0, g++);
 				
 				y = 0;
 				x = 0;
@@ -1143,16 +1149,48 @@ public class MainFrame {
 				
 				sgui.addContainer(chests);
 				
+				//TODO
+				Container cdslot = new Container();
+				cdslot.setPos(0, g++);
+				
+					Label ldslot = new Label();
+					ldslot.setPos(0, 0);
+					ldslot.setText("Dungeon Slot: ");
+					ldslot.setFont(new Font(null, Font.PLAIN, 25));
+					cdslot.addLabel(ldslot);
+					
+					
+					List<String> list = new ArrayList<>(Arrays.asList("(none) 0 1 2 3".split(" ")));
+					String sel = Configs.getStr(name, Configs.dungeonSlot);
+					list.remove(sel);
+					list.add(0, sel);
+					
+					
+					ComboBox dslot = new ComboBox(name+"::dslot");
+					dslot.setPos(1, 0);
+					dslot.setFont(new Font(null, Font.PLAIN, 23));
+					dslot.setList(list.toArray(new String[list.size()]));
+					dslot.setCL(new CombListener() {
+						@Override
+						public void unselected(String id, ItemEvent e) {}
+						@Override
+						public void selected(String id, ItemEvent e) {
+							Configs.setStr(name, Configs.dungeonSlot, GUI.getSelected(id));
+						}
+					});
+					cdslot.addComboBox(dslot);
+				
+				sgui.addContainer(cdslot);
 				
 				Label bsl = new Label();
-				bsl.setPos(0, 2);
+				bsl.setPos(0, g++);
 				bsl.setInsets(20, 2, 2, 2);
 				bsl.setText("Exlude Slots from auto farming:");
 				bsl.setFont(new Font(null, Font.PLAIN, 25));
 				sgui.addLabel(bsl);
 				
 				Container cbs = new Container();
-				cbs.setPos(0, 3);
+				cbs.setPos(0, g++);
 				
 				for(int i=0; i<4; i++) {
 					final int ii = i;
@@ -1181,7 +1219,7 @@ public class MainFrame {
 				sgui.addContainer(cbs);
 				
 				Container time = new Container();
-				time.setPos(0, 4);
+				time.setPos(0, g++);
 				time.setInsets(20, 10, 10, 2);
 				
 					Label lt1 = new Label();
@@ -1240,12 +1278,12 @@ public class MainFrame {
 					
 				sgui.addContainer(time);
 				
-				int posFav = 5;
+				int posFav = g++;
 				
 				createFavCon(sgui, name, posFav);
 				
 				Container search = new Container();
-				search.setPos(0, 6);
+				search.setPos(0, g++);
 				search.setInsets(20, 10, 10, 2);
 				
 					TextField stf = new TextField();
@@ -1273,7 +1311,7 @@ public class MainFrame {
 				sgui.addContainer(search);
 				
 				Container mpc = new Container();
-				mpc.setPos(0, 7);
+				mpc.setPos(0, g++);
 				
 				Label lmp = new Label();
 				lmp.setPos(0, 0);
@@ -1306,7 +1344,7 @@ public class MainFrame {
 				sgui.addContainer(mpc);
 				
 				Button resStat = new Button();
-				resStat.setPos(0, 8);
+				resStat.setPos(0, g++);
 				resStat.setInsets(20, 10, 20, 2);
 				resStat.setText("Reset Stats");
 				resStat.setTooltip("Reset the stats for this profile");

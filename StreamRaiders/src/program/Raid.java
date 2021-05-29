@@ -61,7 +61,7 @@ public class Raid {
 		}
 		if(treshold == -1) return false;
 		
-		return Time.isAfter(serverTime, Time.plusMinutes(get(SRC.Raid.creationDate), (get(SRC.Raid.nodeId).contains("dungeons") ? 5 : 30) + treshold));
+		return Time.isAfter(serverTime, Time.plusMinutes(get(SRC.Raid.creationDate), (get(SRC.Raid.nodeId).contains("dungeons") ? 6 : 30) + treshold));
 		
 	}
 	

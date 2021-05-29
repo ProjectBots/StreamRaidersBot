@@ -374,7 +374,7 @@ public class Run {
 		}
 	}
 	
-	private void unlock() throws URISyntaxException, IOException, NoInternetException {
+	private void unlock() throws URISyntaxException, IOException, NoInternetException, SilentException {
 		Unit[] unlockable = srrh.getUnits(SRC.Helper.canUnlockUnit);
 		if(unlockable.length == 0)
 			return;
@@ -402,6 +402,11 @@ public class Run {
 	
 	
 	private void store() throws URISyntaxException, IOException, NoInternetException {
+		String err = srrh.buyDungeonChest();
+		if(err != null && !(err.equals("after end") || err.equals("not enough keys")))
+			StreamRaiders.log(name+" -> Run -> store -> buyDungeonChest: err="+err, null);
+		
+		
 		JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
 		if(items.size() == 0)
 			return;
@@ -439,7 +444,7 @@ public class Run {
 			if(ps[ind] < 0)
 				break;
 			
-			String err = srrh.buyItem(items.get(ind).getAsJsonObject());
+			err = srrh.buyItem(items.get(ind).getAsJsonObject());
 			if(err != null && !err.equals("not enough gold"))
 				StreamRaiders.log(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, null);
 			
@@ -449,7 +454,7 @@ public class Run {
 	}
 	
 	
-	private void upgradeUnits() throws URISyntaxException, IOException, NoInternetException {
+	private void upgradeUnits() throws URISyntaxException, IOException, NoInternetException, SilentException {
 		Unit[] us = srrh.getUnits(SRC.Helper.canUpgradeUnit);
 		if(us.length == 0)
 			return;
@@ -481,7 +486,7 @@ public class Run {
 	
 	public static final String[] pveloy = "? bronze silver gold".split(" ");
 	
-	private boolean raids() throws URISyntaxException, IOException, NoInternetException, SilentException {
+	private boolean raids() throws URISyntaxException, IOException, NoInternetException, SilentException, NotAuthorizedException {
 		boolean ret = false;
 		
 		JsonObject favs = Configs.getObj(name, Configs.favs);
@@ -558,7 +563,7 @@ public class Run {
 					try {
 						srrh.loadMap(plra[i]);
 					} catch (DungeonException e) {
-						if(!plra[i].get(SRC.Raid.userSortIndex).equals(""+Configs.getInt(name, Configs.dungeonSlot)))
+						if(!plra[i].get(SRC.Raid.userSortIndex).equals(Configs.getStr(name, Configs.dungeonSlot)))
 							throw e;
 						dunUnits = srrh.getUnitsDungeons(plra[i]);
 					}
@@ -613,9 +618,16 @@ public class Run {
 					}
 				} catch (PvPException | DungeonException e) {
 					String usi = plra[i].get(SRC.Raid.userSortIndex);
-					if(!ret) ret = switchRaid(usi, true, srrh.search(1, 10, false, true, (""+Configs.getInt(name, Configs.dungeonSlot)).equals(usi) ? SRC.Search.dungeons : SRC.Search.campaign, false, null));
+					if(!ret) {
+						try {
+							ret = switchRaid(usi, true, getCaps(plra[i]));
+						} catch (NoCapMatchException e1) {
+							StreamRaiders.log(name + " -> Run -> raids: err=No Captain matches", e1);
+						}
+					}
 				}
 			}
+			resCaps();
 		}
 		return ret;
 	}
@@ -672,7 +684,7 @@ public class Run {
 	}
 	
 	
-	private boolean chests() throws URISyntaxException, IOException, NoInternetException, SilentException {
+	private boolean chests() throws URISyntaxException, IOException, NoInternetException, SilentException, NotAuthorizedException {
 		Raid[] rera = srrh.getRaids(SRC.Helper.isReward);
 		if(rera.length != 0) {
 			for(int i=0; i<rera.length; i++) {
@@ -698,7 +710,7 @@ public class Run {
 	
 	private JsonObject bannedCaps = new JsonObject();
 	
-	private boolean captains() throws URISyntaxException, IOException, NoInternetException, SilentException {
+	private boolean captains() throws URISyntaxException, IOException, NoInternetException, SilentException, NotAuthorizedException {
 		int uCount = srrh.getUnits(SRC.Helper.all).length;
 		Raid[] raids = srrh.getRaids(SRC.Helper.all);
 		Set<String> set = bannedCaps.deepCopy().keySet();
@@ -707,11 +719,10 @@ public class Run {
 				bannedCaps.remove(cap);
 		
 		boolean changed = false;
-		JsonArray caps = null;
 		
 		JsonObject favs = Configs.getObj(name, Configs.favs);
 		
-		String di = ""+Configs.getInt(name, Configs.dungeonSlot);
+		String di = Configs.getStr(name, Configs.dungeonSlot);
 		
 		boolean ctNull = true;
 		int c = 1;
@@ -736,10 +747,9 @@ public class Run {
 					if(ct == null) {
 						if(ctNull)
 							StreamRaiders.log(name + ": Run -> captains: ct=null", null);
-						caps = getCaps(raids[i]);
 						ctNull = false;
 						bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
-						switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, caps);
+						switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, getCaps(raids[i]));
 						changed = true;
 						breakout = false;
 						continue;
@@ -758,11 +768,11 @@ public class Run {
 							ct.contains("dungeon") ||
 							!Configs.getChestBoolean(name, ct, Configs.enabled) ||
 							loy < Configs.getChestInt(name, ct, Configs.minc) ||
-							loy > (max < 0 ? Integer.MAX_VALUE : max)
+							loy > (max < 0 ? Integer.MAX_VALUE : max) ||
+							(raids[i].get(SRC.Raid.userSortIndex).equals(di) && !ct.contains("dungeons"))
 							) {
-						caps = getCaps(raids[i]);
 						bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
-						switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, caps);
+						switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, getCaps(raids[i]));
 						changed = true;
 						breakout = false;
 					}
@@ -772,8 +782,7 @@ public class Run {
 					if(!got[i]) {
 						if(Configs.isSlotBlocked(name, ""+i))
 							continue;
-						caps = getCaps(""+i);
-						switchRaid(""+i, false, caps);
+						switchRaid(""+i, false, getCaps(""+i));
 						changed = true;
 						breakout = false;
 					}
@@ -812,7 +821,7 @@ public class Run {
 	}
 	
 	private JsonArray getCaps(String usi) throws URISyntaxException, IOException, NoInternetException, NoCapMatchException {
-		if(usi.equals(""+Configs.getInt(name, Configs.dungeonSlot))) {
+		if(usi.equals(""+Configs.getStr(name, Configs.dungeonSlot))) {
 			if(dcaps == null) {
 				dcaps = new JsonArray();
 				searchCaps(dcaps, SRC.Search.dungeons);
@@ -839,7 +848,7 @@ public class Run {
 		}
 	}
 	
-	private boolean switchRaid(String sortIndex, boolean rem, JsonArray caps) throws URISyntaxException, IOException, NoInternetException, SilentException {
+	private boolean switchRaid(String sortIndex, boolean rem, JsonArray caps) throws URISyntaxException, IOException, NoInternetException, SilentException, NotAuthorizedException {
 		JsonObject cap = null;
 		int oldLoy = -1;
 

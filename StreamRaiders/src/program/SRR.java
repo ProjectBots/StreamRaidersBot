@@ -108,8 +108,10 @@ public class SRR {
 		this.gameDataVersion = getUser.getAsJsonObject("info").getAsJsonPrimitive("dataVersion").getAsString();
 		try {
 			JsonObject data = getUser.getAsJsonObject("data");
+			this.isCaptain = "0";
 			this.userId = data.getAsJsonPrimitive("userId").getAsString();
-			this.isCaptain = data.getAsJsonPrimitive("isCaptain").getAsString();
+			if(userId.endsWith("c"))
+				userId = data.getAsJsonPrimitive("otherUserId").getAsString();
 		} catch (ClassCastException e) {
 			JsonElement err = getUser.get(SRC.errorMessage);
 			if(err.isJsonPrimitive() && err.getAsString().equals("User is not authorized.")) {
@@ -118,11 +120,9 @@ public class SRR {
 				StreamRaiders.log("SRR -> constructor: getUser=" + getUser, e);
 				throw new Run.SilentException();
 			}
-			
-			
 		}
-		
 	}
+	
 	
 	
 	public Http getPost(String cn) {
@@ -140,7 +140,7 @@ public class SRR {
 		
 		if(userId != null && addUser) {
 			post.addEncArg("userId", userId);
-			post.addEncArg("isCaptain", "0");
+			post.addEncArg("isCaptain", isCaptain);
 		}
 		post.addEncArg("gameDataVersion", gameDataVersion);
 		post.addEncArg("command", cn);
@@ -289,7 +289,7 @@ public class SRR {
 		return sendPost(post);
 	}
 	
-	//dungeonchest
+	
 	public String purchaseChestItem(String itemId) throws URISyntaxException, IOException, NoInternetException {
 		Http post = getPost("purchaseChestItem");
 		post.addEncArg("itemId", itemId);

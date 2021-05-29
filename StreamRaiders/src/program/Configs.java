@@ -59,9 +59,14 @@ public class Configs {
 	}
 	
 	public static final Str cookies = new Str("cookies");
+	public static final Str dungeonSlot = new Str("dungeonSlot");
 	
 	public static String getStr(String name, Str con) {
 		return configs.getAsJsonObject(name).getAsJsonPrimitive(con.get()).getAsString();
+	}
+	
+	public static void setStr(String name, Str con, String val) {
+		configs.getAsJsonObject(name).addProperty(con.get(), val);
 	}
 	
 	
@@ -72,7 +77,6 @@ public class Configs {
 	}
 	
 	public static final Int maxPage = new Int("maxPage");
-	public static final Int dungeonSlot = new Int("dungeonSlot");
 	
 	public static int getInt(String name, Int con) {
 		return configs.getAsJsonObject(name).getAsJsonPrimitive(con.get()).getAsInt();
@@ -710,7 +714,7 @@ public class Configs {
 				setSlotLocked(name, keys[1], imp.getAsJsonPrimitive(key).getAsBoolean());
 				break;
 			case "dungeonSlot":
-				setInt(name, dungeonSlot, imp.getAsJsonPrimitive(key).getAsInt());
+				setStr(name, dungeonSlot, imp.getAsJsonPrimitive(key).getAsString());
 				break;
 			case "time":
 				if(keys[1].equals("max")) {
