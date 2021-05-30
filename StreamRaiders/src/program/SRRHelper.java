@@ -248,8 +248,6 @@ public class SRRHelper {
 	
 	public String updateRaids() throws SilentException, NoInternetException, NotAuthorizedException {
 		JsonObject jo = JsonParser.parseObj(req.getActiveRaidsByUser());
-		if(jo == null)
-			jo = JsonParser.parseObj(req.getActiveRaidsByUser());
 		try {
 			JsonArray rs = jo.getAsJsonArray("data");
 			raids = new Raid[0];
