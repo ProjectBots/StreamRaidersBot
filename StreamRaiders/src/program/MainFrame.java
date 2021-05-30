@@ -7,7 +7,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -1149,7 +1148,7 @@ public class MainFrame {
 				
 				sgui.addContainer(chests);
 				
-				//TODO
+				
 				Container cdslot = new Container();
 				cdslot.setPos(0, g++);
 				
@@ -1399,7 +1398,7 @@ public class MainFrame {
 		JsonArray caps;
 		try {
 			caps = profiles.get(name).getSRRH().search(1, 8, false, false, SRC.Search.all, true, dname);
-		} catch (URISyntaxException | IOException | NoInternetException e) {
+		} catch (NoInternetException e) {
 			StreamRaiders.log(name + " -> MainFrame -> searchCap: err=failed to search captain", e);
 			return;
 		} catch (NullPointerException e) {
@@ -1560,7 +1559,6 @@ public class MainFrame {
 				gui.refresh();
 			}
 		} catch (IOException e) {}
-		
 	}
 
 	public static void close() {

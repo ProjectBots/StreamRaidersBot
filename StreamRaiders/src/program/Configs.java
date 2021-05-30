@@ -503,6 +503,10 @@ public class Configs {
 			return cnames.toString();
 		}
 		
+		public static void reset() {
+			names = new StringBuilder();
+			cnames = new StringBuilder();
+		}
 		
 		private JsonObject content;
 		private String name;
@@ -533,6 +537,7 @@ public class Configs {
 	private static InPro[] inPros;
 	
 	public static void importConfig(GUI parent) {
+		InPro.reset();
 		JsonObject in;
 		try {
 			in = JsonParser.parseObj(NEF.read(parent.showFileChooser("Export Config", false, new FileNameExtensionFilter("Json Files", "json")).getAbsolutePath()));

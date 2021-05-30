@@ -1,8 +1,6 @@
 package program;
 
 import java.awt.Color;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -69,7 +67,9 @@ public class Run {
 				try {
 					Raid[] raids = srrh.getRaids();
 					if(index < raids.length) {
-						srrh.loadMap(srrh.getRaids()[index]);
+						try {
+							srrh.loadMap(srrh.getRaids()[index]);
+						} catch (DungeonException e) {}
 						Map map = srrh.getMap();
 						MapConv.asGui(map);
 					}
@@ -337,7 +337,7 @@ public class Run {
 	
 	private String[] neededUnits = new String[0];
 
-	private void claimQuests() throws URISyntaxException, IOException, NoInternetException {
+	private void claimQuests() throws NoInternetException {
 		srrh.updateQuests();
 		
 		neededUnits = srrh.getNeededUnitTypesForQuests();
@@ -352,7 +352,7 @@ public class Run {
 	
 	private List<String> potionsTiers = Arrays.asList("5,11,14,22,29".split(","));
 	
-	private void collectEvent() throws URISyntaxException, IOException, NoInternetException {
+	private void collectEvent() throws NoInternetException {
 		srrh.updateEvent();
 		
 		if(!srrh.isEvent()) return;
@@ -374,7 +374,7 @@ public class Run {
 		}
 	}
 	
-	private void unlock() throws URISyntaxException, IOException, NoInternetException, SilentException {
+	private void unlock() throws NoInternetException, SilentException {
 		Unit[] unlockable = srrh.getUnits(SRC.Helper.canUnlockUnit);
 		if(unlockable.length == 0)
 			return;
@@ -401,11 +401,13 @@ public class Run {
 	}
 	
 	
-	private void store() throws URISyntaxException, IOException, NoInternetException {
-		String err = srrh.buyDungeonChest();
-		if(err != null && !(err.equals("after end") || err.equals("not enough keys")))
-			StreamRaiders.log(name+" -> Run -> store -> buyDungeonChest: err="+err, null);
+	private void store() throws NoInternetException {
 		
+		try {
+			String err = srrh.buyDungeonChest();
+			if(err != null && !(err.equals("after end") || err.equals("not enough keys")))
+				StreamRaiders.log(name+" -> Run -> store -> buyDungeonChest: err="+err, null);
+		} catch (NullPointerException e) {}
 		
 		JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
 		if(items.size() == 0)
@@ -444,7 +446,7 @@ public class Run {
 			if(ps[ind] < 0)
 				break;
 			
-			err = srrh.buyItem(items.get(ind).getAsJsonObject());
+			String err = srrh.buyItem(items.get(ind).getAsJsonObject());
 			if(err != null && !err.equals("not enough gold"))
 				StreamRaiders.log(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, null);
 			
@@ -454,7 +456,7 @@ public class Run {
 	}
 	
 	
-	private void upgradeUnits() throws URISyntaxException, IOException, NoInternetException, SilentException {
+	private void upgradeUnits() throws NoInternetException, SilentException {
 		Unit[] us = srrh.getUnits(SRC.Helper.canUpgradeUnit);
 		if(us.length == 0)
 			return;
@@ -486,7 +488,7 @@ public class Run {
 	
 	public static final String[] pveloy = "? bronze silver gold".split(" ");
 	
-	private boolean raids() throws URISyntaxException, IOException, NoInternetException, SilentException, NotAuthorizedException {
+	private boolean raids() throws NoInternetException, SilentException, NotAuthorizedException {
 		boolean ret = false;
 		
 		JsonObject favs = Configs.getObj(name, Configs.favs);
@@ -684,7 +686,7 @@ public class Run {
 	}
 	
 	
-	private boolean chests() throws URISyntaxException, IOException, NoInternetException, SilentException, NotAuthorizedException {
+	private boolean chests() throws NoInternetException, SilentException, NotAuthorizedException {
 		Raid[] rera = srrh.getRaids(SRC.Helper.isReward);
 		if(rera.length != 0) {
 			for(int i=0; i<rera.length; i++) {
@@ -710,7 +712,7 @@ public class Run {
 	
 	private JsonObject bannedCaps = new JsonObject();
 	
-	private boolean captains() throws URISyntaxException, IOException, NoInternetException, SilentException, NotAuthorizedException {
+	private boolean captains() throws NoInternetException, SilentException, NotAuthorizedException {
 		int uCount = srrh.getUnits(SRC.Helper.all).length;
 		Raid[] raids = srrh.getRaids(SRC.Helper.all);
 		Set<String> set = bannedCaps.deepCopy().keySet();
@@ -816,11 +818,11 @@ public class Run {
 	}
 	
 	
-	private JsonArray getCaps(Raid raid) throws URISyntaxException, IOException, NoInternetException, NoCapMatchException {
+	private JsonArray getCaps(Raid raid) throws NoInternetException, NoCapMatchException {
 		return getCaps(raid.get(SRC.Raid.userSortIndex));
 	}
 	
-	private JsonArray getCaps(String usi) throws URISyntaxException, IOException, NoInternetException, NoCapMatchException {
+	private JsonArray getCaps(String usi) throws NoInternetException, NoCapMatchException {
 		if(usi.equals(""+Configs.getStr(name, Configs.dungeonSlot))) {
 			if(dcaps == null) {
 				dcaps = new JsonArray();
@@ -840,7 +842,7 @@ public class Run {
 		}
 	}
 	
-	private void searchCaps(JsonArray caps, String mode) throws URISyntaxException, IOException, NoInternetException {
+	private void searchCaps(JsonArray caps, String mode) throws NoInternetException {
 		int pages = 3;
 		for(int i=1; i<pages && i<=Configs.getInt(name, Configs.maxPage); i++) {
 			caps.addAll(srrh.search(i, 6, false, true, mode, false, null));
@@ -848,7 +850,7 @@ public class Run {
 		}
 	}
 	
-	private boolean switchRaid(String sortIndex, boolean rem, JsonArray caps) throws URISyntaxException, IOException, NoInternetException, SilentException, NotAuthorizedException {
+	private boolean switchRaid(String sortIndex, boolean rem, JsonArray caps) throws NoInternetException, SilentException, NotAuthorizedException {
 		JsonObject cap = null;
 		int oldLoy = -1;
 

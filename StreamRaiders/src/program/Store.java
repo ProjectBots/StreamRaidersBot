@@ -1,7 +1,5 @@
 package program;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
@@ -23,12 +21,12 @@ public class Store {
 	private JsonArray shopItems = new JsonArray();
 	private Hashtable<String, Integer> currency = new Hashtable<>();
 	
-	public Store(SRR req) throws URISyntaxException, IOException, NoInternetException {
+	public Store(SRR req) throws NoInternetException {
 		refreshCurrency(req);
 		refreshStoreItems(req);
 	}
 	
-	public void refreshCurrency(SRR req) throws URISyntaxException, IOException, NoInternetException {
+	public void refreshCurrency(SRR req) throws NoInternetException {
 		currency = new Hashtable<>();
 		JsonArray cs = JsonParser.parseObj(req.getAvailableCurrencies()).getAsJsonArray("data");
 		for(int i=0; i<cs.size(); i++) {
@@ -37,7 +35,7 @@ public class Store {
 		}
 	}
 	
-	public void refreshStoreItems(SRR req) throws URISyntaxException, IOException, NoInternetException {
+	public void refreshStoreItems(SRR req) throws NoInternetException {
 		shopItems = JsonParser.parseObj(req.getCurrentStoreItems()).getAsJsonArray("data");
 	}
 	
@@ -119,7 +117,7 @@ public class Store {
 	}
 	
 	
-	public String upgradeUnit(Unit unit, SRR req, String specUID) throws URISyntaxException, IOException, NoInternetException {
+	public String upgradeUnit(Unit unit, SRR req, String specUID) throws NoInternetException {
 		String lvl = unit.get(SRC.Unit.level);
 		JsonObject ret;
 		int cost = Integer.parseInt(
@@ -146,7 +144,7 @@ public class Store {
 	}
 	
 	
-	public String unlockUnit(String type, boolean dupe, SRR req) throws URISyntaxException, IOException, NoInternetException {
+	public String unlockUnit(String type, boolean dupe, SRR req) throws NoInternetException {
 		
 		int price = 0;
 		if(!canUnlockUnit(type, dupe)) return "not enough gold";
@@ -186,7 +184,7 @@ public class Store {
 	}
 	
 	
-	public String buyItem(JsonObject item, SRR req) throws URISyntaxException, IOException, NoInternetException {
+	public String buyItem(JsonObject item, SRR req) throws NoInternetException {
 		if(item.getAsJsonPrimitive("purchased").getAsInt() == 1) return "already purchased";
 		
 		int price = item.getAsJsonPrimitive("price").getAsInt();
@@ -204,7 +202,7 @@ public class Store {
 		return null;
 	}
 	
-	public String buyDungeonChest(String serverTime, SRR req) throws URISyntaxException, IOException, NoInternetException {
+	public String buyDungeonChest(String serverTime, SRR req) throws NoInternetException {
 		if(Time.isAfter(serverTime, "2021-06-15 19:00:00"))
 			return "after end";
 		

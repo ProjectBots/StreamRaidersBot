@@ -39,7 +39,7 @@ public class Browser {
 	private static boolean isTransparent = false;
 
 	
-	public static void create() throws IOException, RuntimeException {
+	public static void create() throws RuntimeException, IOException {
 		
 		
 		CefApp.addAppHandler(new CefAppHandlerAdapter(null) {

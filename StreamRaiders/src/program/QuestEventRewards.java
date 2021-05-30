@@ -1,8 +1,5 @@
 package program;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -62,7 +59,7 @@ public class QuestEventRewards {
 			return slot;
 		}
 		
-		public String claim(SRR req) throws URISyntaxException, IOException, NoInternetException {
+		public String claim(SRR req) throws NoInternetException {
 			JsonElement err = JsonParser.parseObj(req.collectQuestReward(slot)).get(SRC.errorMessage);
 			if(err.isJsonPrimitive()) return err.getAsString();
 			return null;
@@ -86,7 +83,7 @@ public class QuestEventRewards {
 	}
 	
 	
-	public void updateQuests(SRR req) throws URISyntaxException, IOException, NoInternetException {
+	public void updateQuests(SRR req) throws NoInternetException {
 		questTypes = JsonParser.parseObj(StreamRaiders.get("quests"));
 		
 		JsonArray raw = JsonParser.parseObj(req.getUserQuests()).getAsJsonArray("data");
@@ -109,7 +106,7 @@ public class QuestEventRewards {
 	
 	
 	
-	public void updateEvent(SRR req) throws URISyntaxException, IOException, NoInternetException {
+	public void updateEvent(SRR req) throws NoInternetException {
 		JsonObject fullRaw = JsonParser.parseObj(req.getUserEventProgression());
 		String st = fullRaw.getAsJsonObject("info").getAsJsonPrimitive("serverTime").getAsString();
 		JsonArray data = fullRaw.getAsJsonArray("data");
@@ -178,7 +175,7 @@ public class QuestEventRewards {
 		return !e.getAsBoolean();
 	}
 	
-	public String collectEvent(int p, boolean battlePass, SRR req) throws URISyntaxException, IOException, NoInternetException {
+	public String collectEvent(int p, boolean battlePass, SRR req) throws NoInternetException {
 		if(!canCollectEvent(p, battlePass)) return "cant collect";
 		JsonElement err = JsonParser.parseObj(req.grantEventReward(currentEvent, ""+p, battlePass)).get(SRC.errorMessage);
 		return err.isJsonPrimitive() ? err.getAsString() : null;
