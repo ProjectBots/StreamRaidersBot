@@ -29,6 +29,7 @@ import include.NEF;
 public class Configs {
 
 	private static final String path = "data\\configs.json";
+	private static final String bpath = "data\\configs_.json";
 	
 
 	private static JsonObject configs = null;
@@ -77,6 +78,7 @@ public class Configs {
 	}
 	
 	public static final Int maxPage = new Int("maxPage");
+	public static final Int unitPlaceDelay = new Int("unitPlaceDelay");
 	
 	public static int getInt(String name, Int con) {
 		return configs.getAsJsonObject(name).getAsJsonPrimitive(con.get()).getAsInt();
@@ -270,13 +272,19 @@ public class Configs {
 		if(create) {
 			configs = new JsonObject();
 		} else {
+			JsonObject def = JsonParser.parseObj(StreamRaiders.get("defConfig"));
 			try {
-				configs = JsonParser.parseObj(NEF.read(path));
-				JsonObject def = JsonParser.parseObj(StreamRaiders.get("defConfig"));
+				configs = JsonParser.parseObj(NEF.read(bpath));
 				for(String key : configs.keySet())
 					JsonParser.check(configs.getAsJsonObject(key), def);
-			} catch (FileNotFoundException e) {
-				configs = new JsonObject();
+			} catch (IOException e) {
+				try {
+					configs = JsonParser.parseObj(NEF.read(path));
+					for(String key : configs.keySet())
+						JsonParser.check(configs.getAsJsonObject(key), def);
+				} catch (FileNotFoundException e1) {
+					configs = new JsonObject();
+				}
 			}
 		}
 	}
@@ -319,13 +327,24 @@ public class Configs {
 	public static void save() {
 		try {
 			NEF.save(path, JsonParser.prettyJson(configs));
+			File bc = new File(bpath);
+			if(bc.exists())
+				bc.delete();
+		} catch (IOException e) {
+			StreamRaiders.log("Failed to save configs", e);
+		}
+	}
+	
+	public static void saveb() {
+		try {
+			NEF.save(bpath, JsonParser.prettyJson(configs));
 		} catch (IOException e) {
 			StreamRaiders.log("Failed to save configs", e);
 		}
 	}
 	
 	
-	private static String[] exopts = "cookies unit_place unit_upgrade unit_unlock unit_dupe unit_buy unit_spec chests_min chests_max chests_enabled blockedSlots lockedSlots dungeonSlot time maxPage favs stats".split(" ");
+	private static String[] exopts = "cookies unit_place unit_upgrade unit_unlock unit_dupe unit_buy unit_spec chests_min chests_max chests_enabled blockedSlots lockedSlots dungeonSlot time maxPage unitPlaceDelay favs stats".split(" ");
 	
 	public static void exportConfig(GUI parent) {
 		
@@ -469,6 +488,10 @@ public class Configs {
 			
 			if(b || GUI.isCButSelected("ex::maxPage")) {
 				pro.add("maxPage", con.get("maxPage"));
+			}
+			
+			if(b || GUI.isCButSelected("ex::unitPlaceDelay")) {
+				pro.add("unitPlaceDelay", con.get("unitPlaceDelay"));
 			}
 			
 			if(b || GUI.isCButSelected("ex::favs")) {
@@ -730,6 +753,9 @@ public class Configs {
 				break;
 			case "maxPage":
 				setInt(name, maxPage, imp.getAsJsonPrimitive(key).getAsInt());
+				break;
+			case "unitPlaceDelay":
+				setInt(name, unitPlaceDelay, imp.getAsJsonPrimitive(key).getAsInt());
 				break;
 			case "favs":
 				setObj(name, favs, JsonParser.parseObj(imp.getAsJsonPrimitive(key).getAsString()));

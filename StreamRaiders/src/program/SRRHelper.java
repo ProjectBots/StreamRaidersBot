@@ -68,12 +68,14 @@ public class SRRHelper {
 		StreamRaiders.set("mapNodes", data.getAsJsonObject("MapNodes").toString());
 		StreamRaiders.set("events", data.getAsJsonObject("Events").toString());
 		StreamRaiders.set("specsRaw", data.getAsJsonObject("Specialization").toString());
+		StreamRaiders.set("store", data.getAsJsonObject("Store").toString());
 		GuideContent.saveChestRewards(data);
 		GuideContent.gainStats(data.getAsJsonObject("Units"));
 		StreamRaiders.set("data", dataPath);
 		StreamRaiders.save();
 		try {
-			req.reload();
+			if(req != null)
+				req.reload();
 		} catch (OutdatedDataException e) {
 			StreamRaiders.log("SRRHelper -> updateDataPath: err=failed to update data path", e);
 		}
@@ -455,21 +457,6 @@ public class SRRHelper {
 		return ret.toString();
 	}
 	
-	/*
-	private static Unit[] add(Unit[] arr, Unit item) {
-		Unit[] arr2 = new Unit[arr.length + 1];
-		System.arraycopy(arr, 0, arr2, 0, arr.length);
-		arr2[arr.length] = item;
-		return arr2;
-	}
-	
-	private static Raid[] add(Raid[] arr, Raid item) {
-		Raid[] arr2 = new Raid[arr.length + 1];
-		System.arraycopy(arr, 0, arr2, 0, arr.length);
-		arr2[arr.length] = item;
-		return arr2;
-	}
-	*/
 	private static <T>T[] add(T[] arr, T item) {
 		return ArrayUtils.add(arr, item);
 	}

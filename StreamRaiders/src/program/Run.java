@@ -22,6 +22,7 @@ import include.GUI;
 import include.GUI.Image;
 import include.GUI.Label;
 import include.Heatmap;
+import include.JsonParser;
 import include.Pathfinding;
 import program.QuestEventRewards.Quest;
 import program.SRR.NoInternetException;
@@ -400,6 +401,11 @@ public class Run {
 		}
 	}
 	
+	private JsonObject bought = new JsonObject();
+	
+	public JsonObject getBoughtItems() {
+		return bought;
+	}
 	
 	private void store() throws NoInternetException {
 		
@@ -407,6 +413,13 @@ public class Run {
 			String err = srrh.buyDungeonChest();
 			if(err != null && !(err.equals("after end") || err.equals("not enough keys")))
 				StreamRaiders.log(name+" -> Run -> store -> buyDungeonChest: err="+err, null);
+			if(err == null) {
+				if(bought.has("dungeonchest"))
+					bought.addProperty("dungeonchest", bought.get("dungeonchest").getAsInt() + 1);
+				else 
+					bought.addProperty("dungeonchest", 1);
+				
+			}
 		} catch (NullPointerException e) {}
 		
 		JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
@@ -414,16 +427,17 @@ public class Run {
 			return;
 		
 		int[] ps = new int[items.size()];
+		String[] types = new String[items.size()];
 		for(int i=0; i<items.size(); i++) {
 			try {
-				String type = items.get(i).getAsJsonObject()
+				types[i] = items.get(i).getAsJsonObject()
 						.getAsJsonPrimitive("itemId")
 						.getAsString()
 						.split("pack")[0]
 						.replace("scroll", "")
 						.replace("paladin", "alliespaladin");
 			
-				ps[i] = Configs.getUnitInt(name, type, Configs.buy);
+				ps[i] = Configs.getUnitInt(name, types[i], Configs.buy);
 				
 			} catch (NullPointerException e) {
 				JsonElement itemId = items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId");
@@ -437,6 +451,8 @@ public class Run {
 			}
 		}
 		
+		JsonObject packs = JsonParser.parseObj(StreamRaiders.get("store"));
+		
 		while(true) {
 			int ind = 0;
 			for(int i=1; i<ps.length; i++)
@@ -449,6 +465,15 @@ public class Run {
 			String err = srrh.buyItem(items.get(ind).getAsJsonObject());
 			if(err != null && !err.equals("not enough gold"))
 				StreamRaiders.log(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, null);
+			
+			int amount = packs.get(items.get(ind).getAsJsonObject().get("itemId").getAsString())
+					.getAsJsonObject().get("Quantity").getAsInt();
+			
+			if(bought.has(types[ind]))
+				bought.addProperty(types[ind], bought.get(types[ind]).getAsInt() + amount);
+			else 
+				bought.addProperty(types[ind], amount);
+			
 			
 			ps[ind] = -1;
 		}
@@ -557,6 +582,12 @@ public class Run {
 			for(int i=0; i<plra.length; i++) {
 				if(Configs.isSlotBlocked(name, plra[i].get(SRC.Raid.userSortIndex)))
 					continue;
+				
+				if(i!=0) {
+					try {
+						Thread.sleep(Configs.getInt(name, Configs.unitPlaceDelay));
+					} catch (InterruptedException e) {}
+				}
 				try {
 					if(units.length == 0) {
 						break;

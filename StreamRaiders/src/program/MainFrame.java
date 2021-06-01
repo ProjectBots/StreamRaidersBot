@@ -734,6 +734,11 @@ public class MainFrame {
 					text += "|" + key + " " + rews.getAsJsonPrimitive(key).getAsString() + "\n";
 				}
 				
+				JsonObject bought = profiles.get(name).getBoughtItems();
+				StringBuilder sb = new StringBuilder("bought from store:\n");
+				for(String key : bought.keySet())
+					sb.append(key + " " + bought.get(key).getAsString() + "\n");
+				
 				GUI guir = new GUI("Rewards for " + name, 300, 300, gui, null);
 				
 				TextArea ta = new TextArea();
@@ -741,6 +746,14 @@ public class MainFrame {
 				ta.setText(text);
 				ta.setPos(0, 0);
 				guir.addTextArea(ta);
+				
+				TextArea ta1 = new TextArea();
+				ta1.setEditable(false);
+				ta1.setText(sb.substring(0, sb.length()-1));
+				ta1.setPos(0, 1);
+				guir.addTextArea(ta1);
+				
+				
 				
 			}
 		});
@@ -757,6 +770,21 @@ public class MainFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				GUI sgui = new GUI("Profile Settings", 900, 800, gui, null);
+				
+				sgui.addWinLis(new WinLis() {
+					@Override
+					public void onIconfied(WindowEvent e) {}
+					@Override
+					public void onFocusLost(WindowEvent e) {}
+					@Override
+					public void onFocusGained(WindowEvent e) {}
+					@Override
+					public void onDeIconfied(WindowEvent e) {}
+					@Override
+					public void onClose(WindowEvent e) {
+						Configs.saveb();
+					}
+				});
 				
 				int g = 0;
 				
@@ -1342,6 +1370,40 @@ public class MainFrame {
 				
 				sgui.addContainer(mpc);
 				
+				
+				Container cupd = new Container();
+				cupd.setPos(0, g++);
+				
+				Label lupd = new Label();
+				lupd.setPos(0, 0);
+				lupd.setText("Unit place delay");
+				cupd.addLabel(lupd);
+				
+				TextField tupd = new TextField();
+				tupd.setPos(1, 0);
+				tupd.setText(""+ (float) Configs.getInt(name, Configs.unitPlaceDelay) / 1000);
+				tupd.setSize(80, 23);
+				tupd.setAL(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						setUnitPlaceDelay(name, sgui);
+					}
+				});
+				cupd.addTextField(tupd, name+"::tupd");
+				
+				Button bupd = new Button();
+				bupd.setPos(2, 0);
+				bupd.setText("\uD83D\uDDD8 update");
+				bupd.setAL(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						setMaxPage(name, sgui);
+					}
+				});
+				cupd.addBut(bupd);
+				
+				sgui.addContainer(cupd);
+				
 				Button resStat = new Button();
 				resStat.setPos(0, g++);
 				resStat.setInsets(20, 10, 20, 2);
@@ -1387,6 +1449,17 @@ public class MainFrame {
 			if(mp < 1)
 				throw new NumberFormatException();
 			Configs.setInt(name, Configs.maxPage, mp);
+		} catch (NumberFormatException e) {
+			sgui.msg("Wrong input", "You can't do this", GUI.MsgConst.WARNING);
+		}
+	}
+	
+	private static void setUnitPlaceDelay(String name, GUI sgui) {
+		try {
+			int mp = (int) Math.round(Float.parseFloat(GUI.getInputText(name+"::tupd")) * 1000);
+			if(mp < 0)
+				throw new NumberFormatException();
+			Configs.setInt(name, Configs.unitPlaceDelay, mp);
 		} catch (NumberFormatException e) {
 			sgui.msg("Wrong input", "You can't do this", GUI.MsgConst.WARNING);
 		}

@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Hashtable;
 
+import include.ArgSplitter;
+import include.ArgSplitter.Arg;
 import include.GUI;
 import include.GUI.Image;
 import include.GUI.Label;
@@ -105,28 +107,32 @@ public class StreamRaiders {
 			
 			return;
 		}
-
-		if(args.length != 0) {
-			String[] argss = args[0].split("=");
-			if(argss.length == 2 && argss[0].equals("-debug")) {
-				args[0] = argss[0];
-				try {
-					NEF.save(argss[1], "");
-				} catch (IOException e) {
-					log("StreamRaiders -> main: err=failed to create debug file, path=" + argss[1], e);
+		
+		ArgSplitter as = new ArgSplitter();
+		as.registerArg("debug", new Arg() {
+			@Override
+			public void run(String[] args) {
+				int i = 0;
+				if(args[0].startsWith("=")) {
+					String s = args[0].substring(1);
+					try {
+						NEF.save(s, "");
+						Debug.setOutputFile(s);
+					} catch (IOException e) {
+						log("StreamRaiders -> main: err=failed to create debug file, path=" + s, e);
+					}
+					i++;
 				}
-				Debug.setOutputFile(argss[1]);
-			}
-			if(args[0].toLowerCase().equals("-debug")) 
-				if(args.length == 1) 
+				
+				if(i == args.length) 
 					Debug.addScope("general");
 				else 
-					for(int i=1; i<args.length; i++)
+					for(; i<args.length; i++)
 						Debug.addScope(args[i]);
-			
-		}
-		
-		
+			}
+		});
+		as.check(args);
+
 		Debug.print("started", Debug.general);
 		
 		Raid.loadTypViewChestRews();
