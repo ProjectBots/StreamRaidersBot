@@ -89,6 +89,23 @@ public class Configs {
 	}
 	
 	
+	private static class Boo extends All {
+		public Boo(String con) {
+			super(con);
+		}
+	}
+	
+	public static final Boo canBuyDungeonChest = new Boo("canBuyDungeonChest");
+	
+	public static boolean getBoolean(String name, Boo con) {
+		return configs.getAsJsonObject(name).getAsJsonPrimitive(con.get()).getAsBoolean();
+	}
+	
+	public static void setBoolean(String name, Boo con, boolean val) {
+		configs.getAsJsonObject(name).addProperty(con.get(), val);
+	}
+	
+	
 	public static class Obj extends All {
 		public Obj(String con) {
 			super(con);
@@ -344,7 +361,7 @@ public class Configs {
 	}
 	
 	
-	private static String[] exopts = "cookies unit_place unit_upgrade unit_unlock unit_dupe unit_buy unit_spec chests_min chests_max chests_enabled blockedSlots lockedSlots dungeonSlot time maxPage unitPlaceDelay favs stats".split(" ");
+	private static String[] exopts = "cookies unit_place unit_upgrade unit_unlock unit_dupe unit_buy unit_spec chests_min chests_max chests_enabled blockedSlots lockedSlots dungeonSlot time maxPage unitPlaceDelay canBuyDungeonChest favs stats".split(" ");
 	
 	public static void exportConfig(GUI parent) {
 		
@@ -381,7 +398,8 @@ public class Configs {
 			cb.setInsets(2, 40, 2, 2);
 			gui.addCheckBox(cb);
 			
-			GUI.setCButSelected("ex::" + key, true);
+			if(!key.equals("cookies"))
+				GUI.setCButSelected("ex::" + key, true);
 		}
 		
 		
@@ -486,12 +504,18 @@ public class Configs {
 				pro.add("time_min", time.get("min"));
 			}
 			
+			
+			
 			if(b || GUI.isCButSelected("ex::maxPage")) {
 				pro.add("maxPage", con.get("maxPage"));
 			}
 			
 			if(b || GUI.isCButSelected("ex::unitPlaceDelay")) {
 				pro.add("unitPlaceDelay", con.get("unitPlaceDelay"));
+			}
+			
+			if(b || GUI.isCButSelected("ex::canBuyDungeonChest")) {
+				pro.add("canBuyDungeonChest", con.get("canBuyDungeonChest"));
 			}
 			
 			if(b || GUI.isCButSelected("ex::favs")) {
@@ -756,6 +780,9 @@ public class Configs {
 				break;
 			case "unitPlaceDelay":
 				setInt(name, unitPlaceDelay, imp.getAsJsonPrimitive(key).getAsInt());
+				break;
+			case "canBuyDungeonChest":
+				setBoolean(name, canBuyDungeonChest, imp.getAsJsonPrimitive(key).getAsBoolean());
 				break;
 			case "favs":
 				setObj(name, favs, JsonParser.parseObj(imp.getAsJsonPrimitive(key).getAsString()));

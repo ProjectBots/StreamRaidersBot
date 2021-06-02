@@ -47,12 +47,12 @@ public class GuideContent {
 		g.addReference("Other Projects");
 		
 		g.addSubject("Head Section");
-		g.addSection(null, genBasicImage("head.png"));
-		g.addSection("Time Skip", genBasicLabel("<html>Skips the time for every Profile</html>"));
-		g.addSection("Refresh", genBasicLabel("<html>Force Reloads the config File.<br>Causes the removal of every change to<br>the settings and stats since last restart.</html>"));
-		g.addSection("Guide", genBasicLabel("<html>Shows this Guide</html>"));
+		g.addSection("Bot", genBasicLabel("<html><font size=5>Guide</font><br>open this Guide<br><br><font size=5>General</font><br>opens the general menu<br><br><font size=5>Add a Profile</font><br>opens the add a profile menu<br><br><font size=5>start all</font><br>starts all non running profiles<br><br><font size=5>start all delayed</font><br>opens a gui where you can enter the delay<br>in which the profiles should start<br>(start - wait - start - wait ... )<br><br><font size=5>stop all</font><br>stops every running profile<br><br><font size=5>skip time all</font><br>skips the time for every profile<br><br><font size=5>skip time all delayed</font><br>opens a gui where you can enter the delay<br>in which the profiles should skip the time<br>(skip - wait - skip - wait ... )<br><br><font size=5>reload Config</font><br>Force Reloads the config File.<br>Causes the removal of every change to<br>the settings and stats since last restart.</html>"));
+		g.addSection("Config", genBasicLabel(""));
 		g.addReference("Add a Profile");
 		g.addReference("General");
+		g.addReference("Config Export");
+		g.addReference("Config Import");
 		
 		g.addSubject("Profile Section");
 		g.addSection(null, genBasicImage("profile.png"));
@@ -115,6 +115,10 @@ public class GuideContent {
 				update(-1);
 			}
 		});
+		
+		g.addSubject("Config Export");
+		
+		g.addSubject("Config Import");
 		
 		g.addSubject("Other Projects");
 		g.addSection("JsonExplorer", jsonexplorer());

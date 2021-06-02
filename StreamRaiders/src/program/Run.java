@@ -102,7 +102,7 @@ public class Run {
 						isReloading = false;
 						runs();
 					} catch (NoInternetException e) {
-						StreamRaiders.log(name + ": Run -> Maybe your internet connection failed", e, true);
+						StreamRaiders.log(name + ": Run -> Maybe your internet connection failed", e);
 						GUI.setBackground(name+"::start", Color.red);
 						setRunning(false);
 					} catch (SilentException e) {
@@ -258,7 +258,7 @@ public class Run {
 						resetDateTime();
 						sleep(10);
 					} catch (NoInternetException | HttpHostConnectException e2) {
-						StreamRaiders.log(name + ": Run -> Maybe your internet connection failed", e2, true);
+						StreamRaiders.log(name + ": Run -> Maybe your internet connection failed", e2);
 						setReloading(part, e);
 					} catch (NotAuthorizedException e3) {
 							GUI err = new GUI("User not authorized", 500, 200, MainFrame.getGUI(), null);
@@ -409,18 +409,20 @@ public class Run {
 	
 	private void store() throws NoInternetException {
 		
-		try {
-			String err = srrh.buyDungeonChest();
-			if(err != null && !(err.equals("after end") || err.equals("not enough keys")))
-				StreamRaiders.log(name+" -> Run -> store -> buyDungeonChest: err="+err, null);
-			if(err == null) {
-				if(bought.has("dungeonchest"))
-					bought.addProperty("dungeonchest", bought.get("dungeonchest").getAsInt() + 1);
-				else 
-					bought.addProperty("dungeonchest", 1);
-				
-			}
-		} catch (NullPointerException e) {}
+		if(Configs.getBoolean(name, Configs.canBuyDungeonChest)) {
+			try {
+				String err = srrh.buyDungeonChest();
+				if(err != null && !(err.equals("after end") || err.equals("not enough keys")))
+					StreamRaiders.log(name+" -> Run -> store -> buyDungeonChest: err="+err, null);
+				if(err == null) {
+					if(bought.has("dungeonchest"))
+						bought.addProperty("dungeonchest", bought.get("dungeonchest").getAsInt() + 1);
+					else 
+						bought.addProperty("dungeonchest", 1);
+					
+				}
+			} catch (NullPointerException e) {}
+		}
 		
 		JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
 		if(items.size() == 0)
@@ -464,7 +466,7 @@ public class Run {
 			
 			String err = srrh.buyItem(items.get(ind).getAsJsonObject());
 			if(err != null && !err.equals("not enough gold"))
-				StreamRaiders.log(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, null);
+				StreamRaiders.log(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, null, true);
 			
 			int amount = packs.get(items.get(ind).getAsJsonObject().get("itemId").getAsString())
 					.getAsJsonObject().get("Quantity").getAsInt();
@@ -502,7 +504,7 @@ public class Run {
 			String err = srrh.upgradeUnit(us[ind], Configs.getUnitString(name, us[ind].get(SRC.Unit.unitType), Configs.spec));
 			if(err != null) {
 				if(!(err.equals("no specUID") || err.equals("cant upgrade unit"))) {
-					StreamRaiders.log(name + ": Run -> upgradeUnits: type=" + us[ind].get(SRC.Unit.unitType) + " err=" + err, null);
+					StreamRaiders.log(name + ": Run -> upgradeUnits: type=" + us[ind].get(SRC.Unit.unitType) + " err=" + err, null, true);
 					break;
 				}
 			}
@@ -642,7 +644,7 @@ public class Run {
 								break loop;
 							
 							if(banned.length >= 5) {
-								StreamRaiders.log(name + ": Run -> raids -> unitPlacement: tdn=" + plra[i].get(SRC.Raid.twitchDisplayName) + ", err=" + err, null);
+								StreamRaiders.log(name + ": Run -> raids -> unitPlacement: tdn=" + plra[i].get(SRC.Raid.twitchDisplayName) + ", err=" + err, null, true);
 								break loop;
 							}
 							
@@ -690,6 +692,7 @@ public class Run {
 			
 			if(Arrays.asList(neededUnits).contains(units[j].get(SRC.Unit.unitType))) {
 				unit = units[j];
+				fpt = sps[j];
 				break;
 			}
 			ps[j] = Configs.getUnitInt(name, units[j].get(SRC.Unit.unitType), Configs.place);

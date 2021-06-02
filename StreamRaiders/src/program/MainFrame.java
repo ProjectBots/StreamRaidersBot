@@ -1206,6 +1206,26 @@ public class MainFrame {
 						}
 					});
 					cdslot.addComboBox(dslot);
+					
+					Button bds = new Button();
+					bds.setPos(2, 0);
+					bds.setText("buy dungeon chests");
+					if(Configs.getBoolean(name, Configs.canBuyDungeonChest))
+						bds.setBackground(Color.green);
+					bds.setFont(new Font(null, Font.PLAIN, 23));
+					bds.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							if(Configs.getBoolean(name, Configs.canBuyDungeonChest)) {
+								Configs.setBoolean(name, Configs.canBuyDungeonChest, false);
+								GUI.setBackground(name+"::dslot::bds", GUI.getDefButCol());
+							} else {
+								Configs.setBoolean(name, Configs.canBuyDungeonChest, true);
+								GUI.setBackground(name+"::dslot::bds", Color.green);
+							}
+						}
+					});
+					cdslot.addBut(bds, name+"::dslot::bds");
 				
 				sgui.addContainer(cdslot);
 				

@@ -47,7 +47,7 @@ public class StreamRaiders {
 					out = text;
 				}
 				
-				if(!silent) out += "\n" + sw.toString();
+				out += "\n" + sw.toString();
 			} else {
 				if(text == null) {
 					out = "critical error happend";
@@ -55,15 +55,17 @@ public class StreamRaiders {
 					out = text;
 				}
 			}
-			GUI err = new GUI("Error occured", 400, 200, MainFrame.getGUI(), null);
-			Image img = new Image("data/Other/error.png");
-			err.addImage(img);
-			Label l = new Label();
-			l.setPos(1, 0);
-			l.setText("<html>" + out.replace("\n", "<br>") + "</html>");
-			l.setInsets(2, 10, 2, 2);
-			err.addLabel(l);
-			err.refresh();
+			if(!silent) {
+				GUI err = new GUI("Error occured", 400, 200, MainFrame.getGUI(), null);
+				Image img = new Image("data/Other/error.png");
+				err.addImage(img);
+				Label l = new Label();
+				l.setPos(1, 0);
+				l.setText("<html>" + text.replace("\n", "<br>") + "<br>see logs.app for more informations</html>");
+				l.setInsets(2, 10, 2, 2);
+				err.addLabel(l);
+				err.refresh();
+			}
 			System.err.println(out);
 			NEF.log("logs.app", out);
 		} catch (IOException e1) {
