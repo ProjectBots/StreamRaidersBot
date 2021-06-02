@@ -471,11 +471,12 @@ public class Run {
 			int amount = packs.get(items.get(ind).getAsJsonObject().get("itemId").getAsString())
 					.getAsJsonObject().get("Quantity").getAsInt();
 			
-			if(bought.has(types[ind]))
-				bought.addProperty(types[ind], bought.get(types[ind]).getAsInt() + amount);
-			else 
-				bought.addProperty(types[ind], amount);
-			
+			if(err == null) {
+				if(bought.has(types[ind]))
+					bought.addProperty(types[ind], bought.get(types[ind]).getAsInt() + amount);
+				else 
+					bought.addProperty(types[ind], amount);
+			}
 			
 			ps[ind] = -1;
 		}

@@ -380,13 +380,13 @@ public class SRRHelper {
 			}
 		}
 		
-		String uid = req.getUserId();
+		//String uid = req.getUserId();
 		JsonArray pmnt = JsonParser.parseArr(raid.get(SRC.Raid.placementsSerialized));
 		if(pmnt != null) {
 			for(int i=0; i<pmnt.size(); i++) {
 				JsonObject jo = pmnt.get(i).getAsJsonObject();
-				if(jo.getAsJsonPrimitive("userId").getAsString().equals(uid))
-					bnd = add(bnd, jo.getAsJsonPrimitive(SRC.Unit.unitId).getAsString());
+				//if(jo.getAsJsonPrimitive("userId").getAsString().equals(uid))
+				bnd = add(bnd, jo.getAsJsonPrimitive(SRC.Unit.unitId).getAsString());
 			}
 		}
 		

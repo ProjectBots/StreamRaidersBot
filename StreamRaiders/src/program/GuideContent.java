@@ -16,6 +16,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import com.google.gson.JsonArray;
@@ -26,6 +27,7 @@ import include.Guide;
 import include.Guide.OnLoad;
 import include.JsonParser;
 import include.NEF;
+import program.Run.SilentException;
 
 public class GuideContent {
 
@@ -284,9 +286,9 @@ public class GuideContent {
 	}
 
 	
-	public static void saveChestRewards(JsonObject sheets) {
+	public static void saveChestRewards(JsonObject sheets) throws SilentException {
 		JsonObject chests = sheets.getAsJsonObject("Chests");
-		JsonObject rews = sheets.getAsJsonObject("ChestRewards");
+		JsonObject slots = sheets.getAsJsonObject("ChestRewardSlots");
 		
 		JsonObject complete = new JsonObject();
 		
@@ -301,6 +303,7 @@ public class GuideContent {
 			System.arraycopy(bs, 0, all, 0, bs.length);
 			System.arraycopy(vs, 0, all, bs.length, vs.length);
 			
+			List<String> list = Arrays.asList(all);
 			
 			for(int i=0; i<all.length; i++) {
 				String n = all[i];
@@ -313,11 +316,16 @@ public class GuideContent {
 					}
 				}
 				
-				for(String sitem : rews.keySet()) {
-					JsonObject item = rews.getAsJsonObject(sitem);
-					int q = item.getAsJsonPrimitive(all[i]).getAsInt();
-					if(q > 0) complete.getAsJsonObject(key).getAsJsonObject(n).addProperty(sitem, q);
+				JsonObject slot = slots.getAsJsonObject(all[i]);
+				
+				String[] chances = slot.get("LootChanceList").getAsString().split(",");
+				String[] rews = slot.get("RewardList").getAsString().split(",");
+				
+				for(int j=0; j<chances.length && j<rews.length; j++) {
+					int q = Integer.parseInt(chances[j]);
+					complete.getAsJsonObject(key).getAsJsonObject(n).addProperty(rews[j], q);
 				}
+				
 			}
 			
 		}
