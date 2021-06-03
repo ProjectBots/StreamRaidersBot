@@ -16,7 +16,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import com.google.gson.JsonArray;

@@ -175,7 +175,7 @@ public class Raid {
 		JsonElement date = raid.get(SRC.Raid.lastUnitPlacedTime);
 		String node = raid.get(SRC.Raid.nodeId).getAsString();
 		if(date.isJsonPrimitive()) 
-			if(Time.isAfter(Time.plusMinutes(date.getAsString(), node.contains("dungeons") ? 2 : 5), serverTime)) 
+			if(Time.isAfter(Time.plusMinutes(date.getAsString(), node.contains("dungeon") ? 2 : 5), serverTime)) 
 				return false;
 		
 		if(Time.isAfter(serverTime, Time.plusMinutes(raid.getAsJsonPrimitive("creationDate").getAsString(), node.contains("dungeons") ? 5 : 30))) 

@@ -609,7 +609,7 @@ public class Run {
 					
 					boolean apt = !(ppt.size() == 0);
 					
-					int[] maxheat = Heatmap.getMaxHeat(map);
+					int[] maxheat = new Heatmap().getMaxHeat(map);
 					int[][] banned = new int[0][0];
 					
 					loop:

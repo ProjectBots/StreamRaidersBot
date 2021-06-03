@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 
 import com.google.gson.JsonArray;
@@ -15,6 +17,7 @@ import include.JsonParser;
 import include.NEF;
 import include.Pathfinding.Field;
 import include.GUI.Label;
+import include.Heatmap;
 
 public class MapConv {
 	
@@ -97,6 +100,23 @@ public class MapConv {
 		Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
 		
 		GUI gui = new GUI("Map " + map.getName(), (int) Math.round(size.getWidth()), (int) Math.round(size.getHeight()));
+		
+		gui.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {}
+			@Override
+			public void keyReleased(KeyEvent e) {}
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(!((e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0)) return;
+				if(!((e.getModifiersEx() & KeyEvent.ALT_DOWN_MASK) > 0)) return;
+				//if(e.getKeyCode() == KeyEvent.VK_H) {
+					Heatmap hm = new Heatmap();
+					hm.getMaxHeat(map);
+					hm.showLastHeatMap(map.getName());
+				//}
+			}
+		});
 		
 		for(int x=0; x<map.width(); x++) {
 			for(int y=0; y<map.length(); y++) {
