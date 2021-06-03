@@ -57,7 +57,7 @@ public class Heatmap {
 	}
 	
 	
-	public void showLastHeatMap(String name) {
+	public void showLastHeatMap(String name, int[] h) {
 		double min = Double.MAX_VALUE, max = -1;
 		for(int i=0; i<hmap.length; i++) {
 			for(int j=0; j<hmap[i].length; j++) {
@@ -94,7 +94,10 @@ public class Heatmap {
 				Label l = new Label();
 				l.setPos(i, j);
 				l.setText("");
-				l.setBackground(new Color(c, c, c));
+				if(i == h[0] && j == h[1])
+					l.setBackground(Color.red);
+				else
+					l.setBackground(new Color(c, c, c));
 				l.setSize(10, 10);
 				l.setOpaque(true);
 				l.setInsets(0, 0, 0, 0);

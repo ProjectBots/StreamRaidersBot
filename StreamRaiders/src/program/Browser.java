@@ -103,6 +103,7 @@ public class Browser {
 				frame.dispose();
 				
 				Configs.add(name, cookies);
+				Configs.saveb();
 				
 				MainFrame.refresh(false);
 			}

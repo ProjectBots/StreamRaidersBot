@@ -330,7 +330,7 @@ public class GuideContent {
 		try {
 			NEF.save(path + "chestRewards.json", JsonParser.prettyJson(complete));
 		} catch (IOException e) {
-			e.printStackTrace();
+			StreamRaiders.log("GuideCpntent -> saveChestRewards: err=failed to save chestRewards.json", e);
 		}
 	}
 	

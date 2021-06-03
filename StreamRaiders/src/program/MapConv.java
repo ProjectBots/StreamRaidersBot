@@ -110,11 +110,8 @@ public class MapConv {
 			public void keyPressed(KeyEvent e) {
 				if(!((e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0)) return;
 				if(!((e.getModifiersEx() & KeyEvent.ALT_DOWN_MASK) > 0)) return;
-				//if(e.getKeyCode() == KeyEvent.VK_H) {
-					Heatmap hm = new Heatmap();
-					hm.getMaxHeat(map);
-					hm.showLastHeatMap(map.getName());
-				//}
+				Heatmap hm = new Heatmap();
+				hm.showLastHeatMap(map.getName(), hm.getMaxHeat(map));
 			}
 		});
 		

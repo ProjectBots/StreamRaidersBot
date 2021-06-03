@@ -150,7 +150,6 @@ public class QuestEventRewards {
 					} else {
 						je.getAsJsonObject().addProperty("pass", true);
 					}
-					
 				}
 			}
 			
@@ -171,7 +170,7 @@ public class QuestEventRewards {
 		} else {
 			e = jo.get("basic");
 		}
-		if(!e.isJsonPrimitive()) return true;
+		if(e == null || !e.isJsonPrimitive()) return true;
 		return !e.getAsBoolean();
 	}
 	
