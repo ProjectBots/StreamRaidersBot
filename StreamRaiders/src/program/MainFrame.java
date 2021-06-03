@@ -1417,7 +1417,7 @@ public class MainFrame {
 				bupd.setAL(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						setMaxPage(name, sgui);
+						setUnitPlaceDelay(name, sgui);
 					}
 				});
 				cupd.addBut(bupd);

@@ -303,8 +303,6 @@ public class GuideContent {
 			System.arraycopy(bs, 0, all, 0, bs.length);
 			System.arraycopy(vs, 0, all, bs.length, vs.length);
 			
-			List<String> list = Arrays.asList(all);
-			
 			for(int i=0; i<all.length; i++) {
 				String n = all[i];
 				while(true) {
