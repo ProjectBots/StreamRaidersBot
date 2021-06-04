@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 
 import include.Http;
 import include.JsonParser;
-import program.Run.SilentException;
 
 public class SRR {
 	private static boolean ver_error = true;
@@ -76,13 +75,13 @@ public class SRR {
 	}
 	
 	
-	public SRR(String cookies, String clientVersion) throws NoInternetException, OutdatedDataException, SilentException, NotAuthorizedException {
+	public SRR(String cookies, String clientVersion) throws NoInternetException, OutdatedDataException, NotAuthorizedException {
 		this.cookies = cookies;
 		this.clientVersion = clientVersion;
 		reload();
 	}
 	
-	public String reload() throws NoInternetException, OutdatedDataException, SilentException, NotAuthorizedException {
+	public String reload() throws NoInternetException, OutdatedDataException, NotAuthorizedException {
 		userId = null;
 		gameDataVersion = "";
 		isCaptain = "";
@@ -103,7 +102,7 @@ public class SRR {
 		}
 	}
 	
-	private void constructor(JsonObject getUser) throws SilentException, NotAuthorizedException {
+	private void constructor(JsonObject getUser) throws NotAuthorizedException {
 		this.gameDataVersion = getUser.getAsJsonObject("info").getAsJsonPrimitive("dataVersion").getAsString();
 		try {
 			JsonObject data = getUser.getAsJsonObject("data");

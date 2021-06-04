@@ -68,6 +68,7 @@ public class Donators {
 	}
 	
 	private static Don[] dons = new Don[] {
+			Don.c("Obelisk", (float) 22.01).setText("<html>thanks for taking the time<br>from your schedule to make this :)</html>"),
 			Don.c("Snugsel", 20).setText("<html>She wanted to let me decide.<br>Little does she know, I'm not creative ;)<br><br>Never gonna give you up<br><br><img src=\"rickroll.jpg\" width=\"400\" height=\"250\"></html>"),
 			Don.c("candyknack", (float) 12.58).setText("He didn't want to say anything"),
 			Don.c("Noa3", 10).setLink("https://github.com/Noa3"),

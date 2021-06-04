@@ -186,11 +186,17 @@ public class Configs {
 	public static final CB enabled = new CB("enabled");
 	
 	public static boolean getChestBoolean(String name, String cType, CB con) {
-		return configs.getAsJsonObject(name)
-				.getAsJsonObject("chests")
-				.getAsJsonObject(cType)
-				.getAsJsonPrimitive(con.get())
-				.getAsBoolean();
+		try {
+			return configs.getAsJsonObject(name)
+					.getAsJsonObject("chests")
+					.getAsJsonObject(cType)
+					.getAsJsonPrimitive(con.get())
+					.getAsBoolean();
+		} catch (NullPointerException e) {
+			StreamRaiders.log("onfigs -> getChestBoolean: err=NullPointer cType=" + cType, e);
+			throw new Run.SilentException();
+		}
+		
 	}
 	
 	public static void setChestBoolean(String name, String cType, CB con, boolean b) {

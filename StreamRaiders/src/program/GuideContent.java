@@ -26,7 +26,6 @@ import include.Guide;
 import include.Guide.OnLoad;
 import include.JsonParser;
 import include.NEF;
-import program.Run.SilentException;
 
 public class GuideContent {
 
@@ -285,7 +284,7 @@ public class GuideContent {
 	}
 
 	
-	public static void saveChestRewards(JsonObject sheets) throws SilentException {
+	public static void saveChestRewards(JsonObject sheets) {
 		JsonObject chests = sheets.getAsJsonObject("Chests");
 		JsonObject slots = sheets.getAsJsonObject("ChestRewardSlots");
 		

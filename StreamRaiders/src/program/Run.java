@@ -282,7 +282,7 @@ public class Run {
 		}, 0, 1000);
 	}
 	
-	public static class SilentException extends Exception {
+	public static class SilentException extends RuntimeException {
 		private static final long serialVersionUID = 6180078222808617728L;
 		public SilentException() {
 			super("this is a silent exception");
@@ -375,7 +375,7 @@ public class Run {
 		}
 	}
 	
-	private void unlock() throws NoInternetException, SilentException {
+	private void unlock() throws NoInternetException {
 		Unit[] unlockable = srrh.getUnits(SRC.Helper.canUnlockUnit);
 		if(unlockable.length == 0)
 			return;
@@ -484,7 +484,7 @@ public class Run {
 	}
 	
 	
-	private void upgradeUnits() throws NoInternetException, SilentException {
+	private void upgradeUnits() throws NoInternetException {
 		Unit[] us = srrh.getUnits(SRC.Helper.canUpgradeUnit);
 		if(us.length == 0)
 			return;
@@ -516,7 +516,7 @@ public class Run {
 	
 	public static final String[] pveloy = "? bronze silver gold".split(" ");
 	
-	private boolean raids() throws NoInternetException, SilentException, NotAuthorizedException {
+	private boolean raids() throws NoInternetException, NotAuthorizedException {
 		boolean ret = false;
 		
 		JsonObject favs = Configs.getObj(name, Configs.favs);
@@ -721,7 +721,7 @@ public class Run {
 	}
 	
 	
-	private boolean chests() throws NoInternetException, SilentException, NotAuthorizedException {
+	private boolean chests() throws NoInternetException, NotAuthorizedException {
 		Raid[] rera = srrh.getRaids(SRC.Helper.isReward);
 		if(rera.length != 0) {
 			for(int i=0; i<rera.length; i++) {
@@ -747,7 +747,7 @@ public class Run {
 	
 	private JsonObject bannedCaps = new JsonObject();
 	
-	private boolean captains() throws NoInternetException, SilentException, NotAuthorizedException {
+	private boolean captains() throws NoInternetException, NotAuthorizedException {
 		int uCount = srrh.getUnits(SRC.Helper.all).length;
 		Raid[] raids = srrh.getRaids(SRC.Helper.all);
 		Set<String> set = bannedCaps.deepCopy().keySet();
@@ -780,7 +780,7 @@ public class Run {
 								continue;
 					if(!raids[i].isSwitchable(srrh.getServerTime(), 10)) 
 						continue;
-					String ct = raids[i].getFromNode(SRC.MapNode.chestType);
+					String ct = raids[i].getFromNode(SRC.MapNode.chestType).replace("alternate", "");
 					if(ct == null) {
 						if(ctNull)
 							StreamRaiders.log(name + ": Run -> captains: ct=null", null);
@@ -885,7 +885,7 @@ public class Run {
 		}
 	}
 	
-	private boolean switchRaid(String sortIndex, boolean rem, JsonArray caps) throws NoInternetException, SilentException, NotAuthorizedException {
+	private boolean switchRaid(String sortIndex, boolean rem, JsonArray caps) throws NoInternetException, NotAuthorizedException {
 		JsonObject cap = null;
 		int oldLoy = -1;
 

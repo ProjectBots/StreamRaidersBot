@@ -36,7 +36,7 @@ public class SRRHelper {
 			updateUnits();
 			return;
 		} catch (OutdatedDataException e1) {
-			updateDataPath(e1.getDataPath());
+			updateDataPath(e1.getDataPath(), req);
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {}
@@ -51,7 +51,7 @@ public class SRRHelper {
 			ret = req.reload();
 			updateUnits();
 		} catch (OutdatedDataException e1) {
-			updateDataPath(e1.getDataPath());
+			updateDataPath(e1.getDataPath(), req);
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {}
@@ -61,18 +61,20 @@ public class SRRHelper {
 		return ret;
 	}
 	
-	private void updateDataPath(String dataPath) throws NoInternetException, SilentException, NotAuthorizedException {
-		JsonObject data = JsonParser.parseObj(SRR.getData(dataPath)).getAsJsonObject("sheets");
-		StreamRaiders.set("obstacles", data.getAsJsonObject("Obstacles").toString());
-		StreamRaiders.set("quests", data.getAsJsonObject("Quests").toString());
-		StreamRaiders.set("mapNodes", data.getAsJsonObject("MapNodes").toString());
-		StreamRaiders.set("events", data.getAsJsonObject("Events").toString());
-		StreamRaiders.set("specsRaw", data.getAsJsonObject("Specialization").toString());
-		StreamRaiders.set("store", data.getAsJsonObject("Store").toString());
-		GuideContent.saveChestRewards(data);
-		GuideContent.gainStats(data.getAsJsonObject("Units"));
-		StreamRaiders.set("data", dataPath);
-		StreamRaiders.save();
+	synchronized private static void updateDataPath(String dataPath, SRR req) throws NoInternetException, NotAuthorizedException {
+		if(!StreamRaiders.get("data").equals(dataPath)) {
+			JsonObject data = JsonParser.parseObj(SRR.getData(dataPath)).getAsJsonObject("sheets");
+			StreamRaiders.set("obstacles", data.getAsJsonObject("Obstacles").toString());
+			StreamRaiders.set("quests", data.getAsJsonObject("Quests").toString());
+			StreamRaiders.set("mapNodes", data.getAsJsonObject("MapNodes").toString());
+			StreamRaiders.set("events", data.getAsJsonObject("Events").toString());
+			StreamRaiders.set("specsRaw", data.getAsJsonObject("Specialization").toString());
+			StreamRaiders.set("store", data.getAsJsonObject("Store").toString());
+			GuideContent.saveChestRewards(data);
+			GuideContent.gainStats(data.getAsJsonObject("Units"));
+			StreamRaiders.set("data", dataPath);
+			StreamRaiders.save();
+		}
 		try {
 			if(req != null)
 				req.reload();
@@ -155,7 +157,7 @@ public class SRRHelper {
 		}
 	}
 	
-	public void loadMap(Raid raid) throws PvPException, NoInternetException, SilentException, DungeonException {
+	public void loadMap(Raid raid) throws PvPException, NoInternetException, DungeonException {
 		String node = raid.get(SRC.Raid.nodeId);
 		if(node.contains("pvp")) throw new PvPException();
 		String raidplan = req.getRaidPlan(raid.get(SRC.Raid.raidId));
@@ -208,7 +210,7 @@ public class SRRHelper {
 		return serverTime;
 	}
 	
-	public Raid[] getRaids(int con) throws NoInternetException, SilentException, NotAuthorizedException {
+	public Raid[] getRaids(int con) throws NoInternetException, NotAuthorizedException {
 		serverTime = updateRaids();
 		Raid[] ret = new Raid[0];
 		for(int i=0; i<raids.length; i++) {
@@ -238,7 +240,7 @@ public class SRRHelper {
 		req.addPlayerToRaid(captain.getAsJsonPrimitive("userId").getAsString(), userSortIndex);
 	}
 	
-	public void switchRaid(JsonObject captain, String userSortIndex) throws NoInternetException, SilentException, NotAuthorizedException {
+	public void switchRaid(JsonObject captain, String userSortIndex) throws NoInternetException, NotAuthorizedException {
 		updateRaids();
 		for(int i=0; i<raids.length; i++) {
 			if(raids[i].get(SRC.Raid.userSortIndex).equals(userSortIndex)) {
@@ -248,7 +250,7 @@ public class SRRHelper {
 		}
 	}
 	
-	public String updateRaids() throws SilentException, NoInternetException, NotAuthorizedException {
+	public String updateRaids() throws NoInternetException, NotAuthorizedException {
 		JsonObject jo = JsonParser.parseObj(req.getActiveRaidsByUser());
 		try {
 			JsonArray rs = jo.getAsJsonArray("data");
@@ -261,7 +263,7 @@ public class SRRHelper {
 		} catch (ClassCastException e) {
 			JsonElement je = jo.get(SRC.errorMessage);
 			if(je.isJsonPrimitive() && je.getAsString().equals("Game data mismatch.")) {
-				updateDataPath(jo.getAsJsonObject("info").getAsJsonPrimitive("dataPath").getAsString());
+				updateDataPath(jo.getAsJsonObject("info").getAsJsonPrimitive("dataPath").getAsString(), req);
 				return updateRaids();
 			} else {
 				StreamRaiders.log("SRRHelper -> updateRaids: jo=" + jo, null);
@@ -310,7 +312,7 @@ public class SRRHelper {
 		return null;
 	}
 	
-	public String updateUnits() throws NoInternetException, SilentException {
+	public String updateUnits() throws NoInternetException {
 		String r = req.getUserUnits();
 		JsonObject jo = JsonParser.parseObj(r);
 		if(jo == null) {
@@ -339,7 +341,7 @@ public class SRRHelper {
 		return store.buyDungeonChest(getServerTime(), req);
 	}
 	
-	public Unit[] getUnits(int con) throws NoInternetException, SilentException {
+	public Unit[] getUnits(int con) throws NoInternetException {
 		String serverTime = updateUnits();
 		Unit[] ret = new Unit[0];
 		for(int i=0; i<units.length; i++) {
@@ -362,7 +364,7 @@ public class SRRHelper {
 	
 	private static final String[] dungeons_units_dis = "knockedUnits deadUnits exhaustedUnits".split(" ");
 	
-	public Unit[] getUnitsDungeons(Raid raid) throws NoInternetException, SilentException {
+	public Unit[] getUnitsDungeons(Raid raid) throws NoInternetException {
 		updateUnits();
 		Unit[] ret = new Unit[0];
 		Unit[] all = getUnits(SRC.Helper.all);
@@ -411,7 +413,7 @@ public class SRRHelper {
 		return store.canUpgradeUnit(unit) ? store.upgradeUnit(unit, req, specUID) : "cant upgrade unit";
 	}
 	
-	public Unit[] getUnits(String con, String arg) throws NoInternetException, SilentException {
+	public Unit[] getUnits(String con, String arg) throws NoInternetException {
 		updateUnits();
 		Unit[] ret = new Unit[0];
 		for(int i=0; i<units.length; i++) 
