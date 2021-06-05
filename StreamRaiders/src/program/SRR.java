@@ -167,7 +167,7 @@ public class SRR {
 		throw new NoInternetException(e);
 	}
 	
-	private String getUser() throws NoInternetException {
+	public String getUser() throws NoInternetException {
 		Http post = getPost("getUser");
 		post.addEncArg("skipDateCheck", "true");
 		return sendPost(post);
@@ -298,6 +298,12 @@ public class SRR {
 	public String purchaseChestItem(String itemId) throws NoInternetException {
 		Http post = getPost("purchaseChestItem");
 		post.addEncArg("itemId", itemId);
+		return sendPost(post);
+	}
+	
+	
+	public String purchaseStoreRefresh() throws NoInternetException {
+		Http post = getPost("purchaseStoreRefresh");
 		return sendPost(post);
 	}
 	

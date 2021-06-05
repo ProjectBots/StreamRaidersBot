@@ -152,7 +152,10 @@ public class MapConv {
 						l.setSpan(2, 2);
 						l.setSize(s*2, s*2);
 					}
-					l.setBackground(Color.green);
+					if(map.is(x, y, SRC.Map.isCaptain))
+						l.setBackground(new Color(200, 255, 0));
+					else
+						l.setBackground(Color.green);
 					l.setBorder(Color.black, 1);
 					if(!map.is(x, y, SRC.Map.isPlayer)) {
 						l.setText("X");
@@ -164,7 +167,13 @@ public class MapConv {
 				
 				String plan = map.getPlanType(x, y);
 				if(plan != null && map.is(x, y, SRC.Map.isEmpty)) {
-					if(plan.equals("assassin")) {
+					if(plan.equals("supportHealer")) {
+						l.setText("H");
+					} else if(plan.equals("supportFlag")) {
+						l.setText("L");
+					} else if(plan.equals("assassinFlyingExplosive")) {
+						l.setText("B");
+					} else if(plan.equals("assassin")) {
 						l.setText("I");
 					} else {
 						String c1 = plan.replace("assassin", "").toUpperCase().substring(0, 1);

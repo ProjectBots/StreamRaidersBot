@@ -21,16 +21,17 @@ public class Heatmap {
 			for(int x=0; x<hmap.length; x++) {
 				for(int y=0; y<hmap[x].length; y++) {
 					if(map.is(x, y, SRC.Map.isObstacle)) continue;
-					if(map.is(x, y, k==0 ? SRC.Map.isPlayer : SRC.Map.isEnemy)) {
+					if(map.is(x, y, k==0 ? SRC.Map.isPlayer : SRC.Map.isEnemy) || map.is(x, y, SRC.Map.isOccupied)) {
 						pc++;
+						double mul = map.is(x, y, SRC.Map.isCaptain) ? 2 : 1;
 						for(int i=0; i<hmap.length; i++) {
 							for(int j=0; j<hmap[i].length; j++) {
 								double dis = Vector2.dis(x, y, i, j);
 								if(dis < 0.00001) {
-									hmap[i][j] += 1;
+									hmap[i][j] += mul;
 									continue;
 								}
-								double c = 1.0 / dis;
+								double c = mul / dis;
 								if(Double.isFinite(c))
 									hmap[i][j] += c;
 							}

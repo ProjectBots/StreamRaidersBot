@@ -57,7 +57,7 @@ public class Pathfinding {
 	
 	private Field[][] map;
 	
-	public int[] search(Field[][] map, String name) {
+	public int[] search(Field[][] map, String name, boolean big) {
 		
 		this.map = map;
 		
@@ -131,9 +131,16 @@ public class Pathfinding {
 							ran = ranInt(10, 15);
 						
 						if(map[x+i][y+j].setCost(min+ran)) {
-							last = new int[] {x+i, y+j};
-							if(ranInt(0, 20) == 0)
-								return last;
+							if(!big || (
+									(check(x+i-1, y+j) && map[x+i-1][y+j].isFinish()) &&
+									(check(x+i-1, y+j+1) && map[x+i-1][y+j+1].isFinish()) &&
+									(check(x+i, y+j+1) && map[x+i][y+j+1].isFinish())
+									)) {
+								last = new int[] {x+i, y+j};
+								if(ranInt(0, big ? 5 : 20) == 0)
+									return last;
+							}
+							
 						}
 					}
 				}

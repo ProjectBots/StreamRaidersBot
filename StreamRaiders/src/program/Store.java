@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -21,22 +23,59 @@ public class Store {
 	private JsonArray shopItems = new JsonArray();
 	private Hashtable<String, Integer> currency = new Hashtable<>();
 	
+	private int storeRefreshCount = 0;
+	
+	public int getStoreRefreshCount() {
+		return storeRefreshCount;
+	}
+	
+	public static class C {
+		private String con = null;
+		public C(String con) {
+			this.con = con;
+		}
+		public String get() {
+			return con;
+		}
+	}
+	
+	public static final C potions = new C("potions");
+	public static final C gold = new C("gold");
+	
+	public Integer getCurrency(C con) {
+		return currency.get(con.get());
+	}
+	
 	public Store(SRR req) throws NoInternetException {
 		refreshCurrency(req);
-		refreshStoreItems(req);
+		getCurrentStoreItems(req);
 	}
 	
 	public void refreshCurrency(SRR req) throws NoInternetException {
 		currency = new Hashtable<>();
-		JsonArray cs = JsonParser.parseObj(req.getAvailableCurrencies()).getAsJsonArray("data");
+		String r = req.getAvailableCurrencies();
+		JsonArray cs = JsonParser.parseObj(r).getAsJsonArray("data");
 		for(int i=0; i<cs.size(); i++) {
 			JsonObject c = cs.get(i).getAsJsonObject();
 			currency.put(c.getAsJsonPrimitive("currencyId").getAsString(), Integer.parseInt(c.getAsJsonPrimitive("quantity").getAsString()));
 		}
+		JsonObject user = JsonParser.parseObj(req.getUser()).getAsJsonObject("data");
+		currency.put("potions", user.get("epicProgression").getAsInt());
+		storeRefreshCount = user.get("storeRefreshCount").getAsInt();
 	}
 	
-	public void refreshStoreItems(SRR req) throws NoInternetException {
+	public void getCurrentStoreItems(SRR req) throws NoInternetException {
 		shopItems = JsonParser.parseObj(req.getCurrentStoreItems()).getAsJsonArray("data");
+	}
+	
+	public void refreshStore(SRR req) throws NoInternetException {
+		shopItems = JsonParser.parseObj(req.purchaseStoreRefresh()).getAsJsonArray("data");
+		storeRefreshCount++;
+		if(storeRefreshCount > 3) {
+			currency.put("gold", currency.get("gold") - 400);
+		} else {
+			currency.put("gold", currency.get("gold") - (storeRefreshCount * 100));
+		}
 	}
 	
 	public boolean canUpgradeUnit(Unit unit) {
@@ -235,18 +274,10 @@ public class Store {
 		}
 	}
 	
-	private Unit[] add(Unit[] arr, Unit item) {
-		Unit[] arr2 = new Unit[arr.length + 1];
-		System.arraycopy(arr, 0, arr2, 0, arr.length);
-		arr2[arr.length] = item;
-		return arr2;
+	
+	private <T>T[] add(T[] arr, T item) {
+		return ArrayUtils.add(arr, item);
 	}
 	
-	private String[] add(String[] arr, String item) {
-		String[] arr2 = new String[arr.length + 1];
-		System.arraycopy(arr, 0, arr2, 0, arr.length);
-		arr2[arr.length] = item;
-		return arr2;
-	}
 	
 }

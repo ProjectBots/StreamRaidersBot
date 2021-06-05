@@ -15,6 +15,7 @@ import program.Run.SilentException;
 import program.SRR.NoInternetException;
 import program.SRR.NotAuthorizedException;
 import program.SRR.OutdatedDataException;
+import program.Store.C;
 
 public class SRRHelper {
 
@@ -126,7 +127,7 @@ public class SRRHelper {
 	
 	public String placeUnit(Raid raid, Unit unit, boolean epic, int[] pos, boolean onPlanIcon) throws NoInternetException {
 		String atr = req.addToRaid(raid.get(SRC.Raid.raidId),
-				createPlacementData(unit, epic, map.getAsSRCoords(pos), onPlanIcon));
+				createPlacementData(unit, epic, map.getAsSRCoords(epic, pos), onPlanIcon));
 		
 		try {
 			JsonElement je = JsonParser.parseObj(atr).get(SRC.errorMessage);
@@ -178,11 +179,6 @@ public class SRRHelper {
 	public boolean testPos(boolean epic, int x, int y) {
 		return map.testPos(epic, new int[] {x, y});
 	}
-	
-	public double[] getSRPos(int x, int y) {
-		return map.getAsSRCoords(new int[] {x, y});
-	}
-	
 	
 	public Raid getRaid(String con, String arg) {
 		for(int i=0; i<raids.length; i++) 
@@ -333,6 +329,18 @@ public class SRRHelper {
 		return store.getStoreItems(con);
 	}
 	
+	public void refreshStore() throws NoInternetException {
+		store.refreshStore(req);
+	}
+	
+	public int getStoreRefreshCount() {
+		return store.getStoreRefreshCount();
+	}
+	
+	public Integer getCurrency(C con) {
+		return store == null ? null : store.getCurrency(con);
+	}
+	
 	public String buyItem(JsonObject item) throws NoInternetException {
 		return store.buyItem(item, req);
 	}
@@ -382,12 +390,10 @@ public class SRRHelper {
 			}
 		}
 		
-		//String uid = req.getUserId();
 		JsonArray pmnt = JsonParser.parseArr(raid.get(SRC.Raid.placementsSerialized));
 		if(pmnt != null) {
 			for(int i=0; i<pmnt.size(); i++) {
 				JsonObject jo = pmnt.get(i).getAsJsonObject();
-				//if(jo.getAsJsonPrimitive("userId").getAsString().equals(uid))
 				bnd = add(bnd, jo.getAsJsonPrimitive(SRC.Unit.unitId).getAsString());
 			}
 		}

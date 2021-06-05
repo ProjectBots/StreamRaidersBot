@@ -1,5 +1,6 @@
 package program;
 
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -10,6 +11,8 @@ import include.ArgSplitter.Arg;
 import include.GUI;
 import include.GUI.Image;
 import include.GUI.Label;
+import include.GUI.TextArea;
+import include.GUI.WinLis;
 import include.NEF;
 
 public class StreamRaiders {
@@ -36,6 +39,9 @@ public class StreamRaiders {
 		log(text, e, false);
 	}
 	
+	private static int error_count = 0;
+	private static GUI err = null;
+	
 	synchronized public static void log(String text, Exception e, boolean silent) {
 		try {
 			String out = "";
@@ -56,15 +62,44 @@ public class StreamRaiders {
 				}
 			}
 			if(!silent) {
-				GUI err = new GUI("Error occured", 400, 200, MainFrame.getGUI(), null);
-				Image img = new Image("data/Other/error.png");
-				err.addImage(img);
-				Label l = new Label();
-				l.setPos(1, 0);
-				l.setText("<html>" + text.replace("\n", "<br>") + "<br>see logs.app for more informations</html>");
-				l.setInsets(2, 10, 2, 2);
-				err.addLabel(l);
-				err.refresh();
+				if(error_count == 0) {
+					err = new GUI("Error occured", 400, 200, MainFrame.getGUI(), null);
+					err.addWinLis(new WinLis() {
+						@Override
+						public void onIconfied(WindowEvent e) {}
+						@Override
+						public void onFocusLost(WindowEvent e) {}
+						@Override
+						public void onFocusGained(WindowEvent e) {}
+						@Override
+						public void onDeIconfied(WindowEvent e) {}
+						@Override
+						public void onClose(WindowEvent e) {
+							error_count = 0;
+						}
+					});
+					Image img = new Image("data/Other/error.png");
+					err.addImage(img);
+					Label l = new Label();
+					l.setPos(1, error_count++);
+					l.setText("<html>see logs.app for more informations</html>");
+					l.setInsets(2, 10, 2, 2);
+					err.addLabel(l);
+					TextArea ta = new TextArea();
+					ta.setPos(1, error_count++);
+					ta.setText(text);
+					ta.setInsets(2, 10, 2, 2);
+					err.addTextArea(ta);
+					err.refresh();
+				} else {
+					TextArea ta = new TextArea();
+					ta.setPos(1, error_count++);
+					ta.setText(text);
+					ta.setInsets(2, 10, 2, 2);
+					err.addTextArea(ta);
+					err.refresh();
+				}
+				
 			}
 			System.err.println(out);
 			NEF.log("logs.app", out);

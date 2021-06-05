@@ -96,6 +96,7 @@ public class Configs {
 	}
 	
 	public static final Boo canBuyDungeonChest = new Boo("canBuyDungeonChest");
+	public static final Boo canBuyScrolls = new Boo("canBuyScrolls");
 	
 	public static boolean getBoolean(String name, Boo con) {
 		return configs.getAsJsonObject(name).getAsJsonPrimitive(con.get()).getAsBoolean();
@@ -132,6 +133,7 @@ public class Configs {
 	}
 	
 	public static final B place = new B("place");
+	public static final B epic = new B("epic");
 	public static final B upgrade = new B("upgrade");
 	public static final B unlock = new B("unlock");
 	public static final B dupe = new B("dupe");
@@ -193,7 +195,7 @@ public class Configs {
 					.getAsJsonPrimitive(con.get())
 					.getAsBoolean();
 		} catch (NullPointerException e) {
-			StreamRaiders.log("onfigs -> getChestBoolean: err=NullPointer cType=" + cType, e);
+			StreamRaiders.log("Configs -> getChestBoolean: err=NullPointer cType=" + cType, e);
 			throw new Run.SilentException();
 		}
 		
@@ -282,6 +284,21 @@ public class Configs {
 				.addProperty(""+slot, b);
 	}
 	
+
+	public static int getStoreRefreshInt(String name, int ind) {
+		return configs.getAsJsonObject(name)
+				.getAsJsonObject("storeRefresh")
+				.getAsJsonPrimitive(""+ind)
+				.getAsInt();
+	}
+	
+	public static void setStoreRefreshInt(String name, int ind, int val) {
+		configs.getAsJsonObject(name)
+				.getAsJsonObject("storeRefresh")
+				.addProperty(""+ind, val);
+	}
+	
+	
 	
 	public static Set<String> keySet() {
 		return configs.keySet();
@@ -367,7 +384,7 @@ public class Configs {
 	}
 	
 	
-	private static String[] exopts = "cookies unit_place unit_upgrade unit_unlock unit_dupe unit_buy unit_spec chests_min chests_max chests_enabled blockedSlots lockedSlots dungeonSlot time maxPage unitPlaceDelay canBuyDungeonChest favs stats".split(" ");
+	private static String[] exopts = "cookies unit_place unit_epic unit_upgrade unit_unlock unit_dupe unit_buy unit_spec chests_min chests_max chests_enabled blockedSlots lockedSlots dungeonSlot time maxPage unitPlaceDelay canBuyDungeonChest canBuyScrolls storeRefresh favs stats".split(" ");
 	
 	public static void exportConfig(GUI parent) {
 		
@@ -452,7 +469,7 @@ public class Configs {
 		
 	}
 	
-	private static String[] units_opt = "place upgrade unlock dupe buy spec".split(" ");
+	private static String[] units_opt = "place epic upgrade unlock dupe buy spec".split(" ");
 	private static String[] chest_opt = "min max enabled".split(" ");
 	
 	private static void saveExportedConfig(GUI gui, boolean b) {
@@ -524,6 +541,14 @@ public class Configs {
 				pro.add("canBuyDungeonChest", con.get("canBuyDungeonChest"));
 			}
 			
+			if(b || GUI.isCButSelected("ex::canBuyScrolls")) {
+				pro.add("canBuyScrolls", con.get("canBuyScrolls"));
+			}
+			
+			if(b || GUI.isCButSelected("ex::storeRefresh")) {
+				pro.addProperty("storeRefresh", con.get("storeRefresh").toString());
+			}
+			
 			if(b || GUI.isCButSelected("ex::favs")) {
 				pro.addProperty("favs", con.getAsJsonObject("favs").toString());
 			}
@@ -593,7 +618,7 @@ public class Configs {
 		InPro.reset();
 		JsonObject in;
 		try {
-			in = JsonParser.parseObj(NEF.read(parent.showFileChooser("Export Config", false, new FileNameExtensionFilter("Json Files", "json")).getAbsolutePath()));
+			in = JsonParser.parseObj(NEF.read(parent.showFileChooser("Import Config", false, new FileNameExtensionFilter("Json Files", "json")).getAbsolutePath()));
 		} catch (IOException e1) {
 			StreamRaiders.log("Configs -> importConfig: err=failed to load config file", e1);
 			return;
@@ -609,7 +634,7 @@ public class Configs {
 		String[] vals = ("(none)" + InPro.getNames()).split(" ");
 		
 		
-		gin = new GUI("import config", 500, 600, parent, null);
+		gin = new GUI("Import config", 500, 600, parent, null);
 		
 		for(i=0; i<pros.length; i++) {
 			Label l = new Label();
@@ -741,8 +766,8 @@ public class Configs {
 	
 	private static void conMerge(String name, JsonObject imp) {
 		
-		B[] bs = new B[] {buy, dupe, unlock, upgrade, place};
-		List<String> sbs = Arrays.asList("buy1 dupe1 unlock1 upgrade1 place1".split(" "));
+		B[] bs = new B[] {buy, epic, dupe, unlock, upgrade, place};
+		List<String> sbs = Arrays.asList("buy1 epic1 dupe1 unlock1 upgrade1 place1".split(" "));
 		
 		for(String key : imp.keySet()) {
 			String[] keys = key.split("_");
@@ -789,6 +814,12 @@ public class Configs {
 				break;
 			case "canBuyDungeonChest":
 				setBoolean(name, canBuyDungeonChest, imp.getAsJsonPrimitive(key).getAsBoolean());
+				break;
+			case "canBuyScrolls":
+				setBoolean(name, canBuyScrolls, imp.getAsJsonPrimitive(key).getAsBoolean());
+				break;
+			case "storeRefresh":
+				setObj(name, new Obj("storeRefresh"), JsonParser.parseObj(imp.getAsJsonPrimitive(key).getAsString()));
 				break;
 			case "favs":
 				setObj(name, favs, JsonParser.parseObj(imp.getAsJsonPrimitive(key).getAsString()));

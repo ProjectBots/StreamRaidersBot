@@ -10,8 +10,6 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.http.conn.HttpHostConnectException;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -250,15 +248,14 @@ public class Run {
 						
 						System.out.println("completed reloading srrh for " + name);
 						if(ver == null) 
-							if(!e.getClass().equals(SilentException.class))
+							if(!e.getClass().equals(SilentException.class) && !e.getClass().equals(NoInternetException.class))
 								StreamRaiders.log("critical error happened for " + name + " at \"" + part + "\" -> skipped this round", e);
 						
 						GUI.setBackground(name+"::start", Color.green);
 						isReloading = false;
 						resetDateTime();
 						sleep(10);
-					} catch (NoInternetException | HttpHostConnectException e2) {
-						StreamRaiders.log(name + ": Run -> Maybe your internet connection failed", e2);
+					} catch (NoInternetException e2) {
 						setReloading(part, e);
 					} catch (NotAuthorizedException e3) {
 							GUI err = new GUI("User not authorized", 500, 200, MainFrame.getGUI(), null);
@@ -291,10 +288,12 @@ public class Run {
 	
 	private void setReloading(String part, Exception e) {
 		if(isReloading) {
+			if(e.getClass().equals(NoInternetException.class))
+					StreamRaiders.log("Internet connection failed for " + name, e);
 			GUI.setBackground(name+"::start", Color.red);
 			setRunning(false);
 		} else {
-			if(!e.getClass().equals(SilentException.class))
+			if(!e.getClass().equals(SilentException.class) && !e.getClass().equals(NoInternetException.class))
 				StreamRaiders.log("critical error happened for " + name + " at \"" + part + "\" -> try to reload again", e);
 			isReloading = true;
 			reload(15*60, part, e);
@@ -361,17 +360,19 @@ public class Run {
 		boolean bp = srrh.hasBattlePass();
 		int tier = srrh.getEventTier();
 		for(int i=1; i<tier; i++) {
+			if(bp) {
+				String err = srrh.collectEvent(i, true);
+				if(err != null && !err.equals("cant collect")) {
+					StreamRaiders.log(name + ": Run -> collectEvent -> pass: err=" + err, null);
+				}
+			}
+			
 			if(potionsTiers.contains(""+i)) continue;
 			String err = srrh.collectEvent(i, false);
 			if(err != null && !err.equals("cant collect")) {
 				StreamRaiders.log(name + ": Run -> collectEvent -> basic: err=" + err, null);
 			}
-			if(!bp) continue;
 			
-			err = srrh.collectEvent(i, true);
-			if(err != null && !err.equals("cant collect")) {
-				StreamRaiders.log(name + ": Run -> collectEvent -> pass: err=" + err, null);
-			}
 		}
 	}
 	
@@ -395,7 +396,7 @@ public class Run {
 			
 			String err = srrh.unlockUnit(unlockable[ind]);
 			if(err != null && !err.equals("not enough gold")) 
-				StreamRaiders.log(name + ": Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, null);
+				StreamRaiders.log(name + ": Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, null, true);
 			
 			ps[ind] = -1;
 		}
@@ -424,62 +425,78 @@ public class Run {
 			} catch (NullPointerException e) {}
 		}
 		
-		JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
-		if(items.size() == 0)
-			return;
-		
-		int[] ps = new int[items.size()];
-		String[] types = new String[items.size()];
-		for(int i=0; i<items.size(); i++) {
-			try {
-				types[i] = items.get(i).getAsJsonObject()
-						.getAsJsonPrimitive("itemId")
-						.getAsString()
-						.split("pack")[0]
-						.replace("scroll", "")
-						.replace("paladin", "alliespaladin");
+		if(Configs.getBoolean(name, Configs.canBuyScrolls)) {
+			JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
+			if(items.size() == 0)
+				return;
 			
-				ps[i] = Configs.getUnitInt(name, types[i], Configs.buy);
+			int[] ps = new int[items.size()];
+			String[] types = new String[items.size()];
+			for(int i=0; i<items.size(); i++) {
+				try {
+					types[i] = items.get(i).getAsJsonObject()
+							.getAsJsonPrimitive("itemId")
+							.getAsString()
+							.split("pack")[0]
+							.replace("scroll", "")
+							.replace("paladin", "alliespaladin");
 				
-			} catch (NullPointerException e) {
-				JsonElement itemId = items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId");
-				
-				if(itemId != null) {
-					StreamRaiders.log(name + ": Run -> store: item=" + items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString() + ", err=item is not correct", e);
-				} else {
-					StreamRaiders.log(name + ": Run -> store: itemObj=" + items.get(i).getAsJsonObject().toString() + ", err=item dont exist? (Unknown err +10 Points for finding)", e);
+					ps[i] = Configs.getUnitInt(name, types[i], Configs.buy);
+					
+				} catch (NullPointerException e) {
+					JsonElement itemId = items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId");
+					
+					if(itemId != null) {
+						StreamRaiders.log(name + ": Run -> store: item=" + items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString() + ", err=item is not correct", e);
+					} else {
+						StreamRaiders.log(name + ": Run -> store: itemObj=" + items.get(i).getAsJsonObject().toString() + ", err=item dont exist? (Unknown err +10 Points for finding)", e);
+					}
+					ps[i] = -1;
 				}
-				ps[i] = -1;
-			}
-		}
-		
-		JsonObject packs = JsonParser.parseObj(StreamRaiders.get("store"));
-		
-		while(true) {
-			int ind = 0;
-			for(int i=1; i<ps.length; i++)
-				if(ps[i] > ps[ind]) 
-					ind = i;
-			
-			if(ps[ind] < 0)
-				break;
-			
-			String err = srrh.buyItem(items.get(ind).getAsJsonObject());
-			if(err != null && !err.equals("not enough gold"))
-				StreamRaiders.log(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, null, true);
-			
-			int amount = packs.get(items.get(ind).getAsJsonObject().get("itemId").getAsString())
-					.getAsJsonObject().get("Quantity").getAsInt();
-			
-			if(err == null) {
-				if(bought.has(types[ind]))
-					bought.addProperty(types[ind], bought.get(types[ind]).getAsInt() + amount);
-				else 
-					bought.addProperty(types[ind], amount);
 			}
 			
-			ps[ind] = -1;
+			JsonObject packs = JsonParser.parseObj(StreamRaiders.get("store"));
+			
+			while(true) {
+				int ind = 0;
+				for(int i=1; i<ps.length; i++)
+					if(ps[i] > ps[ind]) 
+						ind = i;
+				
+				if(ps[ind] < 0)
+					break;
+				
+				String err = srrh.buyItem(items.get(ind).getAsJsonObject());
+				if(err != null && !err.equals("not enough gold"))
+					StreamRaiders.log(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, null, true);
+				
+				int amount = packs.get(items.get(ind).getAsJsonObject().get("itemId").getAsString())
+						.getAsJsonObject().get("Quantity").getAsInt();
+				
+				if(err == null) {
+					if(bought.has(types[ind]))
+						bought.addProperty(types[ind], bought.get(types[ind]).getAsInt() + amount);
+					else 
+						bought.addProperty(types[ind], amount);
+				}
+				
+				ps[ind] = -1;
+			}
+			
+			
+			Integer gold = srrh.getCurrency(Store.gold);
+			if(gold != null) {
+				int src = srrh.getStoreRefreshCount();
+				int min = Configs.getStoreRefreshInt(name, src > 4 ? 4 : src);
+				if(min > -1 && min < gold) {
+					srrh.refreshStore();
+					store();
+				}
+			}
+			
 		}
+		
+		
 		
 	}
 	
@@ -525,7 +542,19 @@ public class Run {
 		Unit[] units = srrh.getUnits(SRC.Helper.canPlaceUnit);
 		Raid[] plra = srrh.getRaids(SRC.Helper.canPlaceUnit);
 		Raid[] all = srrh.getRaids();
-
+		
+		boolean canEpicn = false;
+		for(int i=0; i<units.length; i++) {
+			if(Configs.getUnitInt(name, units[i].get(SRC.Unit.unitType), Configs.epic) > -1) {
+				canEpicn = true;
+				break;
+			}
+		}
+		boolean canEpicd = false;
+		
+		Integer potionsc = srrh.getCurrency(Store.potions);
+		boolean epic = (potionsc == null ? false : (potionsc >= 45 ? true : false));
+		
 		for(int i=0; i<4; i++) {
 			if(i<all.length) {
 				if(Configs.isSlotBlocked(name, all[i].get(SRC.Raid.userSortIndex))) {
@@ -549,7 +578,7 @@ public class Run {
 					GUI.setForeground(name+"::name::"+i, Color.black);
 					String ct = all[i].getFromNode(SRC.MapNode.chestType);
 					if(ct == null) ct = "nochest";
-					Image img = new Image("data/ChestPics/" + ct + ".png");
+					Image img = new Image("data/ChestPics/" + ct.replace("alternate", "") + ".png");
 					img.setSquare(30);
 					GUI.setImage(name+"::chest::"+i, img);
 					GUI.setEnabled(name+"::lockBut::"+i, true);
@@ -602,6 +631,12 @@ public class Run {
 						if(!plra[i].get(SRC.Raid.userSortIndex).equals(Configs.getStr(name, Configs.dungeonSlot)))
 							throw e;
 						dunUnits = srrh.getUnitsDungeons(plra[i]);
+						for(int k=0; k<dunUnits.length; k++) {
+							if(Configs.getUnitInt(name, dunUnits[k].get(SRC.Unit.unitType), Configs.epic) > -1) {
+								canEpicd = true;
+								break;
+							}
+						}
 					}
 					Map map = srrh.getMap();
 					
@@ -612,11 +647,14 @@ public class Run {
 					int[] maxheat = new Heatmap().getMaxHeat(map);
 					int[][] banned = new int[0][0];
 					
+					
+					epic = epic && (dunUnits == null ? canEpicn : canEpicd);
+					
 					loop:
 					while(true) {
 						fpt = null;
-						Unit unit = findUnit(dunUnits == null ? units : dunUnits, apt, ppt);
-						if(unit == null) unit = findUnit(dunUnits == null ? units : dunUnits, false, ppt);
+						Unit unit = findUnit(dunUnits == null ? units : dunUnits, apt, ppt, epic);
+						if(unit == null) unit = findUnit(dunUnits == null ? units : dunUnits, false, ppt, epic);
 						if(unit == null) break;
 						JsonArray allowedPlanTypes = new JsonArray();
 						allowedPlanTypes.add(fpt);
@@ -625,19 +663,19 @@ public class Run {
 							
 							Debug.print("[" + name + "] Run raids " + c++, Debug.loop);
 							
-							int[] pos = new Pathfinding().search(MapConv.asField(map, unit.canFly(), allowedPlanTypes, maxheat, banned), name);
+							int[] pos = new Pathfinding().search(MapConv.asField(map, unit.canFly(), allowedPlanTypes, maxheat, banned), name, epic);
 							
 							if(pos == null) {
 								if(fpt == null) break loop;
 								ppt.remove(new JsonPrimitive(fpt));
 								continue loop;
 							}
-							
-							String err = srrh.placeUnit(plra[i], unit, false, pos, fpt != null);
+							String err = srrh.placeUnit(plra[i], unit, epic, pos, fpt != null);
 							
 							if(err == null) {
 								if(dunUnits == null)
 									units = remove(units, unit);
+								epic = false;
 								break loop;
 							}
 							
@@ -670,10 +708,13 @@ public class Run {
 	
 	private String fpt = null;
 	
-	private Unit findUnit(Unit[] units, boolean apt, JsonArray ppt) {
+	private Unit findUnit(Unit[] units, boolean apt, JsonArray ppt, boolean epic) {
 		Unit unit = null;
 		
 		int[] ps = new int[units.length];
+		for(int i=0; i<ps.length; i++) {
+			ps[i] = -1;
+		}
 		String[] sps = new String[units.length];
 		
 		for(int j=0; j<units.length; j++) {
@@ -691,12 +732,13 @@ public class Run {
 				sps[j] = tfpt;
 			}
 			
-			if(Arrays.asList(neededUnits).contains(units[j].get(SRC.Unit.unitType))) {
+			if(Arrays.asList(neededUnits).contains(units[j].get(SRC.Unit.unitType)) && !epic) {
 				unit = units[j];
 				fpt = sps[j];
 				break;
 			}
-			ps[j] = Configs.getUnitInt(name, units[j].get(SRC.Unit.unitType), Configs.place);
+			
+			ps[j] = Configs.getUnitInt(name, units[j].get(SRC.Unit.unitType), epic ? Configs.epic : Configs.place);
 		}
 		
 		if(unit == null) {
@@ -780,7 +822,7 @@ public class Run {
 								continue;
 					if(!raids[i].isSwitchable(srrh.getServerTime(), 10)) 
 						continue;
-					String ct = raids[i].getFromNode(SRC.MapNode.chestType).replace("alternate", "");
+					String ct = raids[i].getFromNode(SRC.MapNode.chestType);
 					if(ct == null) {
 						if(ctNull)
 							StreamRaiders.log(name + ": Run -> captains: ct=null", null);
@@ -791,6 +833,7 @@ public class Run {
 						breakout = false;
 						continue;
 					}
+					ct = ct.replace("alternate", "");
 					if(raids[i].get(SRC.Raid.userSortIndex).equals(di) && !raids[i].isOffline(srrh.getServerTime(), true, 10) && ct.contains("dungeon"))
 						continue;
 						

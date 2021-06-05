@@ -5,6 +5,8 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -76,10 +78,26 @@ public class MainFrame {
 			@Override
 			public void onFocusGained(WindowEvent e) {}
 			@Override
-			public void onDeIconfied(WindowEvent e) {}
+			public void onDeIconfied(WindowEvent e) {
+				e.getWindow().requestFocus();
+			}
 			@Override
 			public void onClose(WindowEvent e) {
 				close();
+			}
+		});
+		
+		gui.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {}
+			@Override
+			public void keyReleased(KeyEvent e) {}
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(!((e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0)) return;
+				if(e.getKeyCode() == KeyEvent.VK_P) {
+					Map.showPlanTypes(gui);
+				}
 			}
 		});
 		
@@ -827,7 +845,7 @@ public class MainFrame {
 							img.setInsets(2, 2, 20, 2);
 							uset.addImage(img);
 							
-							String[] ts = "place upgrade unlock dupe".split(" ");
+							String[] ts = "place epic upgrade unlock dupe".split(" ");
 							
 							for(int i=0; i<ts.length; i++) {
 								Label l = new Label();
@@ -1229,6 +1247,81 @@ public class MainFrame {
 				
 				sgui.addContainer(cdslot);
 				
+				Button cbsb = new Button();
+				cbsb.setPos(0, g++);
+				cbsb.setFont(new Font(null, Font.PLAIN, 23));
+				cbsb.setInsets(10, 2, 5, 2);
+				cbsb.setText("can buy Scrolls");
+				if(Configs.getBoolean(name, Configs.canBuyScrolls))
+					cbsb.setBackground(Color.green);
+				cbsb.setAL(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						if(Configs.getBoolean(name, Configs.canBuyScrolls)) {
+							Configs.setBoolean(name, Configs.canBuyScrolls, false);
+							GUI.setBackground(name+"::canBuyScrolls", GUI.getDefButCol());
+						} else {
+							Configs.setBoolean(name, Configs.canBuyScrolls, true);
+							GUI.setBackground(name+"::canBuyScrolls", Color.green);
+						}
+					}
+				});
+				sgui.addBut(cbsb, name+"::canBuyScrolls");
+				//TODO
+				Container csr = new Container();
+				csr.setPos(0, g++);
+					
+					Label lstm = new Label();
+					lstm.setPos(0, 0);
+					lstm.setSpan(3, 1);
+					lstm.setText("Store Refreshes:");
+					lstm.setFont(new Font(null, Font.PLAIN, 23));
+					csr.addLabel(lstm);
+					
+					int l=0;
+					for(; l<4; l++) {
+						Label lst = new Label();
+						lst.setAnchor("c");
+						lst.setText(l == 3 ? "3+" : ""+l);
+						lst.setPos(0, l+1);
+						lst.setFont(new Font(null, Font.PLAIN, 19));
+						csr.addLabel(lst);
+						
+						TextField tfsr = new TextField();
+						tfsr.setText(""+Configs.getStoreRefreshInt(name, l));
+						tfsr.setSize(80, 21);
+						tfsr.setPos(1, l+1);
+						tfsr.setFont(new Font(null, Font.PLAIN, 17));
+						csr.addTextField(tfsr, name+"::storeRefresh::tf::"+l);
+						
+						Label lsr = new Label();
+						lsr.setText("gold");
+						lsr.setPos(2, l+1);
+						lsr.setFont(new Font(null, Font.PLAIN, 19));
+						csr.addLabel(lsr);
+					}
+					
+					Button bsr = new Button();
+					bsr.setPos(0, l+1);
+					bsr.setSpan(3, 1);
+					bsr.setFont(new Font(null, Font.PLAIN, 18));
+					bsr.setText("\uD83D\uDDD8 update");
+					bsr.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							for(int i=0; i<4; i++) {
+								try {
+									Configs.setStoreRefreshInt(name, i, Integer.parseInt(GUI.getInputText(name+"::storeRefresh::tf::"+i)));
+								} catch (NumberFormatException e1) {
+									sgui.msg("Wrong Input", "You can't do this!", GUI.MsgConst.WARNING);
+								}
+							}
+						}
+					});
+					csr.addBut(bsr);
+					
+				sgui.addContainer(csr);
+				
 				Label bsl = new Label();
 				bsl.setPos(0, g++);
 				bsl.setInsets(20, 2, 2, 2);
@@ -1336,6 +1429,7 @@ public class MainFrame {
 					TextField stf = new TextField();
 					stf.setPos(0, 0);
 					stf.setSize(100, 28);
+					stf.setText("");
 					stf.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
@@ -1345,7 +1439,7 @@ public class MainFrame {
 					search.addTextField(stf, name+"::search::cap");
 					
 					Button sbut = new Button();
-					sbut.setText("search");
+					sbut.setText("search captain");
 					sbut.setPos(1, 0);
 					sbut.setAL(new ActionListener() {
 						@Override

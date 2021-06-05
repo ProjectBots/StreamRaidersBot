@@ -3,6 +3,10 @@ package program;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
+import include.GUI;
+import include.GUI.TextArea;
 import include.JsonParser;
 
 public class Map {
@@ -105,9 +109,14 @@ public class Map {
 	}
 	
 
-	public double[] getAsSRCoords(int[] coords) {
+	public double[] getAsSRCoords(boolean epic, int[] coords) {
 		double x = ((double) coords[0] - hw()) * 0.8;
 		double y = ((double) coords[1] - hl()) * -0.8;
+		
+		if(epic) {
+			x -= 0.4;
+			y += 0.4;
+		}
 		
 		return new double[] {x, y};
 	}
@@ -125,8 +134,40 @@ public class Map {
 		map = addPlan(map, plan);
 	}
 	
+	private static JsonArray planTypes = new JsonArray();
+	
+	synchronized private static void addPT(String pt) {
+		if(!planTypes.contains(new JsonPrimitive(pt)))
+			planTypes.add(pt);
+	}
+	
+	public static void showPlanTypes(GUI parent) {
+		
+		StringBuilder sb = new StringBuilder();
+		for(int i=0; i<planTypes.size(); i++) {
+			sb.append(planTypes.get(i).getAsString() + "\n");
+		}
+		
+		if(sb.length() == 0) {
+			return;
+		}
+		
+		GUI gui = new GUI("Plan Types", 400, 500, parent, null);
+		
+		
+		TextArea ta = new TextArea();
+		ta.setEditable(false);
+		ta.setText(sb.substring(0, sb.length()-1));
+		gui.addTextArea(ta);
+		
+		gui.refresh();
+		
+	}
+	
+	
 	private JsonArray addPlan(JsonArray map, JsonObject plan) {
 		for(String key : plan.keySet()) {
+			addPT(key);
 			JsonArray pd = plan.getAsJsonArray(key);
 			for(int i=0; i<pd.size(); i+=2) {
 				set(pd.get(i).getAsInt(), pd.get(i+1).getAsInt(), "plan", key);
@@ -195,6 +236,8 @@ public class Map {
 				set(x, y, SRC.Map.isAllied, true);
 				set(x, y, "spec", place.getAsJsonPrimitive("specializationUid").getAsString());
 				String userId = place.getAsJsonPrimitive("userId").getAsString();
+				if(place.getAsJsonPrimitive("CharacterType").getAsString().contains("captain"))
+					set(x, y, SRC.Map.isCaptain, true);
 				if(!userId.equals("") && users != null) {
 					set(x, y, "userId", userId);
 					for(int u=0; u<users.size(); u++) {
@@ -203,8 +246,6 @@ public class Map {
 						}
 					}
 				}
-				//TODO
-				
 				break;
 			case "Enemy":
 				set(x, y, SRC.Map.isAllied, false);
@@ -287,6 +328,9 @@ public class Map {
 		case SRC.Map.isPlayer:
 			if(!place.has("userId")) return false;
 			return !place.getAsJsonPrimitive("userId").getAsString().equals("");
+		case SRC.Map.isCaptain:
+			if(!place.has(SRC.Map.isCaptain)) return false;
+			break;
 		default:
 			return false;
 		}
