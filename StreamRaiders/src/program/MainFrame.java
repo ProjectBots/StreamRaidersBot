@@ -1267,7 +1267,7 @@ public class MainFrame {
 					}
 				});
 				sgui.addBut(cbsb, name+"::canBuyScrolls");
-				//TODO
+				
 				Container csr = new Container();
 				csr.setPos(0, g++);
 					

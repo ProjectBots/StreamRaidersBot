@@ -68,14 +68,24 @@ public class Store {
 		shopItems = JsonParser.parseObj(req.getCurrentStoreItems()).getAsJsonArray("data");
 	}
 	
-	public void refreshStore(SRR req) throws NoInternetException {
-		shopItems = JsonParser.parseObj(req.purchaseStoreRefresh()).getAsJsonArray("data");
+	public String refreshStore(SRR req) throws NoInternetException {
+		JsonObject raw = JsonParser.parseObj(req.purchaseStoreRefresh());
+		
+		JsonElement err = raw.get(SRC.errorMessage);
+		
+		if(err.isJsonPrimitive())
+			return err.getAsString();
+		
+		
+		shopItems = raw.getAsJsonArray("data");
 		storeRefreshCount++;
 		if(storeRefreshCount > 3) {
 			currency.put("gold", currency.get("gold") - 400);
 		} else {
 			currency.put("gold", currency.get("gold") - (storeRefreshCount * 100));
 		}
+		
+		return null;
 	}
 	
 	public boolean canUpgradeUnit(Unit unit) {

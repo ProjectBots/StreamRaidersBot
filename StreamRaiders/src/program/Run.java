@@ -427,69 +427,69 @@ public class Run {
 		
 		if(Configs.getBoolean(name, Configs.canBuyScrolls)) {
 			JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
-			if(items.size() == 0)
-				return;
-			
-			int[] ps = new int[items.size()];
-			String[] types = new String[items.size()];
-			for(int i=0; i<items.size(); i++) {
-				try {
-					types[i] = items.get(i).getAsJsonObject()
-							.getAsJsonPrimitive("itemId")
-							.getAsString()
-							.split("pack")[0]
-							.replace("scroll", "")
-							.replace("paladin", "alliespaladin");
-				
-					ps[i] = Configs.getUnitInt(name, types[i], Configs.buy);
+			if(items.size() != 0) {
+				int[] ps = new int[items.size()];
+				String[] types = new String[items.size()];
+				for(int i=0; i<items.size(); i++) {
+					try {
+						types[i] = items.get(i).getAsJsonObject()
+								.getAsJsonPrimitive("itemId")
+								.getAsString()
+								.split("pack")[0]
+								.replace("scroll", "")
+								.replace("paladin", "alliespaladin");
 					
-				} catch (NullPointerException e) {
-					JsonElement itemId = items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId");
-					
-					if(itemId != null) {
-						StreamRaiders.log(name + ": Run -> store: item=" + items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString() + ", err=item is not correct", e);
-					} else {
-						StreamRaiders.log(name + ": Run -> store: itemObj=" + items.get(i).getAsJsonObject().toString() + ", err=item dont exist? (Unknown err +10 Points for finding)", e);
+						ps[i] = Configs.getUnitInt(name, types[i], Configs.buy);
+						
+					} catch (NullPointerException e) {
+						JsonElement itemId = items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId");
+						
+						if(itemId != null) {
+							StreamRaiders.log(name + ": Run -> store: item=" + items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString() + ", err=item is not correct", e);
+						} else {
+							StreamRaiders.log(name + ": Run -> store: itemObj=" + items.get(i).getAsJsonObject().toString() + ", err=item dont exist? (Unknown err +10 Points for finding)", e);
+						}
+						ps[i] = -1;
 					}
-					ps[i] = -1;
-				}
-			}
-			
-			JsonObject packs = JsonParser.parseObj(StreamRaiders.get("store"));
-			
-			while(true) {
-				int ind = 0;
-				for(int i=1; i<ps.length; i++)
-					if(ps[i] > ps[ind]) 
-						ind = i;
-				
-				if(ps[ind] < 0)
-					break;
-				
-				String err = srrh.buyItem(items.get(ind).getAsJsonObject());
-				if(err != null && !err.equals("not enough gold"))
-					StreamRaiders.log(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, null, true);
-				
-				int amount = packs.get(items.get(ind).getAsJsonObject().get("itemId").getAsString())
-						.getAsJsonObject().get("Quantity").getAsInt();
-				
-				if(err == null) {
-					if(bought.has(types[ind]))
-						bought.addProperty(types[ind], bought.get(types[ind]).getAsInt() + amount);
-					else 
-						bought.addProperty(types[ind], amount);
 				}
 				
-				ps[ind] = -1;
+				JsonObject packs = JsonParser.parseObj(StreamRaiders.get("store"));
+				
+				while(true) {
+					int ind = 0;
+					for(int i=1; i<ps.length; i++)
+						if(ps[i] > ps[ind]) 
+							ind = i;
+					
+					if(ps[ind] < 0)
+						break;
+					
+					String err = srrh.buyItem(items.get(ind).getAsJsonObject());
+					if(err != null && !err.equals("not enough gold"))
+						StreamRaiders.log(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, null, true);
+					
+					int amount = packs.get(items.get(ind).getAsJsonObject().get("itemId").getAsString())
+							.getAsJsonObject().get("Quantity").getAsInt();
+					
+					if(err == null) {
+						if(bought.has(types[ind]))
+							bought.addProperty(types[ind], bought.get(types[ind]).getAsInt() + amount);
+						else 
+							bought.addProperty(types[ind], amount);
+					}
+					
+					ps[ind] = -1;
+				}
 			}
-			
 			
 			Integer gold = srrh.getCurrency(Store.gold);
 			if(gold != null) {
 				int src = srrh.getStoreRefreshCount();
 				int min = Configs.getStoreRefreshInt(name, src > 4 ? 4 : src);
 				if(min > -1 && min < gold) {
-					srrh.refreshStore();
+					String err = srrh.refreshStore();
+					if(err != null)
+						StreamRaiders.log(name+" -> Run -> Store: err="+err, null);
 					store();
 				}
 			}

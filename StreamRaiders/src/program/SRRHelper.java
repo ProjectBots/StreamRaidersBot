@@ -329,8 +329,8 @@ public class SRRHelper {
 		return store.getStoreItems(con);
 	}
 	
-	public void refreshStore() throws NoInternetException {
-		store.refreshStore(req);
+	public String refreshStore() throws NoInternetException {
+		return store.refreshStore(req);
 	}
 	
 	public int getStoreRefreshCount() {
