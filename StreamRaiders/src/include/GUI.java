@@ -294,6 +294,7 @@ public class GUI{
 			//	make the frame scrollable from the begining
 			JScrollPane sp = new JScrollPane();
 			sp.setViewportView(pane);
+			sp.getVerticalScrollBar().setUnitIncrement(15);
 			
 			java.awt.Container window = frame.getContentPane();
 			window.add(sp);

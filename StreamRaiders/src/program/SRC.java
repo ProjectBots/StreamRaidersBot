@@ -16,7 +16,8 @@ public class SRC {
 		public static final String isOccupied = "isOccupied";
 		public static final String isEpic = "isEpic";
 		public static final String isPlayer = "isPlayer";
-		public static final String isCaptain = "isCaptain";
+		public static final String isCaptain = "isCaptain";;
+		public static final String isSelf = "isSelf";
 	}
 	
 	public static class MapNode {

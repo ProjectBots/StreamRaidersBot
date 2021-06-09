@@ -73,8 +73,8 @@ public class MapConv {
 		
 		if(!map.is(x, y, SRC.Map.isEmpty)) return;
 		
-		for(int i=-1; i<2; i++) {
-			for(int j=-1; j<2; j++) {
+		for(int i=-2; i<3; i++) {
+			for(int j=-2; j<3; j++) {
 				if(map.is(x+i, y+j, SRC.Map.isEnemy)) return;
 			}
 		}
@@ -117,6 +117,8 @@ public class MapConv {
 		
 		for(int x=0; x<map.width(); x++) {
 			for(int y=0; y<map.length(); y++) {
+
+				if(map.is(x, y, SRC.Map.isOccupied)) continue;
 				
 				int s = 10;
 				
@@ -128,8 +130,6 @@ public class MapConv {
 				l.setOpaque(true);
 				l.setPos(x, y);
 				l.setBackground(Color.white);
-				
-				if(map.is(x, y, SRC.Map.isOccupied)) continue;
 				
 				if(map.is(x, y, SRC.Map.isEnemyRect)) l.setBackground(new Color(255, 143, 143));
 				if(map.is(x, y, SRC.Map.isPlayerRect)) l.setBackground(new Color(0, 204, 255));
@@ -154,6 +154,8 @@ public class MapConv {
 					}
 					if(map.is(x, y, SRC.Map.isCaptain))
 						l.setBackground(new Color(200, 255, 0));
+					else if(map.is(x, y, SRC.Map.isSelf))
+						l.setBackground(new Color(255, 200, 0));
 					else
 						l.setBackground(Color.green);
 					l.setBorder(Color.black, 1);

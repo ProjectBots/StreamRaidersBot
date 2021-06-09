@@ -168,7 +168,7 @@ public class SRRHelper {
 			map = new Map(JsonParser.parseObj(req.getMapData(mapName)),
 					JsonParser.parseArr(raid.get(SRC.Raid.placementsSerialized)),
 					JsonParser.parseArr(raid.get(SRC.Raid.users)),
-					(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null), mapName);
+					(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null), mapName, req.getUserId());
 		} catch (NullPointerException e) {
 			StreamRaiders.log("SRRHelper -> loadMap: raidplan=" + raidplan, e);
 			throw new SilentException();
@@ -311,7 +311,7 @@ public class SRRHelper {
 	public String updateUnits() throws NoInternetException {
 		String r = req.getUserUnits();
 		JsonObject jo = JsonParser.parseObj(r);
-		if(jo == null) {
+		if(jo == null || jo.isJsonNull()) {
 			StreamRaiders.log("SRRHelper -> updateUnits: jo=null, r="+r, null);
 			throw new Run.SilentException();
 		}

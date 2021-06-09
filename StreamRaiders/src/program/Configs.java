@@ -571,18 +571,18 @@ public class Configs {
 	
 	
 	private static class InPro {
-		private static StringBuilder names = new StringBuilder();
-		public static String getNames() {
-			return names.toString();
+		private static StringBuilder names = new StringBuilder("(none)");
+		public static String[] getNames() {
+			return names.toString().split("~~");
 		}
 		
 		private static StringBuilder cnames = new StringBuilder();
-		public static String getCNames() {
-			return cnames.toString();
+		public static String[] getCNames() {
+			return cnames.toString().split("~~");
 		}
 		
 		public static void reset() {
-			names = new StringBuilder();
+			names = new StringBuilder("(none)");
 			cnames = new StringBuilder();
 		}
 		
@@ -592,9 +592,9 @@ public class Configs {
 		public InPro(String name, JsonObject content) {
 			this.content = content;
 			this.name = name;
-			names.append(" " + name);
+			names.append("~~" + name);
 			if(content.has("cookies"))
-				cnames.append(name + " ");
+				cnames.append(name + "~~");
 		}
 		
 		public String getName() {
@@ -631,7 +631,7 @@ public class Configs {
 		
 		pros = configs.keySet().toArray(new String[configs.size()]);
 		
-		String[] vals = ("(none)" + InPro.getNames()).split(" ");
+		String[] vals = InPro.getNames();
 		
 		
 		gin = new GUI("Import config", 500, 600, parent, null);
@@ -707,7 +707,7 @@ public class Configs {
 			gin.addTextField(ta, "im::add::"+pos);
 			
 			ComboBox cb = new ComboBox("im::cb::"+pos);
-			cb.setList(InPro.getCNames().split(" "));
+			cb.setList(InPro.getCNames());
 			cb.setPos(1, pos);
 			gin.addComb(cb);
 			

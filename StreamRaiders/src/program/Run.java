@@ -682,8 +682,8 @@ public class Run {
 							if(err.equals("PERIOD_ENDED") || err.equals("AT_POPULATION_LIMIT")) 
 								break loop;
 							
-							if(banned.length >= 5) {
-								StreamRaiders.log(name + ": Run -> raids -> unitPlacement: tdn=" + plra[i].get(SRC.Raid.twitchDisplayName) + ", err=" + err, null, true);
+							if(banned.length >= 10) {
+								StreamRaiders.log(name + ": Run -> raids -> unitPlacement: tdn=" + plra[i].get(SRC.Raid.twitchDisplayName) + ", epic=" + epic + ", err=" + err, null, true);
 								break loop;
 							}
 							
@@ -816,12 +816,14 @@ public class Run {
 						continue;
 					if(Configs.isSlotLocked(name, raids[i].get(SRC.Raid.userSortIndex)))
 						continue;
+					if(!raids[i].isSwitchable(srrh.getServerTime(), 10)) 
+						continue;
+					
+					boolean ic = false;
 					if(favs.has(raids[i].get(SRC.Raid.twitchDisplayName)))
 						if(favs.getAsJsonPrimitive(raids[i].get(SRC.Raid.twitchDisplayName)).getAsBoolean())
 							if(!raids[i].isOffline(srrh.getServerTime(), false, 10))
-								continue;
-					if(!raids[i].isSwitchable(srrh.getServerTime(), 10)) 
-						continue;
+								ic = true;
 					String ct = raids[i].getFromNode(SRC.MapNode.chestType);
 					if(ct == null) {
 						if(ctNull)
@@ -843,12 +845,12 @@ public class Run {
 						max = Configs.getChestInt(name, ct, Configs.maxc);
 					} catch (NullPointerException e) {}
 					
-					if(		raids[i].isOffline(srrh.getServerTime(), true, 10) ||
-							ct.contains("bone") ||
-							ct.contains("dungeon") ||
-							!Configs.getChestBoolean(name, ct, Configs.enabled) ||
-							loy < Configs.getChestInt(name, ct, Configs.minc) ||
-							loy > (max < 0 ? Integer.MAX_VALUE : max) ||
+					if(		(raids[i].isOffline(srrh.getServerTime(), true, 10) && !ic) ||
+							(ct.contains("bone") && !ic) ||
+							(ct.contains("dungeon") && !ic) ||
+							(!Configs.getChestBoolean(name, ct, Configs.enabled) && !ic) ||
+							(loy < Configs.getChestInt(name, ct, Configs.minc) && !ic) ||
+							(loy > (max < 0 ? Integer.MAX_VALUE : max) && !ic) ||
 							(raids[i].get(SRC.Raid.userSortIndex).equals(di) && !ct.contains("dungeons"))
 							) {
 						bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));

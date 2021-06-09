@@ -217,33 +217,27 @@
   "chestbosssuper": {
     "viewersuperboss": {
       "rarescrolls_30": 80,
-      "rarescrolls_50": 20,
-      "skinfullbarbarianorcdromeda": 2
+      "rarescrolls_50": 20
     },
     "viewersuperboss_": {
       "rarescrolls_30": 80,
-      "rarescrolls_50": 20,
-      "skinfullbarbarianorcdromeda": 2
+      "rarescrolls_50": 20
     },
     "viewersuperboss__": {
       "rarescrolls_30": 80,
-      "rarescrolls_50": 20,
-      "skinfullbarbarianorcdromeda": 2
+      "rarescrolls_50": 20
     },
     "viewersuperboss___": {
       "rarescrolls_30": 80,
-      "rarescrolls_50": 20,
-      "skinfullbarbarianorcdromeda": 2
+      "rarescrolls_50": 20
     },
     "viewersuperboss____": {
       "rarescrolls_30": 80,
-      "rarescrolls_50": 20,
-      "skinfullbarbarianorcdromeda": 2
+      "rarescrolls_50": 20
     },
     "viewersuperboss_____": {
       "rarescrolls_30": 80,
-      "rarescrolls_50": 20,
-      "skinfullbarbarianorcdromeda": 2
+      "rarescrolls_50": 20
     }
   },
   "chestbronze": {

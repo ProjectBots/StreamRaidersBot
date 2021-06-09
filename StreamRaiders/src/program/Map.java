@@ -63,7 +63,7 @@ public class Map {
 		return name;
 	}
 	
-	public Map(JsonObject mapData, JsonArray placements, JsonArray users, JsonObject plan, String name) {
+	public Map(JsonObject mapData, JsonArray placements, JsonArray users, JsonObject plan, String name, String userId) {
 		this.name = name;
 		float mapScale = mapData.getAsJsonPrimitive("MapScale").getAsFloat();
 		if(mapScale < 0) {
@@ -85,7 +85,7 @@ public class Map {
 			}
 		}
 		
-		updateMap(mapData, placements, users, plan);
+		updateMap(mapData, placements, users, plan, userId);
 	}
 	
 	public boolean testPos(boolean epic, int[] coords) {
@@ -121,13 +121,13 @@ public class Map {
 		return new double[] {x, y};
 	}
 	
-	public void updateMap(JsonObject mapData, JsonArray placements, JsonArray users, JsonObject plan) {
+	public void updateMap(JsonObject mapData, JsonArray placements, JsonArray users, JsonObject plan, String userId) {
 		map = addRects(map, mapData.getAsJsonArray("PlayerPlacementRects"), SRC.Map.isPlayerRect);
 		map = addRects(map, mapData.getAsJsonArray("EnemyPlacementRects"), SRC.Map.isEnemyRect);
 		map = addRects(map, mapData.getAsJsonArray("HoldingZoneRects"), SRC.Map.isHoldRect);
 		
-		map = addEntity(map, placements, users);
-		map = addEntity(map, mapData.getAsJsonArray("PlacementData"), null);
+		map = addEntity(map, placements, users, userId);
+		map = addEntity(map, mapData.getAsJsonArray("PlacementData"), null, userId);
 		map = addObstacle(map, mapData.getAsJsonArray("ObstaclePlacementData"));
 		
 		if(plan == null) return;
@@ -197,8 +197,9 @@ public class Map {
 		return map;
 	}
 
-	private JsonArray addEntity(JsonArray map, JsonArray places, JsonArray users) {
+	private JsonArray addEntity(JsonArray map, JsonArray places, JsonArray users, String uid) {
 		if(places == null) return map;
+		
 		for(int i=0; i<places.size(); i++) {
 			JsonObject place = places.get(i).getAsJsonObject();
 			
@@ -236,10 +237,17 @@ public class Map {
 				set(x, y, SRC.Map.isAllied, true);
 				set(x, y, "spec", place.getAsJsonPrimitive("specializationUid").getAsString());
 				String userId = place.getAsJsonPrimitive("userId").getAsString();
-				if(place.getAsJsonPrimitive("CharacterType").getAsString().contains("captain"))
+				if(place.getAsJsonPrimitive("CharacterType").getAsString().contains("captain")) {
 					set(x, y, SRC.Map.isCaptain, true);
+					set(x-1, y, SRC.Map.isCaptain, true);
+					set(x, y+1, SRC.Map.isCaptain, true);
+					set(x-1, y+1, SRC.Map.isCaptain, true);
+				}
+				
 				if(!userId.equals("") && users != null) {
 					set(x, y, "userId", userId);
+					if(userId.equals(uid))
+						set(x, y, SRC.Map.isSelf, true);
 					for(int u=0; u<users.size(); u++) {
 						if(userId.equals(users.get(u).getAsJsonObject().getAsJsonPrimitive("userId").getAsString())) {
 							set(x, y, "twitchUserName", users.get(u).getAsJsonObject().getAsJsonPrimitive("twitchUserName").getAsString());
@@ -308,22 +316,16 @@ public class Map {
 			if(!place.getAsJsonPrimitive("isEntity").getAsBoolean()) return false;
 			return !place.getAsJsonPrimitive(SRC.Map.isAllied).getAsBoolean();
 		case SRC.Map.isEnemyRect:
-			if(!place.has(con)) return false;
 			break;
 		case SRC.Map.isHoldRect:
-			if(!place.has(con)) return false;
 			break;
 		case SRC.Map.isObstacle:
-			if(!place.has(con)) return false;
 			break;
 		case SRC.Map.isPlayerRect:
-			if(!place.has(con)) return false;
 			break;
 		case SRC.Map.isOccupied:
-			if(!place.has(con)) return false;
 			break;
 		case SRC.Map.isEpic:
-			if(!place.has(con)) return false;
 			break;
 		case SRC.Map.isPlayer:
 			if(!place.has("userId")) return false;
@@ -331,9 +333,12 @@ public class Map {
 		case SRC.Map.isCaptain:
 			if(!place.has(SRC.Map.isCaptain)) return false;
 			break;
+		case SRC.Map.isSelf:
+			break;
 		default:
 			return false;
 		}
+		if(!place.has(con)) return false;
 		return place.getAsJsonPrimitive(con).getAsBoolean();
 	}
 	
