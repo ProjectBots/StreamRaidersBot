@@ -100,13 +100,15 @@ public class Store {
 	}
 	
 	public boolean canUnlockUnit(String type, boolean dupe) {
+		Integer gold = currency.get("gold");
+		if(gold == null) return false;
 		String[] cost;
 		if(dupe) {
 			cost = "1000 300".split(" ");
 		} else {
 			cost = (Unit.isLegendary(type) ? lLevelCost[0] : nLevelCost[0]).split(",");
 		}
-		if(currency.get("gold") < Integer.parseInt(cost[0])) return false;
+		if(gold < Integer.parseInt(cost[0])) return false;
 		if(currency.get(type.replace("allies", "")) < Integer.parseInt(cost[1])) return false;
 		
 		return true;

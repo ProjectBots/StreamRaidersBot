@@ -485,7 +485,7 @@ public class Run {
 			Integer gold = srrh.getCurrency(Store.gold);
 			if(gold != null) {
 				int src = srrh.getStoreRefreshCount();
-				int min = Configs.getStoreRefreshInt(name, src > 4 ? 4 : src);
+				int min = Configs.getStoreRefreshInt(name, src > 3 ? 3 : src);
 				if(min > -1 && min < gold) {
 					String err = srrh.refreshStore();
 					if(err != null)
@@ -555,57 +555,65 @@ public class Run {
 		Integer potionsc = srrh.getCurrency(Store.potions);
 		boolean epic = (potionsc == null ? false : (potionsc >= 45 ? true : false));
 		
-		for(int i=0; i<4; i++) {
-			if(i<all.length) {
-				if(Configs.isSlotBlocked(name, all[i].get(SRC.Raid.userSortIndex))) {
-					GUI.setText(name+"::name::"+i, "Blocked Raid!");
-					GUI.setForeground(name+"::name::"+i, Color.red);
-					Image img = new Image("data/ChestPics/nochest.png");
-					img.setSquare(30);
-					GUI.setImage(name+"::chest::"+i, img);
-					GUI.setText(name+"::lockBut::"+i, "\uD83D\uDD13");
-					GUI.setBackground(name+"::lockBut::"+i, GUI.getDefButCol());
-					GUI.setEnabled(name+"::lockBut::"+i, false);
-					GUI.setText(name+"::favBut::"+i, "\uD83D\uDC94");
-					GUI.setForeground(name+"::favBut::"+i, Color.black);
-					GUI.setEnabled(name+"::favBut::"+i, false);
-					GUI.setEnabled(name+"::map::"+i, false);
-				} else {
-					int wins = Integer.parseInt(all[i].get(SRC.Raid.pveWins));
-					int lvl = Integer.parseInt(all[i].get(SRC.Raid.pveLoyaltyLevel));
-					String disName = all[i].get(SRC.Raid.twitchDisplayName);
-					GUI.setText(name+"::name::"+i, disName + " - " + wins + "|" + pveloy[lvl]);
-					GUI.setForeground(name+"::name::"+i, Color.black);
-					String ct = all[i].getFromNode(SRC.MapNode.chestType);
-					if(ct == null) ct = "nochest";
-					Image img = new Image("data/ChestPics/" + ct.replace("alternate", "") + ".png");
-					img.setSquare(30);
-					GUI.setImage(name+"::chest::"+i, img);
-					GUI.setEnabled(name+"::lockBut::"+i, true);
-					if(Configs.isSlotLocked(name, all[i].get(SRC.Raid.userSortIndex))) {
-						GUI.setText(name+"::lockBut::"+i, "\uD83D\uDD12");
-						GUI.setBackground(name+"::lockBut::"+i, Color.green);
-					} else {
-						GUI.setText(name+"::lockBut::"+i, "\uD83D\uDD13");
-						GUI.setBackground(name+"::lockBut::"+i, GUI.getDefButCol());
-					}
-					GUI.setEnabled(name+"::favBut::"+i, true);
-					if(favs.has(disName)) {
-						GUI.setText(name+"::favBut::"+i, "\u2764");
-						GUI.setForeground(name+"::favBut::"+i, new Color(227,27,35));
-					} else {
-						GUI.setText(name+"::favBut::"+i, "\uD83D\uDC94");
-						GUI.setForeground(name+"::favBut::"+i, Color.black);
-					}
-					GUI.setEnabled(name+"::map::"+i, true);
-				}
+		boolean[] got = new boolean[] {false, false, false, false};
+		
+		for(int i=0; i<all.length; i++) {
+			int usi = Integer.parseInt(all[i].get(SRC.Raid.userSortIndex));
+			got[usi] = true;
+			if(Configs.isSlotBlocked(name, all[i].get(SRC.Raid.userSortIndex))) {
+				GUI.setText(name+"::name::"+i, "Blocked Raid!");
+				GUI.setForeground(name+"::name::"+i, Color.red);
+				Image img = new Image("data/ChestPics/nochest.png");
+				img.setSquare(30);
+				GUI.setImage(name+"::chest::"+i, img);
+				GUI.setText(name+"::lockBut::"+i, "\uD83D\uDD13");
+				GUI.setBackground(name+"::lockBut::"+i, GUI.getDefButCol());
+				GUI.setEnabled(name+"::lockBut::"+i, false);
+				GUI.setText(name+"::favBut::"+i, "\uD83D\uDC94");
+				GUI.setForeground(name+"::favBut::"+i, Color.black);
+				GUI.setEnabled(name+"::favBut::"+i, false);
+				GUI.setEnabled(name+"::map::"+i, false);
 			} else {
+				int wins = Integer.parseInt(all[i].get(SRC.Raid.pveWins));
+				int lvl = Integer.parseInt(all[i].get(SRC.Raid.pveLoyaltyLevel));
+				
+				String disName = all[i].get(SRC.Raid.twitchDisplayName);
+				GUI.setText(name+"::name::"+usi, disName + " - " + wins + "|" + pveloy[lvl]);
+				GUI.setForeground(name+"::name::"+usi, Color.black);
+				String ct = all[i].getFromNode(SRC.MapNode.chestType);
+				if(ct == null) ct = "nochest";
+				Image img = new Image("data/ChestPics/" + ct.replace("alternate", "") + ".png");
+				img.setSquare(30);
+				GUI.setImage(name+"::chest::"+usi, img);
+				GUI.setEnabled(name+"::lockBut::"+usi, true);
+				if(Configs.isSlotLocked(name, all[i].get(SRC.Raid.userSortIndex))) {
+					GUI.setText(name+"::lockBut::"+usi, "\uD83D\uDD12");
+					GUI.setBackground(name+"::lockBut::"+usi, Color.green);
+				} else {
+					GUI.setText(name+"::lockBut::"+usi, "\uD83D\uDD13");
+					GUI.setBackground(name+"::lockBut::"+usi, GUI.getDefButCol());
+				}
+				GUI.setEnabled(name+"::favBut::"+usi, true);
+				if(favs.has(disName)) {
+					GUI.setText(name+"::favBut::"+usi, "\u2764");
+					GUI.setForeground(name+"::favBut::"+usi, new Color(227,27,35));
+				} else {
+					GUI.setText(name+"::favBut::"+usi, "\uD83D\uDC94");
+					GUI.setForeground(name+"::favBut::"+usi, Color.black);
+				}
+				GUI.setEnabled(name+"::map::"+usi, true);
+			}
+		}
+		
+		for(int i=0; i<got.length; i++) {
+			if(!got[i]) {
 				GUI.setText(name+"::name::"+i, "");
 				Image img = new Image("data/ChestPics/nochest.png");
 				img.setSquare(30);
 				GUI.setImage(name+"::chest::"+i, img);
 			}
 		}
+			
 		
 		if(plra.length != 0) {
 			
@@ -846,12 +854,11 @@ public class Run {
 					} catch (NullPointerException e) {}
 					
 					if(		(raids[i].isOffline(srrh.getServerTime(), true, 10) && !ic) ||
-							(ct.contains("bone") && !ic) ||
-							(ct.contains("dungeon") && !ic) ||
+							(ct.contains("bone")) ||
+							(ct.contains("dungeon") ? true : raids[i].get(SRC.Raid.userSortIndex).equals(di)) ||
 							(!Configs.getChestBoolean(name, ct, Configs.enabled) && !ic) ||
 							(loy < Configs.getChestInt(name, ct, Configs.minc) && !ic) ||
-							(loy > (max < 0 ? Integer.MAX_VALUE : max) && !ic) ||
-							(raids[i].get(SRC.Raid.userSortIndex).equals(di) && !ct.contains("dungeons"))
+							(loy > (max < 0 ? Integer.MAX_VALUE : max) && !ic)
 							) {
 						bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
 						switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, getCaps(raids[i]));
