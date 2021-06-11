@@ -6,18 +6,33 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSyntaxException;
 
 public class JsonParser {
 
 	public static JsonObject parseObj(String json) {
-		return new Gson().fromJson(json, JsonObject.class);
+		try {
+			return new Gson().fromJson(json, JsonObject.class);
+		} catch (JsonSyntaxException e) {
+			return null;
+		}
 	}
 	
 	public static JsonArray parseArr(String json) {
-		return new Gson().fromJson(json, JsonArray.class);
+		try {
+			return new Gson().fromJson(json, JsonArray.class);
+		} catch (JsonSyntaxException e) {
+			return null;
+		}
 	}
 	
 	public static JsonObject check(JsonObject json, JsonObject def) {
+		if(def == null)
+			return json;
+		if(json == null) {
+			json = def.deepCopy();
+			return json;
+		}
 		for(String key : def.keySet()) {
 			JsonElement je = json.get(key);
 			JsonElement de = def.get(key);

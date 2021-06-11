@@ -643,21 +643,14 @@ public class MainFrame {
 			lockBut.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					SRRHelper srrh = profiles.get(name).getSRRH();
-					if(srrh != null) {
-						Raid[] raids = srrh.getRaids();
-						if(ii < raids.length) {
-							String usi = raids[ii].get(SRC.Raid.userSortIndex);
-							if(Configs.isSlotLocked(name, usi)) {
-								Configs.setSlotLocked(name, usi, false);
-								GUI.setText(name+"::lockBut::"+ii, "\uD83D\uDD13");
-								GUI.setBackground(name+"::lockBut::"+ii, GUI.getDefButCol());
-							} else {
-								Configs.setSlotLocked(name, usi, true);
-								GUI.setText(name+"::lockBut::"+ii, "\uD83D\uDD12");
-								GUI.setBackground(name+"::lockBut::"+ii, Color.green);
-							}
-						}
+					if(Configs.isSlotLocked(name, ""+ii)) {
+						Configs.setSlotLocked(name, ""+ii, false);
+						GUI.setText(name+"::lockBut::"+ii, "\uD83D\uDD13");
+						GUI.setBackground(name+"::lockBut::"+ii, GUI.getDefButCol());
+					} else {
+						Configs.setSlotLocked(name, ""+ii, true);
+						GUI.setText(name+"::lockBut::"+ii, "\uD83D\uDD12");
+						GUI.setBackground(name+"::lockBut::"+ii, Color.green);
 					}
 				}
 			});
@@ -675,16 +668,18 @@ public class MainFrame {
 					SRRHelper srrh = profiles.get(name).getSRRH();
 					if(srrh != null) {
 						Raid[] raids = srrh.getRaids();
-						if(ii < raids.length) {
-							String disName = new JsonPrimitive(raids[ii].get(SRC.Raid.twitchDisplayName)).getAsString();
-							if(favs.has(disName)) {
-								favs.remove(disName);
-								GUI.setText(name+"::favBut::"+ii, "\uD83D\uDC94");
-								GUI.setForeground(name+"::favBut::"+ii, Color.black);
-							} else {
-								favs.addProperty(disName, false);
-								GUI.setText(name+"::favBut::"+ii, "\u2764");
-								GUI.setForeground(name+"::favBut::"+ii, new Color(227,27,35));
+						for(int j=0; j<raids.length; j++) {
+							if(raids[j].get(SRC.Raid.userSortIndex).equals(""+ii)) {
+								String disName = new JsonPrimitive(raids[j].get(SRC.Raid.twitchDisplayName)).getAsString();
+								if(favs.has(disName)) {
+									favs.remove(disName);
+									GUI.setText(name+"::favBut::"+ii, "\uD83D\uDC94");
+									GUI.setForeground(name+"::favBut::"+ii, Color.black);
+								} else {
+									favs.addProperty(disName, false);
+									GUI.setText(name+"::favBut::"+ii, "\u2764");
+									GUI.setForeground(name+"::favBut::"+ii, new Color(227,27,35));
+								}
 							}
 						}
 					}

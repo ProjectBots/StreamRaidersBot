@@ -65,12 +65,14 @@ public class Run {
 				if(srrh == null) return;
 				try {
 					Raid[] raids = srrh.getRaids();
-					if(index < raids.length) {
-						try {
-							srrh.loadMap(srrh.getRaids()[index]);
-						} catch (DungeonException e) {}
-						Map map = srrh.getMap();
-						MapConv.asGui(map);
+					for(int i=0; i<raids.length; i++) {
+						if(raids[i].get(SRC.Raid.userSortIndex).equals(""+index)) {
+							try {
+								srrh.loadMap(raids[i]);
+							} catch (DungeonException e) {}
+							Map map = srrh.getMap();
+							MapConv.asGui(map);
+						}
 					}
 				} catch (PvPException e) {
 				} catch (Exception e) {
@@ -560,52 +562,45 @@ public class Run {
 		for(int i=0; i<all.length; i++) {
 			int usi = Integer.parseInt(all[i].get(SRC.Raid.userSortIndex));
 			got[usi] = true;
-			if(Configs.isSlotBlocked(name, all[i].get(SRC.Raid.userSortIndex))) {
-				GUI.setText(name+"::name::"+usi, "Blocked Raid!");
-				GUI.setForeground(name+"::name::"+usi, Color.red);
-				Image img = new Image("data/ChestPics/nochest.png");
-				img.setSquare(30);
-				GUI.setImage(name+"::chest::"+usi, img);
-				GUI.setText(name+"::lockBut::"+usi, "\uD83D\uDD13");
-				GUI.setBackground(name+"::lockBut::"+usi, GUI.getDefButCol());
-				GUI.setEnabled(name+"::lockBut::"+usi, false);
+			
+			
+			int wins = Integer.parseInt(all[i].get(SRC.Raid.pveWins));
+			int lvl = Integer.parseInt(all[i].get(SRC.Raid.pveLoyaltyLevel));
+			
+			String disName = all[i].get(SRC.Raid.twitchDisplayName);
+			GUI.setText(name+"::name::"+usi, disName + " - " + wins + "|" + pveloy[lvl]);
+			
+			String ct = all[i].getFromNode(SRC.MapNode.chestType);
+			if(ct == null) ct = "nochest";
+			Image img = new Image("data/ChestPics/" + ct.replace("alternate", "") + ".png");
+			img.setSquare(30);
+			GUI.setImage(name+"::chest::"+usi, img);
+			GUI.setEnabled(name+"::lockBut::"+usi, true);
+			
+			if(favs.has(disName)) {
+				GUI.setText(name+"::favBut::"+usi, "\u2764");
+				GUI.setForeground(name+"::favBut::"+usi, new Color(227,27,35));
+			} else {
 				GUI.setText(name+"::favBut::"+usi, "\uD83D\uDC94");
 				GUI.setForeground(name+"::favBut::"+usi, Color.black);
-				GUI.setEnabled(name+"::favBut::"+usi, false);
-				GUI.setEnabled(name+"::map::"+usi, false);
-			} else {
-				int wins = Integer.parseInt(all[i].get(SRC.Raid.pveWins));
-				int lvl = Integer.parseInt(all[i].get(SRC.Raid.pveLoyaltyLevel));
-				
-				String disName = all[i].get(SRC.Raid.twitchDisplayName);
-				GUI.setText(name+"::name::"+usi, disName + " - " + wins + "|" + pveloy[lvl]);
-				GUI.setForeground(name+"::name::"+usi, Color.black);
-				String ct = all[i].getFromNode(SRC.MapNode.chestType);
-				if(ct == null) ct = "nochest";
-				Image img = new Image("data/ChestPics/" + ct.replace("alternate", "") + ".png");
-				img.setSquare(30);
-				GUI.setImage(name+"::chest::"+usi, img);
-				GUI.setEnabled(name+"::lockBut::"+usi, true);
-				if(Configs.isSlotLocked(name, all[i].get(SRC.Raid.userSortIndex))) {
-					GUI.setText(name+"::lockBut::"+usi, "\uD83D\uDD12");
-					GUI.setBackground(name+"::lockBut::"+usi, Color.green);
-				} else {
-					GUI.setText(name+"::lockBut::"+usi, "\uD83D\uDD13");
-					GUI.setBackground(name+"::lockBut::"+usi, GUI.getDefButCol());
-				}
-				GUI.setEnabled(name+"::favBut::"+usi, true);
-				if(favs.has(disName)) {
-					GUI.setText(name+"::favBut::"+usi, "\u2764");
-					GUI.setForeground(name+"::favBut::"+usi, new Color(227,27,35));
-				} else {
-					GUI.setText(name+"::favBut::"+usi, "\uD83D\uDC94");
-					GUI.setForeground(name+"::favBut::"+usi, Color.black);
-				}
-				GUI.setEnabled(name+"::map::"+usi, true);
 			}
+			
+			
 		}
 		
 		for(int i=0; i<got.length; i++) {
+			if(Configs.isSlotBlocked(name, ""+i)) 
+				GUI.setForeground(name+"::name::"+i, Color.red);
+			else
+				GUI.setForeground(name+"::name::"+i, Color.black);
+			
+			if(Configs.isSlotLocked(name, ""+i)) {
+				GUI.setText(name+"::lockBut::"+i, "\uD83D\uDD12");
+				GUI.setBackground(name+"::lockBut::"+i, Color.green);
+			} else {
+				GUI.setText(name+"::lockBut::"+i, "\uD83D\uDD13");
+				GUI.setBackground(name+"::lockBut::"+i, GUI.getDefButCol());
+			}
 			if(!got[i]) {
 				GUI.setText(name+"::name::"+i, "");
 				Image img = new Image("data/ChestPics/nochest.png");
