@@ -561,18 +561,18 @@ public class Run {
 			int usi = Integer.parseInt(all[i].get(SRC.Raid.userSortIndex));
 			got[usi] = true;
 			if(Configs.isSlotBlocked(name, all[i].get(SRC.Raid.userSortIndex))) {
-				GUI.setText(name+"::name::"+i, "Blocked Raid!");
-				GUI.setForeground(name+"::name::"+i, Color.red);
+				GUI.setText(name+"::name::"+usi, "Blocked Raid!");
+				GUI.setForeground(name+"::name::"+usi, Color.red);
 				Image img = new Image("data/ChestPics/nochest.png");
 				img.setSquare(30);
-				GUI.setImage(name+"::chest::"+i, img);
-				GUI.setText(name+"::lockBut::"+i, "\uD83D\uDD13");
-				GUI.setBackground(name+"::lockBut::"+i, GUI.getDefButCol());
-				GUI.setEnabled(name+"::lockBut::"+i, false);
-				GUI.setText(name+"::favBut::"+i, "\uD83D\uDC94");
-				GUI.setForeground(name+"::favBut::"+i, Color.black);
-				GUI.setEnabled(name+"::favBut::"+i, false);
-				GUI.setEnabled(name+"::map::"+i, false);
+				GUI.setImage(name+"::chest::"+usi, img);
+				GUI.setText(name+"::lockBut::"+usi, "\uD83D\uDD13");
+				GUI.setBackground(name+"::lockBut::"+usi, GUI.getDefButCol());
+				GUI.setEnabled(name+"::lockBut::"+usi, false);
+				GUI.setText(name+"::favBut::"+usi, "\uD83D\uDC94");
+				GUI.setForeground(name+"::favBut::"+usi, Color.black);
+				GUI.setEnabled(name+"::favBut::"+usi, false);
+				GUI.setEnabled(name+"::map::"+usi, false);
 			} else {
 				int wins = Integer.parseInt(all[i].get(SRC.Raid.pveWins));
 				int lvl = Integer.parseInt(all[i].get(SRC.Raid.pveLoyaltyLevel));
