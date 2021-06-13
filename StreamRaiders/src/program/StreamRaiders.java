@@ -102,7 +102,7 @@ public class StreamRaiders {
 				
 			}
 			System.err.println(out);
-			NEF.log("logs.app", out);
+			NEF.log("logs.txt", out);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}

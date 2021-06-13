@@ -156,6 +156,9 @@ public class SRR {
 				
 				Debug.print(post.getUrlArg("cn") + "\n" + post.getLastEntity() + "\n" + p, Debug.srlog);
 				
+				if(p.contains("Account type mismatch."))
+					Debug.print(post.getUrlArg("cn") + "\n" + post.getLastEntity() + "\n" + p, Debug.atm);
+				
 				if(p.equals(""))
 					continue;
 				

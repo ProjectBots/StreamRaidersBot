@@ -782,7 +782,7 @@ public class MainFrame {
 		stngs.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				GUI sgui = new GUI("Profile Settings", 900, 800, gui, null);
+				GUI sgui = new GUI("Profile Settings for " + name, 900, 800, gui, null);
 				
 				sgui.addWinLis(new WinLis() {
 					@Override

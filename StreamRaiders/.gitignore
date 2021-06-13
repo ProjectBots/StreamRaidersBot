@@ -1,6 +1,5 @@
 /bin/
 /target/
 /cef_bundle/
-/logs.app
+/logs.txt
 /out.txt
-/out.app

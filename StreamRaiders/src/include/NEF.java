@@ -12,22 +12,8 @@ import java.util.Hashtable;
 public class NEF {
 	
 	public static void log(String path, String log) throws IOException {
-		
-		File file = new File(path);
-		
-		String text = "";
-		
-		if(file.exists())
-			try {
-				text = read(path) + "\n\n";
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		
 		LocalTime lt = LocalTime.now();
-		text += "---- " + lt.getHour() + ":" + lt.getMinute() + "," + lt.getSecond() + " ----\n" + log;
-		
-		save(path, text);
+		save(path, "---- " + lt.getHour() + ":" + lt.getMinute() + "," + lt.getSecond() + " ----\n" + log, true);
 	}
 	
 	
@@ -59,10 +45,8 @@ public class NEF {
 			
 			tab.put("~order", order.toString());
 		} finally {
-			try {
-				br.close();
-				r.close();
-			} catch (Exception e) {}
+			br.close();
+			r.close();
 		}
 		return tab;
 	}
@@ -117,14 +101,16 @@ public class NEF {
 			
 			w.write(text.substring(0, text.length() - 1));
 		} finally {
-			try {
-				w.close();
-			} catch (Exception e) {}
+			w.close();
 		}
 	}
 	
 
 	public static void save(String path, String text) throws IOException {
+		save(path, text, false);
+	}
+	
+	public static void save(String path, String text, boolean append) throws IOException {
 		
 		createDir(path);
 		
@@ -135,15 +121,13 @@ public class NEF {
 		
 		try {
 			file.createNewFile();
-			w = new FileWriter(file);
+			w = new FileWriter(file, append);
 			bw = new BufferedWriter(w);
 			
 			bw.write(text);
 		} finally {
-			try {
-				bw.close();
-				w.close();
-			} catch (Exception e) {}
+			bw.close();
+			w.close();
 		}
 	}
 	
@@ -165,22 +149,23 @@ public class NEF {
 			try {
 				br.close();
 				r.close();
-			} catch (Exception e1) {}
+			} catch (NullPointerException e) {}
 		}
 		return text.toString();
 	}
 	
 	private static void createDir(String path) {
-		
 		try {
 			path = path.substring(0, path.lastIndexOf("/"));
-			
-			File dir = new File(path);
-			
-			if(!dir.exists()) {
-				dir.mkdirs();
-			}
-		} catch (Exception e) {}
+		} catch (StringIndexOutOfBoundsException e) {
+			return;
+		}
+		
+		File dir = new File(path);
+		
+		if(!dir.exists()) {
+			dir.mkdirs();
+		}
 	}
 	
 	

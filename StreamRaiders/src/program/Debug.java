@@ -45,6 +45,7 @@ public class Debug {
 	public static final Scope general = new Scope("general run".split(" "));
 	public static final Scope run = new Scope("run".split(" "));
 	public static final Scope srlog = new Scope("srlog".split(" "));
+	public static final Scope atm = new Scope("atm".split(" "));
 	public static final Scope loop = new Scope("loop".split(" "));
 	
 	private static JsonArray scopes = new JsonArray();
