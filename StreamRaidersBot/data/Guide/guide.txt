@@ -1,0 +1,77 @@
+;- guide v2.0.1 by ProjectBots
+;-
+;- ;-				comment
+;- ##s {name}			creates a new Subject
+;- ##t [size] [c] [b]		declares a textblock
+;- ##i {path} [width] [c]	creates a image, path starts at data/Guide/
+;- ##r {subject} [size] [b]	creates a reference button
+;- ##c {class} {method}		executes a method and includes the returned container
+;- ##e {class} {method}		executes a method if the subject is viewed
+;- ##d {distance}		empty room
+;- ##l {link} [name] [size] [b]	link
+;- ##h				declares a html block (<html> and </html> are included automatically)
+;-
+;- [xxx] optional
+;- {xxx} not optional
+;-
+;- [c] center
+;- [b] bold
+;- size/width/distance have to be numbers
+;-
+;- good luck :)
+
+
+##s Home
+##i icon.png c 200
+##d 50
+##t c
+Hello you lucky one.
+##t c
+You have been chosen to write the new Guide.
+
+This is how to do it:
+
+open data/Guide/guide.txt
+edit it.
+to update just save the file and reopen the guide.
+
+##t c b
+syntax explanations are in the file.
+
+
+
+
+;- ------------------------
+;- DO NOT CHANGE AFTER THIS
+;- ------------------------
+##s Unit-Types
+##c program.GuideContent genUnits
+##e program.GuideContent loadUnits
+##s Chest-Types
+##c program.GuideContent chestTypes
+##s Other-Projects
+##i jsonexplorer.png 500 c
+##t 
+Simple commandline based JsonExplorer
+explore and edit realy big jsons without crashing your computer
+(tested it with a 733.595 lines long files)
+
+features:
+exploring like a file system in cmd
+easy changing of values
+very customizeable search
+saving as "pretty" json or as "one line" json
+exporting objects/arrays into a new file (search compatible!)
+##l https://github.com/ProjectBots/JsonExplorer GitHub b
+##d 75
+##i jhtmleditor.png 500 c
+##t 
+Html Editor for Java Applications
+
+Have you always wanted an editor that shows you what an html page looks like in a JLabel in java?
+Then this little program is for you!
+
+features:
+- adjustable autocomplete
+- real time outcome
+##l https://github.com/ProjectBots/JHtml-Editor GitHub b
