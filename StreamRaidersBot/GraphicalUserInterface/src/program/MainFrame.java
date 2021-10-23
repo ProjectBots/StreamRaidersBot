@@ -323,7 +323,7 @@ public class MainFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					
-					if(!StreamRaiders.isBrowserEnabled()) {
+					if(!Options.is("no_browser")) {
 						gui.msg("Error occured", "The Browser is disabled", GUI.MsgConst.ERROR);
 						return;
 					}
@@ -1900,7 +1900,7 @@ public class MainFrame {
 			gui.close();
 		} catch (Exception e) {}
 		
-		if(StreamRaiders.isBrowserEnabled())
+		if(Options.is("no_browser"))
 			Browser.dispose();
 		
 		for(String key : profiles.keySet()) 

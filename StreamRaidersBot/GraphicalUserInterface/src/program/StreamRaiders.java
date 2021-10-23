@@ -5,15 +5,12 @@ import java.io.IOException;
 
 import com.google.gson.JsonObject;
 
-import include.ArgSplitter;
-import include.ArgSplitter.Arg;
 import include.GUI;
 import include.GUI.Image;
 import include.GUI.Label;
 import include.GUI.TextArea;
 import include.GUI.WinLis;
 import userInterface.WaitScreen;
-import include.NEF;
 import program.Debug.DebugEventHandler;
 import program.Debug.Scope;
 import program.Debug.Type;
@@ -28,7 +25,7 @@ public class StreamRaiders {
 	
 	synchronized private static void log(String text, Exception e) {
 		if(error_count == 0) {
-			err = new GUI("Error occured", 400, 200, isBetaFrame() ? userInterface.MainFrame.getGUI() : program.MainFrame.getGUI(), null);
+			err = new GUI("Error occured", 400, 200, Options.is("beta_frame") ? userInterface.MainFrame.getGUI() : program.MainFrame.getGUI(), null);
 			err.addWinLis(new WinLis() {
 				@Override
 				public void onIconfied(WindowEvent e) {}
@@ -65,18 +62,6 @@ public class StreamRaiders {
 		}
 	}
 	
-	private static boolean betaFrame = false;
-	
-	public static boolean isBetaFrame() {
-		return betaFrame;
-	}
-	
-	private static boolean browserEnabled = true;
-	
-	public static boolean isBrowserEnabled() {
-		return browserEnabled;
-	}
-	
 	public static void main(String[] args) {
 		
 		System.out.println("\r\n"
@@ -91,7 +76,7 @@ public class StreamRaiders {
 		try {
 			Options.load();
 		} catch (IOException | NullPointerException fnf) {
-			System.out.println("Couldnt load \"opt.txt\"");
+			System.out.println("Couldnt load options");
 			return;
 		}
 		
@@ -147,45 +132,7 @@ public class StreamRaiders {
 			}
 		});
 		
-		ArgSplitter as = new ArgSplitter();
-		as.registerArg("debug", new Arg() {
-			@Override
-			public void run(String[] args) {
-				int i = 0;
-				if(args[0].startsWith("=")) {
-					String s = args[0].substring(1);
-					Debug.setOutputDirectory(s);
-					i++;
-				}
-				
-				if(i == args.length) 
-					Debug.addScope("general");
-				else 
-					for(; i<args.length; i++)
-						Debug.addScope(args[i]);
-			}
-		});
-		as.registerArg("beta_frame", new Arg() {
-			@Override
-			public void run(String[] args) {
-				betaFrame = true;
-			}
-		});
-		as.registerArg("no_browser", new Arg() {
-			@Override
-			public void run(String[] args) {
-				browserEnabled = false;
-			}
-		});
 		
-		try {
-			as.check(NEF.read("data/args.txt").split("(\n| )"));
-		} catch (IOException e2) {
-			System.out.println("StreamRaiders -> main: err=cant read args.txt");
-		}
-		
-		
-
 		Debug.print("started", Debug.general, Debug.info);
 		
 		WaitScreen.open("Initialize Bot");
@@ -193,8 +140,10 @@ public class StreamRaiders {
 		WaitScreen.setText("Initialize Remaper");
 		Remaper.load();
 		
+		
 		WaitScreen.setText("Initialize Browser");
-		if(browserEnabled) {
+		if(!Options.is("no_browser")) {
+			//	TODO auto disable if it loads infinitely
 			try {
 				Browser.create();
 			} catch (IOException | RuntimeException e) {
@@ -211,7 +160,7 @@ public class StreamRaiders {
 		
 		WaitScreen.setText("Initialize Config");
 		try {
-			if(isBetaFrame()) 
+			if(Options.is("beta_frame")) 
 				ConfigsV2.load();
 			else
 				Configs.load();
@@ -219,7 +168,7 @@ public class StreamRaiders {
 			Debug.printException("load configs", e, Debug.runerr, Debug.error, true);
 			if(GUI.showConfirmationBoxStatic("Loading Configs", "config file is corrupted\r\nreset?")) {
 				try {
-					if(isBetaFrame()) 
+					if(Options.is("beta_frame")) 
 						ConfigsV2.load(true);
 					else
 						Configs.load(true);
@@ -233,7 +182,7 @@ public class StreamRaiders {
 		
 		
 		WaitScreen.setText("Initialize MainFrame"); 
-		if(isBetaFrame()) {
+		if(Options.is("beta_frame")) {
 			BackEndHandler.setDataPathEventListener(new run.BackEndHandler.DataPathEventListener() {
 			@Override
 			public void onUpdate(String dataPath, String serverTime, JsonObject data) {

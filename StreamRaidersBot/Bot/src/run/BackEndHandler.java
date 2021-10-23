@@ -484,7 +484,8 @@ public class BackEndHandler {
 		
 		try {
 			JsonElement je = Json.parseObj(atr).get(SRC.errorMessage);
-			if(je.isJsonPrimitive()) return je.getAsString();
+			if(je.isJsonPrimitive()) 
+				return je.getAsString();
 		} catch (NullPointerException e) {
 			Debug.printException("SRRHelper -> placeUnit: err=failed to place Unit, atr=" + atr == null ? "null" : atr, e, Debug.runerr, Debug.error, true);
 		}

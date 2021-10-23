@@ -508,7 +508,7 @@ public class Run {
 				pts.remove(new JsonPrimitive("vibe"));
 
 			String err;
-			if(ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiPlaceExploit)) {
+			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiPlaceExploit)) {
 				goMultiPlace = false;
 				int[][] pos = new int[50][];
 				int k=0;
@@ -909,6 +909,7 @@ public class Run {
 		captain(slot, false, noCap);
 	}
 
+	//	TODO multi chest exploit???
 	private void chest(int slot) throws NoConnectionException, NotAuthorizedException {
 		JsonObject rews = beh.getChest(slot);
 		if(rews == null)
@@ -949,6 +950,8 @@ public class Run {
 		}
 	}
 
+	
+	//	TODO multi unlock exploit???
 	private void unlock() throws NoConnectionException, NotAuthorizedException {
 		
 		if(beh.getCurrency(Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unlockMinGold))
@@ -1095,6 +1098,7 @@ public class Run {
 		}
 	}
 
+	//	TODO multi quest exploit
 	private void quest() throws NoConnectionException, NotAuthorizedException {
 		Quest[] quests = beh.getClaimableQuests();
 		
@@ -1107,6 +1111,7 @@ public class Run {
 
 	private static final HashSet<Integer> potionsTiers = new HashSet<>(Arrays.asList(5, 11, 14, 22, 29));
 	
+	//	TODO multi event exploit
 	private void event() throws NoConnectionException, NotAuthorizedException {
 		if(!beh.isEvent())
 			return;

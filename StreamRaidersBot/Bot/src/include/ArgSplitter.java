@@ -50,7 +50,7 @@ public class ArgSplitter {
 				if(arg != null)
 					arg.run(sargs);
 				else if(def != null)
-					def.run(insert(0, sargs, s));
+					def.run(insert(0, sargs, s.substring(1)));
 				
 				list.add(s);
 			}

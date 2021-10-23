@@ -81,7 +81,7 @@ public class Browser {
 				client.dispose();
 				frame.dispose();
 				
-				if(StreamRaiders.isBetaFrame()) {
+				if(Options.is("beta_frame")) {
 					ConfigsV2.add(name, cookies);
 					ConfigsV2.saveb();
 					MainFrame.refresh(true);
