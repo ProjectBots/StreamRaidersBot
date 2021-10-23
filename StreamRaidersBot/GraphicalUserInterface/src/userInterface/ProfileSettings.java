@@ -867,6 +867,21 @@ public class ProfileSettings {
 		gui.addBut(resStat);
 		
 		
+		Button bdelpro = new Button();
+		bdelpro.setPos(0, p++);
+		bdelpro.setInsets(20, 10, 20, 2);
+		bdelpro.setText("Delete Profile");
+		bdelpro.setTooltip("Removes this Profile from the bot");
+		bdelpro.setGradient(Fonts.getGradient("stngs profile buttons def"));
+		bdelpro.setAL(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(MainFrame.forget(cid, false))
+					gui.close();
+			}
+		});
+		gui.addBut(bdelpro);
+		
 	}
 	
 	private static <T>T[] putFirst(T[] arr, T item) {

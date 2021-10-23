@@ -560,11 +560,13 @@ public class MainFrame {
 		}
 	}
 	
-	static void forget(String cid, boolean force) {
-		if(force || gui.showConfirmationBox("delete " + ConfigsV2.getPStr(cid, ConfigsV2.name) + "?")) {
+	static boolean forget(String cid, boolean force) {
+		boolean ret = force || gui.showConfirmationBox("delete " + ConfigsV2.getPStr(cid, ConfigsV2.name) + "?");
+		if(ret) {
 			ConfigsV2.remProfile(cid);
 			remove(cid);
 		}
+		return ret;
 	}
 	
 	
