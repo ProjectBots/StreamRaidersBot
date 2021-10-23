@@ -125,26 +125,17 @@ public class NEF {
 	}
 	
 	public static String read(String path) throws IOException {
-		File file = new File(path);
-		
 		FileReader r = null;
-		BufferedReader br = null;
-		
 		StringBuilder text = new StringBuilder();
 		try {
-			r = new FileReader(file);
-			br = new BufferedReader(r);
-			
-			for(String line = br.readLine(); line != null; line = br.readLine()) {
-				text.append(line + "\n");
-			}
+			r = new FileReader(new File(path));
+			for(int c = r.read(); c != -1; c = r.read())
+				text.append((char) c);
 		} finally {
-			if(br != null)
-				br.close();
 			if(r != null)
 				r.close();
 		}
-		return text.toString();
+		return text.toString().replaceAll("(\r\n|\r)", "\n");
 	}
 	
 	public static String[] readLines(String path) throws IOException {

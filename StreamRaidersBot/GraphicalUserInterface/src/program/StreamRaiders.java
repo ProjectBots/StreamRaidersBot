@@ -2,6 +2,7 @@ package program;
 
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+
 import com.google.gson.JsonObject;
 
 import include.ArgSplitter;
@@ -97,6 +98,7 @@ public class StreamRaiders {
 		System.out.println("by ProjectBots https://github.com/ProjectBots/StreamRaiderBot\r\n"
 				+ "Version: " + Options.get("botVersion") + "\r\n");
 		
+		/*	TODO make better / test if bug has been resolved over time
 		if(!System.getProperty("java.version").startsWith("16")) {
 			System.err.println("Incompatible java Version\nRestarting with new Version\n");
 			
@@ -111,7 +113,7 @@ public class StreamRaiders {
 			
 			return;
 		}
-		
+		*/
 		Debug.setDebugEventHandler(new DebugEventHandler() {
 			@Override
 			public void onPrintLine(String pre, String msg, Scope scope, Type type, boolean forced) {
@@ -177,7 +179,7 @@ public class StreamRaiders {
 		});
 		
 		try {
-			as.check(NEF.read("data/args.txt").replace("\n", " ").split(" "));
+			as.check(NEF.read("data/args.txt").split("(\n| )"));
 		} catch (IOException e2) {
 			System.out.println("StreamRaiders -> main: err=cant read args.txt");
 		}

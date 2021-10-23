@@ -3,7 +3,6 @@ package program;
 import static org.apache.commons.io.comparator.LastModifiedFileComparator.*;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -129,16 +128,9 @@ public class Debug {
 					System.out.println("[Debug] added scope " + scs[i]);
 				else
 					try {
-						NEF.save(path, NEF.read(path) + "[Debug] added scope " + scs[i]);
-					} catch (FileNotFoundException e) {
-						try {
-							NEF.save(path, "[Debug] added scope " + scs[i]);
-						} catch (IOException e1) {
-							System.out.println("Debug -> print: err=failed to save to new file, path="+path);
-							e1.printStackTrace();
-						}
+						NEF.save(path, "[Debug] added scope " + scs[i], true);
 					} catch (IOException e) {
-						System.out.println("Debug -> print: err=failed to save to existing file");
+						System.out.println("Debug -> print: err=failed to save to file");
 						e.printStackTrace();
 					}
 			}
