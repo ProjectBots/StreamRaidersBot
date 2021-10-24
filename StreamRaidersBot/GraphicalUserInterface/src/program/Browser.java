@@ -82,9 +82,12 @@ public class Browser {
 				frame.dispose();
 				
 				if(Options.is("beta_frame")) {
-					ConfigsV2.add(name, cookies);
-					ConfigsV2.saveb();
-					MainFrame.refresh(true);
+					if(cookies.has("ACCESS_INFO")) {
+						ConfigsV2.add(name, cookies.get("ACCESS_INFO").getAsString());
+						ConfigsV2.saveb();
+						MainFrame.refresh(true);
+					} else
+						Debug.print("Browser -> add: err=no access_info, got="+cookies.keySet().toString(), Debug.runerr, Debug.error, true);
 				} else {
 					Configs.add(name, cookies);
 					Configs.saveb();

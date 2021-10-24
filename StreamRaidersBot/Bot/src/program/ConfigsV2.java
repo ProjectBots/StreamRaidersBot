@@ -972,16 +972,16 @@ public class ConfigsV2 {
 		}
 	}
 	
-	private static final List<String> cookiesa = Arrays.asList("ACCESS_INFO scsession".split(" "));
+	/*
+	private static final List<String> cookiesa = Arrays.asList("ACCESS_INFO".split(" "));
 	
-	public static void add(String name, JsonObject cookies) {
+	public static void add(String name, String access_info) {
 		StringBuilder sb = new StringBuilder();
+		
 		int c = 0;
-		for(String key : cookies.keySet()) {
-			if(ConfigsV2.cookiesa.contains(key)) {
-				sb.append(key + "=" + cookies.getAsJsonPrimitive(key).getAsString() + "; ");
-				c++;
-			}
+		if(ConfigsV2.cookiesa.contains(key)) {
+			sb.append(key + "=" + cookies.getAsJsonPrimitive(key).getAsString() + "; ");
+			c++;
 		}
 		if(c != ConfigsV2.cookiesa.size()) {
 			int index = 0;
@@ -997,11 +997,11 @@ public class ConfigsV2 {
 		
 		add(name, sb.toString().substring(0, sb.length()-2));
 	}
+	*/
 	
-	
-	private static void add(String name, String cookies) {
+	public static void add(String name, String access_info) {
 		JsonObject jo = new JsonObject();
-		jo.addProperty("cookies", cookies);
+		jo.addProperty("cookies", "ACCESS_INFO="+access_info);
 		jo.addProperty("name", name);
 		String key = ""+LocalDateTime.now().toString().hashCode();
 		configs.add(key, jo);
