@@ -1254,9 +1254,6 @@ public class ConfigsV2 {
 	}
 	
 	public static void exportConfig(Exportable ex) throws IOException {
-		//TODO remove
-		System.out.println("\n\n\n\n\n"+ex.toString());
-		
 		JsonObject res = new JsonObject();
 		
 		List<String> gconfs = ex.getGConfs();
@@ -1268,15 +1265,20 @@ public class ConfigsV2 {
 		for(Profile p : pros) {
 			String pp = p.getCid()+" ";
 			List<String> pconfs = p.getPConfs();
+			pconfs.add("name");
 			for(String s : pconfs)
 				Json.set(res, pp+s, Json.get(configs, pp+s));
 			
 			List<Layer> lays = p.getLayers();
 			for(Layer l : lays) {
+				
+				
 				String pl = pp+"layers "+l.getLid()+" ";
 				Hashtable<String, List<String>> lconfs = l.getItems();
 				
 				List<String> i = lconfs.get("Simple");
+				i.add("name");
+				i.add("color");
 				for(String s : i)
 					Json.set(res, pl+s, Json.get(configs, pl+s));
 				
@@ -1323,8 +1325,6 @@ public class ConfigsV2 {
 			}
 			
 		}
-		//TODO remove
-		System.out.println(Json.prettyJson(res));
 		
 		NEF.save(ex.getPath(), Json.prettyJson(res));
 		

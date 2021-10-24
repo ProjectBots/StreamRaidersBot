@@ -37,7 +37,7 @@ public class ConfigsV2GUI {
 	private GUI gui = null;
 	public void exportConfig(GUI parent) {
 		
-		String uid = pre + LocalDateTime.now().toString().hashCode() + "::";
+		final String uid = pre + LocalDateTime.now().toString().hashCode() + "::";
 		
 		Hashtable<String, Container> cons = new Hashtable<>();
 		
@@ -226,19 +226,15 @@ public class ConfigsV2GUI {
 					return;
 				
 				String sel = GUI.getSelected(uid+"global::select");
-				swi: {
-					switch(sel) {
-					case "all":
-						exGloAll(ex);
-						break;
-					case "custom":
-						for(String c : configs.get("Global"))
-							if(GUI.isCButSelected(uid+"global::"+c))
-								ex.add(c);
-						break;
-					default:
-						break swi;
-					}
+				switch(sel) {
+				case "all":
+					exGloAll(ex);
+					break;
+				case "custom":
+					for(String c : configs.get("Global"))
+						if(GUI.isCButSelected(uid+"global::"+c))
+							ex.add(c);
+					break;
 				}
 				
 					
@@ -288,6 +284,7 @@ public class ConfigsV2GUI {
 				} catch (IOException e1) {
 					Debug.printException("ConfigsV2GUI -> exportConfig: mode=custom, err=failed to save file", e1, Debug.runerr, Debug.error, true);
 				}
+				gui.close();
 			}
 		});
 		gui.addBut(exs);
@@ -312,6 +309,7 @@ public class ConfigsV2GUI {
 				} catch (IOException e1) {
 					Debug.printException("ConfigsV2GUI -> exportConfig: mode=all, err=failed to save file", e1, Debug.runerr, Debug.error, true);
 				}
+				gui.close();
 			}
 		});
 		gui.addBut(exa);
@@ -323,8 +321,6 @@ public class ConfigsV2GUI {
 			return null;
 		if(!FilenameUtils.getExtension(file.getName()).equalsIgnoreCase("json")) 
 		    file = new File(file.toString() + ".json");
-		
-		gui.close();
 		
 		return new Exportable(file.getAbsolutePath());
 	}
