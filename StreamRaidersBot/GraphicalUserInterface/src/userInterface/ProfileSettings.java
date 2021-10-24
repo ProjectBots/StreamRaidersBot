@@ -27,6 +27,7 @@ import include.GUI.WinLis;
 import include.Http;
 import include.Http.NotAllowedProxyException;
 import program.ConfigsV2;
+import program.Options;
 import program.ConfigsV2.Boo;
 import program.ConfigsV2.Int;
 import program.ConfigsV2.SleInt;
@@ -373,7 +374,10 @@ public class ProfileSettings {
 		buts.setInsets(10, 2, 2, 2);
 			
 			int g = 0;
-			String[] sbuts = "Campaign Fav Only  Dungeon Fav Only  Campaign Epic Place Fav Only  Dungeon Epic Place Fav Only  Place Marker Only  Prefer Rogues On Treasure Maps  Allow Place First  Use Multi Place Exploit".split("  ");
+			String[] sbuts = "Campaign Fav Only  Dungeon Fav Only  Campaign Epic Place Fav Only  Dungeon Epic Place Fav Only  Place Marker Only  Prefer Rogues On Treasure Maps  Allow Place First".split("  ");
+			if(Options.is("exploits"))
+				sbuts = ArrayUtils.addAll(sbuts, "Use Multi Place Exploit  Use Multi Quest Exploit  Use Multi Event Exploit  Use Multi Chest Exploit  Use Multi Unit Exploit".split("  "));
+			
 			for(String key : sbuts) {
 				final Boo con = new Boo(key.substring(0, 1).toLowerCase() + key.substring(1).replace(" ", ""));
 				Button cbsb = new Button();

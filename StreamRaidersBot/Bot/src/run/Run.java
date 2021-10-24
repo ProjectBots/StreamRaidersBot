@@ -94,7 +94,7 @@ public class Run {
 		}
 	}
 	
-	public void addRew(String con, String type, int amount) {
+	synchronized public void addRew(String con, String type, int amount) {
 		type = Remaper.map(type);
 		try {
 			JsonObject r = rews.getAsJsonObject(con);
@@ -427,7 +427,7 @@ public class Run {
 	}
 
 	private HashSet<String> bannedPos = new HashSet<>();
-	private boolean goMultiPlace = false;
+	private boolean goMultiPlace;
 	private LocalDateTime placeTime = LocalDateTime.now();
 	
 	private void place(int slot) throws NoConnectionException, NotAuthorizedException {
@@ -535,7 +535,7 @@ public class Run {
 						public void run() {
 							while(!goMultiPlace) {
 								try {
-									Thread.sleep(10);
+									Thread.sleep(1);
 								} catch (InterruptedException e) {}
 							}
 							try {
@@ -605,6 +605,8 @@ public class Run {
 	private boolean epic = false;
 	
 	private Unit findUnit(Unit[] units, JsonArray ppts, boolean dungeon, int mdif) {
+		
+		//	TODO prefer rogues on treasure maps
 		
 		isVibing = ppts.size() == 1 && ppts.get(0).getAsString().equals("vibe");
 		isOnPlan = ppts.size() != 0;
@@ -909,13 +911,43 @@ public class Run {
 		captain(slot, false, noCap);
 	}
 
-	//	TODO multi chest exploit???
+	
+	private boolean goMultiChestClaim;
+	
 	private void chest(int slot) throws NoConnectionException, NotAuthorizedException {
-		JsonObject rews = beh.getChest(slot);
-		if(rews == null)
+		if(!beh.isReward(slot))
 			return;
-		for(String rew : rews.keySet())
-			addRew(SRC.Run.chests, rew, rews.get(rew).getAsInt());
+		if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiChestExploit)) {
+			goMultiChestClaim = false;
+			for(int i=0; i<50; i++) {
+				Thread t = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						while(!goMultiChestClaim) {
+							try {
+								Thread.sleep(1);
+							} catch (InterruptedException e) {}
+						}
+						try {
+							JsonObject rews = beh.getChest(slot);
+							if(rews == null)
+								return;
+							for(String rew : rews.keySet())
+								addRew(SRC.Run.chests, rew, rews.get(rew).getAsInt());
+						} catch (NoConnectionException | NotAuthorizedException e) {}
+					}
+				});
+				t.start();
+			}
+			goMultiChestClaim = true;
+		} else {
+			JsonObject rews = beh.getChest(slot);
+			if(rews == null)
+				return;
+			for(String rew : rews.keySet())
+				addRew(SRC.Run.chests, rew, rews.get(rew).getAsInt());
+		}
+		
 	}
 
 	private void upgrade() throws NoConnectionException, NotAuthorizedException {
@@ -950,8 +982,9 @@ public class Run {
 		}
 	}
 
+	private boolean goMultiUnit;
 	
-	//	TODO multi unlock exploit???
+	
 	private void unlock() throws NoConnectionException, NotAuthorizedException {
 		
 		if(beh.getCurrency(Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unlockMinGold))
@@ -968,15 +1001,48 @@ public class Run {
 		while(true) {
 			int ind = 0;
 			for(int i=1; i<ps.length; i++)
-				if(ps[i] > ps[ind]) 
+				if(ps[i] > ps[ind])
 					ind = i;
 			
 			if(ps[ind] < 0)
 				break;
 			
-			String err = beh.unlockUnit(unlockable[ind]);
-			if(err != null && !err.equals("not enough gold")) 
-				Debug.print("Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, Debug.runerr, Debug.warn, true);
+			if(!beh.canUnlockUnit(unlockable[ind])) {
+				ps[ind] = -1;
+				continue;
+			}
+			
+			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiUnitExploit)) {
+				//	TODO multi unlock exploit???
+				goMultiUnit = false;
+				final Unit picked = unlockable[ind];
+				for(int i=0; i<50; i++) {
+					Thread t = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							while(!goMultiUnit) {
+								try {
+									Thread.sleep(1);
+								} catch (InterruptedException e) {}
+							}
+							try {
+								beh.unlockUnit(picked);
+							} catch (NoConnectionException e) {}
+						}
+					});
+					t.start();
+				}
+				goMultiUnit = true;
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {}
+				beh.updateStore(true);
+			} else {
+				String err = beh.unlockUnit(unlockable[ind]);
+				if(err != null && !err.equals("not enough gold")) 
+					Debug.print("Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, Debug.runerr, Debug.warn, true);
+				
+			}
 			
 			ps[ind] = -1;
 		}
@@ -1098,50 +1164,106 @@ public class Run {
 		}
 	}
 
-	//	TODO multi quest exploit
+	private boolean goMultiQuestClaim;
+	
 	private void quest() throws NoConnectionException, NotAuthorizedException {
 		Quest[] quests = beh.getClaimableQuests();
 		
 		for(int i=0; i<quests.length; i++) {
-			String err = beh.claimQuest(quests[i]);
-			if(err != null)
-				Debug.print(pn + ": Run -> claimQuests: err=" + err, Debug.runerr, Debug.error, true);
+			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiQuestExploit)) {
+				//	TODO multi quest exploit
+				goMultiChestClaim = false;
+				final Quest picked = quests[i];
+				for(int j=0; j<50; j++) {
+					Thread t = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							while(!goMultiQuestClaim) {
+								try {
+									Thread.sleep(1);
+								} catch (InterruptedException e) {}
+							}
+							try {
+								beh.claimQuest(picked);
+							} catch (NoConnectionException e) {}
+						}
+					});
+					t.start();
+				}
+				goMultiQuestClaim = true;
+			} else {
+				String err = beh.claimQuest(quests[i]);
+				if(err != null)
+					Debug.print(pn + ": Run -> claimQuests: err=" + err, Debug.runerr, Debug.error, true);
+			}
 		}
 	}
 
 	private static final HashSet<Integer> potionsTiers = new HashSet<>(Arrays.asList(5, 11, 14, 22, 29));
 	
-	//	TODO multi event exploit
 	private void event() throws NoConnectionException, NotAuthorizedException {
 		if(!beh.isEvent())
 			return;
 		
 		boolean bp = beh.hasBattlePass();
 		int tier = beh.getEventTier();
-		for(int i=1; i<tier; i++) {
-			if(bp) {
-				JsonObject ce = beh.collectEvent(i, true, pn);
-				JsonElement err = ce.get(SRC.errorMessage);
-				if(err != null && err.isJsonPrimitive() && !err.getAsString().equals("cant collect")) 
-					Debug.print(pn + ": Run -> event -> pass: err=" + err.getAsString(), Debug.runerr, Debug.error, true);
-				
-			}
-			
+		for(int i=1; i<=tier; i++) {
+			if(bp)
+				collectEvent(i, true);
 			
 			if(potionsTiers.contains(i) && beh.getCurrency(Store.potions, false) > 10)
 				continue;
 			
-			JsonObject ce = beh.collectEvent(i, false, pn);
+			collectEvent(i, false);
+		}
+	}
+	
+	private boolean goMultiEventClaim;
+	
+	private void collectEvent(int tier, boolean bp) throws NoConnectionException, NotAuthorizedException {
+		if(!beh.canCollectEvent(tier, bp))
+			return;
+		
+		if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiEventExploit)) {
+			//	TODO multi event exploit
+			goMultiEventClaim = false;
+			for(int i=0; i<50; i++) {
+				Thread t = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						while(!goMultiEventClaim) {
+							try {
+								Thread.sleep(1);
+							} catch (InterruptedException e) {}
+						}
+						try {
+							JsonObject ce = beh.collectEvent(tier, bp);
+							JsonElement err = ce.get(SRC.errorMessage);
+							if(err == null || !err.isJsonPrimitive()) {
+								String rew = ce.get("reward").getAsString();
+								if(!rew.equals("badges"))
+									addRew(SRC.Run.event, rew, ce.get("quantity").getAsInt());
+							}
+						} catch (NoConnectionException e) {}
+					}
+				});
+				t.start();
+			}
+			goMultiEventClaim = true;
+		} else {
+			JsonObject ce = beh.collectEvent(tier, bp);
 			JsonElement err = ce.get(SRC.errorMessage);
 			if(err != null && err.isJsonPrimitive()) {
-				if(!err.getAsString().equals("cant collect"))
-					Debug.print(pn + ": Run -> event -> basic: err=" + err.getAsString(), Debug.runerr, Debug.error, true);
+				Debug.print(pn + ": Run -> event -> collectEvent: tier="+tier+", bp="+bp+", err=" + err.getAsString(), Debug.runerr, Debug.error, true);
 			} else {
 				String rew = ce.get("reward").getAsString();
 				if(!rew.equals("badges"))
 					addRew(SRC.Run.event, rew, ce.get("quantity").getAsInt());
 			}
 		}
+		
+		
+		
 	}
 
 	public String getCurrentLayer() {

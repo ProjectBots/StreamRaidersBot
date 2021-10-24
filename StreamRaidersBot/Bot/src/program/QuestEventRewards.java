@@ -250,7 +250,8 @@ public class QuestEventRewards {
 	}
 	
 	public boolean canCollectEvent(int p, boolean battlePass) {
-		if(p >= tier || p <= 0) return false;
+		if(p > tier || p <= 0)
+			return false;
 		JsonElement je = collected.get(""+p);
 		if(je == null) return true;
 		JsonObject jo = je.getAsJsonObject();
@@ -289,7 +290,7 @@ public class QuestEventRewards {
 		add("rarescroll");
 	}};
 	
-	public JsonObject collectEvent(int p, boolean battlePass, JsonObject grantEventReward, String name) {
+	public JsonObject collectEvent(int p, boolean battlePass, JsonObject grantEventReward) {
 		JsonObject ret = new JsonObject();
 		JsonElement err = grantEventReward.get(SRC.errorMessage);
 		

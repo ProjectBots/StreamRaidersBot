@@ -269,11 +269,9 @@ public class Store {
 		return ret;
 	}
 	
+	//	TODO handle request in BackEndHandler.java
 	public String unlockUnit(String type, boolean dupe, SRR req) throws NoConnectionException {
 		
-		if(!canUnlockUnit(type, dupe))
-			return "not enough gold";
-
 		String text = req.unlockUnit(type);
 		if(text == null) 
 			return "critical request error";

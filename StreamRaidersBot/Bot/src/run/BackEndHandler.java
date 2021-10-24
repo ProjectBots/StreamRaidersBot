@@ -395,10 +395,16 @@ public class BackEndHandler {
 	
 	
 	public JsonObject getChest(int slot) throws NoConnectionException, NotAuthorizedException {
-		updateRaids(false);
-		if(raids[slot] == null || !raids[slot].isReward())
+		JsonElement data = Json.parseObj(req.getRaidStatsByUser(raids[slot].get(SRC.Raid.raidId))).get("data");
+		if(data == null || !data.isJsonObject())
 			return null;
-		return raids[slot].getChest(Json.parseObj(req.getRaidStatsByUser(raids[slot].get(SRC.Raid.raidId))).getAsJsonObject("data"));
+		return raids[slot].getChest(data.getAsJsonObject());
+	}
+	
+	public boolean isReward(int slot) throws NoConnectionException, NotAuthorizedException {
+		updateRaids(false);
+		return raids[slot] != null && raids[slot].isReward();
+			
 	}
 	
 	public Unit[] getUnits(int con, boolean force) throws NoConnectionException, NotAuthorizedException {
@@ -426,6 +432,10 @@ public class BackEndHandler {
 	
 	public String upgradeUnit(Unit unit, String specUID) throws NoConnectionException {
 		return store.canUpgradeUnit(unit) ? store.upgradeUnit(unit, req, specUID) : "cant upgrade unit";
+	}
+	
+	public boolean canUnlockUnit(Unit unit) {
+		return store.canUnlockUnit(unit.get(SRC.Unit.unitType), unit.isDupe());
 	}
 	
 	public String unlockUnit(Unit unit) throws NoConnectionException {
@@ -604,18 +614,13 @@ public class BackEndHandler {
 		return qer.getEventTier();
 	}
 	
-	public JsonObject collectEvent(int p, boolean battlePass, String name) throws NoConnectionException, NotAuthorizedException {
-		JsonObject err = new JsonObject();
-		if(!qer.canCollectEvent(p, battlePass)) {
-			err.addProperty(SRC.errorMessage, "cant collect");
-			return err;
-		}
-		
-		JsonObject rdata = Json.parseObj(req.grantEventReward(QuestEventRewards.getCurrentEvent(), ""+p, battlePass));
-		if(testUpdate(rdata))
-			rdata = Json.parseObj(req.grantEventReward(QuestEventRewards.getCurrentEvent(), ""+p, battlePass));
-		
-		return qer.collectEvent(p, battlePass, rdata, name);
+	public boolean canCollectEvent(int p, boolean battlePass) throws NoConnectionException, NotAuthorizedException {
+		updateQuestEventRewards(false);
+		return qer.canCollectEvent(p, battlePass);
+	}
+	
+	public JsonObject collectEvent(int p, boolean battlePass) throws NoConnectionException {
+		return qer.collectEvent(p, battlePass, Json.parseObj(req.grantEventReward(QuestEventRewards.getCurrentEvent(), ""+p, battlePass)));
 	}
 	
 	public boolean hasBattlePass() throws NoConnectionException, NotAuthorizedException {

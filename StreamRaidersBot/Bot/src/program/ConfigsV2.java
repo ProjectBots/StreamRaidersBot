@@ -310,6 +310,10 @@ public class ConfigsV2 {
 	
 
 	public static final Boo useMultiPlaceExploit = new Boo("useMultiPlaceExploit");
+	public static final Boo useMultiQuestExploit = new Boo("useMultiQuestExploit");
+	public static final Boo useMultiUnitExploit = new Boo("useMultiUnitExploit");
+	public static final Boo useMultiChestExploit = new Boo("useMultiChestExploit");
+	public static final Boo useMultiEventExploit = new Boo("useMultiEventExploit");
 	public static final Boo placeMarkerOnly = new Boo("placeMarkerOnly");
 	public static final Boo preferRoguesOnTreasureMaps = new Boo("preferRoguesOnTreasureMaps");
 	public static final Boo allowPlaceFirst = new Boo("allowPlaceFirst");
@@ -972,33 +976,6 @@ public class ConfigsV2 {
 		}
 	}
 	
-	/*
-	private static final List<String> cookiesa = Arrays.asList("ACCESS_INFO".split(" "));
-	
-	public static void add(String name, String access_info) {
-		StringBuilder sb = new StringBuilder();
-		
-		int c = 0;
-		if(ConfigsV2.cookiesa.contains(key)) {
-			sb.append(key + "=" + cookies.getAsJsonPrimitive(key).getAsString() + "; ");
-			c++;
-		}
-		if(c != ConfigsV2.cookiesa.size()) {
-			int index = 0;
-			while(true) {
-				index = sb.indexOf("=", index)+1;
-				if(index == 0)
-					break;
-				sb.replace(index, sb.indexOf(";", index), "{hidden}");
-			}
-			Debug.print("Not enough cookies, got: "+sb.toString(), Debug.runerr, Debug.error, true);
-			return;
-		}
-		
-		add(name, sb.toString().substring(0, sb.length()-2));
-	}
-	*/
-	
 	public static void add(String name, String access_info) {
 		JsonObject jo = new JsonObject();
 		jo.addProperty("cookies", "ACCESS_INFO="+access_info);
@@ -1098,6 +1075,8 @@ public class ConfigsV2 {
 					try {
 						All a = (All) f.get(new ConfigsV2());
 						String con = a.get();
+						if(con.endsWith("Exploit"))
+							continue;
 						switch(ConfigClasses.valueOf(classname)) {
 						case GStr:
 						case GBoo:
@@ -1109,9 +1088,9 @@ public class ConfigsV2 {
 								continue;
 							get("Profile").add(con);
 							continue;
+						case Boo:
 						case Str:
 						case Int:
-						case Boo:
 							if(ArrayUtils.contains("color name".split(" "), con))
 								continue;
 							get("Simple").add(con);

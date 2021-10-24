@@ -81,7 +81,9 @@ public class NewProfile {
 					np.msg("ACCESS_INFO needed", "Without your ACCESS_INFO this bot can't work", GUI.MsgConst.WARNING);
 					return;
 				}
+				np.close();
 				ConfigsV2.add(name, ai);
+				MainFrame.refresh(true);
 			}
 		};
 		

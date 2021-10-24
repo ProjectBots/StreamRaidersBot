@@ -435,7 +435,7 @@ public class GUI{
 	
 	//	setting different things
 	public static void setForeground(String id, Color col) {
-		((Component) getComp(id)).setForeground(col);;
+		((Component) getComp(id)).setForeground(col);
 	}
 	
 	public static void setBackground(String id, Color col) {
