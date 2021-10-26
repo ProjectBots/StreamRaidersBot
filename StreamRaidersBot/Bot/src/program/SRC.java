@@ -118,6 +118,8 @@ public class SRC {
 		public static final String chests = "chests";
 		public static final String bought = "bought";
 		public static final String event = "event";
+		
+		public static final int exploitThreadCount = 50;
 	}
 	
 	public static class MainFrame {

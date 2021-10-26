@@ -196,6 +196,7 @@ public class BackEndHandler {
 		if(testUpdate(jo))
 			jo = Json.parseObj(req.getActiveRaidsByUser());
 		
+		
 		boolean[] got = new boolean[4];
 		JsonArray rs = jo.getAsJsonArray("data");
 		for(int i=0; i<rs.size(); i++) {
@@ -253,7 +254,18 @@ public class BackEndHandler {
 		JsonObject cur = Json.parseObj(req.getAvailableCurrencies());
 		JsonObject items = Json.parseObj(req.getCurrentStoreItems());
 		
-		store = new Store(user.getAsJsonObject("data"), cur.getAsJsonArray("data"), items.getAsJsonArray("data"));
+		JsonElement err = cur.get(SRC.errorMessage);
+		if(err.isJsonPrimitive())
+			Debug.print("BackEndHandler -> updateStore: cur, err="+err.getAsString(), Debug.runerr, Debug.error, true);
+		err = items.get(SRC.errorMessage);
+		if(err.isJsonPrimitive())
+			Debug.print("BackEndHandler -> updateStore: items, err="+err.getAsString(), Debug.runerr, Debug.error, true);
+		
+		store = new Store(user.getAsJsonObject("data"),
+				cur.getAsJsonArray("data"),
+				items.getAsJsonArray("data"));
+		
+		
 		
 		rts.put("store", now);
 		uelis.afterUpdate("store");

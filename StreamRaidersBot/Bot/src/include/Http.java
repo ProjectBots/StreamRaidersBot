@@ -205,7 +205,6 @@ public class Http {
 		for(int i=0; i<5; i++) {
 			try {
 				CloseableHttpResponse response = client.execute(httppost);
-				
 				String text = new BufferedReader(new InputStreamReader(response.getEntity()
 							.getContent(), StandardCharsets.UTF_8))
 						.lines()

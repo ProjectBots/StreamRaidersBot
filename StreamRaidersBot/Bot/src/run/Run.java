@@ -456,7 +456,7 @@ public class Run {
 		
 		
 		Integer potionsc = beh.getCurrency(Store.potions, true);
-		epic = (potionsc == null ? false : (potionsc >= 45 ? true : false))
+		epic = (potionsc == null ? false : (potionsc >= 45))
 						&& (!(dungeon 
 								? ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.dungeonEpicPlaceFavOnly)
 								: ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.campaignEpicPlaceFavOnly))
@@ -509,8 +509,9 @@ public class Run {
 
 			String err;
 			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiPlaceExploit)) {
+				//	TODO multi place exploit
 				goMultiPlace = false;
-				int[][] pos = new int[50][];
+				int[][] pos = new int[SRC.Run.exploitThreadCount][];
 				int k=0;
 				tc:
 				try {
@@ -520,7 +521,7 @@ public class Run {
 					if(k > 25)
 						break tc;
 					if(!isOnPlan) {
-						Debug.print("Run -> place: err=no fin", Debug.lowerr, Debug.error, true);
+						Debug.print(pn+": Run -> place: err=no fin", Debug.lowerr, Debug.error, true);
 						break;
 					}
 					continue;
@@ -547,6 +548,9 @@ public class Run {
 					bannedPos.add(pos[0]+"-"+pos[1]);
 				}
 				goMultiPlace = true;
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {}
 				err = null;
 			} else {
 				int[] pos = null;
@@ -592,7 +596,7 @@ public class Run {
 				continue;
 			}
 			
-			Debug.print("Run -> place: tdn="+r.toString()+" err="+err, Debug.lowerr, Debug.error, true);
+			Debug.print(pn+": Run -> place: tdn="+r.toString()+" err="+err, Debug.lowerr, Debug.error, true);
 			break;
 			
 		}
@@ -677,12 +681,9 @@ public class Run {
 		}
 		
 		if(prio[h] < 0)
-			if(ppts.size() == 0) {
-				System.out.println("prio < 0");
-				return null;
-			}
-			else
-				return findUnit(units, new JsonArray(), dungeon, mdif);
+			return ppts.size() == 0 
+				? null 
+				: findUnit(units, new JsonArray(), dungeon, mdif);
 		
 		if(isOnPlan) {
 			JsonArray pts = units[h].getPlanTypes();
@@ -918,8 +919,9 @@ public class Run {
 		if(!beh.isReward(slot))
 			return;
 		if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiChestExploit)) {
+			//	TODO multi chest exploit
 			goMultiChestClaim = false;
-			for(int i=0; i<50; i++) {
+			for(int i=0; i<SRC.Run.exploitThreadCount; i++) {
 				Thread t = new Thread(new Runnable() {
 					@Override
 					public void run() {
@@ -928,18 +930,23 @@ public class Run {
 								Thread.sleep(1);
 							} catch (InterruptedException e) {}
 						}
-						try {
-							JsonObject rews = beh.getChest(slot);
-							if(rews == null)
-								return;
-							for(String rew : rews.keySet())
-								addRew(SRC.Run.chests, rew, rews.get(rew).getAsInt());
-						} catch (NoConnectionException | NotAuthorizedException e) {}
+						try_catch: {
+							try {
+								JsonObject rews = beh.getChest(slot);
+								if(rews == null)
+									break try_catch;
+								for(String rew : rews.keySet())
+									addRew(SRC.Run.chests, rew, rews.get(rew).getAsInt());
+							} catch (NoConnectionException | NotAuthorizedException e) {}
+						}
 					}
 				});
 				t.start();
 			}
 			goMultiChestClaim = true;
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {}
 		} else {
 			JsonObject rews = beh.getChest(slot);
 			if(rews == null)
@@ -984,7 +991,6 @@ public class Run {
 
 	private boolean goMultiUnit;
 	
-	
 	private void unlock() throws NoConnectionException, NotAuthorizedException {
 		
 		if(beh.getCurrency(Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unlockMinGold))
@@ -1013,10 +1019,10 @@ public class Run {
 			}
 			
 			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiUnitExploit)) {
-				//	TODO multi unlock exploit???
+				//	TODO multi unlock exploit
 				goMultiUnit = false;
 				final Unit picked = unlockable[ind];
-				for(int i=0; i<50; i++) {
+				for(int i=0; i<SRC.Run.exploitThreadCount; i++) {
 					Thread t = new Thread(new Runnable() {
 						@Override
 						public void run() {
@@ -1034,7 +1040,7 @@ public class Run {
 				}
 				goMultiUnit = true;
 				try {
-					Thread.sleep(5000);
+					Thread.sleep(3000);
 				} catch (InterruptedException e) {}
 				beh.updateStore(true);
 			} else {
@@ -1172,9 +1178,9 @@ public class Run {
 		for(int i=0; i<quests.length; i++) {
 			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiQuestExploit)) {
 				//	TODO multi quest exploit
-				goMultiChestClaim = false;
+				goMultiQuestClaim = false;
 				final Quest picked = quests[i];
-				for(int j=0; j<50; j++) {
+				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
 					Thread t = new Thread(new Runnable() {
 						@Override
 						public void run() {
@@ -1191,6 +1197,9 @@ public class Run {
 					t.start();
 				}
 				goMultiQuestClaim = true;
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {}
 			} else {
 				String err = beh.claimQuest(quests[i]);
 				if(err != null)
@@ -1227,7 +1236,7 @@ public class Run {
 		if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiEventExploit)) {
 			//	TODO multi event exploit
 			goMultiEventClaim = false;
-			for(int i=0; i<50; i++) {
+			for(int i=0; i<SRC.Run.exploitThreadCount; i++) {
 				Thread t = new Thread(new Runnable() {
 					@Override
 					public void run() {
@@ -1250,6 +1259,9 @@ public class Run {
 				t.start();
 			}
 			goMultiEventClaim = true;
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {}
 		} else {
 			JsonObject ce = beh.collectEvent(tier, bp);
 			JsonElement err = ce.get(SRC.errorMessage);

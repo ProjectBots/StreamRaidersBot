@@ -3,7 +3,6 @@ package program;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -382,7 +381,8 @@ public class SRR {
 	public String getRaidStatsByUser(String raidId) throws NoConnectionException {
 		Http post = getPost("getRaidStatsByUser");
 		post.addEncArg("raidId", raidId);
-		return sendPost(post);
+		String ret = sendPost(post);
+		return ret;
 	}
 	
 	

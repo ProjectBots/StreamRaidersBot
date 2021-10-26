@@ -80,7 +80,7 @@ public class Store {
 	
 	public void decreaseCurrency(String type, int amount) {
 		if(currencies.containsKey(type))
-			currencies.put(type, currencies.get(type) - amount);
+			setCurrency(type, currencies.get(type) - amount);
 	}
 	
 	public void addCurrency(C con, int amount) {
@@ -90,14 +90,20 @@ public class Store {
 	public void addCurrency(String type, int amount) {
 		if(currencyTypes.contains(type)) {
 			if(currencies.containsKey(type))
-				currencies.put(type, currencies.get(type) + amount);
+				setCurrency(type, currencies.get(type) + amount);
 			else
-				currencies.put(type, amount);
+				setCurrency(type, amount);
 		}
 	}
 	
 	public void setCurrency(C con, int amount) {
-		currencies.put(con.get(), amount);
+		setCurrency(con.get(), amount);
+	}
+	
+	public void setCurrency(String type, int amount) {
+		if(type.equals(potions.get()) && amount > 60)
+			amount = 60;
+		currencies.put(type, amount);
 	}
 	
 	public Hashtable<String, Integer> getCurrencies() {
