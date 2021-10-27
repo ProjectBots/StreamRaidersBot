@@ -731,7 +731,7 @@ public class Run {
 			return;
 		
 		if(r == null) {
-			switchCap(slot, dungeon, null, null, noCap, first);
+			switchCap(slot, dungeon, null, null, noCap, first, null);
 			return;
 		}
 		
@@ -740,7 +740,7 @@ public class Run {
 
 		String tdn = r.get(SRC.Raid.twitchDisplayName);
 		if(r.isVersus()) {
-			switchCap(slot, dungeon, r, tdn, noCap, first);
+			switchCap(slot, dungeon, r, tdn, noCap, first, null);
 			return;
 		}
 
@@ -755,7 +755,7 @@ public class Run {
 		String ct = r.getFromNode(SRC.MapNode.chestType);
 
 		if(ct == null) {
-			switchCap(slot, dungeon, r, tdn, noCap, first);
+			switchCap(slot, dungeon, r, tdn, noCap, first, null);
 			return;
 		}
 		
@@ -770,9 +770,16 @@ public class Run {
 		if(aloy < 0)
 			aloy = Integer.MAX_VALUE;
 		
+		//TODO
+		int maxTimeLeft = 30 - ConfigsV2.getInt(cid, currentLayer, ConfigsV2.maxTimeLeft);
+		if(!ic && Time.isAfter(Time.parse(r.get(SRC.Raid.creationDate))
+									.plusMinutes(maxTimeLeft),
+								beh.getServerTime())) {
+			switchCap(slot, dungeon, r, tdn, noCap, first, maxTimeLeft);
+			return;
+		}
 		
 		int minRaidTimeLeft = ConfigsV2.getInt(cid, currentLayer, ConfigsV2.minTimeLeft);
-		
 		JsonArray users = Json.parseArr(r.get(SRC.Raid.users));
 		if(users != null) {
 			String uid = beh.getUserId();
@@ -781,12 +788,8 @@ public class Run {
 					minRaidTimeLeft = Integer.MIN_VALUE;
 		}
 		
-
 		if((dungeon ^ r.isDungeon())
 			|| r.isOffline(beh.getServerTime(), il, ConfigsV2.getInt(cid, currentLayer, ConfigsV2.capInactiveTreshold))
-			|| (!ic && Time.isAfter(Time.parse(r.get(SRC.Raid.creationDate))
-								.plusMinutes(30 - ConfigsV2.getInt(cid, currentLayer, ConfigsV2.maxTimeLeft)),
-							beh.getServerTime()))
 			|| (!ic && Time.isAfter(beh.getServerTime(),
 							Time.parse(r.get(SRC.Raid.creationDate))
 								.plusMinutes(30 - minRaidTimeLeft)))
@@ -797,13 +800,13 @@ public class Run {
 					&& !ConfigsV2.getFavCaps(cid, currentLayer, list).contains(new JsonPrimitive(tdn)))
 			|| fav < 0
 			) {
-			switchCap(slot, dungeon, r, tdn, noCap, first);
+			switchCap(slot, dungeon, r, tdn, noCap, first, null);
 			return;
 		}
 		
 		if(change[slot]) {
 			if(first)
-				switchCap(slot, dungeon, r, tdn, noCap, first);
+				switchCap(slot, dungeon, r, tdn, noCap, first, null);
 			else
 				change[slot] = false;
 		}
@@ -817,9 +820,9 @@ public class Run {
 	}
 	
 	
-	private void switchCap(int slot, boolean dungeon, Raid r, String disname, boolean noCap, boolean first) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void switchCap(int slot, boolean dungeon, Raid r, String disname, boolean noCap, boolean first, Integer overrideBanTime) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 		try {
-			switchCap(slot, dungeon, r, disname, noCap);
+			switchCap(slot, dungeon, r, disname, noCap, overrideBanTime);
 		} catch (NoCapMatchesException e) {
 			if(!noCap) {
 				beh.updateCaps(true, dungeon);
@@ -831,14 +834,16 @@ public class Run {
 		}
 	}
 	
-	private void switchCap(int slot, boolean dungeon, Raid r, String disname, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void switchCap(int slot, boolean dungeon, Raid r, String disname, boolean noCap, Integer overrideBanTime) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 
 		LocalDateTime now = Time.parse(beh.getServerTime());
 		
 		if(!(r == null || disname == null)) {
 			LocalDateTime start = Time.parse(r.get(SRC.Raid.creationDate));
-			int plus;
-			if(r.isVersus()) 
+			long plus;
+			if(overrideBanTime != null)
+				plus = overrideBanTime;
+			else if(r.isVersus()) 
 				plus = 7;
 			else if(r.isDungeon())
 				plus = 7;
