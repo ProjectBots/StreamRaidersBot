@@ -11,16 +11,6 @@ import include.Http.NoConnectionException;
 import include.Json;
 
 public class SRR {
-	private static boolean ver_error = true;
-	
-	synchronized private static void printVerError(String ver) {
-		Options.set("clientVersion", ver);
-		Options.save();
-		if(ver_error) {
-			ver_error = false;
-			System.out.println("new Client Version: " + ver);
-		}
-	}
 	
 	private String proxyDomain = null;
 	private int proxyPort = 0;
@@ -123,7 +113,6 @@ public class SRR {
 				.get("version").getAsString();
 		
 		if(!ver.equals(clientVersion)) {
-			printVerError(ver);
 			this.clientVersion = ver;
 			raw = Json.parseObj(getUser());
 		} else {

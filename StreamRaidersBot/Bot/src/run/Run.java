@@ -578,9 +578,9 @@ public class Run {
 			if(err == null) {
 				beh.addCurrency(Store.potions, 1);
 				beh.addCurrency(u.get(SRC.Unit.unitType), 1);
-				int ran = Maths.ranInt(ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.minu),
-						ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.maxu));
-				placeTime = LocalDateTime.now().plus(ran, ChronoUnit.MILLIS);
+				placeTime = LocalDateTime.now().plus(Maths.ranInt(ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.minu),
+																ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.maxu)), 
+													ChronoUnit.MILLIS);
 				break;
 			}
 			
@@ -623,12 +623,11 @@ public class Run {
 		for(int i=0; i<units.length; i++) {
 			final String utype = units[i].get(SRC.Unit.unitType);
 			prio[i] = -1;
-			if(!dungeon) {
-				int dmin = ConfigsV2.getUnitInt(cid, currentLayer, utype, epic ? ConfigsV2.epicdifmin : ConfigsV2.difmin);
-				int dmax = ConfigsV2.getUnitInt(cid, currentLayer, utype, epic ? ConfigsV2.epicdifmax : ConfigsV2.difmax);
-				if(mdif > dmax || mdif < dmin)
-					continue;
-			}
+			if(!dungeon 
+					&& (mdif > ConfigsV2.getUnitInt(cid, currentLayer, utype, epic ? ConfigsV2.epicdifmax : ConfigsV2.difmax) 
+						|| mdif < ConfigsV2.getUnitInt(cid, currentLayer, utype, epic ? ConfigsV2.epicdifmin : ConfigsV2.difmin)))
+				continue;
+			
 			if(isOnPlan) {
 				JsonArray pts = units[i].getPlanTypes().deepCopy();
 				if(!isVibing)
@@ -1258,7 +1257,11 @@ public class Run {
 								if(!rew.equals("badges"))
 									addRew(SRC.Run.event, rew, ce.get("quantity").getAsInt());
 							}
-						} catch (NoConnectionException e) {}
+						} catch (NoConnectionException e) {
+						} catch (NullPointerException e) {
+							Debug.print(pn + ": Run -> event -> collectEvent(exploit): tier="+tier+", bp="+bp, Debug.runerr, Debug.error, true);
+						}
+						
 					}
 				});
 				t.start();

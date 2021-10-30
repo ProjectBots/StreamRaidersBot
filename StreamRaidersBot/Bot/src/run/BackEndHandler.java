@@ -146,7 +146,7 @@ public class BackEndHandler {
 			if(req != null)
 				req.reload();
 		} catch (OutdatedDataException e) {
-			Debug.printException("SRRHelper -> updateDataPath: err=failed to update data path",  e, Debug.runerr, Debug.fatal, true);
+			Debug.printException("BackEndHandler -> updateDataPath: err=failed to update data path",  e, Debug.runerr, Debug.fatal, true);
 		}
 	}
 	
@@ -156,15 +156,18 @@ public class BackEndHandler {
 	
 	private boolean testUpdate(JsonObject jo) throws NoConnectionException, NotAuthorizedException {
 		JsonElement je = jo.get(SRC.errorMessage);
-		if(je.isJsonPrimitive()) {
-			if(je.getAsString().equals("Game data mismatch.") || je.getAsString().equals("Client lower."))
-				updateDataPath(jo.getAsJsonObject("info").getAsJsonPrimitive("dataPath").getAsString(), getServerTime(), req);
-			else
-				throw new Run.StreamRaidersException("BackEndHandler -> testUpdate: err="+je.getAsString()+", jo="+jo.toString());
-			
+		if(!je.isJsonPrimitive()) 
+			return false;
+		String err = je.getAsString();
+		switch(err) {
+		case "Game data mismatch.":
+		case "Client lower.":
+		case "Account type mismatch.":
+			updateDataPath(jo.getAsJsonObject("info").getAsJsonPrimitive("dataPath").getAsString(), getServerTime(), req);
 			return true;
+		default:
+			throw new Run.StreamRaidersException("BackEndHandler -> testUpdate: err="+je.getAsString()+", jo="+jo.toString());
 		}
-		return false;
 	}
 	
 	synchronized public void updateUnits(boolean force) throws NoConnectionException, NotAuthorizedException {
