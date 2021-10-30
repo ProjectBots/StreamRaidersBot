@@ -30,6 +30,8 @@ public class WaitScreen {
 	}
 	
 	public static void close() {
+		if(ws == null)
+			return;
 		ws.close();
 		ws = null;
 	}

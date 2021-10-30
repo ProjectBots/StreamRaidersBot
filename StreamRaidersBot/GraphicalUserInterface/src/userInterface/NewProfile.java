@@ -76,6 +76,7 @@ public class NewProfile {
 				String name = GUI.getInputText(uid+"newName");
 				if(checkDupeName(name))
 					return;
+				
 				String ai = GUI.getInputText(uid+"ai");
 				if(ai.equals("")) {
 					np.msg("ACCESS_INFO needed", "Without your ACCESS_INFO this bot can't work", GUI.MsgConst.WARNING);
