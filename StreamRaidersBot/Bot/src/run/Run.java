@@ -470,6 +470,7 @@ public class Run {
 		JsonArray ppts = map.getUsablePlanTypes();
 		ppts.remove(new JsonPrimitive("noPlacement"));
 		
+		boolean preferRogues = ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.preferRoguesOnTreasureMaps) && r.getFromNode(SRC.MapNode.nodeType).contains("treasure");
 		
 		if((ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnly) 
 					&& ppts.size() <= 0)
@@ -496,17 +497,21 @@ public class Run {
 		while(true) {
 			Debug.print(pn+" ["+slot+"] place "+i++, Debug.loop, Debug.info);
 			
-			Unit u = findUnit(units, ppts, dungeon, mdif);
+			Unit u = findUnit(units, ppts, dungeon, mdif, preferRogues);
 			Debug.print("choosed " + (u == null ? "null" : u.toString()), Debug.units, Debug.info);
 			Debug.print(pn+" isVibing="+isVibing+" isOnPlan="+isOnPlan, Debug.units, Debug.info);
 			
 			if(u == null)
 				break;
 			
+			if(!isOnPlan && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnly))
+				break;
+			
 			JsonArray pts = isOnPlan ? u.getPlanTypes() : null;
 			if(!isVibing && isOnPlan)
 				pts.remove(new JsonPrimitive("vibe"));
 
+			
 			String err;
 			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiPlaceExploit)) {
 				//	TODO multi place exploit
@@ -608,9 +613,7 @@ public class Run {
 	private boolean isOnPlan = false;
 	private boolean epic = false;
 	
-	private Unit findUnit(Unit[] units, JsonArray ppts, boolean dungeon, int mdif) {
-		
-		//	TODO prefer rogues on treasure maps
+	private Unit findUnit(Unit[] units, JsonArray ppts, boolean dungeon, int mdif, boolean preferRogues) {
 		
 		isVibing = ppts.size() == 1 && ppts.get(0).getAsString().equals("vibe");
 		isOnPlan = ppts.size() != 0;
@@ -619,6 +622,10 @@ public class Run {
 		
 		List<String> neededUnits = beh.getNeededUnitTypesForQuests();
 		
+		if(preferRogues) {
+			neededUnits.add("rogue");
+			neededUnits.add("flyingarcher");
+		}
 		
 		for(int i=0; i<units.length; i++) {
 			final String utype = units[i].get(SRC.Unit.unitType);
@@ -635,7 +642,7 @@ public class Run {
 				for(int j=0; j<pts.size(); j++) {
 					JsonElement pt = pts.get(j);
 					if(ppts.contains(pt)) {
-						prio[i] = neededUnits.contains(units[i].get(SRC.Unit.unitType)) 
+						prio[i] = neededUnits.contains(utype) 
 								? Integer.MAX_VALUE
 								: ConfigsV2.getUnitInt(cid, currentLayer, utype,
 									epic && dungeon
@@ -676,13 +683,13 @@ public class Run {
 		
 		if(epic && prio[h] < 0) {
 			epic = false;
-			return findUnit(units, ppts, dungeon, mdif);
+			return findUnit(units, ppts, dungeon, mdif, preferRogues);
 		}
 		
 		if(prio[h] < 0)
 			return ppts.size() == 0 
 				? null 
-				: findUnit(units, new JsonArray(), dungeon, mdif);
+				: findUnit(units, new JsonArray(), dungeon, mdif, preferRogues);
 		
 		if(isOnPlan) {
 			JsonArray pts = units[h].getPlanTypes();

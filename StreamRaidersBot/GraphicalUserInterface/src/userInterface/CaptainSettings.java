@@ -233,10 +233,10 @@ public class CaptainSettings {
 								throw new NumberFormatException();
 							ConfigsV2.setCapInt(cid, lay, tdn, list, ConfigsV2.fav, val);
 							GUI.setBackground(uid+"val::"+tdn, Color.white);
-							GUI.setForeground(uid+"fav" ,Fonts.getColor("stngs caps buttons heart on"));
-							GUI.setGradient(uid+"fav" ,Fonts.getGradient("stngs caps buttons heart on"));
-							GUI.setForeground(uid+"block" ,Fonts.getColor("stngs caps buttons cross def"));
-							GUI.setGradient(uid+"block" ,Fonts.getGradient("stngs caps buttons cross def"));
+							GUI.setForeground(uid+"heart::"+tdn, Fonts.getColor("stngs caps buttons heart on"));
+							GUI.setForeground(uid+"cross::"+tdn, Fonts.getColor("stngs caps buttons cross def"));
+							GUI.setGradient(uid+"heart::"+tdn, Fonts.getGradient("stngs caps buttons heart on"));
+							GUI.setGradient(uid+"cross::"+tdn, Fonts.getGradient("stngs caps buttons cross def"));
 						} catch (NumberFormatException e) {
 							GUI.setBackground(uid+"val::"+tdn, new Color(255, 122, 122));
 						}
@@ -332,7 +332,7 @@ public class CaptainSettings {
 						gui.refresh();
 					}
 				});
-				ccap.addBut(but);
+				ccap.addBut(but, uid+(i==0 ? "heart::" : "cross::")+tdn);
 			}
 			
 		gui.addToContainer(uid + (fav ? "fav" : "block"), ccap, uid+"cap::"+tdn);
