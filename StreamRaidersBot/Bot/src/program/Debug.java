@@ -128,7 +128,7 @@ public class Debug {
 					System.out.println("[Debug] added scope " + scs[i]);
 				else
 					try {
-						NEF.save(path, "[Debug] added scope " + scs[i], true);
+						NEF.save(path, "\n[Debug] added scope " + scs[i], true);
 					} catch (IOException e) {
 						System.out.println("Debug -> print: err=failed to save to file");
 						e.printStackTrace();

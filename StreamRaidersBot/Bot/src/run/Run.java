@@ -456,24 +456,25 @@ public class Run {
 		
 		
 		Integer potionsc = beh.getCurrency(Store.potions, true);
-		epic = (potionsc == null ? false : (potionsc >= 45))
+		boolean epic = (potionsc == null ? false : (potionsc >= 45))
 						&& (!(dungeon 
 								? ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.dungeonEpicPlaceFavOnly)
 								: ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.campaignEpicPlaceFavOnly))
 							|| ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign)
 									.contains(new JsonPrimitive(r.get(SRC.Raid.twitchDisplayName))));
 		
-		Unit[] units = beh.getPlaceableUnits(slot);
+		final Unit[] units = beh.getPlaceableUnits(slot);
 		Debug.print(pn+" slot="+slot+" units="+Arrays.toString(units), Debug.units, Debug.info);
-		
+		//TODO
 		Map map = beh.getMap(slot, true);
-		JsonArray ppts = map.getUsablePlanTypes();
-		ppts.remove(new JsonPrimitive("noPlacement"));
 		
-		boolean preferRogues = ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.preferRoguesOnTreasureMaps) && r.getFromNode(SRC.MapNode.nodeType).contains("treasure");
+		HashSet<String> upts = map.getUsablePlanTypes();
+		upts.remove("noPlacement");
+		
+		Debug.print(pn+": slot="+slot+", upts="+upts, Debug.units, Debug.info);
 		
 		if((ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnly) 
-					&& ppts.size() <= 0)
+					&& upts.size() <= 0)
 				|| (!ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.allowPlaceFirst) 
 					&& (placeSer == null ? true : Json.parseArr(placeSer).size() <= 0))) 
 			return;
@@ -491,51 +492,30 @@ public class Run {
 		int re = 0;
 		int retries = ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unitPlaceRetries);
 		int reload = ConfigsV2.getInt(cid, currentLayer, ConfigsV2.mapReloadAfterXRetries);
-		int i = 0;
-		Debug.print(pn+" ppts="+ppts.toString(), Debug.units, Debug.info);
 		bannedPos = new HashSet<>();
+		
+		List<String> neededUnits = beh.getNeededUnitTypesForQuests();
+		boolean preferRogues = ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.preferRoguesOnTreasureMaps) 
+				&& r.getFromNode(SRC.MapNode.nodeType).contains("treasure");
+		
+		if(preferRogues) {
+			neededUnits.add("rogue");
+			neededUnits.add("flyingarcher");
+		}
+		
+		Debug.print(pn+": slot="+slot+", neededUnits="+neededUnits, Debug.units, Debug.info);
+		
 		while(true) {
-			Debug.print(pn+" ["+slot+"] place "+i++, Debug.loop, Debug.info);
+			//TODO
+			Debug.print(pn+" ["+slot+"] place "+re, Debug.loop, Debug.info);
 			
-			Unit u = findUnit(units, ppts, dungeon, mdif, preferRogues);
-			Debug.print("choosed " + (u == null ? "null" : u.toString()), Debug.units, Debug.info);
-			Debug.print(pn+" isVibing="+isVibing+" isOnPlan="+isOnPlan, Debug.units, Debug.info);
-			
-			if(u == null)
-				break;
-			
-			if(!isOnPlan && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnly))
-				break;
-			
-			JsonArray pts = isOnPlan ? u.getPlanTypes() : null;
-			if(!isVibing && isOnPlan)
-				pts.remove(new JsonPrimitive("vibe"));
-
-			
-			String err;
 			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiPlaceExploit)) {
-				//	TODO multi place exploit
 				goMultiPlace = false;
-				int[][] pos = new int[SRC.Run.exploitThreadCount][];
-				int k=0;
-				tc:
-				try {
-					for(; k<pos.length; k++) 
-						pos[k] = new Pathfinding().search(new MapConv().asField(map, u.canFly(), pts, mh, bannedPos), ConfigsV2.getPStr(cid, ConfigsV2.name), epic);
-				} catch (NoFinException e) {
-					if(k > 25)
-						break tc;
-					if(!isOnPlan) {
-						Debug.print(pn+": Run -> place: err=no fin", Debug.lowerr, Debug.error, true);
-						break;
-					}
-					continue;
-				}
-				
-				for(k=0; k<pos.length; k++) {
-					if(pos[k] == null)
-						break;
-					final int kk = k;
+				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
+					final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, mdif, dungeon);
+					if(pla == null)
+						continue;
+					bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
 					Thread t = new Thread(new Runnable() {
 						@Override
 						public void run() {
@@ -545,163 +525,233 @@ public class Run {
 								} catch (InterruptedException e) {}
 							}
 							try {
-								beh.placeUnit(slot, u, epic, pos[kk], isOnPlan);
+								beh.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
 							} catch (NoConnectionException e) {}
 						}
 					});
 					t.start();
-					bannedPos.add(pos[0]+"-"+pos[1]);
 				}
 				goMultiPlace = true;
 				try {
 					Thread.sleep(3000);
 				} catch (InterruptedException e) {}
-				err = null;
+				break;
 			} else {
-				int[] pos = null;
-				try {
-					pos = new Pathfinding().search(new MapConv().asField(map, u.canFly(), pts, mh, bannedPos), ConfigsV2.getPStr(cid, ConfigsV2.name), epic);
-				} catch (NoFinException e) {
-					if(!isOnPlan) {
-						Debug.print(pn+": Run -> place: slot="+slot+", err=no fin", Debug.lowerr, Debug.error, true);
-						break;
+				final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, mdif, dungeon);
+				if(pla == null) {
+					Debug.print(pn+": slot="+slot+", Place=null", Debug.units, Debug.info);
+					break;
+				}
+				Debug.print(pn+": slot="+slot+", Place="+pla.toString(), Debug.units, Debug.info);
+				String err = beh.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
+				bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
+				
+				if(epic && err == null)
+					beh.decreaseCurrency(Store.potions, 45);
+				
+				if(err == null) {
+					beh.addCurrency(Store.potions, 1);
+					beh.addCurrency(pla.unit.get(SRC.Unit.unitType), 1);
+					placeTime = LocalDateTime.now().plus(Maths.ranInt(ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.minu),
+																	ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.maxu)), 
+														ChronoUnit.MILLIS);
+					break;
+				}
+				
+				if(err.equals("PERIOD_ENDED"))
+					break;
+				
+				if(re++ < retries) {
+					if(re % reload == 0) {
+						map = beh.getMap(slot, true);
 					}
 					continue;
 				}
 				
-				if(pos == null)
-					err = "pos is null";
-				else {
-					err = beh.placeUnit(slot, u, epic, pos, isOnPlan);
-					bannedPos.add(pos[0]+"-"+pos[1]);
-				}
-			}
-			
-			if(epic && err == null)
-				beh.decreaseCurrency(Store.potions, 45);
-			
-			if(err == null) {
-				beh.addCurrency(Store.potions, 1);
-				beh.addCurrency(u.get(SRC.Unit.unitType), 1);
-				placeTime = LocalDateTime.now().plus(Maths.ranInt(ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.minu),
-																ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.maxu)), 
-													ChronoUnit.MILLIS);
+				Debug.print(pn+": Run -> place: tdn="+r.toString()+" err="+err, Debug.lowerr, Debug.error, true);
 				break;
 			}
 			
-			if(err.equals("PERIOD_ENDED"))
-				break;
 			
-			if(re++ < retries) {
-				if(re % reload == 0) {
-					map = beh.getMap(slot, true);
-					ppts = map.getUsablePlanTypes();
-					ppts.remove(new JsonPrimitive("noPlacement"));
-				}
-				continue;
-			}
 			
-			Debug.print(pn+": Run -> place: tdn="+r.toString()+" err="+err, Debug.lowerr, Debug.error, true);
-			break;
 			
 		}
 		
 	}
 	
+	//TODO
+	private static class Place {
+		public final Unit unit;
+		public final int[] pos;
+		public final boolean epic;
+		public final boolean isOnPlan;
+		public Place(Unit u, int[] pos, boolean epic, boolean isOnPlan) {
+			this.unit = u;
+			this.pos = pos;
+			this.epic = epic;
+			this.isOnPlan = isOnPlan;
+		}
+		@Override
+		public String toString() {
+			return unit.get(SRC.Unit.unitType)+"|"+pos[0]+"-"+pos[1]+(epic ? "|epic" : "")+(isOnPlan ? "|plan" : "");
+		}
+	}
 	
-	private boolean isVibing = false;
-	private boolean isOnPlan = false;
-	private boolean epic = false;
+	private static class Prios {
+		private int[][] prio;
+		private boolean[][] vibe;
+		private Unit[] units;
+		public Prios(Unit[] units) {
+			this.units = units;
+			prio = new int[units.length][4];
+			for(int i=0; i<prio.length; i++)
+				for(int j=0; j<prio[i].length; j++)
+					prio[i][j] = -1;
+			vibe = new boolean[units.length][4];
+		}
+		public void setPrio(int p, int epicPlan, boolean evibe, int normPlan, boolean nvibe, int epic, int norm) {
+			prio[p][0] = epicPlan;
+			vibe[p][0] = evibe;
+			prio[p][1] = normPlan;
+			vibe[p][1] = nvibe;
+			prio[p][2] = epic;
+			prio[p][3] = norm;
+		}
+		public int[] get(int m) {
+			return get(m, false);
+		}
+		public int[] get(int m, boolean allowVibe) {
+			int p = 0;
+			for(int i=1; i<prio.length; i++)
+				if((allowVibe
+						|| !vibe[i][m])
+					&& (prio[i][m] > prio[p][m]
+						|| (prio[i][m] == prio[p][m]
+							&& Integer.parseInt(units[i].get(SRC.Unit.level)) > Integer.parseInt(units[p].get(SRC.Unit.level)))))
+					p = i;
+			
+			if(!allowVibe && prio[p][m] < 0)
+				return get(m, true);
+			
+			int[] ret = {p, prio[p][m]};
+			prio[p][m] = -1;
+			return ret;
+		}
+		public boolean isVibe(int p, int m) {
+			return vibe[p][m];
+		}
+	}
 	
-	private Unit findUnit(Unit[] units, JsonArray ppts, boolean dungeon, int mdif, boolean preferRogues) {
-		
-		isVibing = ppts.size() == 1 && ppts.get(0).getAsString().equals("vibe");
-		isOnPlan = ppts.size() != 0;
-		
-		int[] prio = new int[units.length];
-		
-		List<String> neededUnits = beh.getNeededUnitTypesForQuests();
-		
-		if(preferRogues) {
-			neededUnits.add("rogue");
-			neededUnits.add("flyingarcher");
+	private Place findPlace(Map map, int[] mh, HashSet<String> upts, List<String> neededUnits, Unit[] units, boolean epic, int mdif, boolean dungeon) {
+		HashSet<String> epts = new HashSet<>();
+		if(epic) {
+			String[][] mpts = new String[map.width()][map.length()];
+			for(int x=0; x<map.width(); x++) 
+				for(int y=0; y<map.length(); y++) 
+					if(map.is(x, y, SRC.Map.isEmpty))
+						mpts[x][y] = map.getPlanType(x, y);
+				
+			for(int x=0; x<mpts.length-1; x++) {
+				for(int y=0; y<mpts[x].length-1; y++) {
+					String pt = mpts[x][y];
+					if(pt == null)
+						continue;
+					if(pt.equals(mpts[x+1][y])
+							&& pt.equals(mpts[x][y+1])
+							&& pt.equals(mpts[x+1][y+1]))
+						epts.add(pt);
+				}
+			}
 		}
 		
+		Prios prio = new Prios(units);
 		for(int i=0; i<units.length; i++) {
 			final String utype = units[i].get(SRC.Unit.unitType);
-			prio[i] = -1;
-			if(!dungeon 
-					&& (mdif > ConfigsV2.getUnitInt(cid, currentLayer, utype, epic ? ConfigsV2.epicdifmax : ConfigsV2.difmax) 
-						|| mdif < ConfigsV2.getUnitInt(cid, currentLayer, utype, epic ? ConfigsV2.epicdifmin : ConfigsV2.difmin)))
-				continue;
 			
-			if(isOnPlan) {
-				JsonArray pts = units[i].getPlanTypes().deepCopy();
-				if(!isVibing)
-					pts.remove(new JsonPrimitive("vibe"));
-				for(int j=0; j<pts.size(); j++) {
-					JsonElement pt = pts.get(j);
-					if(ppts.contains(pt)) {
-						prio[i] = neededUnits.contains(utype) 
-								? Integer.MAX_VALUE
-								: ConfigsV2.getUnitInt(cid, currentLayer, utype,
-									epic && dungeon
-									? ConfigsV2.epicdun
-									: epic
-										? ConfigsV2.epic
-										: dungeon
-											? ConfigsV2.placedun
-											: ConfigsV2.place
-										);
-						break;
-					}
+			int p = ConfigsV2.getUnitInt(cid, currentLayer, utype, dungeon ? ConfigsV2.placedun : ConfigsV2.place);
+			int e = ConfigsV2.getUnitInt(cid, currentLayer, utype, dungeon ? ConfigsV2.epicdun : ConfigsV2.epic);
+			
+			if(!dungeon) {
+				int pdi = ConfigsV2.getUnitInt(cid, currentLayer, utype, ConfigsV2.difmin);
+				int edi = ConfigsV2.getUnitInt(cid, currentLayer, utype, ConfigsV2.epicdifmin);
+				int pda = ConfigsV2.getUnitInt(cid, currentLayer, utype, ConfigsV2.difmax);
+				int eda = ConfigsV2.getUnitInt(cid, currentLayer, utype, ConfigsV2.epicdifmax);
 				
-				}
-			} else {
-				prio[i] = neededUnits.contains(units[i].get(SRC.Unit.unitType)) 
-						? Integer.MAX_VALUE
-						: ConfigsV2.getUnitInt(cid, currentLayer, utype,
-							epic && dungeon
-							? ConfigsV2.epicdun
-							: epic
-								? ConfigsV2.epic
-								: dungeon
-									? ConfigsV2.placedun
-									: ConfigsV2.place
-								);
+				if(mdif < pdi || mdif > pda)
+					p = -1;
+				
+				if(mdif < edi || mdif > eda)
+					e = -1;
+			}
+			
+			int pp = -1;
+			int pe = -1;
+			
+			HashSet<String> pts = units[i].getPlanTypes();
+			pts.remove("vibe");
+			for(String pt : pts) {
+				if(epts.contains(pt))
+					pe = e;
+				if(upts.contains(pt))
+					pp = p;
 			}
 			
 			
+			boolean ve = false;
+			
+			if(pe == -1 && epts.contains("vibe")) {
+				pe = e;
+				ve = true;
+			}
+			
+			boolean vp = false;
+			
+			if(pp == -1 && upts.contains("vibe")) {
+				pp = p;
+				vp = true;
+			}
+			
+			if(neededUnits.contains(utype)) {
+				pp = Integer.MAX_VALUE;
+				p = Integer.MAX_VALUE;
+			}
+			
+			
+			prio.setPrio(i, pe, ve, pp, vp, e, p);
 		}
 		
-		int h = 0;
-		for(int i=0; i<prio.length; i++)
-			if(prio[h] < prio[i]
-					|| (prio[h] == prio[i] 
-						&& Integer.parseInt(units[h].get(SRC.Unit.level)) < Integer.parseInt(units[i].get(SRC.Unit.level))))
-				h = i;
-		
-		if(epic && prio[h] < 0) {
-			epic = false;
-			return findUnit(units, ppts, dungeon, mdif, preferRogues);
+		for(int i=0; i<4; i++) {
+			if(!epic && i%2 == 0)
+				continue;
+			
+			while(true) {
+				int[] p = prio.get(i);
+				if(p[1] < 0)
+					break;
+				
+				HashSet<String> pts = null;
+				if(i<2) {
+					pts = units[p[0]].getPlanTypes();
+					if(!prio.isVibe(p[0], i))
+						pts.remove("vibe");
+				}
+				
+				int[] pos = null;
+				try {
+					pos = new Pathfinding().search(new MapConv().asField(map, units[p[0]].canFly(), pts, mh, bannedPos), pn, i%2==0);
+				} catch (NoFinException e) {}
+				if(pos == null)
+					continue;
+				return new Place(units[p[0]], pos, i%2==0, i<2);
+			}
+			
+			if(i==1 && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnly))
+				return null;
 		}
 		
-		if(prio[h] < 0)
-			return ppts.size() == 0 
-				? null 
-				: findUnit(units, new JsonArray(), dungeon, mdif, preferRogues);
-		
-		if(isOnPlan) {
-			JsonArray pts = units[h].getPlanTypes();
-			if(!isVibing)
-				pts.remove(new JsonPrimitive("vibe"));
-			for(int i=0; i<pts.size(); i++)
-				ppts.remove(pts.get(i));
-			Debug.print(pn+" ppts="+ppts.toString()+", pts=" + pts.toString(), Debug.units, Debug.info);
-		}
-		
-		return units[h];
+		return null;
 	}
+	
 	
 	private void captain(int slot) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 		captain(slot, true, false);

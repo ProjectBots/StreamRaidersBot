@@ -1,9 +1,10 @@
 package program;
 
+import java.util.HashSet;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 import include.Json;
 import include.Time;
@@ -18,7 +19,8 @@ public class Unit {
 	private JsonObject unit = null;
 	private String cool = null;
 	private int rank = 0;
-	private JsonArray ptags = null;
+	private JsonArray ptagsJArr = null;
+	private HashSet<String> ptags = new HashSet<>();
 	
 	
 	public static final JsonObject uTypes = Json.parseObj(Options.get("unitTypes"));
@@ -53,7 +55,9 @@ public class Unit {
 		JsonObject uType = uTypes.getAsJsonObject(unit.getAsJsonPrimitive(SRC.Unit.unitType).getAsString());
 		
 		rank = uType.getAsJsonPrimitive("rank").getAsInt();
-		ptags = uType.getAsJsonArray("role");
+		ptagsJArr = uType.getAsJsonArray("role");
+		for(int i=0; i<ptagsJArr.size(); i++)
+			ptags.add(ptagsJArr.get(i).getAsString());
 	}
 	
 	private Unit(String unitType, boolean dupe) {
@@ -105,11 +109,15 @@ public class Unit {
 	}
 	
 	public boolean hasPlanType(String tag) {
-		return ptags.contains(new JsonPrimitive(tag));
+		return ptags.contains(tag);
 	}
 	
-	public JsonArray getPlanTypes() {
-		return ptags;
+	public JsonArray getPlanTypesJArr() {
+		return ptagsJArr.deepCopy();
+	}
+	
+	public HashSet<String> getPlanTypes() {
+		return new HashSet<>(ptags);
 	}
 	
 	public void setCooldown(String date) {

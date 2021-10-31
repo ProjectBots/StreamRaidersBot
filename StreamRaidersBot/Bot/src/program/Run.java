@@ -637,7 +637,7 @@ public class Run {
 					}
 					Map map = srrh.getMap();
 					
-					JsonArray ppt = map.getUsablePlanTypes();
+					JsonArray ppt = map.getUsablePlanTypesJArr();
 					
 					boolean apt = !(ppt.size() == 0);
 					
@@ -723,7 +723,7 @@ public class Run {
 		for(int j=0; j<units.length; j++) {
 			if(apt) {
 				String tfpt = null;
-				JsonArray pts = units[j].getPlanTypes();
+				JsonArray pts = units[j].getPlanTypesJArr();
 				for(int k=0; k<pts.size(); k++) {
 					String pt = pts.get(k).getAsString();
 					if((ppt.contains(new JsonPrimitive(pt)))) {

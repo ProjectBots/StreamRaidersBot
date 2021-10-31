@@ -1,5 +1,6 @@
 package program;
 
+import java.util.HashSet;
 import java.util.List;
 
 import com.google.gson.JsonArray;
@@ -42,17 +43,17 @@ public class Map {
 	}
 	
 	public JsonObject get(int x, int y) {
-		if(x >= width || y >= length || x < 0 || y < 0) return null;
+		if(isOutOfRange(x, y)) return null;
 		return map.get(x).getAsJsonArray().get(y).getAsJsonObject();
 	}
 	
 	private void set(int x, int y, String key, String value) {
-		if(x >= width || y >= length || x < 0 || y < 0) return;
+		if(isOutOfRange(x, y)) return;
 		map.get(x).getAsJsonArray().get(y).getAsJsonObject().addProperty(key, value);
 	}
 	
 	private void set(int x, int y, String key, boolean value) {
-		if(x >= width || y >= length || x < 0 || y < 0) return;
+		if(isOutOfRange(x, y)) return;
 		map.get(x).getAsJsonArray().get(y).getAsJsonObject().addProperty(key, value);
 	}
 	
@@ -114,14 +115,14 @@ public class Map {
 		return true;
 	}
 	
-
+	//TODO
 	public double[] getAsSRCoords(boolean epic, int[] coords) {
 		double x = ((double) coords[0] - hw()) * 0.8;
 		double y = ((double) coords[1] - hl()) * -0.8;
 		
 		if(epic) {
 			x -= 0.4;
-			y += 0.4;
+			y -= 0.4;
 		}
 		
 		return new double[] {x, y};
@@ -201,9 +202,9 @@ public class Map {
 				}
 			} catch (Exception e) {}
 			
-			
+			//TODO
 			int x = (int) Math.round(rx / 0.8 + hw());
-			int y = (int) Math.round((ry / 0.8 - hl()) * -1);
+			int y = (int) Math.round(ry / -0.8 + hl());
 			
 			JsonElement jteam = place.get("team");
 			
@@ -338,13 +339,16 @@ public class Map {
 	}
 	
 	public String getPlanType(int x, int y) {
-		JsonElement je = get(x, y).get("plan");
+		JsonObject obj = get(x, y);
+		if(obj == null)
+			return null;
+		JsonElement je = obj.get("plan");
 		return je == null || !je.isJsonPrimitive()
 				? null
 				: je.getAsString();
 	}
 	
-	public JsonArray getUsablePlanTypes() {
+	public JsonArray getUsablePlanTypesJArr() {
 		JsonArray ret = new JsonArray();
 		for(int x=0; x<width; x++) {
 			for(int y=0; y<length; y++) {
@@ -353,6 +357,23 @@ public class Map {
 				JsonElement je = get(x, y).get("plan");
 				if(je != null && je.isJsonPrimitive() && !ret.contains(je))
 					ret.add(je.getAsString());
+			}
+		}
+		return ret;
+	}
+	
+	public HashSet<String> getUsablePlanTypes() {
+		HashSet<String> ret = new HashSet<>();
+		for(int x=0; x<width; x++) {
+			for(int y=0; y<length; y++) {
+				if(!is(x, y, SRC.Map.isEmpty))
+					continue;
+				JsonElement je = get(x, y).get("plan");
+				if(je == null || !je.isJsonPrimitive())
+					continue;
+				String pt = je.getAsString();
+				if(!ret.contains(pt))
+					ret.add(pt);
 			}
 		}
 		return ret;

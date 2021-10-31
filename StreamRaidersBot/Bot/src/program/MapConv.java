@@ -4,9 +4,6 @@ package program;
 import java.io.IOException;
 import java.util.HashSet;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonPrimitive;
-
 import include.Json;
 import include.NEF;
 import include.Pathfinding.Field;
@@ -77,7 +74,7 @@ public class MapConv {
 		return;
 	}
 	
-	public Field[][] asField(Map map, boolean canFly, JsonArray pts, int[] h, HashSet<String> banned) throws NoFinException {
+	public Field[][] asField(Map map, boolean canFly, HashSet<String> pts, int[] h, HashSet<String> banned) throws NoFinException {
 		
 		int length = map.length();
 		int width = map.width();
@@ -97,7 +94,7 @@ public class MapConv {
 					ret[x][y].setObstacle(true);
 				} else if(pts == null && map.is(x, y, SRC.Map.isPlayerRect)) {
 					setFin(ret, map, x, y, banned);
-				} else if(pts != null && pts.contains(new JsonPrimitive(pt))) {
+				} else if(pts != null && pts.contains(pt)) {
 					setFin(ret, map, x, y, banned);
 				}
 			}
