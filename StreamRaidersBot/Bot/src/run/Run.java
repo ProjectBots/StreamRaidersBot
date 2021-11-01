@@ -321,7 +321,7 @@ public class Run {
 			Debug.printException(pn+": Run -> slotSequence: slot=" + slot + " err=unknown", e, Debug.runerr, Debug.fatal, true);
 		}
 		
-		
+		//TODO time
 		
 		LocalDateTime now = LocalDateTime.now();
 		// current time in layer-units
@@ -345,8 +345,9 @@ public class Run {
 		if_clause:
 		if(min < 0 || max < 0 || n+(min/300) > e) {
 			// change layer
-			// loop until first layer after current which is not disabled
+			//	loop multiple times to be sure that it finds the next layer
 			for(int i=0; i<ptimes.size(); i++) {
+				// loop until first layer after current which is not disabled
 				for(String t : ptimes.keySet()) {
 					int s = Integer.parseInt(t.split("-")[0]);
 					if(s != (e == 2015 ? 0 : e+1))
@@ -359,7 +360,10 @@ public class Run {
 					}
 
 					// calculate time until next layer which is not disabled
-					w = (s-n)*300;
+					if(s < n)
+						w = (2015+s-n)*300;
+					else
+						w = (s-n)*300;
 					break if_clause;
 				}
 			}
@@ -506,10 +510,10 @@ public class Run {
 		Debug.print(pn+": slot="+slot+", neededUnits="+neededUnits, Debug.units, Debug.info);
 		
 		while(true) {
-			//TODO
 			Debug.print(pn+" ["+slot+"] place "+re, Debug.loop, Debug.info);
 			
 			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiPlaceExploit)) {
+				//	TODO multi place exploit
 				goMultiPlace = false;
 				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
 					final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, mdif, dungeon);
@@ -1354,27 +1358,7 @@ public class Run {
 		if(!ready)
 			return;
 		
-		LocalDateTime now = LocalDateTime.now();
-		// current time in layer-units (1 = 5 min)
-		int n = ((now.get(WeekFields.ISO.dayOfWeek()) - 1) * 288) 
-				+ (now.getHour() * 12) 
-				+ (now.getMinute() / 5);
-
-		// set current layer
-		JsonObject ptimes = ConfigsV2.getPObj(cid, ConfigsV2.ptimes);
-		for(String key : ptimes.keySet()) {
-			String[] sp = key.split("-");
-			if(Integer.parseInt(sp[0]) <= n && Integer.parseInt(sp[1]) >= n) {
-				if(key.equals(currentLayerId))
-					break;
-				updateSettings();
-				currentLayer = ptimes.get(key).getAsString();
-				currentLayerId = key;
-				break;
-			}
-		}
-		
-		feh.onUpdateLayer(ConfigsV2.getStr(cid, currentLayer, ConfigsV2.lname), new Color(ConfigsV2.getInt(cid, currentLayer, ConfigsV2.color)));
+		updateLayer();
 		
 		Raid[] raids = beh.getRaids(SRC.Manager.all);
 		
@@ -1397,6 +1381,30 @@ public class Run {
 		for(C key : sc)
 			feh.onUpdateCurrency(key.get(), beh.getCurrency(key, false));
 		
+	}
+	
+	public synchronized void updateLayer() {
+		LocalDateTime now = LocalDateTime.now();
+		// current time in layer-units (1 = 5 min)
+		int n = ((now.get(WeekFields.ISO.dayOfWeek()) - 1) * 288) 
+				+ (now.getHour() * 12) 
+				+ (now.getMinute() / 5);
+
+		// set current layer
+		JsonObject ptimes = ConfigsV2.getPObj(cid, ConfigsV2.ptimes);
+		for(String key : ptimes.keySet()) {
+			String[] sp = key.split("-");
+			if(Integer.parseInt(sp[0]) <= n && Integer.parseInt(sp[1]) >= n) {
+				if(key.equals(currentLayerId))
+					break;
+				currentLayer = ptimes.get(key).getAsString();
+				currentLayerId = key;
+				updateSettings();
+				break;
+			}
+		}
+		
+		feh.onUpdateLayer(ConfigsV2.getStr(cid, currentLayer, ConfigsV2.lname), new Color(ConfigsV2.getInt(cid, currentLayer, ConfigsV2.color)));
 	}
 	
 	

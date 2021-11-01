@@ -115,7 +115,6 @@ public class Map {
 		return true;
 	}
 	
-	//TODO
 	public double[] getAsSRCoords(boolean epic, int[] coords) {
 		double x = ((double) coords[0] - hw()) * 0.8;
 		double y = ((double) coords[1] - hl()) * -0.8;
@@ -202,7 +201,6 @@ public class Map {
 				}
 			} catch (Exception e) {}
 			
-			//TODO
 			int x = (int) Math.round(rx / 0.8 + hw());
 			int y = (int) Math.round(ry / -0.8 + hl());
 			
