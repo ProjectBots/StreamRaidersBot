@@ -1,4 +1,4 @@
-package program;
+package bot;
 
 import java.awt.Color;
 import java.awt.Desktop;

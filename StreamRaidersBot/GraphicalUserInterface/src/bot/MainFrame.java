@@ -1,4 +1,4 @@
-package program;
+package bot;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -37,6 +37,14 @@ import include.GUI.TextArea;
 import include.GUI.TextField;
 import include.GUI.WinLis;
 import include.Json;
+import program.Configs;
+import program.Debug;
+import program.Options;
+import program.Raid;
+import program.Run;
+import program.SRC;
+import program.SRRHelper;
+import program.Unit;
 import program.Run.FrontEndHandler;
 import include.Http.NoConnectionException;
 

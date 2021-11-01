@@ -321,7 +321,6 @@ public class Run {
 			Debug.printException(pn+": Run -> slotSequence: slot=" + slot + " err=unknown", e, Debug.runerr, Debug.fatal, true);
 		}
 		
-		//TODO time
 		
 		LocalDateTime now = LocalDateTime.now();
 		// current time in layer-units
@@ -359,18 +358,20 @@ public class Run {
 						continue;
 					}
 
-					// calculate time until next layer which is not disabled
+					// shift start if before now
 					if(s < n)
-						w = (2015+s-n)*300;
-					else
-						w = (s-n)*300;
+						s += 2015;
+					
+					// calculate time until next layer which is not disabled
+					w = (s-n)*300;
 					break if_clause;
 				}
 			}
 		} else {
-			// generate random sleep-time
+			// test if max is still in same layer or else set max to end time of layer
 			if(n+(max/300) >= e)
 				max = (e-n)*300;
+			// generate random sleep-time
 			w = Maths.ranInt(min, max);
 		}
 		
@@ -389,7 +390,6 @@ public class Run {
 				|| (slot == 1 && uCount > 4)
 				|| (slot == 2 && uCount > 7)
 				|| (slot == 3 && beh.hasBattlePass());
-				
 	}
 	
 	
@@ -469,7 +469,7 @@ public class Run {
 		
 		final Unit[] units = beh.getPlaceableUnits(slot);
 		Debug.print(pn+" slot="+slot+" units="+Arrays.toString(units), Debug.units, Debug.info);
-		//TODO
+		
 		Map map = beh.getMap(slot, true);
 		
 		HashSet<String> upts = map.getUsablePlanTypes();
@@ -583,7 +583,7 @@ public class Run {
 		
 	}
 	
-	//TODO
+	
 	private static class Place {
 		public final Unit unit;
 		public final int[] pos;
@@ -830,7 +830,7 @@ public class Run {
 		if(aloy < 0)
 			aloy = Integer.MAX_VALUE;
 		
-		//TODO
+		
 		int maxTimeLeft = 30 - ConfigsV2.getInt(cid, currentLayer, ConfigsV2.maxTimeLeft);
 		if(!ic && Time.isAfter(Time.parse(r.get(SRC.Raid.creationDate))
 									.plusMinutes(maxTimeLeft),
@@ -1061,7 +1061,7 @@ public class Run {
 		if(beh.getCurrency(Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unlockMinGold))
 			return;
 		
-		Unit[] unlockable = beh.getUnits(SRC.Manager.isUnitUnlockable, false);
+		Unit[] unlockable = beh.getUnits(SRC.Manager.isUnitUnlockable, true);
 		if(unlockable.length == 0)
 			return;
 		
@@ -1112,7 +1112,6 @@ public class Run {
 				String err = beh.unlockUnit(unlockable[ind]);
 				if(err != null && !err.equals("not enough gold")) 
 					Debug.print("Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, Debug.runerr, Debug.warn, true);
-				
 			}
 			
 			ps[ind] = -1;

@@ -1,4 +1,4 @@
-package program;
+package bot;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,6 +18,8 @@ import include.GUI.ComboBox;
 import include.GUI.Container;
 import include.GUI.Label;
 import include.GUI.TextField;
+import program.Configs;
+import program.Debug;
 import include.Json;
 import include.NEF;
 

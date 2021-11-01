@@ -1,4 +1,4 @@
-package program;
+package bot;
 
 import include.GUI;
 import include.Heatmap;
@@ -6,6 +6,10 @@ import include.GUI.Label;
 import include.GUI.TextArea;
 import include.Maths.Scaler;
 import include.Http.NoConnectionException;
+import program.Debug;
+import program.Map;
+import program.Run;
+import program.SRC;
 import program.SRR.NotAuthorizedException;
 
 import java.awt.Color;

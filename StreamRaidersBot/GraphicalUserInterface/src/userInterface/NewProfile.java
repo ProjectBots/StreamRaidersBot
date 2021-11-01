@@ -6,11 +6,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import bot.Browser;
 import include.GUI;
 import include.GUI.Button;
 import include.GUI.Label;
 import include.GUI.TextField;
-import program.Browser;
 import program.ConfigsV2;
 
 public class NewProfile {

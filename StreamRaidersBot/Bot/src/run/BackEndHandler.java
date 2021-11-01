@@ -269,7 +269,6 @@ public class BackEndHandler {
 				items.getAsJsonArray("data"));
 		
 		
-		
 		rts.put("store", now);
 		uelis.afterUpdate("store");
 	}

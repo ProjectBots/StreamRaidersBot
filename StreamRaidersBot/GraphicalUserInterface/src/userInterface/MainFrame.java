@@ -15,6 +15,8 @@ import java.util.Set;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonPrimitive;
 
+import bot.Browser;
+import bot.MapGUI;
 import include.GUI;
 import include.Json;
 import include.GUI.Button;
@@ -24,11 +26,9 @@ import include.GUI.Label;
 import include.GUI.Menu;
 import include.GUI.TrayMenu;
 import include.GUI.WinLis;
-import program.Browser;
 import program.ConfigsV2;
 import program.Debug;
 import include.Guide;
-import program.MapGUI;
 import program.Options;
 import program.Raid;
 import include.Http.NoConnectionException;
@@ -496,7 +496,7 @@ public class MainFrame {
 		gui.addMenu(sep);
 		
 		m = 0;
-		Menu help = new Menu("Help", "Guide  About  Donate".split("  "));
+		Menu help = new Menu("Help", "Guide  About  Donators".split("  "));
 		help.setFont(new Font(null, Font.BOLD, 25));
 		help.setForeground(Fonts.getColor("main menubar"));
 		help.setAL(m++, new ActionListener() {
@@ -512,13 +512,13 @@ public class MainFrame {
 		help.setAL(m++, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				General.open(gui);
+				About.open(gui);
 			}
 		});
 		help.setAL(m++, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Donators
+				Donators.open(gui);
 			}
 		});
 		gui.addMenu(help);

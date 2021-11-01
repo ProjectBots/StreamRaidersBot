@@ -1,4 +1,4 @@
-package program;
+package bot;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -20,6 +20,10 @@ import org.cef.network.CefCookieManager;
 
 import com.google.gson.JsonObject;
 
+import program.Configs;
+import program.ConfigsV2;
+import program.Debug;
+import program.Options;
 import userInterface.MainFrame;
 
 public class Browser {
@@ -91,7 +95,7 @@ public class Browser {
 				} else {
 					Configs.add(name, cookies);
 					Configs.saveb();
-					program.MainFrame.refresh(false);
+					bot.MainFrame.refresh(false);
 				}
 			}
 		});

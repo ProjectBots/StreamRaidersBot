@@ -24,7 +24,7 @@
           <appendAssemblyId>false</appendAssemblyId>
           <archive>
             <manifest>
-              <mainClass>program.StreamRaiders</mainClass>
+              <mainClass>bot.StreamRaiders</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>

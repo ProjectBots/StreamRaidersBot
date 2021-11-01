@@ -115,5 +115,39 @@ public static final String pre = "GlobalOptions::";
 		
 		gui.addContainer(cff);
 		
+		
+		Button resStats = new Button();
+		resStats.setPos(0, p++);
+		resStats.setText("Reset all Stats");
+		resStats.setGradient(Fonts.getGradient("stngs global buttons def"));
+		resStats.setForeground(Fonts.getColor("stngs global buttons def"));
+		resStats.setInsets(20, 2, 2, 2);
+		resStats.setAL(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(gui.showConfirmationBox("Reset all the Stats?")) {
+					for(String key : ConfigsV2.getCids()) {
+						ConfigsV2.getProfile(key).remove(ConfigsV2.stats.get());
+						ConfigsV2.check(key);
+					}
+				}
+			}
+		});
+		gui.addBut(resStats);
+		
+		Button fm = new Button();
+		fm.setPos(0, p++);
+		fm.setText("forget me");
+		fm.setTooltip("deletes all profiles");
+		fm.setInsets(20, 2, 20, 2);
+		fm.setGradient(Fonts.getGradient("stngs global buttons def"));
+		fm.setForeground(Fonts.getColor("stngs global buttons def"));
+		fm.setAL(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				MainFrame.forgetMe();
+			}
+		});
+		gui.addBut(fm);
 	}
 }

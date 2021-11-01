@@ -1,4 +1,4 @@
-package program;
+package bot;
 
 import include.GUI.CButListener;
 import include.GUI.CButton;
@@ -25,6 +25,8 @@ import com.google.gson.JsonPrimitive;
 import include.GUI;
 import include.Guide_old;
 import include.Guide_old.OnLoad;
+import program.Debug;
+import program.Options;
 import include.Json;
 import include.NEF;
 

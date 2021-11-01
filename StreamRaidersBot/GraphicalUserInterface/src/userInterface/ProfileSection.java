@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import bot.MapGUI;
 import include.GUI;
 import include.GUI.Button;
 import include.GUI.Container;
@@ -13,7 +14,6 @@ import include.GUI.Image;
 import include.GUI.Label;
 import program.ConfigsV2;
 import program.Debug;
-import program.MapGUI;
 import include.Http.NoConnectionException;
 import program.SRR.NotAuthorizedException;
 

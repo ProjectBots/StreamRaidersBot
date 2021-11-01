@@ -81,6 +81,8 @@ public class Store {
 	public void decreaseCurrency(String type, int amount) {
 		if(currencies.containsKey(type))
 			setCurrency(type, currencies.get(type) - amount);
+		else
+			setCurrency(type, -amount);
 	}
 	
 	public void addCurrency(C con, int amount) {
@@ -279,8 +281,6 @@ public class Store {
 	public String unlockUnit(String type, boolean dupe, SRR req) throws NoConnectionException {
 		
 		String text = req.unlockUnit(type);
-		if(text == null) 
-			return "critical request error";
 		
 		JsonObject res = Json.parseObj(text);
 		JsonElement err = res.get(SRC.errorMessage);

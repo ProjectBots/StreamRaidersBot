@@ -1,4 +1,4 @@
-package program;
+package bot;
 
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -11,6 +11,12 @@ import include.GUI.Label;
 import include.GUI.TextArea;
 import include.GUI.WinLis;
 import userInterface.WaitScreen;
+import program.Configs;
+import program.ConfigsV2;
+import program.Debug;
+import program.Options;
+import program.Remaper;
+import program.SRRHelper;
 import program.Debug.DebugEventHandler;
 import program.Debug.Scope;
 import program.Debug.Type;
@@ -25,7 +31,7 @@ public class StreamRaiders {
 	
 	synchronized private static void log(String text, Exception e) {
 		if(error_count == 0) {
-			err = new GUI("Error occured", 400, 200, Options.is("beta_frame") ? userInterface.MainFrame.getGUI() : program.MainFrame.getGUI(), null);
+			err = new GUI("Error occured", 400, 200, Options.is("beta_frame") ? userInterface.MainFrame.getGUI() : bot.MainFrame.getGUI(), null);
 			err.addWinLis(new WinLis() {
 				@Override
 				public void onIconfied(WindowEvent e) {}
@@ -203,7 +209,7 @@ public class StreamRaiders {
 					GuideContent.gainStats(data.getAsJsonObject("Units"));
 				}
 			});
-			MainFrame.open();
+			bot.MainFrame.open();
 			WaitScreen.close();
 		}
 	}
