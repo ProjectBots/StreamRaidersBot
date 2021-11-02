@@ -70,6 +70,8 @@ public class Map {
 	}
 	
 	public Map(JsonObject mapData, Raid raid, JsonObject plan, String name, List<String> userIds) {
+		if(mapData == null)
+			new run.Run.StreamRaidersException("Map -> const: err=mapData is null, mapName="+name);
 		this.name = name;
 		float mapScale = mapData.get("MapScale").getAsFloat();
 		if(mapScale < 0) {

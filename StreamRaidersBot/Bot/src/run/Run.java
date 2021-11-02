@@ -51,6 +51,24 @@ import program.MapConv;
 import program.Options;
 
 public class Run {
+	
+	/*	TODO
+	 * 	proxy mandatory - disable proxy if allowed and needed (for example if proxy doesn't respond anymore)
+	 * 	make about page + fonts
+	 *  donator page fonts
+	 * 	config import
+	 * 	config import from old client
+	 * 	config import/export fonts
+	 * 	place only on marker: differentiate campaign and dungeon
+	 * 	option to suppress specific error popups
+	 * 	kill (slot) round and restart if it takes more than x min
+	 * 	debug: pn and slot as parameters
+	 * 	remove button for failed profiles
+	 * 
+	 * 	after release:
+	 * 	get Donators from github source
+	 * 
+	 */
 
 	private String cid;
 	private BackEndHandler beh;
@@ -748,6 +766,8 @@ public class Run {
 					continue;
 				return new Place(units[p[0]], pos, i%2==0, i<2);
 			}
+			
+			//	TODO place marker only Campaign/Dungeon
 			
 			if(i==1 && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnly))
 				return null;

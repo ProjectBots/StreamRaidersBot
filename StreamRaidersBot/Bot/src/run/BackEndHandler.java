@@ -282,10 +282,11 @@ public class BackEndHandler {
 		JsonObject userEventProgression = Json.parseObj(req.getUserEventProgression());
 		if(testUpdate(userEventProgression))
 			userEventProgression = Json.parseObj(req.getUserEventProgression());
-		
 		qer.updateEvent(Time.parse(LocalDateTime.now().minusSeconds(secoff)), userEventProgression.getAsJsonArray("data"));
 		
 		JsonObject userQuests = Json.parseObj(req.getUserQuests());
+		if(testUpdate(userQuests))
+			userQuests = Json.parseObj(req.getUserQuests());
 		qer.updateQuests(userQuests.getAsJsonArray("data"));
 		
 		rts.put("qer", now);

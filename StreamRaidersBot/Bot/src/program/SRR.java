@@ -2,7 +2,11 @@ package program;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -354,10 +358,27 @@ public class SRR {
 		return sendPost(post);
 	}
 	
+	private static final Set<String> mapPaths = Collections.unmodifiableSet(new HashSet<String>() {
+		private static final long serialVersionUID = 1L;
+		{
+			add("https://d1vngzyege2qd5.cloudfront.net/prod1/");
+			add("https://d2k2g0zg1te1mr.cloudfront.net/maps/");
+		}
+	});
 	
 	public String getMapData(String map) throws NoConnectionException {
+		String ret;
+		for(String path : mapPaths) {
+			ret = getMapData(map, path);
+			if(ret != null && !ret.contains("AccessDenied"))
+				return ret;
+		}
+		return null;
+	}
+	
+	private String getMapData(String map, String path) throws NoConnectionException {
 		Http get = new Http();
-		get.setUrl("https://d1vngzyege2qd5.cloudfront.net/prod1/" + map + ".txt");
+		get.setUrl(path + map + ".txt");
 		get.addHeader("User-Agent", userAgent);
 		try {
 			return get.sendGet();

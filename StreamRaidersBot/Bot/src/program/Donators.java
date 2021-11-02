@@ -17,7 +17,7 @@ public class Donators {
 		}
 		public String getEur() {
 			int cen = amount%100;
-			return (amount/100)+"."+(cen < 10 ? "0"+cen : cen);
+			return (amount/100)+"."+(cen < 10 ? "0"+cen : cen)+" €";
 		}
 	}
 	

@@ -51,6 +51,7 @@ public class Donators {
 				al.setPos(x++, y1);
 				al.setText(d.getEur());
 				al.setInsets(6, 20, 6, 20);
+				al.setAnchor("e");
 				al.setFont(new Font(null, Font.PLAIN, 22));
 				dc.addLabel(al);
 				

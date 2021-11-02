@@ -538,7 +538,7 @@ public class ProfileSettings {
 		cstorem.setPos(0, p++);
 		cstorem.setInsets(10, 0, 0, 0);
 			
-			String[] smgs = "Scrolls Min Gold  Store Min Keys  Upgrade Min Gold  Unlock Min Gold  Unit Place Retries  Map Reload After X Retries  Max Unit Per Raid  Cap Inactive Treshold  Max Time Left  Min Time Left  Unit Update  Raid Update  Map Update  StoreUpdate  Quest Event Rewards Update  Caps Update".split("  ");
+			String[] smgs = "Scrolls Min Gold  Store Min Keys  Upgrade Min Gold  Unlock Min Gold  Unit Place Retries  Map Reload After X Retries  Max Unit Per Raid  Cap Inactive Treshold  Max Time Left  Min Time Left  Unit Update  Raid Update  Map Update  Store Update  Quest Event Rewards Update  Caps Update".split("  ");
 			int l = 0;
 			for(String key : smgs) {
 				final Int con = new Int(key.substring(0, 1).toLowerCase() + key.substring(1).replace(" ", ""));
@@ -859,6 +859,7 @@ public class ProfileSettings {
 		resStat.setText("Reset Stats");
 		resStat.setTooltip("Reset the stats for this profile");
 		resStat.setGradient(Fonts.getGradient("stngs profile buttons def"));
+		resStat.setForeground(Fonts.getColor("stngs profile buttons def"));
 		resStat.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -877,6 +878,7 @@ public class ProfileSettings {
 		bdelpro.setText("Delete Profile");
 		bdelpro.setTooltip("Removes this Profile from the bot");
 		bdelpro.setGradient(Fonts.getGradient("stngs profile buttons def"));
+		bdelpro.setForeground(Fonts.getColor("stngs profile buttons def"));
 		bdelpro.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
