@@ -104,7 +104,7 @@ public class BackEndHandler {
 				Options.set("eventTiers", currentTiers.toString());
 			} else {
 				Options.set("eventTiers", "{}");
-			}
+			}													//	
 			for(String c : "dungeonchest dungeonchest2 vampirechest polterheistorangechest polterheistgreenchest polterheistpurplechest".split(" ")) {
 				try {
 					JsonObject base = s.getAsJsonObject(c);
@@ -112,6 +112,8 @@ public class BackEndHandler {
 					Options.set(c+"price", base.get("BasePrice").getAsString());
 				} catch (NullPointerException e) {
 					Debug.printException("SRRHelper -> updateDataPath: err=failed to update chest, chest="+c, e, Debug.runerr, Debug.error, true);
+					Options.set(c+"date", "2021-10-10 12:00:00");
+					Options.set(c+"price", "9999");
 				}
 			}
 			Options.set("mapDifficulty", data.getAsJsonObject("MapNodeDifficulty").toString());
