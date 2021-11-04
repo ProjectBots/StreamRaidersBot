@@ -331,7 +331,7 @@ public class MainFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					
-					if(!Options.is("no_browser")) {
+					if(Options.is("no_browser")) {
 						gui.msg("Error occured", "The Browser is disabled", GUI.MsgConst.ERROR);
 						return;
 					}

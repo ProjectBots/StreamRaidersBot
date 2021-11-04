@@ -849,12 +849,15 @@ public class Run {
 		int loy = dungeon ? (r.get(SRC.Raid.allyBoons)+",").split(",").length : Integer.parseInt(r.get(SRC.Raid.pveWins));
 		
 		Integer aloy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.maxc);
-		if(aloy == null)
-			new StreamRaidersException(pn+": Run -> captain: slot="+slot+", ct="+ct+", err=failed to get chest max loy");
-		
-		if(aloy < 0)
+		Integer iloy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.minc);
+		if(aloy == null || iloy == null) {
+			Debug.print("Run -> captain: ct="+ct+", err=failed to get chest max loy", Debug.runerr, Debug.error, pn, slot, true);
+			//	prevents picking the chest
+			aloy = 5;
+			iloy = 8;
+		} else if(aloy < 0)
 			aloy = Integer.MAX_VALUE;
-		
+			
 		
 		int maxTimeLeft = 30 - ConfigsV2.getInt(cid, currentLayer, ConfigsV2.maxTimeLeft);
 		if(!ic && Time.isAfter(Time.parse(r.get(SRC.Raid.creationDate))
@@ -880,7 +883,7 @@ public class Run {
 								.plusMinutes(30 - minRaidTimeLeft)))
 			|| (!ic && !dungeon 
 					&& !ConfigsV2.getChestBoolean(cid, currentLayer, ct, ConfigsV2.enabled))
-			|| (!ic && (loy < ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.minc) || loy > aloy))
+			|| (!ic && (loy < iloy || loy > aloy))
 			|| (ConfigsV2.getBoolean(cid, currentLayer, dungeon ? ConfigsV2.dungeonFavOnly : ConfigsV2.campaignFavOnly) 
 					&& !ConfigsV2.getFavCaps(cid, currentLayer, list).contains(new JsonPrimitive(tdn)))
 			|| fav < 0
