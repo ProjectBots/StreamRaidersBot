@@ -45,10 +45,10 @@ syntax explanations are in the file.
 ;- DO NOT CHANGE AFTER THIS
 ;- ------------------------
 ##s Unit-Types
-##c program.GuideContent genUnits
-##e program.GuideContent loadUnits
+##c bot.GuideContent genUnits
+##e bot.GuideContent loadUnits
 ##s Chest-Types
-##c program.GuideContent chestTypes
+##c bot.GuideContent chestTypes
 ##s Other-Projects
 ##i jsonexplorer.png 500 c
 ##t 
