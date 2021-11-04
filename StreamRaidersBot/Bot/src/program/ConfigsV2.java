@@ -991,17 +991,17 @@ public class ConfigsV2 {
 	
 	public static void check(String cid) {
 		JsonObject main = configs.getAsJsonObject(cid);
-		Json.check(main, cmain);
+		Json.check(main, cmain.deepCopy());
 		JsonObject layers = main.getAsJsonObject("layers");
 		for(String lay : layers.keySet()) {
 			JsonObject layer = layers.getAsJsonObject(lay);
-			Json.check(layer, clayer);
+			Json.check(layer, clayer.deepCopy());
 			JsonObject lists = layer.getAsJsonObject("caps");
 			for(String l : lists.keySet()) {
 				JsonObject caps = lists.getAsJsonObject(l);
 				for(String c : caps.keySet()) {
 					JsonObject cap = caps.getAsJsonObject(c);
-					Json.check(cap, ccap);
+					Json.check(cap, ccap.deepCopy());
 				}
 			}
 		}
