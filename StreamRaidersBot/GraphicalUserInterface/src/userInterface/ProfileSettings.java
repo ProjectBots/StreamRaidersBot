@@ -7,7 +7,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.WindowEvent;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.WindowConstants;
@@ -44,7 +43,7 @@ public class ProfileSettings {
 		
 		int p = 0;
 		
-		GUI gui = new GUI("Profile Settings for " + ConfigsV2.getPStr(cid, ConfigsV2.name), 400, 500, parent, null);
+		GUI gui = new GUI("Profile Settings for " + ConfigsV2.getPStr(cid, ConfigsV2.pname), 400, 500, parent, null);
 		gui.setBackgroundGradient(Fonts.getGradient("stngs profile background"));
 		
 		gui.addWinLis(new WinLis() {
@@ -63,14 +62,6 @@ public class ProfileSettings {
 		});
 		
 		
-		String[] list = ConfigsV2.getLayerIds(cid);
-		for(int i=0; i<list.length; i++)
-			list[i] = ConfigsV2.getStr(cid, list[i], ConfigsV2.lname);
-		
-		list = ArrayUtils.insert(0, list, "(all)");
-		if(!lay.equals("(all)"))
-			list = putFirst(list, ConfigsV2.getStr(cid, lay, ConfigsV2.lname));
-		
 		Container cname = new Container();
 		cname.setPos(0, p++);
 		cname.setInsets(20, 2, 2, 2);
@@ -82,7 +73,7 @@ public class ProfileSettings {
 			cname.addLabel(lname);
 			
 			TextField tfname = new TextField();
-			tfname.setText(ConfigsV2.getPStr(cid, ConfigsV2.name));
+			tfname.setText(ConfigsV2.getPStr(cid, ConfigsV2.pname));
 			tfname.setPos(1, 0);
 			tfname.setSize(80, 21);
 			tfname.setDocLis(new DocumentListener() {
@@ -99,22 +90,79 @@ public class ProfileSettings {
 					update();
 				}
 				private void update() {
-					List<String> taken = new ArrayList<>();
-					for(String n : ConfigsV2.getCids())
-						taken.add(ConfigsV2.getPStr(n, ConfigsV2.name));
-					taken.add("Global");
 					String sel = GUI.getInputText(uid+"name");
-					if(taken.contains(sel))
+					if(ConfigsV2.isPNameTaken(sel))
 						GUI.setBackground(uid+"name", new Color(255, 122, 122));
 					else {
 						GUI.setBackground(uid+"name", Color.white);
-						ConfigsV2.setPStr(cid, ConfigsV2.name, sel);
+						ConfigsV2.setPStr(cid, ConfigsV2.pname, sel);
 					}
 				}
 			});
 			cname.addTextField(tfname, uid+"name");
 		
 		gui.addContainer(cname);
+		
+		Container csync = new Container();
+		csync.setPos(0, p++);
+		csync.setInsets(20, 2, 2, 2);
+		
+			Label lsync = new Label();
+			lsync.setPos(0, 0);
+			lsync.setText("Sync with: ");
+			lsync.setForeground(Fonts.getColor("stngs profile labels"));
+			csync.addLabel(lsync);
+			
+			
+			List<String> profiles = ConfigsV2.getCids();
+			for(int i=0; i<profiles.size(); i++) {
+				String cid_ = profiles.get(i);
+				if(cid.equals(cid_) || !ConfigsV2.getPStr(cid_, ConfigsV2.synced).equals("(none)"))
+					profiles.remove(i--);
+				else
+					profiles.set(i, ConfigsV2.getPStr(cid_, ConfigsV2.pname));
+			}
+			String sel = ConfigsV2.getPStr(cid, ConfigsV2.synced);
+			if(!sel.equals("(none)")) {
+				sel = ConfigsV2.getPStr(sel, ConfigsV2.pname);
+				profiles.remove(sel);
+				profiles.add(0, "(none)");
+			}
+			profiles.add(0, sel);
+			
+			ComboBox cbsync = new ComboBox(uid+"cbsync");
+			cbsync.setPos(1, 0);
+			cbsync.setList(profiles.toArray(new String[profiles.size()]));
+			cbsync.setCL(new CombListener() {
+				@Override
+				public void unselected(String id, ItemEvent e) {}
+				@Override
+				public void selected(String id, ItemEvent e) {
+					String sel = GUI.getSelected(id);
+					if(sel.equals("(none)")) {
+						ConfigsV2.sync(cid, null);
+						return;
+					} else {
+						if(!gui.showConfirmationBox("do you really want to\nsync your settings?\nThis Profile will have the same\nconfig as the set profile"))
+							return;
+						for(String dcid : ConfigsV2.getCids()) {
+							if(ConfigsV2.getPStr(dcid, ConfigsV2.pname).equals(sel)) {
+								ConfigsV2.sync(cid, dcid);
+								for(String scid : ConfigsV2.getCids())
+									if(ConfigsV2.getPStr(scid, ConfigsV2.synced).equals(cid))
+										ConfigsV2.sync(scid, dcid);
+								new ProfileSettings().open(cid, lay, gui);
+								gui.close();
+								return;
+							}
+						}
+					}
+				}
+			});
+			csync.addComboBox(cbsync);
+			
+		
+		gui.addContainer(csync);
 		
 		Container clay = new Container();
 		clay.setPos(0, p++);
@@ -125,6 +173,14 @@ public class ProfileSettings {
 			llay.setText("Layer: ");
 			llay.setForeground(Fonts.getColor("stngs profile labels"));
 			clay.addLabel(llay);
+			
+			String[] list = ConfigsV2.getLayerIds(cid);
+			for(int i=0; i<list.length; i++)
+				list[i] = ConfigsV2.getStr(cid, list[i], ConfigsV2.lname);
+			
+			list = ArrayUtils.insert(0, list, "(all)");
+			if(!lay.equals("(all)"))
+				list = putFirst(list, ConfigsV2.getStr(cid, lay, ConfigsV2.lname));
 		
 			ComboBox cblay = new ComboBox(uid+"cblay");
 			cblay.setPos(1, 0);

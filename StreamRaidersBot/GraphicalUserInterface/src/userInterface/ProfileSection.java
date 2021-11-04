@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Hashtable;
 
 import bot.MapGUI;
 import include.GUI;
@@ -16,6 +17,7 @@ import program.ConfigsV2;
 import program.Debug;
 import include.Http.NoConnectionException;
 import program.SRR.NotAuthorizedException;
+import run.Run;
 
 public class ProfileSection {
 
@@ -43,7 +45,7 @@ public class ProfileSection {
 			
 				Label pname = new Label();
 				pname.setPos(p++, 0);
-				pname.setText(ConfigsV2.getPStr(cid, ConfigsV2.name));
+				pname.setText(ConfigsV2.getPStr(cid, ConfigsV2.pname));
 				pname.setInsets(2, 2, 2, 20);
 				pname.setForeground(Fonts.getColor("main labels"));
 				head.addLabel(pname, pre+cid+"::pname");
@@ -367,12 +369,21 @@ public class ProfileSection {
 		return con;
 	}
 
-	protected void update() {
+	public void update() {
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					MainFrame.getProfiles().get(cid).updateFrame();
+					Hashtable<String, Run> runs = MainFrame.getProfiles();
+					String syncTo = ConfigsV2.getPStr(cid, ConfigsV2.synced);
+					if(syncTo.equals("(none)")) {
+						runs.get(cid).updateFrame();
+						for(String s : ConfigsV2.getCids())
+							if(ConfigsV2.getPStr(s, ConfigsV2.synced).equals(cid))
+								runs.get(s).updateFrame();
+					} else {
+						MainFrame.getSections().get(syncTo).update();
+					}
 				} catch (NoConnectionException | NotAuthorizedException e) {
 					Debug.printException("ProfileSection -> update: err=failed to update profile", e, Debug.general, Debug.error, true);
 				}

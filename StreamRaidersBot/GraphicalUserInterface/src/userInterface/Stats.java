@@ -59,7 +59,7 @@ public class Stats {
 		JsonObject stats = ConfigsV2.getPObj(cid, ConfigsV2.stats);
 		
 		
-		GUI gui = new GUI("Stats for " + ConfigsV2.getPStr(cid, ConfigsV2.name), 1400, 900, MainFrame.getGUI(), null);
+		GUI gui = new GUI("Stats for " + ConfigsV2.getPStr(cid, ConfigsV2.pname), 1400, 900, MainFrame.getGUI(), null);
 		gui.setBackgroundGradient(Fonts.getGradient("stats background"));
 		gui.setFullScreen(true);
 		

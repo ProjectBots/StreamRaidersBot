@@ -3,8 +3,6 @@ package userInterface;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import bot.Browser;
 import include.GUI;
@@ -105,11 +103,7 @@ public class NewProfile {
 	}
 	
 	private static boolean checkDupeName(String name) {
-		List<String> taken = new ArrayList<>();
-		for(String cid : ConfigsV2.getCids())
-			taken.add(ConfigsV2.getPStr(cid, ConfigsV2.name));
-		taken.add("Global");
-		if(taken.contains(name)) {
+		if(ConfigsV2.isPNameTaken(name)) {
 			np.msg("Name Already Taken", name+" is already taken", GUI.MsgConst.WARNING);
 			return true;
 		}

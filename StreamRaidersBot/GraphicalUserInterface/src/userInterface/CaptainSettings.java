@@ -48,7 +48,7 @@ public class CaptainSettings {
 		
 		int p = 0;
 		
-		gui = new GUI("Captain Settings for " + ConfigsV2.getPStr(cid, ConfigsV2.name), 800, 500, parent, null);
+		gui = new GUI("Captain Settings for " + ConfigsV2.getPStr(cid, ConfigsV2.pname), 800, 500, parent, null);
 		gui.setBackgroundGradient(Fonts.getGradient("stngs caps background"));
 		
 		String[] listlays = ConfigsV2.getLayerIds(cid);

@@ -30,7 +30,7 @@ public class CapSearch {
 	public void open(GUI parent, String cid, String lay, ListType list, String search) {
 		uid = pre + cid + "::" + LocalDateTime.now().toString().hashCode() + "::";
 		
-		gui = new GUI("Captain Search for " + ConfigsV2.getPStr(cid, ConfigsV2.name), 400, 500, parent, null);
+		gui = new GUI("Captain Search for " + ConfigsV2.getPStr(cid, ConfigsV2.pname), 400, 500, parent, null);
 		gui.setBackgroundGradient(Fonts.getGradient("stngs caps search background"));
 		
 		Label load = new Label();

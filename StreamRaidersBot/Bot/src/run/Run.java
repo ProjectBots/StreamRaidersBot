@@ -64,6 +64,7 @@ public class Run {
 	 * 	kill (slot) round and restart if it takes more than x min
 	 * 	debug: pn and slot as parameters
 	 * 	remove button for failed profiles
+	 * 	update frame after button press
 	 * 
 	 * 	after release:
 	 * 	get Donators from github source
@@ -187,7 +188,7 @@ public class Run {
 	
 	public Run(String cid, String cookies) throws NotAuthorizedException, NoConnectionException, OutdatedDataException {
 		this.cid = cid;
-		pn = ConfigsV2.getPStr(cid, ConfigsV2.name);
+		pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
 		beh = new BackEndHandler(cookies);
 		beh.setUpdateEventListener(new UpdateEventListener() {
 			@Override
@@ -292,7 +293,7 @@ public class Run {
 	private String pn = null;
 	
 	synchronized private void slotSequence(int slot) {
-		pn = ConfigsV2.getPStr(cid, ConfigsV2.name);
+		pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
 		try {
 			if_clause:
 			if(slot == 4) {

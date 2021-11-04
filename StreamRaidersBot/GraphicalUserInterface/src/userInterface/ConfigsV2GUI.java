@@ -96,7 +96,7 @@ public class ConfigsV2GUI {
 			final String c = uid+cid+"::";
 			Label pname = new Label();
 			pname.setPos(0, p);
-			pname.setText(ConfigsV2.getPStr(cid, ConfigsV2.name));
+			pname.setText(ConfigsV2.getPStr(cid, ConfigsV2.pname));
 			gui.addLabel(pname);
 			
 			ComboBox select = new ComboBox(c+"select");

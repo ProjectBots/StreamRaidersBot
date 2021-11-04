@@ -96,7 +96,8 @@ public class ConfigsV2 {
 	}
 	
 	public static final PStr cookies = new PStr("cookies");
-	public static final PStr name = new PStr("name");
+	public static final PStr pname = new PStr("name");
+	public static final PStr synced = new PStr("synced");
 	
 	public static String getPStr(String cid, PStr con) {
 		return configs.getAsJsonObject(cid).get(con.get()).getAsString();
@@ -972,7 +973,12 @@ public class ConfigsV2 {
 			for(String key : getCids()) 
 				check(key);
 			
-			
+			for(String key : getCids()) {
+				String sync = getPStr(key, synced);
+				if(sync.equals("(none)"))
+					continue;
+				sync(key, sync);
+			}
 		}
 	}
 	
@@ -983,6 +989,26 @@ public class ConfigsV2 {
 		String key = ""+LocalDateTime.now().toString().hashCode();
 		configs.add(key, jo);
 		check(key);
+	}
+	
+	
+	public static boolean isPNameTaken(String name) {
+		List<String> taken = new ArrayList<String>();
+		for(String cid : getCids())
+			taken.add(getPStr(cid, pname));
+		taken.add("Global");
+		taken.add("(none)");
+		taken.add("(all)");
+		return taken.contains(name);
+	}
+	
+	public static boolean isLNameTaken(String cid, String name) {
+		List<String> taken = new ArrayList<String>();
+		for(String lid : getLayerIds(cid))
+			taken.add(getStr(cid, lid, lname));
+		taken.add("(none)");
+		taken.add("(all)");
+		return taken.contains(name);
 	}
 	
 	private static JsonObject cmain = Json.parseObj(Options.get("cmain"));
@@ -1028,6 +1054,22 @@ public class ConfigsV2 {
 		}
 		if(s != null)
 			times.addProperty(s+"-"+2015, "(default)");
+	}
+	
+	//	TODO
+	public static void sync(String cid, String defCid) {
+		JsonObject toSync = getProfile(cid);
+		if(defCid == null) {
+			JsonObject def = getProfile(getPStr(cid, synced));
+			setPStr(cid, synced, "(none)");
+			toSync.add("layers", def.get("layers").deepCopy());
+			toSync.add("times", def.get("times").deepCopy());
+		} else {
+			JsonObject def = getProfile(defCid);
+			setPStr(cid, synced, defCid);
+			toSync.add("layers", def.get("layers"));
+			toSync.add("times", def.get("times"));
+		}
 	}
 	
 	public static void save() {
@@ -1084,7 +1126,7 @@ public class ConfigsV2 {
 							continue;
 						case PStr:
 						case PObj:
-							if(ArrayUtils.contains("name".split(" "), con))
+							if(ArrayUtils.contains("name synced".split(" "), con))
 								continue;
 							get("Profile").add(con);
 							continue;
@@ -1144,7 +1186,7 @@ public class ConfigsV2 {
 		
 		public static class Profile {
 			public void toSB(StringBuilder in) {
-				in.append("\n"+getPStr(cid, name)+":");
+				in.append("\n"+getPStr(cid, pname)+":");
 				if(pconfs.size() > 0) {
 					in.append("\n   pconfs:");
 					for(String pconf : pconfs)

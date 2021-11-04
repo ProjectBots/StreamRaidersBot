@@ -56,7 +56,7 @@ public class UnitSettings {
 		
 		int g = 0;
 		
-		GUI gui = new GUI("Unit Settings for " + ConfigsV2.getPStr(cid, ConfigsV2.name), 1600, 800, parent, null);
+		GUI gui = new GUI("Unit Settings for " + ConfigsV2.getPStr(cid, ConfigsV2.pname), 1600, 800, parent, null);
 		gui.setBackgroundGradient(Fonts.getGradient("stngs units background"));
 		gui.setFullScreen(true);
 		

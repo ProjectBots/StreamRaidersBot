@@ -92,7 +92,7 @@ public class LayerSettings {
 			layers.put(key, new Layer(key, new Color(ConfigsV2.getInt(cid, key, ConfigsV2.color))));
 		
 		
-		gui = new GUI("Layer Settings for " + ConfigsV2.getPStr(cid, ConfigsV2.name), 700, 800, parent, null);
+		gui = new GUI("Layer Settings for " + ConfigsV2.getPStr(cid, ConfigsV2.pname), 700, 800, parent, null);
 		gui.setBackgroundGradient(Fonts.getGradient("stngs layers background"));
 		
 		Container csch = new Container();
@@ -309,7 +309,7 @@ public class LayerSettings {
 			String rans;
 			while(true) {
 				rans = Maths.ranString(3);
-				if(!isTaken(rans));
+				if(!ConfigsV2.isLNameTaken(cid, rans))
 					break;
 			}
 			
@@ -357,7 +357,7 @@ public class LayerSettings {
 				public void actionPerformed(ActionEvent e) {
 					String ln = GUI.getInputText(uid+"nl");
 					
-					if(isTaken(ln)) {
+					if(ConfigsV2.isLNameTaken(cid, ln)) {
 						gui.msg("Error Occured", "Name already taken", GUI.MsgConst.WARNING);
 						return;
 					}
@@ -382,7 +382,7 @@ public class LayerSettings {
 					String rans;
 					while(true) {
 						rans = Maths.ranString(3);
-						if(!isTaken(rans))
+						if(!ConfigsV2.isLNameTaken(cid, rans))
 							break;
 					}
 					
@@ -460,7 +460,7 @@ public class LayerSettings {
 			}
 			private void update() {
 				String in = GUI.getInputText(uid+"chna::"+y);
-				if(isTaken(in) && !in.equals(lay.getName())) {
+				if(ConfigsV2.isLNameTaken(cid, in) && !in.equals(lay.getName())) {
 					GUI.setBackground(uid+"chna::"+y, new Color(255, 122, 122));
 					return;
 				}
@@ -530,9 +530,6 @@ public class LayerSettings {
 	private JsonArray takenc = new JsonArray();
 	private Hashtable<String, String> names = new Hashtable<>();
 	
-	public boolean isTaken(String name) {
-		return names.containsKey(name);
-	}
 	
 	public boolean isTaken(Color col) {
 		return takenc.contains(new JsonPrimitive(col.getRGB()));

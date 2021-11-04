@@ -57,6 +57,12 @@ public class MainFrame {
 		return profiles;
 	}
 	
+	private static Hashtable<String, ProfileSection> sections = new Hashtable<>();
+	
+	public static Hashtable<String, ProfileSection> getSections() {
+		return sections;
+	}
+	
 	
 	public static String[] getUserIds() {
 		String[] ret = new String[profiles.size()];
@@ -124,7 +130,7 @@ public class MainFrame {
 									Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, true);
 								}
 							} else {
-								GUI.setText(ProfileSection.pre+cid+"::pname", ConfigsV2.getPStr(cid, ConfigsV2.name));
+								GUI.setText(ProfileSection.pre+cid+"::pname", ConfigsV2.getPStr(cid, ConfigsV2.pname));
 								GUI.setText(ProfileSection.pre+cid+"::"+slot+"::capname", raid.get(SRC.Raid.twitchDisplayName));
 								Image img = new Image(raid.get(SRC.Raid.twitchUserImage));
 								img.setUrl(true);
@@ -209,10 +215,14 @@ public class MainFrame {
 					});
 					profiles.put(cid, r);
 					
-					Container c = new ProfileSection().create(cid);
+					ProfileSection ps = new ProfileSection();
+					
+					Container c = ps.create(cid);
 					c.setPos(0, pos);
 					gui.addContainer(c, pre+cid+"::profile");
 					updateWS(false);
+					//TODO
+					sections.put(cid, ps);
 					
 					r.setReady(true);
 					r.updateFrame();
@@ -220,7 +230,7 @@ public class MainFrame {
 					return;
 				} catch (SilentException e) {
 				} catch (NoConnectionException e) {
-					Debug.printException(ConfigsV2.getPStr(cid, ConfigsV2.name) + ": Run -> Maybe your internet connection failed", e, Debug.general, Debug.error, true);
+					Debug.printException(ConfigsV2.getPStr(cid, ConfigsV2.pname) + ": Run -> Maybe your internet connection failed", e, Debug.general, Debug.error, true);
 				} catch (NotAuthorizedException e3) {
 					GUI err = new GUI("User not authorized", 500, 200, MainFrame.getGUI(), null);
 					Label l = new Label();
@@ -228,7 +238,7 @@ public class MainFrame {
 					err.addLabel(l);
 					err.refresh();
 				} catch (Exception e) {
-					Debug.printException(ConfigsV2.getPStr(cid, ConfigsV2.name) + ": Run -> setRunning: err=failed to add profile", e, Debug.general, Debug.error, true);
+					Debug.printException(ConfigsV2.getPStr(cid, ConfigsV2.pname) + ": Run -> setRunning: err=failed to add profile", e, Debug.general, Debug.error, true);
 				}
 				
 				createFailedContainer(cid, pos);
@@ -247,7 +257,7 @@ public class MainFrame {
 		
 			Label name = new Label();
 			name.setPos(0, 0);
-			name.setText(ConfigsV2.getPStr(cid, ConfigsV2.name));
+			name.setText(ConfigsV2.getPStr(cid, ConfigsV2.pname));
 			c.addLabel(name);
 		
 			Button retry = new Button();
@@ -303,14 +313,15 @@ public class MainFrame {
 		WaitScreen.close();
 	}
 	
-	private static void remove(String name) {
+	private static void remove(String cid) {
 		try {
 			for(int i=0; i<4; i++)
-				profiles.get(name).setRunning(false, i);
+				profiles.get(cid).setRunning(false, i);
 		} catch (Exception e) {}
-		profiles.remove(name);
-		gui.remove(pre+name+"::profile");
-
+		profiles.remove(cid);
+		sections.remove(cid);
+		gui.remove(pre+cid+"::profile");
+		gui.refresh();
 	}
 	
 	public static void open(boolean add) {
@@ -552,16 +563,15 @@ public class MainFrame {
 	public static void forgetMe() {
 		if(gui.showConfirmationBox("do you really want\nto delete all your\nprofiles?")) {
 			Set<String> kset = profiles.keySet();
-			String[] keys = new String[kset.size()];
-			keys = kset.toArray(keys);
-			for(String key : keys) {
+			String[] keys = kset.toArray(new String[kset.size()]);
+			for(String key : keys)
 				forget(key, true);
-			}
+			
 		}
 	}
 	
 	static boolean forget(String cid, boolean force) {
-		boolean ret = force || gui.showConfirmationBox("delete " + ConfigsV2.getPStr(cid, ConfigsV2.name) + "?");
+		boolean ret = force || gui.showConfirmationBox("delete " + ConfigsV2.getPStr(cid, ConfigsV2.pname) + "?");
 		if(ret) {
 			ConfigsV2.remProfile(cid);
 			remove(cid);
