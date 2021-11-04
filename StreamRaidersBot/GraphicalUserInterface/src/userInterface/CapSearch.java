@@ -46,7 +46,7 @@ public class CapSearch {
 				try {
 					caps = MainFrame.getProfiles().get(cid).getBackEndHandler().searchCap(1, 8, false, false, SRC.Search.all, true, search);
 				} catch (NoConnectionException | NotAuthorizedException e) {
-					Debug.printException("CapSearch -> open: err=failed to search captain", e, Debug.general, Debug.error, true);
+					Debug.printException("CapSearch -> open: err=failed to search captain", e, Debug.general, Debug.error, null, null, true);
 					return;
 				}
 				

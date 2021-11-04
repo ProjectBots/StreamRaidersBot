@@ -69,12 +69,9 @@ public class Debug {
 	
 	
 	public static class Type {
-		private String type;
-		public Type(String type) {
-			this.type = type;
-		}
-		public String get() {
-			return type;
+		public final String con;
+		public Type(String con) {
+			this.con = con;
 		}
 	}
 	
@@ -82,11 +79,11 @@ public class Debug {
 	private static int min_severty = 0;
 	
 	public static void setMinSeverty(Type type) {
-		min_severty = severty.indexOf(type.get());
+		min_severty = severty.indexOf(type.con);
 	}
 	
 	public static int getSevertyOf(Type type) {
-		return severty.indexOf(type.get());
+		return severty.indexOf(type.con);
 	}
 	
 	public static final Type info = new Type(severty.get(0));
@@ -138,20 +135,20 @@ public class Debug {
 	}
 	
 	public static interface DebugEventHandler {
-		public default void onPrintLine(String pre, String msg, Scope scope, Type type, boolean forced) {
+		public default void onPrintLine(String pre, String msg, Scope scope, Type type, String pn, Integer slot, boolean forced) {
 			System.out.println(pre+msg);
 		};
-		public default void onPrintException(String pre, String msg, Exception e, Scope scope, Type type, boolean forced) {
+		public default void onPrintException(String pre, String msg, Exception e, Scope scope, Type type, String pn, Integer slot, boolean forced) {
 			System.err.println(pre+msg+"\n"+except2Str(e));
 		};
-		public default void onWriteLine(String path, String pre, String msg, Scope scope, Type type, boolean forced) {
+		public default void onWriteLine(String path, String pre, String msg, Scope scope, Type type, String pn, Integer slot, boolean forced) {
 			try {
 				NEF.save(path, "\n\n" + pre+msg, true);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		};
-		public default void onWriteException(String path, String pre, String msg, Exception e, Scope scope, Type type, boolean forced) {
+		public default void onWriteException(String path, String pre, String msg, Exception e, Scope scope, Type type, String pn, Integer slot, boolean forced) {
 			try {
 				NEF.save(path, "\n\n" + pre+msg+"\n"+except2Str(e), true);
 			} catch (IOException e1) {
@@ -166,34 +163,36 @@ public class Debug {
 		Debug.deh = deh;
 	}
 	
-	public static String print(String in, Scope scope, Type type) {
-		return print(in, scope, type, false);
+	public static String print(String in, Scope scope, Type type, String pn, Integer slot) {
+		return print(in, scope, type, pn, slot, false);
 	}
 	
-	synchronized public static String print(String msg, Scope scope, Type type, boolean force) {
+	synchronized public static String print(String msg, Scope scope, Type type, String pn, Integer slot, boolean force) {
 		LocalDateTime now = LocalDateTime.now();
-		String pre = "[" + type.get() + "] [" + now.getHour() + ":" + now.getMinute() + ":" + now.getSecond() + "] [" + scope.getScopes()[0] + "] ";
+		String pre = "[" + type.con + "] [" + now.getHour() + ":" + now.getMinute() + ":" + now.getSecond() + "] [" + scope.getScopes()[0] + "] "
+						+ (pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ");
 		if(should(scope, type) || force) {
 			if(path == null)
-				deh.onPrintLine(pre, msg.replace("\n", "\n\u0009"), scope, type, force);
+				deh.onPrintLine(pre, msg.replace("\n", "\n\u0009"), scope, type, pn, slot, force);
 			else
-				deh.onWriteLine(path, pre, msg, scope, type, force);
+				deh.onWriteLine(path, pre, msg, scope, type, pn, slot, force);
 		}
 		return msg;
 	}
 	
-	public static void printException(String msg, Exception e, Scope scope, Type type) {
-		printException(msg, e, scope, type, false);
+	public static void printException(String msg, Exception e, Scope scope, Type type, String pn, Integer slot) {
+		printException(msg, e, scope, type, pn, slot, false);
 	}
 	
-	public static void printException(String msg, Exception e, Scope scope, Type type, boolean force) {
+	synchronized public static void printException(String msg, Exception e, Scope scope, Type type, String pn, Integer slot, boolean force) {
 		LocalDateTime now = LocalDateTime.now();
-		String pre = "[" + type.get() + "] [" + now.getHour() + ":" + now.getMinute() + ":" + now.getSecond() + "] [" + scope.getScopes()[0] + "] ";
+		String pre = "[" + type.con + "] [" + now.getHour() + ":" + now.getMinute() + ":" + now.getSecond() + "] [" + scope.getScopes()[0] + "] "
+				+ (pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ");
 		if(should(scope, type) || force) {
 			if(path == null)
-				deh.onPrintException(pre, msg, e, scope, type, force);
+				deh.onPrintException(pre, msg, e, scope, type, pn, slot, force);
 			else
-				deh.onWriteException(path, pre, msg, e, scope, type, force);
+				deh.onWriteException(path, pre, msg, e, scope, type, pn, slot, force);
 		}
 	}
 	
@@ -202,7 +201,7 @@ public class Debug {
 		if(scope == null || type == null)
 			return false;
 		
-		if(severty.indexOf(type.get()) < min_severty)
+		if(severty.indexOf(type.con) < min_severty)
 			return false;
 		
 		String mscope = scope.getScopes()[0];

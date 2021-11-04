@@ -69,7 +69,7 @@ public class Map {
 		return name;
 	}
 	
-	public Map(JsonObject mapData, Raid raid, JsonObject plan, String name, List<String> userIds) {
+	public Map(JsonObject mapData, Raid raid, JsonObject plan, String name, List<String> userIds, String pn, int slot) {
 		if(mapData == null)
 			new run.Run.StreamRaidersException("Map -> const: err=mapData is null, mapName="+name);
 		this.name = name;
@@ -94,7 +94,7 @@ public class Map {
 			}
 		}
 		
-		updateMap(mapData, Json.parseArr(raid.get(SRC.Raid.placementsSerialized)), Json.parseArr(raid.get(SRC.Raid.users)), plan, userIds);
+		updateMap(mapData, Json.parseArr(raid.get(SRC.Raid.placementsSerialized)), Json.parseArr(raid.get(SRC.Raid.users)), plan, userIds, pn, slot);
 	}
 	
 	public boolean testPos(boolean epic, int[] coords) {
@@ -129,13 +129,13 @@ public class Map {
 		return new double[] {x, y};
 	}
 	
-	public void updateMap(JsonObject mapData, JsonArray placements, JsonArray users, JsonObject plan, List<String> userIds) {
+	public void updateMap(JsonObject mapData, JsonArray placements, JsonArray users, JsonObject plan, List<String> userIds, String pn, int slot) {
 		addRects(mapData.getAsJsonArray("PlayerPlacementRects"), SRC.Map.isPlayerRect);
 		addRects(mapData.getAsJsonArray("EnemyPlacementRects"), SRC.Map.isEnemyRect);
 		addRects(mapData.getAsJsonArray("HoldingZoneRects"), SRC.Map.isHoldRect);
 		
-		addEntity(placements, users, userIds);
-		addEntity(mapData.getAsJsonArray("PlacementData"), null, userIds);
+		addEntity(placements, users, userIds, pn, slot);
+		addEntity(mapData.getAsJsonArray("PlacementData"), null, userIds, pn, slot);
 		addObstacle(mapData.getAsJsonArray("ObstaclePlacementData"));
 		
 		if(plan != null)
@@ -186,7 +186,7 @@ public class Map {
 		}
 	}
 
-	private void addEntity(JsonArray places, JsonArray users, List<String> uids) {
+	private void addEntity(JsonArray places, JsonArray users, List<String> uids, String pn, int slot) {
 		if(places == null) 
 			return;
 		
@@ -254,7 +254,7 @@ public class Map {
 				set(x, y, SRC.Map.isNeutral, true);
 				break;
 			default:
-				Debug.print("Map -> addEntity: team=" + place.getAsJsonPrimitive("team").getAsString(), Debug.runerr, Debug.error, true);
+				Debug.print("Map -> addEntity: team=" + place.getAsJsonPrimitive("team").getAsString(), Debug.runerr, Debug.error, pn, slot, true);
 			}
 			set(x, y, "isEntity", true);
 			set(x, y, "isEmpty", false);

@@ -78,7 +78,7 @@ public class SRRHelper {
 					Options.set(c+"date", base.get("LiveEndTime").getAsString());
 					Options.set(c+"price", base.get("BasePrice").getAsString());
 				} catch (NullPointerException e) {
-					Debug.printException("SRRHelper -> updateDataPath: err=failed to update chest, chest="+c, e, Debug.runerr, Debug.error, true);
+					Debug.printException("SRRHelper -> updateDataPath: err=failed to update chest, chest="+c, e, Debug.runerr, Debug.error, null, null, true);
 				}
 			}
 			Options.set("data", dataPath);
@@ -102,7 +102,7 @@ public class SRRHelper {
 			if(req != null)
 				req.reload();
 		} catch (OutdatedDataException e) {
-			Debug.printException("SRRHelper -> updateDataPath: err=failed to update data path", e, Debug.runerr, Debug.fatal, true);
+			Debug.printException("SRRHelper -> updateDataPath: err=failed to update data path", e, Debug.runerr, Debug.fatal, null, null, true);
 		}
 	}
 
@@ -154,7 +154,7 @@ public class SRRHelper {
 			JsonElement je = Json.parseObj(atr).get(SRC.errorMessage);
 			if(je.isJsonPrimitive()) return je.getAsString();
 		} catch (NullPointerException e) {
-			Debug.printException("SRRHelper -> placeUnit: err=failed to place Unit, atr=" + atr == null ? "null" : atr, e, Debug.runerr, Debug.error, true);
+			Debug.printException("SRRHelper -> placeUnit: err=failed to place Unit, atr=" + atr == null ? "null" : atr, e, Debug.runerr, Debug.error, null, null, true);
 		}
 		
 		return null;
@@ -179,7 +179,7 @@ public class SRRHelper {
 		}
 	}
 	
-	public void loadMap(Raid raid) throws PvPException, NoConnectionException, DungeonException {
+	public void loadMap(Raid raid, String pn) throws PvPException, NoConnectionException, DungeonException {
 		List<String> uids = SRR.getUserIds();
 		uids.add(0, req.getUserId());
 		
@@ -188,14 +188,18 @@ public class SRRHelper {
 			System.err.println("node contained \"calibration\"");
 		if(node.contains("pvp") || node.contains("calibration")) throw new PvPException();
 		String raidplan = req.getRaidPlan(raid.get(SRC.Raid.raidId));
+		int slot = Integer.parseInt(raid.get(SRC.Raid.userSortIndex));
 		try {
 			JsonElement je = Json.parseObj(raidplan).get("data");
 			String mapName = raid.get(SRC.Raid.battleground);
 			map = new Map(Json.parseObj(req.getMapData(mapName)),
 					raid,
-					(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null), mapName, uids);
+					(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null),
+					mapName,
+					uids,
+					pn, slot);
 		} catch (NullPointerException e) {
-			Debug.printException("SRRHelper -> loadMap: raidplan=" + raidplan, e, Debug.runerr, Debug.fatal, true);
+			Debug.printException("SRRHelper -> loadMap: raidplan=" + raidplan, e, Debug.runerr, Debug.fatal, pn, slot, true);
 			throw new SilentException();
 		}
 		if(node.contains("dungeon")) throw new DungeonException();
@@ -287,7 +291,7 @@ public class SRRHelper {
 				updateDataPath(jo.getAsJsonObject("info").getAsJsonPrimitive("dataPath").getAsString(), req);
 				return updateRaids();
 			} else {
-				Debug.print("SRRHelper -> updateRaids: jo=" + jo, Debug.runerr, Debug.fatal, true);
+				Debug.print("SRRHelper -> updateRaids: jo=" + jo, Debug.runerr, Debug.fatal, null, null, true);
 				throw new Run.SilentException();
 			}
 		}
@@ -303,7 +307,7 @@ public class SRRHelper {
 	public JsonArray search(int page, int resultsPerPage, boolean fav, boolean live, String mode, boolean searchForCaptain, String name) throws NoConnectionException {
 		JsonObject rawd = Json.parseObj(req.getCaptainsForSearch(page, resultsPerPage, fav, live, mode, searchForCaptain, name));
 		if(rawd == null) {
-			Debug.print("SRRHelper -> search: rawd=null", Debug.runerr, Debug.error, true);
+			Debug.print("SRRHelper -> search: rawd=null", Debug.runerr, Debug.error, null, null, true);
 			return new JsonArray();
 		}
 		
@@ -311,7 +315,7 @@ public class SRRHelper {
 		try {
 			raw = rawd.getAsJsonObject("data");
 		} catch (ClassCastException e) {
-			Debug.print("SRRHelper -> search: rawd="+rawd.toString(), Debug.runerr, Debug.fatal, true);
+			Debug.print("SRRHelper -> search: rawd="+rawd.toString(), Debug.runerr, Debug.fatal, null, null, true);
 			throw new SilentException(); 
 		}
 		
@@ -346,7 +350,7 @@ public class SRRHelper {
 		try {
 			u = jo.getAsJsonArray("data");
 		} catch (NullPointerException | ClassCastException e) {
-			Debug.print("SRRHelper -> updateUnits: jo="+jo.toString(), Debug.runerr, Debug.fatal, true);
+			Debug.print("SRRHelper -> updateUnits: jo="+jo.toString(), Debug.runerr, Debug.fatal, null, null, true);
 			throw new Run.SilentException();
 		}
 		units = new Unit[0];

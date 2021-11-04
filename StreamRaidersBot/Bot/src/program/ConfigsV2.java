@@ -1079,7 +1079,7 @@ public class ConfigsV2 {
 			if(bc.exists())
 				bc.delete();
 		} catch (IOException e) {
-			Debug.print("Failed to save configs", Debug.runerr, Debug.error, true);
+			Debug.print("Failed to save configs", Debug.runerr, Debug.error, null, null, true);
 		}
 	}
 	
@@ -1087,7 +1087,7 @@ public class ConfigsV2 {
 		try {
 			NEF.save(bpath, Json.prettyJson(configs));
 		} catch (IOException e) {
-			Debug.print("Failed to save configs", Debug.runerr, Debug.error, true);
+			Debug.print("Failed to save configs", Debug.runerr, Debug.error, null, null, true);
 		}
 	}
 	
@@ -1162,7 +1162,7 @@ public class ConfigsV2 {
 							continue;
 						}
 					} catch(Exception e) {
-						Debug.printException("ConfigsV2 -> Exportable -> configsAll: err=didnt catched, class="+classname+", field="+f.getName(), e, Debug.runerr, Debug.error, true);
+						Debug.printException("ConfigsV2 -> Exportable -> configsAll: err=didnt catched, class="+classname+", field="+f.getName(), e, Debug.runerr, Debug.error, null, null, true);
 					}
 				} 
 			}

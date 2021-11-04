@@ -357,7 +357,7 @@ public class ProfileSection {
 								
 								method.invoke(sc.getDeclaredConstructor().newInstance(), cid, MainFrame.getProfiles().get(cid).getCurrentLayer(), MainFrame.getGUI());
 							} catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException | ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException e1) {
-								Debug.printException("ProfileSection -> create: err=couldn't get Settings class for " + key, e1, Debug.runerr, Debug.error, true);
+								Debug.printException("ProfileSection -> create: err=couldn't get Settings class for " + key, e1, Debug.runerr, Debug.error, null, null, true);
 							}
 						}
 					});
@@ -373,20 +373,19 @@ public class ProfileSection {
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				try {
-					Hashtable<String, Run> runs = MainFrame.getProfiles();
-					String syncTo = ConfigsV2.getPStr(cid, ConfigsV2.synced);
-					if(syncTo.equals("(none)")) {
-						runs.get(cid).updateFrame();
-						for(String s : ConfigsV2.getCids())
-							if(ConfigsV2.getPStr(s, ConfigsV2.synced).equals(cid))
+				Hashtable<String, Run> runs = MainFrame.getProfiles();
+				String syncTo = ConfigsV2.getPStr(cid, ConfigsV2.synced);
+				if(syncTo.equals("(none)")) {
+					for(String s : ConfigsV2.getCids())
+						if(ConfigsV2.getPStr(s, ConfigsV2.synced).equals(cid) || s.equals(cid))
+							try {
 								runs.get(s).updateFrame();
-					} else {
-						MainFrame.getSections().get(syncTo).update();
-					}
-				} catch (NoConnectionException | NotAuthorizedException e) {
-					Debug.printException("ProfileSection -> update: err=failed to update profile", e, Debug.general, Debug.error, true);
-				}
+							} catch (NoConnectionException | NotAuthorizedException e) {
+								Debug.printException("ProfileSection -> update: err=failed to update profile", e, Debug.general, Debug.error, ConfigsV2.getPStr(s, ConfigsV2.pname), null, true);
+							}
+				} else 
+					MainFrame.getSections().get(syncTo).update();
+				
 			}
 		});
 		t.start();

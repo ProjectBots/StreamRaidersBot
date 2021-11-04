@@ -41,6 +41,48 @@
       "skinfullflyingrogueplaguelands": 20
     }
   },
+  "chestboostedbeastlands": {
+    "bonusboostedgold": {
+      "goldbag_1000": 75,
+      "goldbag_300": 25
+    },
+    "bonusboss": {
+      "goldbag_50": 10,
+      "rarescrolls_1": 60,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10
+    },
+    "bonusboss_": {
+      "goldbag_50": 10,
+      "rarescrolls_1": 60,
+      "rarescrolls_2": 20,
+      "rarescrolls_3": 10
+    },
+    "viewerboosted2": {
+      "goldbag_100real": 5,
+      "goldbag_150": 5,
+      "goldbag_50": 10,
+      "goldbag_75real": 10,
+      "rarescrolls_4": 20,
+      "rarescrolls_6": 25,
+      "rarescrolls_7": 25
+    },
+    "viewerboostedskinbeastlands1": {
+      "goldbag_100": 15,
+      "goldbag_75": 20,
+      "rarescrolls_6": 30,
+      "rarescrolls_7": 15,
+      "skinfullmusketeerbeastlands": 10,
+      "skinfulltemplarbeastlands": 10
+    },
+    "viewerboostedskinbeastlands2": {
+      "goldbag_100": 15,
+      "rarescrolls_6": 30,
+      "rarescrolls_7": 15,
+      "skinfullmusketeerbeastlands": 20,
+      "skinfulltemplarbeastlands": 20
+    }
+  },
   "chestboostedgold": {
     "bonusboostedgold": {
       "goldbag_1000": 75,
@@ -841,6 +883,119 @@
       "rarescrolls_7": 15,
       "skinfulltanksportia": 20,
       "skinfullballoonbustersportia": 15
+    }
+  },
+  "pvpskincommonchest": {
+    "bonuschampion": {
+      "commonscrolls_5": 35,
+      "goldbag_10": 10,
+      "goldbag_15": 20,
+      "goldbag_20": 5,
+      "uncommonscrolls_1": 25,
+      "uncommonscrolls_2": 5
+    },
+    "viewerpvpcommonskins": {
+      "skinfullwarriorchampion": 999,
+      "skinfullflagbearerchampion": 999,
+      "skinfulltankchampion": 999,
+      "skinfullroguechampion": 999,
+      "skinfullarcherchampion": 999,
+      "skinfullwarriornightmare": 999,
+      "skinfullflagbearernightmare": 999,
+      "skinfulltanknightmare": 999,
+      "skinfullroguenightmare": 999,
+      "skinfullarchernightmare": 999,
+      "skinfullwarriorbonepvp": 999,
+      "skinfullflagbearepvpbone": 999,
+      "skinfulltankbones": 999,
+      "skinfullrougepvpbone": 999,
+      "skinfullarcherbonepvp": 999,
+      "goldbag_3": 1
+    }
+  },
+  "pvpskinlegendarychest": {
+    "bonuschampion": {
+      "commonscrolls_5": 35,
+      "goldbag_10": 10,
+      "goldbag_15": 20,
+      "goldbag_20": 5,
+      "uncommonscrolls_1": 25,
+      "uncommonscrolls_2": 5
+    },
+    "viewerpvplegendaryskins": {
+      "skinfullorcslayerchampion": 999,
+      "skinfullwarbeastchampion": 999,
+      "skinfullartillerychampion": 999,
+      "skinfullmagechampion": 999,
+      "skinfulltemplarchampion": 999,
+      "skinfullballonbusterchampion": 999,
+      "skinfullorcslayernightmare": 999,
+      "skinfullwarbeastnightmare": 999,
+      "skinfullmagenightmare": 999,
+      "skinfulltemplarnightmare": 999,
+      "skinfullballoonbusternightmare": 999,
+      "skinfullorcslayerbonepvp": 999,
+      "skinfullwarbeastpvpbone": 999,
+      "skinfullmagepvpbone": 999,
+      "skinfulltemplarpvpbone": 999,
+      "skinfullballoonbusterbones": 999,
+      "goldbag_10": 1
+    }
+  },
+  "pvpskinrarechest": {
+    "bonuschampion": {
+      "commonscrolls_5": 35,
+      "goldbag_10": 10,
+      "goldbag_15": 20,
+      "goldbag_20": 5,
+      "uncommonscrolls_1": 25,
+      "uncommonscrolls_2": 5
+    },
+    "viewerpvprareskins": {
+      "skinfullberserkerchampion": 999,
+      "skinfullflyingroguechampion": 999,
+      "skinfullmusketeerchampion": 999,
+      "skinfullcenturionchampion": 999,
+      "skinfullmonkchampion": 999,
+      "skinfullberserkernightmare": 999,
+      "skinfullflyingroguenightmare": 999,
+      "skinfullmusketeernightmare": 999,
+      "skinfullcenturionnightmare": 999,
+      "skinfullmonknightmare": 999,
+      "skinfullberserkepvpbone": 999,
+      "skinfullflyingroguepvpbone": 999,
+      "skinfullmusketeerbones": 999,
+      "skinfullcenturionpvpbone": 999,
+      "skinfullmonkpvpbone": 999,
+      "goldbag_7": 1
+    }
+  },
+  "pvpskinuncommonchest": {
+    "bonuschampion": {
+      "commonscrolls_5": 35,
+      "goldbag_10": 10,
+      "goldbag_15": 20,
+      "goldbag_20": 5,
+      "uncommonscrolls_1": 25,
+      "uncommonscrolls_2": 5
+    },
+    "viewerpvpuncommonskins": {
+      "skinfullbarbarianchampion": 999,
+      "skinfullbusterchampion": 999,
+      "skinfullpaladinpvpchampion": 999,
+      "skinfullbomberchampion": 999,
+      "skinfullhealerchampion": 999,
+      "skinfullbarbariannightmare": 999,
+      "skinfullbusternightmare": 999,
+      "skinfullpaladinnightmare": 999,
+      "skinfullbombernightmare": 999,
+      "skinfullhealernightmare": 999,
+      "skinfullbarbarianbones": 999,
+      "skinfullbusterbonepvp": 999,
+      "skinfullpaladinpvpbone": 999,
+      "skinfullbomberbonepvp": 999,
+      "skinfullhealerpvpbone": 999,
+      "goldbag_5": 1
     }
   },
   "retrolandiachest": {

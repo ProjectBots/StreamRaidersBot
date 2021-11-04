@@ -169,7 +169,7 @@ public class ChestSettings {
 							try {
 								GUI.setImage(uid+chest+"::loyImg::"+key, img);
 							} catch (IOException e) {
-								Debug.printException("ChestSettings -> changed: err=couldnt set image", e, Debug.general, Debug.error, true);
+								Debug.printException("ChestSettings -> changed: err=couldnt set image", e, Debug.general, Debug.error, null, null, true);
 							}
 							GUI.setBackground(uid+chest+"::loyBut::"+key, loyCols[w]);
 							

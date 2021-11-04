@@ -234,14 +234,14 @@ public class MapGUI {
 					if(!run.canUseSlot(slot))
 						return;
 				} catch (NoConnectionException | NotAuthorizedException e2) {
-					Debug.printException("MapGUI -> asGui: err=failed to get canUseSlot", e2, Debug.runerr, Debug.error, true);
+					Debug.printException("MapGUI -> asGui: err=failed to get canUseSlot", e2, Debug.runerr, Debug.error, run.getPN(), slot, true);
 					return;
 				}
 				Map map;
 				try {
 					map = run.getMap(slot);
 				} catch (NoConnectionException | NotAuthorizedException e1) {
-					Debug.printException("MapGUI -> asGui: err=failed to get Map", e1, Debug.runerr, Debug.error, true);
+					Debug.printException("MapGUI -> asGui: err=failed to get Map", e1, Debug.runerr, Debug.error, run.getPN(), slot, true);
 					return;
 				}
 				if(map == null)
@@ -268,9 +268,9 @@ public class MapGUI {
 							case KeyEvent.VK_R:
 								gui.close();
 								try {
-									run.getBackEndHandler().updateMap(slot, true);
+									run.getBackEndHandler().updateMap(run.getPN(), slot, true);
 								} catch (NoConnectionException | NotAuthorizedException e1) {
-									Debug.printException("MapGUI -> asGUI -> reload: err=failed to update Map", e1, Debug.runerr, Debug.error, true);
+									Debug.printException("MapGUI -> asGUI -> reload: err=failed to update Map", e1, Debug.runerr, Debug.error, run.getPN(), slot, true);
 									return;
 								}
 								asGui(run, slot);

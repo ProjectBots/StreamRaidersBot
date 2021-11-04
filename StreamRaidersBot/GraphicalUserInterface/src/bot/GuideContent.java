@@ -343,7 +343,7 @@ public class GuideContent {
 		try {
 			NEF.save(path + "chestRewards.json", Json.prettyJson(complete));
 		} catch (IOException e) {
-			Debug.printException("GuideCpntent -> saveChestRewards: err=failed to save chestRewards.json", e, Debug.runerr, Debug.error, true);
+			Debug.printException("GuideContent -> saveChestRewards: err=failed to save chestRewards.json", e, Debug.runerr, Debug.error, null, null, true);
 		}
 	}
 	
@@ -402,7 +402,7 @@ public class GuideContent {
 				try {
 					GUI.setImage("guide::unit::img", img);
 				} catch (IOException e1) {
-					Debug.printException("GuideContent -> genUnits: uid="+uid, e1, Debug.general, Debug.error, true);
+					Debug.printException("GuideContent -> genUnits: uid="+uid, e1, Debug.general, Debug.error, null, null, true);
 				}
 				update(-1);
 			}

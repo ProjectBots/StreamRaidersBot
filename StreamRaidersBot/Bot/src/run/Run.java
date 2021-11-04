@@ -62,9 +62,8 @@ public class Run {
 	 * 	place only on marker: differentiate campaign and dungeon
 	 * 	option to suppress specific error popups
 	 * 	kill (slot) round and restart if it takes more than x min
-	 * 	debug: pn and slot as parameters
 	 * 	remove button for failed profiles
-	 * 	update frame after button press
+	 * 	make uid final in constructor
 	 * 
 	 * 	after release:
 	 * 	get Donators from github source
@@ -121,7 +120,7 @@ public class Run {
 			r.addProperty(type, r.get(type).getAsInt() + amount);
 			beh.addCurrency(type.replace("scroll", ""), amount);
 		} catch (NullPointerException e) {
-			Debug.printException("Run -> addRew: err=failed to add reward, con=" + con + ", type=" + type + ", amount=" + amount, e, Debug.runerr, Debug.error, true);
+			Debug.printException("Run -> addRew: err=failed to add reward, con=" + con + ", type=" + type + ", amount=" + amount, e, Debug.runerr, Debug.error, pn, null, true);
 		}
 	}
 	
@@ -143,12 +142,12 @@ public class Run {
 	}
 	
 	public static interface FrontEndHandler {
-		public default void onStart(String cid, int slot) {}
-		public default void onStop(String cid, int slot) {}
-		public default void onTimerUpdate(String cid, int slot, String time) {}
-		public default void onUpdateSlot(String cid, int slot, Raid raid, boolean locked, boolean change) {}
-		public default void onUpdateCurrency(String type, int amount) {}
-		public default void onUpdateLayer(String name, Color col) {}
+		public default void onStart(String pn, String cid, int slot) {}
+		public default void onStop(String pn, String cid, int slot) {}
+		public default void onTimerUpdate(String pn, String cid, int slot, String time) {}
+		public default void onUpdateSlot(String pn, String cid, int slot, Raid raid, boolean locked, boolean change) {}
+		public default void onUpdateCurrency(String pn, String type, int amount) {}
+		public default void onUpdateLayer(String pn, String name, Color col) {}
 	}
 	
 	private FrontEndHandler feh = new FrontEndHandler() {};
@@ -165,17 +164,17 @@ public class Run {
 		public StreamRaidersException(String text, Exception cause, boolean silent) {
 			this.cause = cause;
 			this.text = text;
-			Debug.printException(text, cause, Debug.runerr, Debug.fatal, !silent);
+			Debug.printException(text, cause, Debug.runerr, Debug.fatal, null, null, !silent);
 		}
 		public StreamRaidersException(String text, Exception cause) {
 			this.cause = cause;
 			this.text = text;
-			Debug.printException(text, cause, Debug.runerr, Debug.fatal, true);
+			Debug.printException(text, cause, Debug.runerr, Debug.fatal, null, null, true);
 		}
 		public StreamRaidersException(String text) {
 			cause = null;
 			this.text = text;
-			Debug.print(text, Debug.runerr, Debug.fatal, true);
+			Debug.print(text, Debug.runerr, Debug.fatal, null, null, true);
 		}
 		public String getText() {
 			return text;
@@ -189,11 +188,11 @@ public class Run {
 	public Run(String cid, String cookies) throws NotAuthorizedException, NoConnectionException, OutdatedDataException {
 		this.cid = cid;
 		pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
-		beh = new BackEndHandler(cookies);
+		beh = new BackEndHandler(pn, cookies);
 		beh.setUpdateEventListener(new UpdateEventListener() {
 			@Override
 			public void afterUpdate(String obj) {
-				Debug.print(pn+" updated "+obj, Debug.general, Debug.info);
+				Debug.print("updated "+obj, Debug.general, Debug.info, pn, null);
 				if(obj.contains("caps::")) {
 					boolean dungeon = obj.contains("::true");
 					Captain[] caps;
@@ -221,7 +220,7 @@ public class Run {
 						beh.setCaps(caps, dungeon);
 						
 					} catch (NoConnectionException | NotAuthorizedException e) {
-						Debug.printException(pn+": Run -> constr.: err=unable to retrieve caps", e, Debug.runerr, Debug.error, true);
+						Debug.printException(pn+": Run -> constr.: err=unable to retrieve caps", e, Debug.runerr, Debug.error, pn, null, true);
 						return;
 					}
 				}
@@ -242,9 +241,9 @@ public class Run {
 		if(isRunning(slot) == b)
 			return;
 		if(b) {
-			feh.onStart(cid, slot);
+			feh.onStart(pn, cid, slot);
 		} else {
-			feh.onStop(cid, slot);
+			feh.onStop(pn, cid, slot);
 		}
 		isRunning[slot] = b;
 		if(b) {
@@ -271,7 +270,7 @@ public class Run {
 		try {
 			updateFrame();
 		} catch (NoConnectionException | NotAuthorizedException e) {
-			Debug.printException(pn+": Run -> change: slot="+slot+", err=failed to update Frame", e, Debug.runerr, Debug.error, true);
+			Debug.printException(pn+": Run -> change: slot="+slot+", err=failed to update Frame", e, Debug.runerr, Debug.error, pn, slot, true);
 		}
 	}
 	
@@ -292,27 +291,31 @@ public class Run {
 	
 	private String pn = null;
 	
+	public String getPN() {
+		return pn;
+	}
+	
 	synchronized private void slotSequence(int slot) {
 		pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
 		try {
 			if_clause:
 			if(slot == 4) {
-				Debug.print(pn+" ["+slot+"]: event", Debug.general, Debug.info);
+				Debug.print("event", Debug.general, Debug.info, pn, slot);
 				event();
 
-				Debug.print(pn+" ["+slot+"]: quest", Debug.general, Debug.info);
+				Debug.print("quest", Debug.general, Debug.info, pn, slot);
 				quest();
 
-				Debug.print(pn+" ["+slot+"]: store", Debug.general, Debug.info);
+				Debug.print("store", Debug.general, Debug.info, pn, slot);
 				store();
 
-				Debug.print(pn+" ["+slot+"]: unlock", Debug.general, Debug.info);
+				Debug.print("unlock", Debug.general, Debug.info, pn, slot);
 				unlock();
 
-				Debug.print(pn+" ["+slot+"]: upgrade", Debug.general, Debug.info);
+				Debug.print("upgrade", Debug.general, Debug.info, pn, slot);
 				upgrade();
 				
-				Debug.print(pn+" ["+slot+"]: grantTeamReward", Debug.general, Debug.info);
+				Debug.print("grantTeamReward", Debug.general, Debug.info, pn, slot);
 				beh.grantTeamReward();
 				
 			} else {
@@ -320,25 +323,25 @@ public class Run {
 				if(!canUseSlot(slot))
 					break if_clause;
 
-				Debug.print(pn+" ["+slot+"]: chest", Debug.general, Debug.info);
+				Debug.print("chest", Debug.general, Debug.info, pn, slot);
 				chest(slot);
 
-				Debug.print(pn+" ["+slot+"]: captain", Debug.general, Debug.info);
+				Debug.print("captain", Debug.general, Debug.info, pn, slot);
 				captain(slot);
 
-				Debug.print(pn+" ["+slot+"]: place", Debug.general, Debug.info);
+				Debug.print("place", Debug.general, Debug.info, pn, slot);
 				place(slot);
 				
 			}
 			
 
-			Debug.print(pn+" ["+slot+"]: updateFrame", Debug.general, Debug.info);
+			Debug.print("updateFrame", Debug.general, Debug.info, pn, slot);
 			updateFrame();
 		} catch (NoConnectionException | NotAuthorizedException e) {
-			Debug.printException(pn+": Run -> slotSequence: slot=" + slot + " err=No stable Internet Connection", e, Debug.runerr, Debug.fatal, true);
+			Debug.printException("Run -> slotSequence: slot=" + slot + " err=No stable Internet Connection", e, Debug.runerr, Debug.fatal, pn, slot, true);
 		} catch (StreamRaidersException | NoCapMatchesException e) {
 		} catch (Exception e) {
-			Debug.printException(pn+": Run -> slotSequence: slot=" + slot + " err=unknown", e, Debug.runerr, Debug.fatal, true);
+			Debug.printException("Run -> slotSequence: slot=" + slot + " err=unknown", e, Debug.runerr, Debug.fatal, pn, slot, true);
 		}
 		
 		
@@ -396,16 +399,16 @@ public class Run {
 		}
 		
 		if(w > -1) {
-			Debug.print(pn+" ["+slot+"]: sleeping "+w+" sec", Debug.general, Debug.info);
+			Debug.print("sleeping "+w+" sec", Debug.general, Debug.info, pn, slot);
 			sleep(w, slot);
 		} else
-			Debug.print("Run -> slotSequence: err=couldnt find wait time", Debug.runerr, Debug.fatal, true);
+			Debug.print("Run -> slotSequence: err=couldnt find wait time", Debug.runerr, Debug.fatal, pn, slot, true);
 		
 		System.gc();
 	}
 	
 	public boolean canUseSlot(int slot) throws NoConnectionException, NotAuthorizedException {
-		int uCount = beh.getUnits(SRC.Manager.all, false).length;
+		int uCount = beh.getUnits(pn, SRC.Manager.all, false).length;
 		return (slot == 0)
 				|| (slot == 1 && uCount > 4)
 				|| (slot == 2 && uCount > 7)
@@ -435,7 +438,7 @@ public class Run {
 				
 				ms += sec;
 				
-				feh.onTimerUpdate(cid, slot, ms);
+				feh.onTimerUpdate(pn, cid, slot, ms);
 				
 
 				sleep[slot]--;
@@ -479,7 +482,7 @@ public class Run {
 		boolean dungeon = r.isDungeon();
 		
 		
-		Integer potionsc = beh.getCurrency(Store.potions, true);
+		Integer potionsc = beh.getCurrency(pn, Store.potions, true);
 		boolean epic = (potionsc == null ? false : (potionsc >= 45))
 						&& (!(dungeon 
 								? ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.dungeonEpicPlaceFavOnly)
@@ -488,14 +491,14 @@ public class Run {
 									.contains(new JsonPrimitive(r.get(SRC.Raid.twitchDisplayName))));
 		
 		final Unit[] units = beh.getPlaceableUnits(slot);
-		Debug.print(pn+" slot="+slot+" units="+Arrays.toString(units), Debug.units, Debug.info);
+		Debug.print("units="+Arrays.toString(units), Debug.units, Debug.info, pn, slot);
 		
-		Map map = beh.getMap(slot, true);
+		Map map = beh.getMap(pn, slot, true);
 		
 		HashSet<String> upts = map.getUsablePlanTypes();
 		upts.remove("noPlacement");
 		
-		Debug.print(pn+": slot="+slot+", upts="+upts, Debug.units, Debug.info);
+		Debug.print("upts="+upts, Debug.units, Debug.info, pn, slot);
 		
 		if((ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnly) 
 					&& upts.size() <= 0)
@@ -527,16 +530,16 @@ public class Run {
 			neededUnits.add("flyingarcher");
 		}
 		
-		Debug.print(pn+": slot="+slot+", neededUnits="+neededUnits, Debug.units, Debug.info);
+		Debug.print("neededUnits="+neededUnits, Debug.units, Debug.info, pn, slot);
 		
 		while(true) {
-			Debug.print(pn+" ["+slot+"] place "+re, Debug.loop, Debug.info);
+			Debug.print("place "+re, Debug.loop, Debug.info, pn, slot);
 			
 			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiPlaceExploit)) {
 				//	TODO multi place exploit
 				goMultiPlace = false;
 				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
-					final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, mdif, dungeon);
+					final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, mdif, dungeon, slot);
 					if(pla == null)
 						continue;
 					bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
@@ -549,7 +552,7 @@ public class Run {
 								} catch (InterruptedException e) {}
 							}
 							try {
-								beh.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
+								beh.placeUnit(pn, slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
 							} catch (NoConnectionException e) {}
 						}
 					});
@@ -561,13 +564,13 @@ public class Run {
 				} catch (InterruptedException e) {}
 				break;
 			} else {
-				final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, mdif, dungeon);
+				final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, mdif, dungeon, slot);
 				if(pla == null) {
-					Debug.print(pn+": slot="+slot+", Place=null", Debug.units, Debug.info);
+					Debug.print("Place=null", Debug.units, Debug.info, pn, slot);
 					break;
 				}
-				Debug.print(pn+": slot="+slot+", Place="+pla.toString(), Debug.units, Debug.info);
-				String err = beh.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
+				Debug.print("Place="+pla.toString(), Debug.units, Debug.info, pn, slot);
+				String err = beh.placeUnit(pn, slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
 				bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
 				
 				if(epic && err == null)
@@ -587,12 +590,12 @@ public class Run {
 				
 				if(re++ < retries) {
 					if(re % reload == 0) {
-						map = beh.getMap(slot, true);
+						map = beh.getMap(pn, slot, true);
 					}
 					continue;
 				}
 				
-				Debug.print(pn+": Run -> place: tdn="+r.toString()+" err="+err, Debug.lowerr, Debug.error, true);
+				Debug.print("Run -> place: tdn="+r.toString()+" err="+err, Debug.lowerr, Debug.error, pn, slot, true);
 				break;
 			}
 			
@@ -666,7 +669,7 @@ public class Run {
 		}
 	}
 	
-	private Place findPlace(Map map, int[] mh, HashSet<String> upts, List<String> neededUnits, Unit[] units, boolean epic, int mdif, boolean dungeon) {
+	private Place findPlace(Map map, int[] mh, HashSet<String> upts, List<String> neededUnits, Unit[] units, boolean epic, int mdif, boolean dungeon, int slot) {
 		HashSet<String> epts = new HashSet<>();
 		if(epic) {
 			String[][] mpts = new String[map.width()][map.length()];
@@ -762,7 +765,7 @@ public class Run {
 				
 				int[] pos = null;
 				try {
-					pos = new Pathfinding().search(new MapConv().asField(map, units[p[0]].canFly(), pts, mh, bannedPos), pn, i%2==0);
+					pos = new Pathfinding().search(new MapConv().asField(map, units[p[0]].canFly(), pts, mh, bannedPos), pn, slot, i%2==0);
 				} catch (NoFinException e) {}
 				if(pos == null)
 					continue;
@@ -910,7 +913,7 @@ public class Run {
 				beh.updateCaps(true, dungeon);
 				captain(slot, first, true);
 			} else {
-				Debug.print(pn+": Run -> switchCap: slot="+slot+", err=No Captain Matches Config", Debug.runerr, Debug.error, true);
+				Debug.print("Run -> switchCap: slot="+slot+", err=No Captain Matches Config", Debug.runerr, Debug.error, pn, slot, true);
 				throw e;
 			}
 		}
@@ -935,7 +938,7 @@ public class Run {
 				banned.put(disname, now.plusMinutes(2));
 			else
 				banned.put(disname, start.plusMinutes(plus));
-			Debug.print("blocked " + disname, Debug.caps, Debug.info);
+			Debug.print("blocked " + disname, Debug.caps, Debug.info, pn, slot);
 		}
 		
 		
@@ -946,10 +949,10 @@ public class Run {
 				banned.remove(key);
 			}
 		}
-		Debug.print("unblocked " + removed.toString(), Debug.caps, Debug.info);
+		Debug.print("unblocked " + removed.toString(), Debug.caps, Debug.info, pn, slot);
 
 		Captain[] caps = beh.getCaps(dungeon);
-		Debug.print("got caps " + Arrays.toString(caps), Debug.caps, Debug.info);
+		Debug.print("got caps " + Arrays.toString(caps), Debug.caps, Debug.info, pn, slot);
 		
 		ListType list = dungeon
 				? ConfigsV2.dungeon 
@@ -987,14 +990,14 @@ public class Run {
 			}
 		}
 		
-		Debug.print("skipped " + skipped.toString(), Debug.caps, Debug.info);
+		Debug.print("skipped " + skipped.toString(), Debug.caps, Debug.info, pn, slot);
 		
 		if(best == null) 
 			throw new NoCapMatchesException();
 		
 		beh.switchRaid(best, slot);
 		
-		Debug.print("switched to " + best.get(SRC.Captain.twitchDisplayName), Debug.caps, Debug.info);
+		Debug.print("switched to " + best.get(SRC.Captain.twitchDisplayName), Debug.caps, Debug.info, pn, slot);
 		
 		captain(slot, false, noCap);
 	}
@@ -1046,10 +1049,10 @@ public class Run {
 
 	private void upgrade() throws NoConnectionException, NotAuthorizedException {
 		
-		if(beh.getCurrency(Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.upgradeMinGold))
+		if(beh.getCurrency(pn, Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.upgradeMinGold))
 			return;
 		
-		Unit[] us = beh.getUnits(SRC.Manager.isUnitUpgradeable, false);
+		Unit[] us = beh.getUnits(pn, SRC.Manager.isUnitUpgradeable, false);
 		if(us.length == 0)
 			return;
 		
@@ -1068,7 +1071,7 @@ public class Run {
 			
 			String err = beh.upgradeUnit(us[ind], ConfigsV2.getUnitString(cid, currentLayer, us[ind].get(SRC.Unit.unitType), ConfigsV2.spec));
 			if(err != null && (!(err.equals("no specUID") || err.equals("cant upgrade unit")))) {
-				Debug.print("Run -> upgradeUnits: type=" + us[ind].get(SRC.Unit.unitType) + " err=" + err, Debug.lowerr, Debug.error, true);
+				Debug.print("Run -> upgradeUnits: type=" + us[ind].get(SRC.Unit.unitType) + " err=" + err, Debug.lowerr, Debug.error, pn, 4, true);
 				break;
 			}
 			
@@ -1080,10 +1083,10 @@ public class Run {
 	
 	private void unlock() throws NoConnectionException, NotAuthorizedException {
 		
-		if(beh.getCurrency(Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unlockMinGold))
+		if(beh.getCurrency(pn, Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unlockMinGold))
 			return;
 		
-		Unit[] unlockable = beh.getUnits(SRC.Manager.isUnitUnlockable, true);
+		Unit[] unlockable = beh.getUnits(pn, SRC.Manager.isUnitUnlockable, true);
 		if(unlockable.length == 0)
 			return;
 		
@@ -1129,11 +1132,11 @@ public class Run {
 				try {
 					Thread.sleep(3000);
 				} catch (InterruptedException e) {}
-				beh.updateStore(true);
+				beh.updateStore(pn, true);
 			} else {
 				String err = beh.unlockUnit(unlockable[ind]);
 				if(err != null && !err.equals("not enough gold")) 
-					Debug.print("Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, Debug.runerr, Debug.warn, true);
+					Debug.print("Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, Debug.runerr, Debug.warn, pn, 4, true);
 			}
 			
 			ps[ind] = -1;
@@ -1141,9 +1144,9 @@ public class Run {
 	}
 
 	private void store() throws NoConnectionException, NotAuthorizedException {
-		beh.updateStore(false);
+		beh.updateStore(pn, false);
 		chests:
-		if(beh.getCurrency(Store.keys, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.storeMinKeys)) {
+		if(beh.getCurrency(pn, Store.keys, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.storeMinKeys)) {
 			String sel = ConfigsV2.getStr(cid, currentLayer, ConfigsV2.canBuyChest);
 			String chest;
 			JsonObject bc;
@@ -1172,7 +1175,7 @@ public class Run {
 					addRew(SRC.Run.bought, rew.name, rew.quantity);
 				}
 			} else if(!(err.getAsString().equals("after end") || err.getAsString().startsWith("not enough ")))
-				Debug.print("Run -> store -> buyChest: err="+err.getAsString()+", chest="+sel, Debug.runerr, Debug.error, true);
+				Debug.print("Run -> store -> buyChest: err="+err.getAsString()+", chest="+sel, Debug.runerr, Debug.error, pn, 4, true);
 		}
 		
 		ec: {
@@ -1192,10 +1195,10 @@ public class Run {
 					addRew(SRC.Run.bought, rew.name, rew.quantity);
 				}
 			} else if(!(err.getAsString().equals("after end") || err.getAsString().startsWith("not enough ")))
-				Debug.print("Run -> store -> buyChest: err="+err.getAsString()+", chest="+sel, Debug.runerr, Debug.error, true);
+				Debug.print("Run -> store -> buyChest: err="+err.getAsString()+", chest="+sel, Debug.runerr, Debug.error, pn, 4, true);
 		}
 		
-		if(beh.getCurrency(Store.gold, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.scrollsMinGold)) {
+		if(beh.getCurrency(pn, Store.gold, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.scrollsMinGold)) {
 			JsonArray items = beh.getStoreItems(SRC.Store.notPurchased);
 			if(items.size() != 0) {
 				int[] ps = new int[items.size()];
@@ -1212,7 +1215,7 @@ public class Run {
 						ps[i] = ConfigsV2.getUnitInt(cid, currentLayer, types[i], ConfigsV2.buy);
 						
 					} catch (NullPointerException e) {
-						Debug.printException(": Run -> store: item=" + items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString() + ", err=item is not correct", e, Debug.runerr, Debug.error, true);
+						Debug.printException("Run -> store: item=" + items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString() + ", err=item is not correct", e, Debug.runerr, Debug.error, pn, 4, true);
 						ps[i] = -1;
 					}
 				}
@@ -1235,20 +1238,20 @@ public class Run {
 					if(err == null)
 						addRew(SRC.Run.bought, "scroll"+types[ind].replace("allies", ""), amount);
 					else if(!err.equals("not enough gold"))
-						Debug.print("Run -> store: item=" + items.get(ind) + ", err=" + err, Debug.lowerr, Debug.error, true);
+						Debug.print("Run -> store: item=" + items.get(ind) + ", err=" + err, Debug.lowerr, Debug.error, pn, 4, true);
 					
 					ps[ind] = -1;
 				}
 			}
 			
-			Integer gold = beh.getCurrency(Store.gold, false);
+			Integer gold = beh.getCurrency(pn, Store.gold, false);
 			if(gold != null) {
 				int src = beh.getStoreRefreshCount();
 				int min = ConfigsV2.getStoreRefreshInt(cid, currentLayer, src > 3 ? 3 : src);
 				if(min > -1 && min < gold) {
 					String err = beh.refreshStore();
 					if(err != null)
-						Debug.print("Run -> Store: err="+err, Debug.runerr, Debug.error, true);
+						Debug.print("Run -> Store: err="+err, Debug.runerr, Debug.error, pn, 4, true);
 					store();
 				}
 			}
@@ -1289,7 +1292,7 @@ public class Run {
 			} else {
 				String err = beh.claimQuest(quests[i]);
 				if(err != null)
-					Debug.print(pn + ": Run -> claimQuests: err=" + err, Debug.runerr, Debug.error, true);
+					Debug.print("Run -> claimQuests: err=" + err, Debug.runerr, Debug.error, pn, 4, true);
 			}
 		}
 	}
@@ -1306,7 +1309,7 @@ public class Run {
 			if(bp)
 				collectEvent(i, true);
 			
-			if(potionsTiers.contains(i) && beh.getCurrency(Store.potions, false) > 10)
+			if(potionsTiers.contains(i) && beh.getCurrency(pn, Store.potions, false) > 10)
 				continue;
 			
 			collectEvent(i, false);
@@ -1341,7 +1344,7 @@ public class Run {
 							}
 						} catch (NoConnectionException e) {
 						} catch (NullPointerException e) {
-							Debug.print(pn + ": Run -> event -> collectEvent(exploit): tier="+tier+", bp="+bp, Debug.runerr, Debug.error, true);
+							Debug.print("Run -> event -> collectEvent(exploit): tier="+tier+", bp="+bp, Debug.runerr, Debug.error, pn, 4, true);
 						}
 						
 					}
@@ -1356,7 +1359,7 @@ public class Run {
 			JsonObject ce = beh.collectEvent(tier, bp);
 			JsonElement err = ce.get(SRC.errorMessage);
 			if(err != null && err.isJsonPrimitive()) {
-				Debug.print(pn + ": Run -> event -> collectEvent: tier="+tier+", bp="+bp+", err=" + err.getAsString(), Debug.runerr, Debug.error, true);
+				Debug.print("Run -> event -> collectEvent: tier="+tier+", bp="+bp+", err=" + err.getAsString(), Debug.runerr, Debug.error, pn, 4, true);
 			} else {
 				String rew = ce.get("reward").getAsString();
 				if(!rew.equals("badges"))
@@ -1395,12 +1398,12 @@ public class Run {
 				cnames[i+8] = raids[i].isDungeon() ? "d" : "c";
 			}
 
-			feh.onUpdateSlot(cid, i, raids[i], ConfigsV2.isSlotLocked(cid, currentLayer, ""+i), change[i]);
+			feh.onUpdateSlot(pn, cid, i, raids[i], ConfigsV2.isSlotLocked(cid, currentLayer, ""+i), change[i]);
 			
 		}
 		
 		for(C key : sc)
-			feh.onUpdateCurrency(key.get(), beh.getCurrency(key, false));
+			feh.onUpdateCurrency(pn, key.get(), beh.getCurrency(pn, key, false));
 		
 	}
 	
@@ -1425,7 +1428,7 @@ public class Run {
 			}
 		}
 		
-		feh.onUpdateLayer(ConfigsV2.getStr(cid, currentLayer, ConfigsV2.lname), new Color(ConfigsV2.getInt(cid, currentLayer, ConfigsV2.color)));
+		feh.onUpdateLayer(pn, ConfigsV2.getStr(cid, currentLayer, ConfigsV2.lname), new Color(ConfigsV2.getInt(cid, currentLayer, ConfigsV2.color)));
 	}
 	
 	
@@ -1438,15 +1441,15 @@ public class Run {
 			try {
 				Desktop.getDesktop().browse(new URI("https://twitch.tv/"+cnames[slot]));
 			} catch (IOException | URISyntaxException e) {
-				Debug.printException("Run -> openBrowser: err=can't open DesktopBrowser", e, Debug.runerr, Debug.error, true);
+				Debug.printException("Run -> openBrowser: err=can't open DesktopBrowser", e, Debug.runerr, Debug.error, pn, slot, true);
 			}
 		} else {
-			Debug.print("Run -> openBrowser: err=desktop not supported", Debug.runerr, Debug.error, true);
+			Debug.print("Run -> openBrowser: err=desktop not supported", Debug.runerr, Debug.error, pn, slot, true);
 		}
 	}
 	
 	public Map getMap(int slot) throws NoConnectionException, NotAuthorizedException {
-		return beh.getMap(slot, false);
+		return beh.getMap(pn, slot, false);
 	}
 	
 	public void updateSettings() {

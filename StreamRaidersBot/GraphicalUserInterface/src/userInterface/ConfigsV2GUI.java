@@ -282,7 +282,7 @@ public class ConfigsV2GUI {
 				try {
 					ConfigsV2.exportConfig(ex);
 				} catch (IOException e1) {
-					Debug.printException("ConfigsV2GUI -> exportConfig: mode=custom, err=failed to save file", e1, Debug.runerr, Debug.error, true);
+					Debug.printException("ConfigsV2GUI -> exportConfig: mode=custom, err=failed to save file", e1, Debug.runerr, Debug.error, null, null, true);
 				}
 				gui.close();
 			}
@@ -307,7 +307,7 @@ public class ConfigsV2GUI {
 				try {
 					ConfigsV2.exportConfig(ex);
 				} catch (IOException e1) {
-					Debug.printException("ConfigsV2GUI -> exportConfig: mode=all, err=failed to save file", e1, Debug.runerr, Debug.error, true);
+					Debug.printException("ConfigsV2GUI -> exportConfig: mode=all, err=failed to save file", e1, Debug.runerr, Debug.error, null, null, true);
 				}
 				gui.close();
 			}

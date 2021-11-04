@@ -139,7 +139,7 @@ public class SRR {
 			if(err.isJsonPrimitive() && err.getAsString().equals("User is not authorized.")) {
 				throw new NotAuthorizedException();
 			} else {
-				Debug.print("SRR -> constructor: getUser=" + getUser, Debug.runerr, Debug.fatal, true);
+				Debug.print("SRR -> constructor: getUser=" + getUser, Debug.runerr, Debug.fatal, null, null, true);
 			}
 		}
 	}
@@ -183,9 +183,9 @@ public class SRR {
 		}
 		
 		if(p.contains("\"errorMessage\":\""))
-			Debug.print(post.getUrlArg("cn") + "\n" + post.getPayloadAsString().replace("&", ", ") + "\n" + p, Debug.srerr, Debug.warn);
+			Debug.print(post.getUrlArg("cn") + "\n" + post.getPayloadAsString().replace("&", ", ") + "\n" + p, Debug.srerr, Debug.warn, null, null);
 		else
-			Debug.print(post.getUrlArg("cn") + "\n" + post.getPayloadAsString().replace("&", ", ") + "\n" + p, Debug.srlog, Debug.info);
+			Debug.print(post.getUrlArg("cn") + "\n" + post.getPayloadAsString().replace("&", ", ") + "\n" + p, Debug.srlog, Debug.info, null, null);
 		
 		return p;
 	}

@@ -188,7 +188,7 @@ public class Configs {
 					.getAsJsonPrimitive(con.get())
 					.getAsBoolean();
 		} catch (NullPointerException e) {
-			Debug.printException("Configs -> getChestBoolean: err=NullPointer cType=" + cType, e, Debug.runerr, Debug.error);
+			Debug.printException("Configs -> getChestBoolean: err=NullPointer cType=" + cType, e, Debug.runerr, Debug.error, name, null);
 			throw new Run.SilentException();
 		}
 		
@@ -341,7 +341,7 @@ public class Configs {
 					break;
 				sb.replace(index, sb.indexOf(";", index), "{hidden}");
 			}
-			Debug.print("Not enough cookies, got: "+sb.toString(), Debug.runerr, Debug.error, true);
+			Debug.print("Not enough cookies, got: "+sb.toString(), Debug.runerr, Debug.error, null, null, true);
 			return;
 		}
 		
@@ -364,7 +364,7 @@ public class Configs {
 			if(bc.exists())
 				bc.delete();
 		} catch (IOException e) {
-			Debug.printException("Failed to save configs", e, Debug.runerr, Debug.error);
+			Debug.printException("Failed to save configs", e, Debug.runerr, Debug.error, null, null);
 		}
 	}
 	
@@ -372,7 +372,7 @@ public class Configs {
 		try {
 			NEF.save(bpath, Json.prettyJson(configs));
 		} catch (IOException e) {
-			Debug.printException("Failed to save configs", e, Debug.runerr, Debug.error);
+			Debug.printException("Failed to save configs", e, Debug.runerr, Debug.error, null, null);
 		}
 	}
 	

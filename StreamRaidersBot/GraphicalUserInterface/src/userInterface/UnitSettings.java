@@ -37,6 +37,7 @@ public class UnitSettings {
 	public static final String pre = "UnitSettings::";
 	
 	private String uid;
+	private String pn;
 	
 	private static String[] prios = "place epic placedun epicdun upgrade unlock dupe buy difmin difmax epicdifmin epicdifmax".split(" ");
 	private static String prio_jump = "difmin";
@@ -46,11 +47,13 @@ public class UnitSettings {
 		
 		uid = pre + cid + "::" + LocalDateTime.now().toString().hashCode() + "::";
 		
+		pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
+		
 		JsonObject uns;
 		try {
 			uns = Json.parseObj(NEF.read("data/Guide_old/unitDisName.json")).getAsJsonObject("byName");
 		} catch (IOException e) {
-			Debug.printException("UnitSettings -> open: err=couldn't get unit names", e, Debug.runerr, Debug.error, true);
+			Debug.printException("UnitSettings -> open: err=couldn't get unit names", e, Debug.runerr, Debug.error, pn, null, true);
 			return;
 		}
 		

@@ -26,7 +26,7 @@ public class Options {
 		try {
 			NEF.saveOpt(op, opt);
 		} catch (IOException e) {
-			Debug.printException("Options -> save: err=failed to save options", e, Debug.runerr, Debug.error, true);
+			Debug.printException("Options -> save: err=failed to save options", e, Debug.runerr, Debug.error, null, null, true);
 		}
 	}
 	

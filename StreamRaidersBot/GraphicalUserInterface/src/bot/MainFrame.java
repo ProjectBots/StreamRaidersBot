@@ -633,7 +633,7 @@ public class MainFrame {
 				try {
 					GUI.setImage(name+"::chest::"+slot, img);
 				} catch (IOException e) {
-					Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Debug.general, Debug.error, true);
+					Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Debug.general, Debug.error, null, null, true);
 				}
 				GUI.setEnabled(name+"::lockBut::"+slot, true);
 				
@@ -670,7 +670,7 @@ public class MainFrame {
 				try {
 					GUI.setImage(name+"::chest::"+slot, img);
 				} catch (IOException e) {
-					Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, true);
+					Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, null, null, true);
 				}
 			}
 		});
@@ -1191,7 +1191,7 @@ public class MainFrame {
 											try {
 												GUI.setImage(name+"::chest::"+type+"::loyImg::"+key, img);
 											} catch (IOException e) {
-												Debug.printException("MainFrame -> changed: err=couldnt set image", e, Debug.general, Debug.error, true);
+												Debug.printException("MainFrame -> changed: err=couldnt set image", e, Debug.general, Debug.error, null, null, true);
 											}
 											GUI.setBackground(name+"::chest::"+type+"::loyBut::"+key, loyCols[w]);
 										} catch (NumberFormatException e) {}
@@ -1741,7 +1741,7 @@ public class MainFrame {
 		try {
 			caps = profiles.get(name).getSRRH().search(1, 8, false, false, SRC.Search.all, true, dname);
 		} catch (NoConnectionException e) {
-			Debug.printException(name + " -> MainFrame -> searchCap: err=failed to search captain", e, Debug.runerr, Debug.error, true);
+			Debug.printException(name + " -> MainFrame -> searchCap: err=failed to search captain", e, Debug.runerr, Debug.error, null, null, true);
 			return;
 		} catch (NullPointerException e) {
 			parent.msg("Error", "The Profile has to be\nrunning for this to work", GUI.MsgConst.ERROR);
@@ -1916,7 +1916,7 @@ public class MainFrame {
 		
 		Configs.save();
 		
-		Debug.print("System exit", Debug.general, Debug.info);
+		Debug.print("System exit", Debug.general, Debug.info, null, null);
 		System.exit(0);
 	}
 	

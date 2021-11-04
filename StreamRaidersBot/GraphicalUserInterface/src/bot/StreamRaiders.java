@@ -107,39 +107,39 @@ public class StreamRaiders {
 		*/
 		Debug.setDebugEventHandler(new DebugEventHandler() {
 			@Override
-			public void onPrintLine(String pre, String msg, Scope scope, Type type, boolean forced) {
+			public void onPrintLine(String pre, String msg, Scope scope, Type type, String pn, Integer slot, boolean forced) {
 				if(scope.equals(Debug.runerr))
-					log(msg, null);
-				DebugEventHandler.super.onPrintLine(pre, msg, scope, type, forced);
+					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg, null);
+				DebugEventHandler.super.onPrintLine(pre, msg, scope, type, pn, slot, forced);
 			}
 			@Override
-			public void onWriteLine(String path, String pre, String msg, Scope scope, Type type, boolean forced) {
+			public void onWriteLine(String path, String pre, String msg, Scope scope, Type type, String pn, Integer slot, boolean forced) {
 				if(scope.equals(Debug.runerr))
-					log(msg, null);
+					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg, null);
 				if(Debug.getSevertyOf(type) > 1 && !msg.contains("couldnt set image"))
 					System.err.println(pre+msg);
-				DebugEventHandler.super.onWriteLine(path, pre, msg, scope, type, forced);
+				DebugEventHandler.super.onWriteLine(path, pre, msg, scope, type, pn, slot, forced);
 			}
 			@Override
-			public void onPrintException(String pre, String msg, Exception e, Scope scope, Type type, boolean forced) {
+			public void onPrintException(String pre, String msg, Exception e, Scope scope, Type type, String pn, Integer slot, boolean forced) {
 				if(scope.equals(Debug.runerr))
-					log(msg, e);
-				DebugEventHandler.super.onPrintException(pre, msg, e, scope, type, forced);
+					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg, e);
+				DebugEventHandler.super.onPrintException(pre, msg, e, scope, type, pn, slot, forced);
 			}
 			@Override
-			public void onWriteException(String path, String pre, String msg, Exception e, Scope scope, Type type, boolean forced) {
+			public void onWriteException(String path, String pre, String msg, Exception e, Scope scope, Type type, String pn, Integer slot, boolean forced) {
 				if(scope.equals(Debug.runerr))
-					log(msg, e);
+					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg, e);
 				if(Debug.getSevertyOf(type) > 1) {
 					System.err.println(pre+msg);
 					e.printStackTrace();
 				}
-				DebugEventHandler.super.onWriteException(path, pre, msg, e, scope, type, forced);
+				DebugEventHandler.super.onWriteException(path, pre, msg, e, scope, type, pn, slot, forced);
 			}
 		});
 		
 		
-		Debug.print("started", Debug.general, Debug.info);
+		Debug.print("started", Debug.general, Debug.info, null, null);
 		
 		WaitScreen.open("Initialize Bot");
 		
@@ -153,7 +153,7 @@ public class StreamRaiders {
 			try {
 				Browser.create();
 			} catch (IOException | RuntimeException e) {
-				Debug.printException("Couldnt initialize embeded Browser", e, Debug.runerr, Debug.error, true);
+				Debug.printException("Couldnt initialize embeded Browser", e, Debug.runerr, Debug.error, null, null, true);
 				WaitScreen.close();
 				return;
 			}
@@ -171,7 +171,7 @@ public class StreamRaiders {
 			else
 				Configs.load();
 		} catch (IOException e) {
-			Debug.printException("load configs", e, Debug.runerr, Debug.error, true);
+			Debug.printException("load configs", e, Debug.runerr, Debug.error, null, null, true);
 			if(GUI.showConfirmationBoxStatic("Loading Configs", "config file is corrupted\r\nreset?")) {
 				try {
 					if(Options.is("beta_frame")) 
@@ -179,7 +179,7 @@ public class StreamRaiders {
 					else
 						Configs.load(true);
 				} catch (IOException e1) {
-					Debug.printException("failed", e, Debug.runerr, Debug.error, true);
+					Debug.printException("failed", e, Debug.runerr, Debug.error, null, null, true);
 				}
 			} else {
 				return;

@@ -29,7 +29,8 @@ public class Stats {
 
 	public static final String pre = "Stats::";
 	
-	private String uid = null;
+	private String uid;
+	private String pn;
 	private Run run = null;
 	private BackEndHandler man = null;
 	
@@ -42,6 +43,8 @@ public class Stats {
 		uid = pre + cid + "::" + LocalDateTime.now().toString().hashCode() + "::";
 		
 		run = MainFrame.getProfiles().get(cid);
+		pn = run.getPN();
+		
 		man = run.getBackEndHandler();
 		
 		int[] pos = new int[5];
@@ -49,10 +52,10 @@ public class Stats {
 		Unit[] units;
 		Hashtable<String, Integer> curs;
 		try {
-			units = man.getUnits(SRC.Manager.all, false);
-			curs = man.getCurrencies();
+			units = man.getUnits(pn, SRC.Manager.all, false);
+			curs = man.getCurrencies(pn);
 		} catch (NoConnectionException | NotAuthorizedException e) {
-			Debug.printException("Stats -> open: err=failed to get infos", e, Debug.general, Debug.error, true);
+			Debug.printException("Stats -> open: err=failed to get infos", e, Debug.general, Debug.error, pn, null, true);
 			return;
 		}
 		JsonObject rews = run.getRews();

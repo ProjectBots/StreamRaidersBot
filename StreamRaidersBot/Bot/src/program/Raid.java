@@ -161,7 +161,7 @@ public class Raid {
 				}
 			}
 		} catch (UnsupportedOperationException e) {
-			Debug.printException("Raid -> getChest: rawData="+raidStats.toString(), e, Debug.runerr, Debug.error, true);
+			Debug.printException("Raid -> getChest: rawData="+raidStats.toString(), e, Debug.runerr, Debug.error, null, null, true);
 		}
 		return ret;
 	}
@@ -189,7 +189,7 @@ public class Raid {
 			} else if(rew[0].contains("skin")) {
 				name = "skins";
 			} else {
-				Debug.print("Raid -> Reward -> const.: reward=" + reward, Debug.runerr, Debug.error, true);
+				Debug.print("Raid -> Reward -> const.: reward=" + reward, Debug.runerr, Debug.error, null, null, true);
 				name = "unknown";
 			}
 		}

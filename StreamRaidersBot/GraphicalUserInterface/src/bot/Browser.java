@@ -91,7 +91,7 @@ public class Browser {
 						ConfigsV2.saveb();
 						MainFrame.refresh(true);
 					} else
-						Debug.print("Browser -> add: err=no access_info, got="+cookies.keySet().toString(), Debug.runerr, Debug.error, true);
+						Debug.print("Browser -> add: err=no access_info, got="+cookies.keySet().toString(), Debug.runerr, Debug.error, null, null, true);
 				} else {
 					Configs.add(name, cookies);
 					Configs.saveb();

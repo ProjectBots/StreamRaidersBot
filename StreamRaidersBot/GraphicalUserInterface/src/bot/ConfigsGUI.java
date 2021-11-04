@@ -209,7 +209,7 @@ public class ConfigsGUI {
 		try {
 			NEF.save(file.getAbsolutePath(), Json.prettyJson(ret));
 		} catch (IOException e1) {
-			Debug.printException("Configs -> export: err=unable to save export", e1, Debug.runerr, Debug.error, true);
+			Debug.printException("Configs -> export: err=unable to save export", e1, Debug.runerr, Debug.error, null, null, true);
 		}
 		
 		gui.close();
@@ -270,7 +270,7 @@ public class ConfigsGUI {
 		} catch (NullPointerException e) {
 			return;
 		} catch (IOException e1) {
-			Debug.printException("Configs -> importConfig: err=failed to load config file", e1, Debug.runerr, Debug.error, true);
+			Debug.printException("Configs -> importConfig: err=failed to load config file", e1, Debug.runerr, Debug.error, null, null, true);
 			return;
 		}
 		
@@ -389,7 +389,7 @@ public class ConfigsGUI {
 			}
 			
 			if(imp == null) {
-				Debug.print("Configs -> imports: imp=null", Debug.runerr, Debug.error, true);
+				Debug.print("Configs -> imports: imp=null", Debug.runerr, Debug.error, null, null, true);
 				continue;
 			}
 			

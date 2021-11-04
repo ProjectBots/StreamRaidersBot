@@ -127,10 +127,10 @@ public class Donators {
 			try {
 				Desktop.getDesktop().browse(new URI(link));
 			} catch (IOException | URISyntaxException e) {
-				Debug.printException("Donators -> openBrowser: err=can't open DesktopBrowser", e, Debug.runerr, Debug.error, true);
+				Debug.printException("Donators -> openBrowser: err=can't open DesktopBrowser", e, Debug.runerr, Debug.error, null, null, true);
 			}
 		} else {
-			Debug.print("Donators -> openBrowser: err=desktop not supported", Debug.runerr, Debug.error, true);
+			Debug.print("Donators -> openBrowser: err=desktop not supported", Debug.runerr, Debug.error, null, null, true);
 		}
 	}
 	

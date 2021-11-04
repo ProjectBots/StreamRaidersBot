@@ -80,21 +80,21 @@ public class MainFrame {
 					Run r = new Run(cid, ConfigsV2.getPStr(cid, ConfigsV2.cookies));
 					r.setFrontEndHandler(new FrontEndHandler() {
 						@Override
-						public void onStart(String cid, int slot) {
+						public void onStart(String pn, String cid, int slot) {
 							GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::run", Fonts.getGradient("main buttons on"));
 							GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::run", Fonts.getColor("main buttons on"));
 						}
 						@Override
-						public void onStop(String cid, int slot) {
+						public void onStop(String pn, String cid, int slot) {
 							GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::run", Fonts.getGradient("main buttons def"));
 							GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::run", Fonts.getColor("main buttons def"));
 						}
 						@Override
-						public void onTimerUpdate(String cid, int slot, String time) {
+						public void onTimerUpdate(String pn, String cid, int slot, String time) {
 							GUI.setText(ProfileSection.pre+cid+"::"+slot+"::time", time);
 						}
 						@Override
-						public void onUpdateSlot(String cid, int slot, Raid raid, boolean locked, boolean change) {
+						public void onUpdateSlot(String pn, String cid, int slot, Raid raid, boolean locked, boolean change) {
 							GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::change", Fonts.getColor("main buttons " + (change ? "on" : "def")));
 							GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::change", Fonts.getGradient("main buttons " + (change ? "on" : "def")));
 							
@@ -108,7 +108,7 @@ public class MainFrame {
 								try {
 									GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::img", img);
 								} catch (IOException e) {
-									Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, true);
+									Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, pn, slot, true);
 								}
 								GUI.setText(ProfileSection.pre+cid+"::"+slot+"::wins", "??");
 								img = new Image("data/LoyaltyPics/noloy.png");
@@ -116,7 +116,7 @@ public class MainFrame {
 								try {
 									GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::loy", img);
 								} catch (IOException e) {
-									Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, true);
+									Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, pn, slot, true);
 								}
 								GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons def"));
 								GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons def"));
@@ -127,7 +127,7 @@ public class MainFrame {
 								try {
 									GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::chest", img);
 								} catch (IOException e) {
-									Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, true);
+									Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, pn, slot, true);
 								}
 							} else {
 								GUI.setText(ProfileSection.pre+cid+"::pname", ConfigsV2.getPStr(cid, ConfigsV2.pname));
@@ -138,12 +138,12 @@ public class MainFrame {
 								try {
 									GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::img", img);
 								} catch (IOException e) {
-									Debug.print("MainFrame -> onUpdateSlot: err=couldnt set image, url="+raid.get(SRC.Raid.twitchUserImage), Debug.general, Debug.error, true);
+									Debug.print("MainFrame -> onUpdateSlot: err=couldnt set image, url="+raid.get(SRC.Raid.twitchUserImage), Debug.general, Debug.error, pn, slot, true);
 									try {
 										img = new Image("data/Other/icon.png");
 										GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::img", img);
 									} catch (IOException e1) {
-										Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set default image", e, Debug.general, Debug.error, true);
+										Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set default image", e, Debug.general, Debug.error, pn, slot, true);
 									}
 								}
 								GUI.setText(ProfileSection.pre+cid+"::"+slot+"::wins", raid.get(SRC.Raid.pveWins));
@@ -153,7 +153,7 @@ public class MainFrame {
 								try {
 									GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::loy", img);
 								} catch (IOException e) {
-									Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Debug.general, Debug.error, true);
+									Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Debug.general, Debug.error, pn, slot, true);
 								}
 								String cap = raid.get(SRC.Raid.twitchDisplayName);
 								Integer val = ConfigsV2.getCapInt(cid, "(all)", cap, raid.isDungeon() ? ConfigsV2.dungeon : ConfigsV2.campaign, ConfigsV2.fav);
@@ -199,16 +199,16 @@ public class MainFrame {
 								try {
 									GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::chest", img);
 								} catch (IOException e) {
-									Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Debug.general, Debug.error, true);
+									Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Debug.general, Debug.error, pn, slot, true);
 								}
 							}
 						}
 						@Override
-						public void onUpdateCurrency(String type, int amount) {
+						public void onUpdateCurrency(String pn, String type, int amount) {
 							GUI.setText(ProfileSection.pre+cid+"::"+type, ""+amount);
 						}
 						@Override
-						public void onUpdateLayer(String name, Color col) {
+						public void onUpdateLayer(String pn, String name, Color col) {
 							GUI.setText(ProfileSection.pre+cid+"::layer", name);
 							GUI.setBackground(ProfileSection.pre+cid+"::laycol", col);
 						}
@@ -230,15 +230,15 @@ public class MainFrame {
 					return;
 				} catch (SilentException e) {
 				} catch (NoConnectionException e) {
-					Debug.printException(ConfigsV2.getPStr(cid, ConfigsV2.pname) + ": Run -> Maybe your internet connection failed", e, Debug.general, Debug.error, true);
+					Debug.printException("Run -> Maybe your internet connection failed", e, Debug.general, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
 				} catch (NotAuthorizedException e3) {
-					GUI err = new GUI("User not authorized", 500, 200, MainFrame.getGUI(), null);
+					GUI err = new GUI("User ("+ ConfigsV2.getPStr(cid, ConfigsV2.pname) +") not authorized", 500, 200, MainFrame.getGUI(), null);
 					Label l = new Label();
 					l.setText("<html>Your Account is not authorized.<br>Please remove and add it again</html>");
 					err.addLabel(l);
 					err.refresh();
 				} catch (Exception e) {
-					Debug.printException(ConfigsV2.getPStr(cid, ConfigsV2.pname) + ": Run -> setRunning: err=failed to add profile", e, Debug.general, Debug.error, true);
+					Debug.printException("Run -> setRunning: err=failed to add profile", e, Debug.general, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
 				}
 				
 				createFailedContainer(cid, pos);
@@ -343,14 +343,14 @@ public class MainFrame {
 			public void onFocusLost(WindowEvent e) {}
 			@Override
 			public void onFocusGained(WindowEvent e) {
-				for(String key : profiles.keySet()) {
+				for(final String key : profiles.keySet()) {
 					Thread t = new Thread(new Runnable() {
 						@Override
 						public void run() {
 							try {
 								profiles.get(key).updateFrame();
 							} catch (NoConnectionException | NotAuthorizedException e1) {
-								Debug.printException("MainFrame -> open -> onFocusGained: err=failed to update frame", e1, Debug.general, Debug.error, true);
+								Debug.printException("MainFrame -> open -> onFocusGained: err=failed to update frame", e1, Debug.general, Debug.error, ConfigsV2.getPStr(key, ConfigsV2.pname), null, true);
 							}
 						}
 					});
@@ -432,7 +432,7 @@ public class MainFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(!gui.hide(tray))
-					Debug.print("MainFrame -> open: err=Couldn't add to tray", Debug.general, Debug.error, true);
+					Debug.print("MainFrame -> open: err=Couldn't add to tray", Debug.general, Debug.error, null, null, true);
 			}
 		});
 		bot.setAL(m++, new ActionListener() {
@@ -516,7 +516,7 @@ public class MainFrame {
 				try {
 					new Guide("data/Guide").show(gui, "Home");
 				} catch (Exception e1) {
-					Debug.printException("MainFrame -> openGuide: err=sth went wrong", e1, Debug.runerr, Debug.error, true);
+					Debug.printException("MainFrame -> openGuide: err=sth went wrong", e1, Debug.runerr, Debug.error, null, null, true);
 				}
 			}
 		});
@@ -627,7 +627,7 @@ public class MainFrame {
 			
 			ConfigsV2.save();
 			
-			Debug.print("System exit", Debug.general, Debug.info);
+			Debug.print("System exit", Debug.general, Debug.info, null, null);
 			System.exit(0);
 		} else {
 			gpos = 0;

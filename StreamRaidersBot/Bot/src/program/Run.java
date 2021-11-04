@@ -83,7 +83,7 @@ public class Run {
 		for(int i=0; i<raids.length; i++) {
 			if(raids[i].get(SRC.Raid.userSortIndex).equals(""+slot)) {
 				try {
-					srrh.loadMap(raids[i]);
+					srrh.loadMap(raids[i], name);
 				} catch (DungeonException e) {
 				} catch (PvPException | NoConnectionException e) {
 					return null;
@@ -113,7 +113,7 @@ public class Run {
 						isReloading = false;
 						runs();
 					} catch (NoConnectionException e) {
-						Debug.printException(name + ": Run -> Maybe your internet connection failed", e, Debug.runerr, Debug.fatal, true);
+						Debug.printException("Run -> Maybe your internet connection failed", e, Debug.runerr, Debug.fatal, name, null, true);
 						feh.onFail(name);
 						setRunning(false);
 					} catch (SilentException e) {
@@ -121,7 +121,7 @@ public class Run {
 						feh.onNotAuthorized(name);
 						setRunning(false);
 					} catch (Exception e) {
-						Debug.printException(name + ": Run -> setRunning", e, Debug.runerr, Debug.fatal, true);
+						Debug.printException("Run -> setRunning", e, Debug.runerr, Debug.fatal, name, null, true);
 						feh.onFail(name);
 						setRunning(false);
 					}
@@ -165,54 +165,54 @@ public class Run {
 
 	
 	public void runs() {
-		String part = Debug.print(name+" started round", Debug.run, Debug.info);
+		String part = Debug.print("started round", Debug.run, Debug.info, name, null);
 		try {
 			if(!isRunning()) return;
 			
-			part = Debug.print(name+" chests", Debug.run, Debug.info);
+			part = Debug.print("chests", Debug.run, Debug.info, name, null);
 			if(chests()) {
 				try {
 					Thread.sleep(5000);
 				} catch (Exception e) {}
 			}
 			
-			part = Debug.print(name+" captains", Debug.run, Debug.info);
+			part = Debug.print("captains", Debug.run, Debug.info, name, null);
 			captains();
 
 			int c = 1;
-			part = Debug.print(name+" raids", Debug.run, Debug.info);
+			part = Debug.print("raids", Debug.run, Debug.info, name, null);
 			while(raids()) {
-				Debug.print("[" + name + "] Run runs " + c++, Debug.loop, Debug.info);
-				part = Debug.print(name+" captains 2", Debug.run, Debug.info);
+				Debug.print("Run runs " + c++, Debug.loop, Debug.info, name, null);
+				part = Debug.print("captains 2", Debug.run, Debug.info, name, null);
 				captains();
-				part = Debug.print(name+" raids 2", Debug.run, Debug.info);
+				part = Debug.print("raids 2", Debug.run, Debug.info, name, null);
 			}
 			
-			part = Debug.print(name+" collectEvent", Debug.run, Debug.info);
+			part = Debug.print("collectEvent", Debug.run, Debug.info, name, null);
 			collectEvent();
 			
-			part = Debug.print(name+" claimQuests", Debug.run, Debug.info);
+			part = Debug.print("claimQuests", Debug.run, Debug.info, name, null);
 			claimQuests();
 			
-			part = Debug.print(name+" reloadStore", Debug.run, Debug.info);
+			part = Debug.print("reloadStore", Debug.run, Debug.info, name, null);
 			srrh.reloadStore();
 
-			part = Debug.print(name+" store", Debug.run, Debug.info);
+			part = Debug.print("store", Debug.run, Debug.info, name, null);
 			store();
 
-			part = Debug.print(name+" unlock", Debug.run, Debug.info);
+			part = Debug.print("unlock", Debug.run, Debug.info, name, null);
 			unlock();
 			
-			part = Debug.print(name+" upgradeUnits", Debug.run, Debug.info);
+			part = Debug.print("upgradeUnits", Debug.run, Debug.info, name, null);
 			upgradeUnits();
 			
-			part = Debug.print(name+" grantTeamReward", Debug.run, Debug.info);
+			part = Debug.print("grantTeamReward", Debug.run, Debug.info, name, null);
 			srrh.getSRR().grantTeamReward();
 			
 			int min = Configs.getTime(name, Configs.min);
 			int max = Configs.getTime(name, Configs.max);
 			
-			part = Debug.print(name+" finished round", Debug.run, Debug.info);
+			part = Debug.print("finished round", Debug.run, Debug.info, name, null);
 			
 			sleep(Maths.ranInt(min, max));
 		} catch (Exception e) {
@@ -260,7 +260,7 @@ public class Run {
 						System.out.println("completed reloading srrh for " + name);
 						if(ver == null) 
 							if(!e.getClass().equals(SilentException.class) && !e.getClass().equals(NoConnectionException.class))
-								Debug.printException("critical error happened for " + name + " at \"" + part + "\" -> skipped this round", e, Debug.runerr, Debug.fatal, true);
+								Debug.printException("critical error happened for " + name + " at \"" + part + "\" -> skipped this round", e, Debug.runerr, Debug.fatal, name, null, true);
 						
 						feh.onStart(name);
 						isReloading = false;
@@ -273,7 +273,7 @@ public class Run {
 						setRunning(false);
 					} catch (Exception e1) {
 						if(!e1.getClass().equals(SilentException.class))
-							Debug.printException("failed to reload srrh for " + name, e, Debug.runerr, Debug.fatal, true);
+							Debug.printException("failed to reload srrh for " + name, e, Debug.runerr, Debug.fatal, name, null, true);
 						setReloading(part, e);
 					}
 				}
@@ -295,12 +295,12 @@ public class Run {
 	private void setReloading(String part, Exception e) {
 		if(isReloading) {
 			if(e.getClass().equals(NoConnectionException.class))
-				Debug.printException("Internet connection failed for " + name, e, Debug.runerr, Debug.fatal, true);
+				Debug.printException("Internet connection failed for " + name, e, Debug.runerr, Debug.fatal, name, null, true);
 			feh.onFail(name);
 			setRunning(false);
 		} else {
 			if(!e.getClass().equals(SilentException.class) && !e.getClass().equals(NoConnectionException.class))
-				Debug.printException("critical error happened for " + name + " at \"" + part + "\" -> try to reload again", e, Debug.runerr, Debug.fatal, true);
+				Debug.printException("critical error happened for " + name + " at \"" + part + "\" -> try to reload again", e, Debug.runerr, Debug.fatal, name, null, true);
 			isReloading = true;
 			reload(15*60, part, e);
 		}
@@ -353,7 +353,7 @@ public class Run {
 		for(int i=0; i<quests.length; i++) {
 			String err = srrh.claimQuest(quests[i]);
 			if(err != null)
-				Debug.print(name + ": Run -> claimQuests: err=" + err, Debug.runerr, Debug.error, true);
+				Debug.print(name + ": Run -> claimQuests: err=" + err, Debug.runerr, Debug.error, name, null, true);
 		}
 	}
 	
@@ -370,14 +370,14 @@ public class Run {
 			if(bp) {
 				String err = srrh.collectEvent(i, true);
 				if(err != null && !err.equals("cant collect")) {
-					Debug.print(name + ": Run -> collectEvent -> pass: err=" + err, Debug.runerr, Debug.error, true);
+					Debug.print(name + ": Run -> collectEvent -> pass: err=" + err, Debug.runerr, Debug.error, name, null, true);
 				}
 			}
 			
 			if(potionsTiers.contains(""+i)) continue;
 			String err = srrh.collectEvent(i, false);
 			if(err != null && !err.equals("cant collect")) {
-				Debug.print(name + ": Run -> collectEvent -> basic: err=" + err, Debug.runerr, Debug.error, true);
+				Debug.print(name + ": Run -> collectEvent -> basic: err=" + err, Debug.runerr, Debug.error, name, null, true);
 			}
 			
 		}
@@ -403,7 +403,7 @@ public class Run {
 			
 			String err = srrh.unlockUnit(unlockable[ind]);
 			if(err != null && !err.equals("not enough gold"))
-				Debug.print(name + ": Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, Debug.runerr, Debug.warn, true);
+				Debug.print(name + ": Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, Debug.runerr, Debug.warn, name, null, true);
 			
 			ps[ind] = -1;
 		}
@@ -434,7 +434,7 @@ public class Run {
 				throw new NullPointerException();
 			}
 			if(err != null && !(err.equals("after end") || err.startsWith("not enough ")))
-				Debug.print(name+" -> Run -> store -> buyChest: err="+err+", chest="+sel, Debug.runerr, Debug.error, true);
+				Debug.print(name+" -> Run -> store -> buyChest: err="+err+", chest="+sel, Debug.runerr, Debug.error, name, null, true);
 			if(err == null) {
 				if(bought.has("dungeonchest"))
 					bought.addProperty("dungeonchest", bought.get("dungeonchest").getAsInt() + 1);
@@ -451,7 +451,7 @@ public class Run {
 			String chest = "polterheist"+sel+"chest";
 			String err = srrh.buyChest(chest);
 			if(err != null && !(err.equals("after end") || err.startsWith("not enough ")))
-				Debug.print(name+" -> Run -> store -> buyChest: err="+err+", chest="+sel, Debug.runerr, Debug.error, true);
+				Debug.print(name+" -> Run -> store -> buyChest: err="+err+", chest="+sel, Debug.runerr, Debug.error, name, null, true);
 			if(err == null) {
 				if(bought.has(chest))
 					bought.addProperty(chest, bought.get(chest).getAsInt() + 1);
@@ -479,7 +479,7 @@ public class Run {
 						ps[i] = Configs.getUnitInt(name, types[i], Configs.buy);
 						
 					} catch (NullPointerException e) {
-						Debug.printException(name + ": Run -> store: item=" + items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString() + ", err=item is not correct", e, Debug.runerr, Debug.error, true);
+						Debug.printException(name + ": Run -> store: item=" + items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString() + ", err=item is not correct", e, Debug.runerr, Debug.error, name, null, true);
 						ps[i] = -1;
 					}
 				}
@@ -497,7 +497,7 @@ public class Run {
 					
 					String err = srrh.buyItem(items.get(ind).getAsJsonObject());
 					if(err != null && !err.equals("not enough gold"))
-						Debug.print(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, Debug.lowerr, Debug.error, true);
+						Debug.print(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, Debug.lowerr, Debug.error, name, null, true);
 					
 					int amount = packs.get(items.get(ind).getAsJsonObject().get("itemId").getAsString())
 							.getAsJsonObject().get("Quantity").getAsInt();
@@ -520,7 +520,7 @@ public class Run {
 				if(min > -1 && min < gold) {
 					String err = srrh.refreshStore();
 					if(err != null)
-						Debug.print(name+" -> Run -> Store: err="+err, Debug.runerr, Debug.error, true);
+						Debug.print(name+" -> Run -> Store: err="+err, Debug.runerr, Debug.error, name, null, true);
 					store();
 				}
 			}
@@ -553,7 +553,7 @@ public class Run {
 			String err = srrh.upgradeUnit(us[ind], Configs.getUnitString(name, us[ind].get(SRC.Unit.unitType), Configs.spec));
 			if(err != null) {
 				if(!(err.equals("no specUID") || err.equals("cant upgrade unit"))) {
-					Debug.print(name + ": Run -> upgradeUnits: type=" + us[ind].get(SRC.Unit.unitType) + " err=" + err, Debug.lowerr, Debug.error, true);
+					Debug.print(name + ": Run -> upgradeUnits: type=" + us[ind].get(SRC.Unit.unitType) + " err=" + err, Debug.lowerr, Debug.error, name, null, true);
 					break;
 				}
 			}
@@ -623,7 +623,7 @@ public class Run {
 					
 					Unit[] dunUnits = null;
 					try {
-						srrh.loadMap(plra[i]);
+						srrh.loadMap(plra[i], name);
 					} catch (DungeonException e) {
 						if(!plra[i].get(SRC.Raid.userSortIndex).equals(Configs.getStr(name, Configs.dungeonSlot)))
 							throw e;
@@ -655,11 +655,11 @@ public class Run {
 						if(unit == null) break;
 						
 						while(true) {
-							Debug.print("[" + name + "] Run raids " + c++, Debug.loop, Debug.info);
+							Debug.print("Run raids " + c++, Debug.loop, Debug.info, name, null);
 							
 							int[] pos;
 							try {
-								pos = new Pathfinding().search(new MapConv().asField_old(map, unit.canFly(), fpt, maxheat, banned), name, epic);
+								pos = new Pathfinding().search(new MapConv().asField_old(map, unit.canFly(), fpt, maxheat, banned), name, Integer.parseInt(plra[i].get(SRC.Raid.userSortIndex)), epic);
 							} catch (NoFinException e) {
 								if(fpt == null)
 									break loop;
@@ -686,7 +686,7 @@ public class Run {
 								break loop;
 							
 							if(banned.length >= 10) {
-								Debug.print(name + ": Run -> raids -> unitPlacement: tdn=" + plra[i].get(SRC.Raid.twitchDisplayName) + ", epic=" + epic + ", err=" + err, Debug.lowerr, Debug.error, true);
+								Debug.print("Run -> raids -> unitPlacement: tdn=" + plra[i].get(SRC.Raid.twitchDisplayName) + ", epic=" + epic + ", err=" + err, Debug.lowerr, Debug.error, name, null, true);
 								break loop;
 							}
 							
@@ -699,7 +699,7 @@ public class Run {
 						try {
 							ret = switchRaid(usi, true, getCaps(plra[i]));
 						} catch (NoCapMatchException e1) {
-							Debug.printException(name + " -> Run -> raids: err=No Captain matches", e1, Debug.runerr, Debug.error, true);
+							Debug.printException("Run -> raids: err=No Captain matches", e1, Debug.runerr, Debug.error, name, null, true);
 						}
 					}
 				}
@@ -814,7 +814,7 @@ public class Run {
 		int c = 1;
 		try {
 			while(true) {
-				Debug.print("[" + name + "] Run captains " + c++, Debug.loop, Debug.info);
+				Debug.print("Run captains " + c++, Debug.loop, Debug.info, name, null);
 				boolean breakout = true;
 				boolean[] got = new boolean[] {false, uCount < 5, uCount < 8, !srrh.hasBattlePass()};
 				for(int i=0; i<raids.length; i++) {
@@ -835,7 +835,7 @@ public class Run {
 					String ct = raids[i].getFromNode(SRC.MapNode.chestType);
 					if(ct == null) {
 						if(ctNull)
-							Debug.print(name + ": Run -> captains: ct=null", Debug.runerr, Debug.error, true);
+							Debug.print("Run -> captains: ct=null", Debug.runerr, Debug.error, name, null, true);
 						ctNull = false;
 						bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
 						switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, getCaps(raids[i]));
@@ -886,7 +886,7 @@ public class Run {
 				raids = srrh.getRaids(SRC.Helper.all);
 			}
 		} catch (NoCapMatchException e) {
-			Debug.printException(name + ": Run -> captains: err=" + e.getMessage(), e, Debug.runerr, Debug.error, true);
+			Debug.printException("Run -> captains: err=" + e.getMessage(), e, Debug.runerr, Debug.error, name, null, true);
 		}
 		resCaps();
 		return changed;
@@ -978,7 +978,7 @@ public class Run {
 		}
 		
 		if(cap == null) {
-			Debug.print(name+": Run -> switchRaid: err=No captain matches", Debug.runerr, Debug.error, true);
+			Debug.print("Run -> switchRaid: err=No captain matches", Debug.runerr, Debug.error, name, null, true);
 			return false;
 		}
 		

@@ -48,7 +48,7 @@ public class BackEndHandler {
 	
 	
 	
-	public BackEndHandler(String cookies) throws NoConnectionException, NotAuthorizedException, OutdatedDataException {
+	public BackEndHandler(String pn, String cookies) throws NoConnectionException, NotAuthorizedException, OutdatedDataException {
 		try {
 			req = new SRR(cookies, Options.get("clientVersion"));
 		} catch (OutdatedDataException e) {
@@ -61,7 +61,7 @@ public class BackEndHandler {
 		secoff = ChronoUnit.SECONDS.between(Time.parse(Json.parseObj(req.getCurrentTime()).get("data").getAsString()), LocalDateTime.now());
 		updateRaids(true);
 		updateUnits(true);
-		updateStore(true);
+		updateStore(pn, true);
 		updateQuestEventRewards(true);
 	}
 	
@@ -111,7 +111,7 @@ public class BackEndHandler {
 					Options.set(c+"date", base.get("LiveEndTime").getAsString());
 					Options.set(c+"price", base.get("BasePrice").getAsString());
 				} catch (NullPointerException e) {
-					Debug.printException("SRRHelper -> updateDataPath: err=failed to update chest, chest="+c, e, Debug.runerr, Debug.error, true);
+					Debug.printException("SRRHelper -> updateDataPath: err=failed to update chest, chest="+c, e, Debug.runerr, Debug.error, null, null, true);
 					Options.set(c+"date", "2021-10-10 12:00:00");
 					Options.set(c+"price", "9999");
 				}
@@ -148,7 +148,7 @@ public class BackEndHandler {
 			if(req != null)
 				req.reload();
 		} catch (OutdatedDataException e) {
-			Debug.printException("BackEndHandler -> updateDataPath: err=failed to update data path",  e, Debug.runerr, Debug.fatal, true);
+			Debug.printException("BackEndHandler -> updateDataPath: err=failed to update data path",  e, Debug.runerr, Debug.fatal, null, null, true);
 		}
 	}
 	
@@ -219,7 +219,7 @@ public class BackEndHandler {
 		uelis.afterUpdate("raids");
 	}
 	
-	synchronized public void updateMap(int slot, boolean force) throws NoConnectionException, NotAuthorizedException {
+	synchronized public void updateMap(String pn, int slot, boolean force) throws NoConnectionException, NotAuthorizedException {
 		LocalDateTime rt = rts.get("map::"+slot);
 		LocalDateTime now = LocalDateTime.now();
 		if(!(rt == null || now.isAfter(rt.plusMinutes(updateTimes[2]))) && !force)
@@ -241,13 +241,14 @@ public class BackEndHandler {
 				raids[slot],
 				(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null),
 				mapName,
-				userIds);
+				userIds,
+				pn, slot);
 		
 		rts.put("map::"+slot, now);
 		uelis.afterUpdate("map::"+slot);
 	}
 	
-	synchronized public void updateStore(boolean force) throws NoConnectionException, NotAuthorizedException {
+	synchronized public void updateStore(String pn, boolean force) throws NoConnectionException, NotAuthorizedException {
 		LocalDateTime rt = rts.get("store");
 		LocalDateTime now = LocalDateTime.now();
 		if(!(rt == null || now.isAfter(rt.plusMinutes(updateTimes[3]))) && !force)
@@ -261,10 +262,10 @@ public class BackEndHandler {
 		
 		JsonElement err = cur.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
-			Debug.print("BackEndHandler -> updateStore: cur, err="+err.getAsString(), Debug.runerr, Debug.error, true);
+			Debug.print("BackEndHandler -> updateStore: cur, err="+err.getAsString(), Debug.runerr, Debug.error, pn, 4, true);
 		err = items.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
-			Debug.print("BackEndHandler -> updateStore: items, err="+err.getAsString(), Debug.runerr, Debug.error, true);
+			Debug.print("BackEndHandler -> updateStore: items, err="+err.getAsString(), Debug.runerr, Debug.error, pn, 4, true);
 		
 		store = new Store(user.getAsJsonObject("data"),
 				cur.getAsJsonArray("data"),
@@ -424,7 +425,7 @@ public class BackEndHandler {
 			
 	}
 	
-	public Unit[] getUnits(int con, boolean force) throws NoConnectionException, NotAuthorizedException {
+	public Unit[] getUnits(String pn, int con, boolean force) throws NoConnectionException, NotAuthorizedException {
 		updateUnits(force);
 		Unit[] ret = new Unit[0];
 		for(int i=0; i<units.length; i++) {
@@ -437,10 +438,10 @@ public class BackEndHandler {
 					ret = add(ret, units[i]);
 				break;
 			case SRC.Manager.isUnitUnlockable:
-				updateStore(true);
+				updateStore(pn, true);
 				return store.getUnlockableUnits(units);
 			case SRC.Manager.isUnitUpgradeable:
-				updateStore(true);
+				updateStore(pn, true);
 				return store.getUpgradeableUnits(units);
 			}
 		}
@@ -505,7 +506,7 @@ public class BackEndHandler {
 		return ret;
 	}
 	
-	public String placeUnit(int slot, Unit unit, boolean epic, int[] pos, boolean onPlanIcon) throws NoConnectionException {
+	public String placeUnit(String pn, int slot, Unit unit, boolean epic, int[] pos, boolean onPlanIcon) throws NoConnectionException {
 		String atr = req.addToRaid(raids[slot].get(SRC.Raid.raidId),
 				createPlacementData(unit, epic, maps[slot].getAsSRCoords(epic, pos), onPlanIcon));
 		
@@ -514,7 +515,7 @@ public class BackEndHandler {
 			if(je.isJsonPrimitive()) 
 				return je.getAsString();
 		} catch (NullPointerException e) {
-			Debug.printException("SRRHelper -> placeUnit: err=failed to place Unit, atr=" + atr == null ? "null" : atr, e, Debug.runerr, Debug.error, true);
+			Debug.printException("SRRHelper -> placeUnit: err=failed to place Unit, atr=" + atr == null ? "null" : atr, e, Debug.runerr, Debug.error, pn, slot, true);
 		}
 		
 		return null;
@@ -555,8 +556,8 @@ public class BackEndHandler {
 		return ret.toString();
 	}
 	
-	public Map getMap(int slot, boolean force) throws NoConnectionException, NotAuthorizedException {
-		updateMap(slot, force);
+	public Map getMap(String pn, int slot, boolean force) throws NoConnectionException, NotAuthorizedException {
+		updateMap(pn, slot, force);
 		return maps[slot];
 	}
 	
@@ -566,8 +567,8 @@ public class BackEndHandler {
 	}
 	
 	
-	public int getCurrency(C con, boolean force) throws NotAuthorizedException, NoConnectionException {
-		updateStore(false);
+	public int getCurrency(String pn, C con, boolean force) throws NotAuthorizedException, NoConnectionException {
+		updateStore(pn, false);
 		return store.getCurrency(con);
 	}
 	
@@ -587,8 +588,8 @@ public class BackEndHandler {
 		store.setCurrency(con, amount);
 	}
 	
-	public Hashtable<String, Integer> getCurrencies() throws NotAuthorizedException, NoConnectionException {
-		updateStore(false);
+	public Hashtable<String, Integer> getCurrencies(String pn) throws NotAuthorizedException, NoConnectionException {
+		updateStore(pn, false);
 		return store.getCurrencies();
 	}
 	
