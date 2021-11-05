@@ -403,7 +403,7 @@ public class Run {
 			
 			String err = srrh.unlockUnit(unlockable[ind]);
 			if(err != null && !err.equals("not enough gold"))
-				Debug.print(name + ": Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, Debug.runerr, Debug.warn, name, null, true);
+				Debug.print("Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, Debug.lowerr, Debug.error, name, null, true);
 			
 			ps[ind] = -1;
 		}

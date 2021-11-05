@@ -463,11 +463,14 @@ public class ConfigsV2 {
 			
 			return sel;
 		}
-		return getLayer(cid, lay)
-				.getAsJsonObject("chests")
-				.getAsJsonObject(cType)
-				.get(con.get()).getAsBoolean();
-		
+		try {
+			return getLayer(cid, lay)
+					.getAsJsonObject("chests")
+					.getAsJsonObject(cType)
+					.get(con.get()).getAsBoolean();
+		} catch (NullPointerException e) {
+			return null;
+		}
 	}
 	
 	public static void setChestBoolean(String cid, String lay, String cType, CheBoo con, boolean b) {

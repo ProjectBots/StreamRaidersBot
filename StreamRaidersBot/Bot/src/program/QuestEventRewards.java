@@ -250,7 +250,7 @@ public class QuestEventRewards {
 	}
 	
 	public boolean canCollectEvent(int p, boolean battlePass) {
-		if(p > tier || p <= 0)
+		if(p >= tier || p <= 0)
 			return false;
 		JsonElement je = collected.get(""+p);
 		if(je == null) return true;
@@ -294,7 +294,6 @@ public class QuestEventRewards {
 		JsonObject ret = new JsonObject();
 		JsonElement err = grantEventReward.get(SRC.errorMessage);
 		
-		
 		if(err.isJsonPrimitive()) {
 			ret.add(SRC.errorMessage, err);
 			return ret;
@@ -322,6 +321,7 @@ public class QuestEventRewards {
 				rew = tiers.getAsJsonObject(key).get("BasicRewards").getAsString();
 				qty = tiers.getAsJsonObject(key).get("BasicAmount").getAsInt();
 			}
+			
 			if(rew.equals("")) {
 				rew = "badges";
 				qty = 1;

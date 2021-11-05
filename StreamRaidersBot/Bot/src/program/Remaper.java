@@ -19,6 +19,7 @@ public class Remaper {
 	}
 	
 	public static String map(String s) {
+		if(s == null) return s;
 		String ret = maps.get(s);
 		return ret == null ? s : ret;
 	}

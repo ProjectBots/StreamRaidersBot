@@ -31,6 +31,7 @@ import program.Debug;
 import include.Guide;
 import program.Options;
 import program.Raid;
+import program.Remaper;
 import include.Http.NoConnectionException;
 import program.SRR.NotAuthorizedException;
 import program.Run.SilentException;
@@ -100,7 +101,8 @@ public class MainFrame {
 							
 							GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::lock", Fonts.getGradient("main buttons " + (locked ? "on" : "def")));
 							GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::lock", Fonts.getColor("main buttons " + (locked ? "on" : "def")));
-							
+
+							GUI.setText(ProfileSection.pre+cid+"::pname", pn);
 							if(raid == null) {
 								GUI.setText(ProfileSection.pre+cid+"::"+slot+"::capname", "????????");
 								Image img = new Image("data/Other/icon.png");
@@ -130,7 +132,6 @@ public class MainFrame {
 									Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, pn, slot, true);
 								}
 							} else {
-								GUI.setText(ProfileSection.pre+cid+"::pname", ConfigsV2.getPStr(cid, ConfigsV2.pname));
 								GUI.setText(ProfileSection.pre+cid+"::"+slot+"::capname", raid.get(SRC.Raid.twitchDisplayName));
 								Image img = new Image(raid.get(SRC.Raid.twitchUserImage));
 								img.setUrl(true);
@@ -189,11 +190,11 @@ public class MainFrame {
 									GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons on"));
 								}
 								JsonArray cts = Json.parseArr(Options.get("chests"));
-								String ct = raid.getFromNode(SRC.MapNode.chestType);
-								if(ct == null) 
+								String ct = Remaper.map(raid.getFromNode(SRC.MapNode.chestType));
+								if(ct == null || (!ct.contains("dungeon") && !cts.contains(new JsonPrimitive(ct)))) {
+									Debug.print("MainFrame -> updateSlot -> chest_img: err=nochest, ct="+ct, Debug.lowerr, Debug.error, pn, slot, true);
 									ct = "nochest";
-								if(!ct.contains("dungeon") && !ct.equals("nochest") && !cts.contains(new JsonPrimitive(ct)))
-									ct = "chestboostedskin";
+								}
 								img = new Image("data/ChestPics/"+ct+".png");
 								img.setSquare(25);
 								try {

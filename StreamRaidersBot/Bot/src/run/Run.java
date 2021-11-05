@@ -850,11 +850,13 @@ public class Run {
 		
 		Integer aloy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.maxc);
 		Integer iloy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.minc);
-		if(aloy == null || iloy == null) {
-			Debug.print("Run -> captain: ct="+ct+", err=failed to get chest max loy", Debug.runerr, Debug.error, pn, slot, true);
+		Boolean enabled = ConfigsV2.getChestBoolean(cid, currentLayer, ct, ConfigsV2.enabled);
+		if(aloy == null || iloy == null || enabled == null) {
+			Debug.print("Run -> captain: ct="+ct+", err=failed to get chest config", Debug.runerr, Debug.error, pn, slot, true);
 			//	prevents picking the chest
 			aloy = 5;
 			iloy = 8;
+			enabled = false;
 		} else if(aloy < 0)
 			aloy = Integer.MAX_VALUE;
 			
@@ -881,8 +883,7 @@ public class Run {
 			|| (!ic && Time.isAfter(beh.getServerTime(),
 							Time.parse(r.get(SRC.Raid.creationDate))
 								.plusMinutes(30 - minRaidTimeLeft)))
-			|| (!ic && !dungeon 
-					&& !ConfigsV2.getChestBoolean(cid, currentLayer, ct, ConfigsV2.enabled))
+			|| (!ic && !dungeon && !enabled)
 			|| (!ic && (loy < iloy || loy > aloy))
 			|| (ConfigsV2.getBoolean(cid, currentLayer, dungeon ? ConfigsV2.dungeonFavOnly : ConfigsV2.campaignFavOnly) 
 					&& !ConfigsV2.getFavCaps(cid, currentLayer, list).contains(new JsonPrimitive(tdn)))
@@ -1139,7 +1140,7 @@ public class Run {
 			} else {
 				String err = beh.unlockUnit(unlockable[ind]);
 				if(err != null && !err.equals("not enough gold")) 
-					Debug.print("Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, Debug.runerr, Debug.warn, pn, 4, true);
+					Debug.print("Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, Debug.lowerr, Debug.error, pn, 4, true);
 			}
 			
 			ps[ind] = -1;
