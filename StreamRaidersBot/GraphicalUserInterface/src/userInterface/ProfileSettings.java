@@ -430,7 +430,7 @@ public class ProfileSettings {
 		buts.setInsets(10, 2, 2, 2);
 			
 			int g = 0;
-			String[] sbuts = "Campaign Fav Only  Dungeon Fav Only  Campaign Epic Place Fav Only  Dungeon Epic Place Fav Only  Place Marker Only  Prefer Rogues On Treasure Maps  Allow Place First".split("  ");
+			String[] sbuts = "Campaign Fav Only  Dungeon Fav Only  Campaign Epic Place Fav Only  Dungeon Epic Place Fav Only  Place Marker Only Campaign  Place Marker Only Dungeon  Prefer Rogues On Treasure Maps  Allow Place First".split("  ");
 			if(Options.is("exploits"))
 				sbuts = ArrayUtils.addAll(sbuts, "Use Multi Place Exploit  Use Multi Quest Exploit  Use Multi Event Exploit  Use Multi Chest Exploit  Use Multi Unit Exploit".split("  "));
 			

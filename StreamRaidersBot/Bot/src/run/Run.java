@@ -59,14 +59,15 @@ public class Run {
 	 * 	config import
 	 * 	config import from old client
 	 * 	config import/export fonts
-	 * 	place only on marker: differentiate campaign and dungeon
 	 * 	option to suppress specific error popups
 	 * 	kill (slot) round and restart if it takes more than x min
-	 * 	remove button for failed profiles
-	 * 	make uid final in constructor
+	 * 	remove-button for failed profiles
+	 * 	make uid final in constructor (whole userInterface)
 	 * 
 	 * 	after release:
 	 * 	get Donators from github source
+	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
+	 * 	add Account Manager (to further split user interface with bot)
 	 * 	
 	 * 
 	 */
@@ -500,10 +501,11 @@ public class Run {
 		
 		Debug.print("upts="+upts, Debug.units, Debug.info, pn, slot);
 		
-		if((ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnly) 
-					&& upts.size() <= 0)
+		if((((!dungeon && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnlyCampaign))
+						|| (dungeon && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnlyDungeon))) 
+					&& upts.size() == 0)
 				|| (!ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.allowPlaceFirst) 
-					&& (placeSer == null ? true : Json.parseArr(placeSer).size() <= 0))) 
+					&& (placeSer == null ? true : Json.parseArr(placeSer).size() == 0))) 
 			return;
 		
 		
@@ -583,6 +585,11 @@ public class Run {
 																	ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.maxu)), 
 														ChronoUnit.MILLIS);
 					break;
+				}
+				
+				if(err.equals("NOT_ENOUGH_POTIONS")) {
+					beh.setCurrency(Store.potions, 0);
+					epic = false;
 				}
 				
 				if(err.equals("PERIOD_ENDED"))
@@ -772,9 +779,9 @@ public class Run {
 				return new Place(units[p[0]], pos, i%2==0, i<2);
 			}
 			
-			//	TODO place marker only Campaign/Dungeon
-			
-			if(i==1 && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnly))
+			if(i==1 
+				&& ((!dungeon && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnlyCampaign))
+					|| (dungeon && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnlyDungeon))))
 				return null;
 		}
 		

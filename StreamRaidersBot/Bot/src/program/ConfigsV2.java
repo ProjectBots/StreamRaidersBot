@@ -315,7 +315,8 @@ public class ConfigsV2 {
 	public static final Boo useMultiUnitExploit = new Boo("useMultiUnitExploit");
 	public static final Boo useMultiChestExploit = new Boo("useMultiChestExploit");
 	public static final Boo useMultiEventExploit = new Boo("useMultiEventExploit");
-	public static final Boo placeMarkerOnly = new Boo("placeMarkerOnly");
+	public static final Boo placeMarkerOnlyCampaign = new Boo("placeMarkerOnlyCampaign");
+	public static final Boo placeMarkerOnlyDungeon = new Boo("placeMarkerOnlyDungeon");
 	public static final Boo preferRoguesOnTreasureMaps = new Boo("preferRoguesOnTreasureMaps");
 	public static final Boo allowPlaceFirst = new Boo("allowPlaceFirst");
 	public static final Boo proxyMandatory = new Boo("proxyMandatory");
