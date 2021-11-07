@@ -357,7 +357,7 @@ public class ProfileSection {
 								
 								Method method = sc.getDeclaredMethod("open", GUI.class);
 								
-								method.invoke(sc.getDeclaredConstructor().newInstance(cid, MainFrame.getProfiles().get(cid).getCurrentLayer()), MainFrame.getGUI());
+								method.invoke(sc.getDeclaredConstructor(String.class, String.class).newInstance(cid, MainFrame.getProfiles().get(cid).getCurrentLayer()), MainFrame.getGUI());
 							} catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException | ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException e1) {
 								Debug.printException("ProfileSection -> create: err=couldn't get Settings class for " + key, e1, Debug.runerr, Debug.error, null, null, true);
 							}
