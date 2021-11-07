@@ -400,6 +400,12 @@ public class MainFrame {
 					case KeyEvent.VK_I:
 						doAll(SRC.MainFrame.skip, 0);
 						break;
+					case KeyEvent.VK_T:
+						for(String key : profiles.keySet()) {
+							gui.msg("ServerTime", profiles.get(key).getBackEndHandler().getServerTime(), GUI.MsgConst.INFO);
+							break;
+						}
+						break;
 					}
 				} else if((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) > 0) {
 					switch(e.getKeyCode()) {
