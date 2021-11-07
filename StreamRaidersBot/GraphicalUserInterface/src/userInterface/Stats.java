@@ -29,7 +29,13 @@ public class Stats {
 
 	public static final String pre = "Stats::";
 	
-	private String uid;
+	private final String uid, cid;
+	
+	public Stats(String cid) {
+		this.cid = cid;
+		uid = pre + cid + "::" + LocalDateTime.now().toString().hashCode() + "::";
+	}
+	
 	private String pn;
 	private Run run = null;
 	private BackEndHandler man = null;
@@ -38,9 +44,7 @@ public class Stats {
 	private static final FontRenderContext frc = new FontRenderContext(affinetransform,true,true);     
 	private static final Font font = new Font("Arial", Font.PLAIN, 12);
 	
-	public void open(String cid) {
-		
-		uid = pre + cid + "::" + LocalDateTime.now().toString().hashCode() + "::";
+	public void open() {
 		
 		run = MainFrame.getProfiles().get(cid);
 		pn = run.getPN();

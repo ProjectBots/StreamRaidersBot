@@ -2,6 +2,8 @@ package userInterface;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.LocalDateTime;
+
 import include.GUI;
 import include.GUI.Button;
 import include.GUI.TextField;
@@ -10,8 +12,14 @@ import program.SRC;
 public class ActionsDelayed {
 	
 	public static final String pre = "ActionsDelayed::";
+	
+	private final String uid;
+	
+	public ActionsDelayed() {
+		uid = pre + LocalDateTime.now().toString().hashCode() + "::";
+	}
 
-	public static void open(GUI parent, boolean start) {
+	public void open(GUI parent, boolean start) {
 
 		GUI t = new GUI("Time", 500, 200, parent, null);
 		
@@ -24,7 +32,7 @@ public class ActionsDelayed {
 					@Override
 					public void run() {
 						try {
-							int time = (int) (Float.parseFloat(GUI.getInputText(pre+"tf")) * 1000);
+							int time = (int) (Float.parseFloat(GUI.getInputText(uid+"tf")) * 1000);
 							if(start) {
 								MainFrame.doAll(SRC.MainFrame.start, time);
 							} else {
@@ -45,7 +53,7 @@ public class ActionsDelayed {
 		tf.setText("0");
 		tf.setSize(60, 23);
 		tf.setAL(al);
-		t.addTextField(tf, pre+"tf");
+		t.addTextField(tf, uid+"tf");
 		
 		Button but = new Button();
 		but.setPos(0, 1);

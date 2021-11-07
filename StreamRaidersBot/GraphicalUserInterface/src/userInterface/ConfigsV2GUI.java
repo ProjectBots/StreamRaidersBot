@@ -30,6 +30,7 @@ public class ConfigsV2GUI {
 
 	
 	public static final String pre = "ConfigsV2GUI::";
+	private final String uid = pre + LocalDateTime.now().toString().hashCode() + "::";
 	
 
 	private static Hashtable<String, List<String>> configs = ConfigsV2.ConfigTypes.all;
@@ -37,7 +38,6 @@ public class ConfigsV2GUI {
 	private GUI gui = null;
 	public void exportConfig(GUI parent) {
 		//TODO fonts
-		final String uid = pre + LocalDateTime.now().toString().hashCode() + "::";
 		
 		Hashtable<String, Container> cons = new Hashtable<>();
 		

@@ -36,16 +36,21 @@ public class UnitSettings {
 
 	public static final String pre = "UnitSettings::";
 	
-	private String uid;
+	private final String uid, cid, lay;
 	private String pn;
 	
 	private static String[] prios = "place epic placedun epicdun upgrade unlock dupe buy difmin difmax epicdifmin epicdifmax".split(" ");
 	private static String prio_jump = "difmin";
 	
-	
-	public void open(String cid, String lay, GUI parent) {
-		
+	public UnitSettings(String cid, String lay) {
+		this.cid = cid;
+		this.lay = lay;
 		uid = pre + cid + "::" + LocalDateTime.now().toString().hashCode() + "::";
+	}
+	
+	
+	public void open(GUI parent) {
+		
 		
 		pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
 		
@@ -94,13 +99,13 @@ public class UnitSettings {
 					String[] list = ConfigsV2.getLayerIds(cid);
 					String sel = GUI.getSelected(id);
 					if(sel.equals("(all)")) {
-						new UnitSettings().open(cid, "(all)", gui);
+						new UnitSettings(cid, "(all)").open(gui);
 						gui.close();
 						return;
 					}
 					for(String lay : list) {
 						if(sel.equals(ConfigsV2.getStr(cid, lay, ConfigsV2.lname))) {
-							new UnitSettings().open(cid, lay, gui);
+							new UnitSettings(cid, lay).open(gui);
 							gui.close();
 							return;
 						}

@@ -15,13 +15,11 @@ import program.ConfigsV2;
 public class GlobalOptions {
 
 	
-public static final String pre = "GlobalOptions::";
+	public static final String pre = "GlobalOptions::";
 	
-	private String uid = null;
+	private final String uid = pre + LocalDateTime.now().toString().hashCode() + "::";
 	
 	public void open() {
-		
-		uid = pre + LocalDateTime.now().toString().hashCode() + "::";
 		
 		int p = 0;
 		

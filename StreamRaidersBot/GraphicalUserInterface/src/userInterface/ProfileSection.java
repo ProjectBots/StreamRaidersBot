@@ -26,11 +26,13 @@ public class ProfileSection {
 	
 	private static String[] sc = "Gold Potions Meat Candy Keys Bones".split(" ");
 	
-	private String cid = null;
+	private final String cid;
 	
-	public Container create(String cid) {
-		
+	public ProfileSection(String cid) {
 		this.cid = cid;
+	}
+	
+	public Container create() {
 		
 		int p = 0;
 		
@@ -322,7 +324,7 @@ public class ProfileSection {
 				stats.setAL(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						new Stats().open(cid);
+						new Stats(cid).open();
 					}
 				});
 				stngs.addBut(stats);
@@ -353,9 +355,9 @@ public class ProfileSection {
 										: key.substring(0, key.length()-1)
 									) + "Settings");
 								
-								Method method = sc.getDeclaredMethod("open", String.class, String.class, GUI.class);
+								Method method = sc.getDeclaredMethod("open", GUI.class);
 								
-								method.invoke(sc.getDeclaredConstructor().newInstance(), cid, MainFrame.getProfiles().get(cid).getCurrentLayer(), MainFrame.getGUI());
+								method.invoke(sc.getDeclaredConstructor().newInstance(cid, MainFrame.getProfiles().get(cid).getCurrentLayer()), MainFrame.getGUI());
 							} catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException | ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException e1) {
 								Debug.printException("ProfileSection -> create: err=couldn't get Settings class for " + key, e1, Debug.runerr, Debug.error, null, null, true);
 							}

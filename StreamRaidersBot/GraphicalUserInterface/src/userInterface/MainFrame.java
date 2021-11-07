@@ -216,9 +216,9 @@ public class MainFrame {
 					});
 					profiles.put(cid, r);
 					
-					ProfileSection ps = new ProfileSection();
+					ProfileSection ps = new ProfileSection(cid);
 					
-					Container c = ps.create(cid);
+					Container c = ps.create();
 					c.setPos(0, pos);
 					gui.addContainer(c, pre+cid+"::profile");
 					updateWS(false);
@@ -376,10 +376,10 @@ public class MainFrame {
 				if((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) > 0 && (e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0) {
 					switch(e.getKeyCode()) {
 					case KeyEvent.VK_A:
-						ActionsDelayed.open(gui, true);
+						new ActionsDelayed().open(gui, true);
 						break;
 					case KeyEvent.VK_I:
-						ActionsDelayed.open(gui, false);
+						new ActionsDelayed().open(gui, false);
 						break;
 					case KeyEvent.VK_R:
 						Fonts.ini();
@@ -458,7 +458,7 @@ public class MainFrame {
 		bot.setAL(m++, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ActionsDelayed.open(gui, true);
+				new ActionsDelayed().open(gui, true);
 			}
 		});
 		bot.setAL(m++, new ActionListener() {
@@ -476,7 +476,7 @@ public class MainFrame {
 		bot.setAL(m++, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ActionsDelayed.open(gui, false);
+				new ActionsDelayed().open(gui, false);
 			}
 		});
 		gui.addMenu(bot);
@@ -602,7 +602,7 @@ public class MainFrame {
 					else
 						updateWS(false);
 				} else {
-					Container c = new ProfileSection().create(cid);
+					Container c = new ProfileSection(cid).create();
 					c.setPos(0, gpos++);
 					gui.addContainer(c, pre+cid+"::profile");
 				}

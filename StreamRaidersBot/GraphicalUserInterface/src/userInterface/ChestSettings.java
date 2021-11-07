@@ -33,14 +33,19 @@ public class ChestSettings {
 
 	public static final String pre = "ChestSettings::";
 	
-	private String uid;
+	private final String uid, cid, lay;
+	
+	public ChestSettings(String cid, String lay) {
+		this.cid = cid;
+		this.lay = lay;
+		uid = pre + cid + "::" + LocalDateTime.now().toString().hashCode() + "::";
+	}
 	
 	private static String[] mm = "min max".split(" ");
 	private static final Color[] loyCols = new Color[] {new Color(54, 54, 54), new Color(192, 137, 112), new Color(192,192,192), new Color(212, 175, 55)};
 	
-	public void open(String cid, String lay, GUI parent) {
+	public void open(GUI parent) {
 		
-		uid = pre + cid + "::" + LocalDateTime.now().toString().hashCode() + "::";
 		
 		JsonArray cts = Json.parseArr(Options.get("chests"));
 		cts.remove(new JsonPrimitive("chestsalvage"));
@@ -83,13 +88,13 @@ public class ChestSettings {
 					String[] list = ConfigsV2.getLayerIds(cid);
 					String sel = GUI.getSelected(id);
 					if(sel.equals("(all)")) {
-						new ChestSettings().open(cid, "(all)", gui);
+						new ChestSettings(cid, "(all)").open(gui);
 						gui.close();
 						return;
 					}
 					for(String lay : list) {
 						if(sel.equals(ConfigsV2.getStr(cid, lay, ConfigsV2.lname))) {
-							new ChestSettings().open(cid, lay, gui);
+							new ChestSettings(cid, lay).open(gui);
 							gui.close();
 							return;
 						}

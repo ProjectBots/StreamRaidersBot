@@ -60,14 +60,16 @@ public class Run {
 	 * 	config import from old client
 	 * 	config import/export fonts
 	 * 	option to suppress specific error popups
-	 * 	kill (slot) round and restart if it takes more than x min
 	 * 	remove-button for failed profiles
-	 * 	make uid final in constructor (whole userInterface)
 	 * 
 	 * 	after release:
 	 * 	get Donators from github source
 	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
 	 * 	add Account Manager (to further split user interface with bot)
+	 * 
+	 * 
+	 * 	???:
+	 * 	kill (slot) round and restart if it takes more than x min
 	 * 	
 	 * 
 	 */

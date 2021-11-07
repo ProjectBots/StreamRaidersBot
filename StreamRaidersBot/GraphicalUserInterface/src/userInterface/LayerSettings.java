@@ -32,7 +32,12 @@ public class LayerSettings {
 
 	public static final String pre = "LayerSettings::";
 	
-	private String uid = null;
+	private final String uid, cid;
+	
+	public LayerSettings(String cid, String lay) {
+		this.cid = cid;
+		uid = pre + LocalDateTime.now().toString().hashCode() + "::";
+	}
 	
 	private boolean mouseDown = false;
 	
@@ -47,8 +52,6 @@ public class LayerSettings {
 	private int colpos = 0;
 	
 	private GUI gui;
-	
-	private String cid;
 	
 	private static class Pos {
 		private int start = -1;
@@ -78,11 +81,7 @@ public class LayerSettings {
 	
 	private Pos pos = new Pos();
 	
-	public void open(String cid, String lay_, GUI parent) {
-		
-		this.cid = cid;
-		
-		uid = pre + cid + "::" + LocalDateTime.now().toString().hashCode() + "::";
+	public void open(GUI parent) {
 		
 		int y = 0;
 		int p = 0;

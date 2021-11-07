@@ -35,11 +35,15 @@ public class ProfileSettings {
 
 	public static final String pre = "ProfileSettings::";
 	
-	private String uid = null;
+	private final String uid, cid, lay;
 	
-	public void open(String cid, String lay, GUI parent) {
-		
+	public ProfileSettings(String cid, String lay) {
+		this.lay = lay;
+		this.cid = cid;
 		uid = pre + cid + "::" + LocalDateTime.now().toString().hashCode() + "::";
+	}
+	
+	public void open(GUI parent) {
 		
 		int p = 0;
 		
@@ -151,7 +155,7 @@ public class ProfileSettings {
 								for(String scid : ConfigsV2.getCids())
 									if(ConfigsV2.getPStr(scid, ConfigsV2.synced).equals(cid))
 										ConfigsV2.sync(scid, dcid);
-								new ProfileSettings().open(cid, lay, gui);
+								new ProfileSettings(cid, lay).open(gui);
 								gui.close();
 								return;
 							}
@@ -193,13 +197,13 @@ public class ProfileSettings {
 					String[] list = ConfigsV2.getLayerIds(cid);
 					String sel = GUI.getSelected(id);
 					if(sel.equals("(all)")) {
-						new ProfileSettings().open(cid, "(all)", gui);
+						new ProfileSettings(cid, sel).open(gui);
 						gui.close();
 						return;
 					}
 					for(String lay : list) {
 						if(sel.equals(ConfigsV2.getStr(cid, lay, ConfigsV2.lname))) {
-							new ProfileSettings().open(cid, lay, gui);
+							new ProfileSettings(cid, lay).open(gui);
 							gui.close();
 							return;
 						}

@@ -28,10 +28,15 @@ public class CaptainSettings {
 
 	public static final String pre = "CaptainSettings::";
 	
-	private String uid = null;
+	private final String uid, cid, lay;
 	private GUI gui = null;
+	
+	public CaptainSettings(String cid, String lay) {
+		this.cid = cid;
+		this.lay = lay;
+		uid = pre + cid + "::" + LocalDateTime.now().toString().hashCode() + "::";
+	}
 
-	private String cid, lay;
 	private ListType list = new ListType("campaign");
 	
 	public CaptainSettings setList(String list) {
@@ -39,12 +44,7 @@ public class CaptainSettings {
 		return this;
 	}
 	
-	public void open(String cid, String lay, GUI parent) {
-		this.cid = cid;
-		this.lay = lay;
-		
-		uid = pre + cid + "::" + LocalDateTime.now().toString().hashCode() + "::";
-		
+	public void open(GUI parent) {
 		
 		int p = 0;
 		
@@ -82,13 +82,13 @@ public class CaptainSettings {
 					String[] lays = ConfigsV2.getLayerIds(cid);
 					String sel = GUI.getSelected(id);
 					if(sel.equals("(all)")) {
-						new CaptainSettings().setList(list.get()).open(cid, "(all)", gui);
+						new CaptainSettings(cid, "(all)").setList(list.get()).open(gui);
 						gui.close();
 						return;
 					}
 					for(String lay : lays) {
 						if(sel.equals(ConfigsV2.getStr(cid, lay, ConfigsV2.lname))) {
-							new CaptainSettings().setList(list.get()).open(cid, lay, gui);
+							new CaptainSettings(cid, lay).setList(list.get()).open(gui);
 							gui.close();
 							return;
 						}
@@ -122,7 +122,7 @@ public class CaptainSettings {
 				public void unselected(String id, ItemEvent e) {}
 				@Override
 				public void selected(String id, ItemEvent e) {
-					new CaptainSettings().setList(GUI.getSelected(id)).open(cid, lay, gui);
+					new CaptainSettings(cid, lay).setList(GUI.getSelected(id)).open(gui);
 					gui.close();
 				}
 			});
@@ -141,7 +141,7 @@ public class CaptainSettings {
 			stf.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					new CapSearch().open(gui, cid, lay, list, GUI.getInputText(uid+"search::cap"));
+					new CapSearch(cid, lay).open(gui, list, GUI.getInputText(uid+"search::cap"));
 				}
 			});
 			search.addTextField(stf, uid+"search::cap");
@@ -152,7 +152,7 @@ public class CaptainSettings {
 			sbut.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					new CapSearch().open(gui, cid, lay, list, GUI.getInputText(uid+"search::cap"));
+					new CapSearch(cid, lay).open(gui, list, GUI.getInputText(uid+"search::cap"));
 				}
 			});
 			search.addBut(sbut);

@@ -24,11 +24,16 @@ public class CapSearch {
 	
 	public static final String pre = "CapSearch::";
 	
-	private String uid = null;
+	private final String uid, cid, lay;
 	private GUI gui = null;
 	
-	public void open(GUI parent, String cid, String lay, ListType list, String search) {
+	public CapSearch(String cid, String lay) {
+		this.lay = lay;
+		this.cid = cid;
 		uid = pre + cid + "::" + LocalDateTime.now().toString().hashCode() + "::";
+	}
+	
+	public void open(GUI parent, ListType list, String search) {
 		
 		gui = new GUI("Captain Search for " + ConfigsV2.getPStr(cid, ConfigsV2.pname), 400, 500, parent, null);
 		gui.setBackgroundGradient(Fonts.getGradient("stngs caps search background"));
@@ -72,7 +77,7 @@ public class CapSearch {
 					public void onDeIconfied(WindowEvent e) {}
 					@Override
 					public void onClose(WindowEvent e) {
-						new CaptainSettings().setList(list.get()).open(cid, lay, parent);
+						new CaptainSettings(cid, lay).setList(list.get()).open(parent);
 						parent.close();
 					}
 				});
