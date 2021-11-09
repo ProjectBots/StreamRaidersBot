@@ -53,7 +53,6 @@ import program.Options;
 public class Run {
 	
 	/*	TODO
-	 * 	proxy mandatory - disable proxy if allowed and needed (for example if proxy doesn't respond anymore)
 	 * 	about page
 	 * 	fonts about page
 	 *  fonts donator page
@@ -1473,7 +1472,8 @@ public class Run {
 				ConfigsV2.getInt(cid, currentLayer, ConfigsV2.proxyPort),
 				user.equals("") ? null : user,
 				ConfigsV2.getStr(cid, currentLayer, ConfigsV2.proxyPass),
-				ConfigsV2.getStr(cid, currentLayer, ConfigsV2.userAgent));
+				ConfigsV2.getStr(cid, currentLayer, ConfigsV2.userAgent),
+				ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.proxyMandatory));
 	}
 	
 	private static <T>T[] add(T[] arr, T item) {

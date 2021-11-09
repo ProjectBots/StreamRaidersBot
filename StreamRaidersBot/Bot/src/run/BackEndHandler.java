@@ -65,8 +65,8 @@ public class BackEndHandler {
 		updateQuestEventRewards(true);
 	}
 	
-	public void setOptions(String proxyDomain, int proxyPort, String username, String password, String userAgent) {
-		req.setProxy(proxyDomain, proxyPort, username, password);
+	public void setOptions(String proxyDomain, int proxyPort, String username, String password, String userAgent, boolean mandatory) {
+		req.setProxy(proxyDomain, proxyPort, username, password, mandatory);
 		req.setUserAgent(userAgent);
 	}
 	

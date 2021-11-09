@@ -43,6 +43,10 @@ public class Http {
 		proxyPass = password;
 	}
 	
+	public boolean isProxyEnabled() {
+		return proxyDomain != null;
+	}
+	
 	public static class NotAllowedProxyException extends Exception {
 		private static final long serialVersionUID = 1L;
 	}

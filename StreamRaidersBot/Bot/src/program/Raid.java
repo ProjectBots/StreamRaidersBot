@@ -133,6 +133,8 @@ public class Raid {
 			JsonElement chest = raidStats.get("chestAwarded");
 			if(chest != null && chest.isJsonPrimitive())
 				ret.addProperty(chest.getAsString(), 1);
+			else
+				ret.addProperty("chestsalvage", 1);
 			
 			
 			for(int i=0; i<typChestRews.length; i++) {
@@ -171,8 +173,6 @@ public class Raid {
 	public static void updateChestRews() {
 		chest_rews = Json.parseObj(Options.get("rewards"));
 	}
-	
-	//TODO remaper
 	
 	public static class Reward {
 		public final String name;

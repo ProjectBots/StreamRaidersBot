@@ -18,16 +18,18 @@ public class SRR {
 	
 	private String proxyDomain = null;
 	private int proxyPort = 0;
+	private boolean proxyMandatory;
 	private String proxyUser;
 	private String proxyPass;
 	
 	private String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/0.0";
 	
-	public void setProxy(String domain, int port, String username, String password) {
+	public void setProxy(String domain, int port, String username, String password, boolean mandatory) {
 		proxyDomain = domain;
 		proxyPort = port;
 		proxyUser = username;
 		proxyPass = password;
+		proxyMandatory = mandatory;
 	}
 	
 	public void setUserAgent(String ua) {
@@ -60,7 +62,6 @@ public class SRR {
 		Http get = new Http();
 		get.setUrl(dataPath);
 		get.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/0.0");
-		
 		
 		String ret = null;
 		try {
@@ -177,9 +178,20 @@ public class SRR {
 	private String sendPost(Http post) throws NoConnectionException {
 		String p;
 		try {
-			p = post.sendUrlEncoded();
-		} catch (URISyntaxException e) {
-			throw new NoConnectionException(e);
+			try {
+				p = post.sendUrlEncoded();
+			} catch (URISyntaxException e) {
+				throw new NoConnectionException(e);
+			}
+		} catch (NoConnectionException e) {
+			if(proxyMandatory || !post.isProxyEnabled())
+				throw e;
+			post.setProxy(null, 0, null, null);
+			try {
+				p = post.sendUrlEncoded();
+			} catch (URISyntaxException e1) {
+				throw new NoConnectionException(e);
+			}
 		}
 		
 		if(p.contains("\"errorMessage\":\""))
