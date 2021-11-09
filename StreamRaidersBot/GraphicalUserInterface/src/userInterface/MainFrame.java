@@ -73,7 +73,16 @@ public class MainFrame {
 		return ret;
 	}
 	
-	private static void add(String cid, int pos) {
+	
+	private static int activeAdd = 0;
+	
+	private static void add(final String cid, final int pos, boolean uws) {
+		while(activeAdd >= 4) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {}
+		}
+		activeAdd++;
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -190,8 +199,10 @@ public class MainFrame {
 									GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons on"));
 								}
 								JsonArray cts = Json.parseArr(Options.get("chests"));
+								cts.add("bonechest");
+								cts.add("dungeonchest");
 								String ct = Remaper.map(raid.getFromNode(SRC.MapNode.chestType));
-								if(ct == null || (!ct.contains("dungeon") && !cts.contains(new JsonPrimitive(ct)))) {
+								if(ct == null || !cts.contains(new JsonPrimitive(ct))) {
 									Debug.print("MainFrame -> updateSlot -> chest_img: err=nochest, ct="+ct, Debug.lowerr, Debug.error, pn, slot, true);
 									ct = "nochest";
 								}
@@ -221,13 +232,16 @@ public class MainFrame {
 					Container c = ps.create();
 					c.setPos(0, pos);
 					gui.addContainer(c, pre+cid+"::profile");
-					updateWS(false);
-					//TODO
+					
 					sections.put(cid, ps);
+					
+					if(uws)
+						updateWS(false);
 					
 					r.setReady(true);
 					r.updateFrame();
 					
+					activeAdd--;
 					return;
 				} catch (SilentException e) {
 				} catch (NoConnectionException e) {
@@ -243,7 +257,9 @@ public class MainFrame {
 				}
 				
 				createFailedContainer(cid, pos);
-				updateWS(true);
+				if(uws)
+					updateWS(true);
+				activeAdd--;
 				return;
 			}
 		});
@@ -259,25 +275,43 @@ public class MainFrame {
 			Label name = new Label();
 			name.setPos(0, 0);
 			name.setText(ConfigsV2.getPStr(cid, ConfigsV2.pname));
+			name.setForeground(Fonts.getColor("main labels"));
 			c.addLabel(name);
 		
 			Button retry = new Button();
 			retry.setPos(1, 0);
 			retry.setText("\u27F2 retry");
+			retry.setForeground(Fonts.getColor("main buttons def"));
+			retry.setGradient(Fonts.getGradient("main buttons def"));
 			retry.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					gui.remove(pre+cid+"::profile");
-					add(cid, pos);
+					//TODO
+					add(cid, pos, false);
 				}
 			});
-			;
 			c.addBut(retry);
+			
+			Button rem = new Button();
+			rem.setPos(2, 0);
+			rem.setText("X");
+			rem.setForeground(Fonts.getColor("main buttons def"));
+			rem.setGradient(Fonts.getGradient("main buttons def"));
+			rem.setAL(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					ConfigsV2.remProfile(cid);
+					gui.remove(pre+cid+"::profile");
+				}
+			});
+			c.addBut(rem);
+			
 			
 		gui.addContainer(c, pre+cid+"::profile");
 	}
 	
-	private static int proCount = 0, proReady = 0, proFailed = 0;
+	private static int proCount, proReady, proFailed;
 	
 	synchronized private static void updateWS(boolean failed) {
 		if(failed)
@@ -287,9 +321,9 @@ public class MainFrame {
 		
 		WaitScreen.setText("<html><center>Loading Profiles</center><br><center>Ready: " + proReady + "/" + proCount + "</center><br><center>Failed: " + proFailed + "</center></html>");
 		
-		if(proCount == proReady) {
+		if(proCount == proReady)
 			frameReady();
-		}
+		
 	}
 	
 	private static void frameReady() {
@@ -586,21 +620,24 @@ public class MainFrame {
 		return ret;
 	}
 	
-	
 	public static void refresh(boolean add) {
-		List<String> keys = ConfigsV2.getCids();
+		List<String> cids = ConfigsV2.getCids();
 		
-		proCount = keys.size();
-		
-		WaitScreen.setText("<html><center>Loading Profiles</center><br><center>Ready: 0/" + proCount + "</center><br><center>Failed: 0</center></html>");
+		if(add) {
+			for(String key : profiles.keySet())
+				cids.remove(key);
+			
+			proCount = cids.size();
+			proReady = 0;
+			proFailed = 0;
+			
+			WaitScreen.setText("<html><center>Loading Profiles</center><br><center>Ready: 0/" + proCount + "</center><br><center>Failed: 0</center></html>");
+		}
 		
 		if(gui != null) {
-			for(String cid : keys)
+			for(String cid : cids)
 				if(add) {
-					if(!profiles.keySet().contains(cid))
-						add(cid, gpos++);
-					else
-						updateWS(false);
+					add(cid, gpos++, true);
 				} else {
 					Container c = new ProfileSection(cid).create();
 					c.setPos(0, gpos++);

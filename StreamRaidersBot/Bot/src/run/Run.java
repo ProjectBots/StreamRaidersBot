@@ -54,13 +54,13 @@ public class Run {
 	
 	/*	TODO
 	 * 	proxy mandatory - disable proxy if allowed and needed (for example if proxy doesn't respond anymore)
-	 * 	make about page + fonts
-	 *  donator page fonts
+	 * 	about page
+	 * 	fonts about page
+	 *  fonts donator page
 	 * 	config import
 	 * 	config import from old client
-	 * 	config import/export fonts
+	 * 	fonts config import/export
 	 * 	option to suppress specific error popups
-	 * 	remove-button for failed profiles
 	 * 
 	 * 	after release:
 	 * 	get Donators from github source
@@ -70,6 +70,7 @@ public class Run {
 	 * 
 	 * 	???:
 	 * 	kill (slot) round and restart if it takes more than x min
+	 * 	- may not be possible, didn't found a reliable way to "kill" a thread if it's hung up
 	 * 	
 	 * 
 	 */

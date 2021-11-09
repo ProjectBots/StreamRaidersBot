@@ -25,7 +25,9 @@ public class WaitScreen {
 	}
 	
 	public static void setText(String text) {
-		if(ws != null)
+		if(ws == null)
+			open(text);
+		else
 			GUI.setText(pre+"lab", text);
 	}
 	
