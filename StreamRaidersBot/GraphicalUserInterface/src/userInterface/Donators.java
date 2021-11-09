@@ -23,6 +23,7 @@ public class Donators {
 	public static void open(GUI parent) {
 		//TODO fonts
 		GUI gui = new GUI("Donators", 700, 800, parent, null);
+		gui.setBackgroundGradient(Fonts.getGradient("donators background"));
 		
 		int y0 = 0;
 		Container dc = new Container();
@@ -39,12 +40,14 @@ public class Donators {
 				ln.setText(""+(y1+1));
 				ln.setInsets(6, 2, 6, 20);
 				ln.setFont(new Font(null, Font.PLAIN, 22));
+				ln.setForeground(Fonts.getColor("donators labels"));
 				dc.addLabel(ln);
 				
 				Label nl = new Label();
 				nl.setPos(x++, y1);
 				nl.setText(d.name);
 				nl.setFont(new Font(null, Font.PLAIN, 22));
+				nl.setForeground(Fonts.getColor("donators labels"));
 				dc.addLabel(nl);
 				
 				Label al = new Label();
@@ -53,12 +56,14 @@ public class Donators {
 				al.setInsets(6, 20, 6, 20);
 				al.setAnchor("e");
 				al.setFont(new Font(null, Font.PLAIN, 22));
+				al.setForeground(Fonts.getColor("donators labels"));
 				dc.addLabel(al);
 				
 				Label tl = new Label();
 				tl.setPos(x++, y1);
 				tl.setText(d.text);
 				tl.setFont(new Font(null, Font.PLAIN, 22));
+				tl.setForeground(Fonts.getColor("donators labels"));
 				dc.addLabel(tl);
 				
 				y1++;
@@ -74,6 +79,8 @@ public class Donators {
 			bpp.setText(ss[0]);
 			bpp.setSize(350, 30);
 			bpp.setInsets(2, 50, 2, 2);
+			bpp.setForeground(Fonts.getColor("donators buttons"));
+			bpp.setGradient(Fonts.getGradient("donators buttons"));
 			bpp.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -99,6 +106,8 @@ public class Donators {
 			btc.setText(cs[0]);
 			btc.setSize(350, 30);
 			btc.setInsets(2, 50, 2, 2);
+			btc.setForeground(Fonts.getColor("donators buttons"));
+			btc.setGradient(Fonts.getGradient("donators buttons"));
 			btc.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {

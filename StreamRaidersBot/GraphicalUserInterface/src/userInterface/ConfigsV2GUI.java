@@ -37,18 +37,18 @@ public class ConfigsV2GUI {
 	
 	private GUI gui = null;
 	public void exportConfig(GUI parent) {
-		//TODO fonts
 		
 		Hashtable<String, Container> cons = new Hashtable<>();
 		
 		gui = new GUI("Export Config", 400, 500, parent, null);
-		
+		gui.setBackgroundGradient(Fonts.getGradient("stngs export background"));
 		
 		int p = 0;
 		
 		Label gname = new Label();
 		gname.setPos(0, p);
 		gname.setText("Global");
+		gname.setForeground(Fonts.getColor("stngs export labels"));
 		gui.addLabel(gname);
 		
 		ComboBox selg = new ComboBox(uid+"global::select");
@@ -97,6 +97,7 @@ public class ConfigsV2GUI {
 			Label pname = new Label();
 			pname.setPos(0, p);
 			pname.setText(ConfigsV2.getPStr(cid, ConfigsV2.pname));
+			pname.setForeground(Fonts.getColor("stngs export labels"));
 			gui.addLabel(pname);
 			
 			ComboBox select = new ComboBox(c+"select");
@@ -135,6 +136,7 @@ public class ConfigsV2GUI {
 				CButton cbc = new CButton(c+"pconf::"+pconf);
 				cbc.setText(pconf);
 				cbc.setPos(1, l++);
+				cbc.setForeground(Fonts.getColor("stngs export labels"));
 				con.addCheckBox(cbc);
 			}
 			
@@ -144,6 +146,7 @@ public class ConfigsV2GUI {
 				Label lname = new Label();
 				lname.setPos(1, l);
 				lname.setText(ConfigsV2.getStr(cid, lid, ConfigsV2.lname));
+				lname.setForeground(Fonts.getColor("stngs export labels"));
 				con.addLabel(lname);
 				
 				ComboBox sellay = new ComboBox(cl+"select");
@@ -184,12 +187,14 @@ public class ConfigsV2GUI {
 						Label lcs = new Label();
 						lcs.setPos(1, y++);
 						lcs.setText("--"+s+"--");
+						lcs.setForeground(Fonts.getColor("stngs export labels"));
 						conlay.addLabel(lcs);
 						
 						for(String sc : configs.get(s)) {
 							CButton cb = new CButton(cl+s+"::"+sc);
 							cb.setText(sc);
 							cb.setPos(1, y++);
+							cb.setForeground(Fonts.getColor("stngs export labels"));
 							conlay.addCheckBox(cb);
 						}
 						
@@ -217,6 +222,8 @@ public class ConfigsV2GUI {
 		exs.setSpan(2, 1);
 		exs.setText("Export Selected");
 		exs.setInsets(20, 2, 2, 2);
+		exs.setForeground(Fonts.getColor("stngs export buttons"));
+		exs.setGradient(Fonts.getGradient("stngs export buttons"));
 		exs.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -295,6 +302,8 @@ public class ConfigsV2GUI {
 		exa.setFill('h');
 		exa.setSpan(2, 1);
 		exa.setInsets(5, 2, 20, 2);
+		exa.setForeground(Fonts.getColor("stngs export buttons"));
+		exa.setGradient(Fonts.getGradient("stngs export buttons"));
 		exa.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

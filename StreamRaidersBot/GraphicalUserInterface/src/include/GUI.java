@@ -1312,6 +1312,9 @@ public class GUI{
 	public void addCheckBox(CButton opt) {
 		JCheckBox cb = new JCheckBox(opt.getText());
 		cb.addActionListener(opt.getAl());
+		Color fore = opt.getForeground();
+		if(fore != null)
+			cb.setForeground(fore);
 		addObj(opt, cb, opt.getId());
 	}
 	

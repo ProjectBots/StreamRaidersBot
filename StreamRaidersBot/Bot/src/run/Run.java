@@ -55,11 +55,11 @@ public class Run {
 	/*	TODO
 	 * 	about page
 	 * 	fonts about page
-	 *  fonts donator page
 	 * 	config import
 	 * 	config import from old client
-	 * 	fonts config import/export
+	 * 	fonts config import
 	 * 	option to suppress specific error popups
+	 * 	rename Fonts to CS (ColorScheme)
 	 * 
 	 * 	after release:
 	 * 	get Donators from github source
