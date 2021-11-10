@@ -287,7 +287,6 @@ public class MainFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					gui.remove(pre+cid+"::profile");
-					//TODO
 					add(cid, pos, false);
 				}
 			});
@@ -642,6 +641,9 @@ public class MainFrame {
 					Container c = new ProfileSection(cid).create();
 					c.setPos(0, gpos++);
 					gui.addContainer(c, pre+cid+"::profile");
+					Run r = profiles.get(cid);
+					for(int i=0; i<5; i++)
+						r.setRunning(r.isRunning(i), i);
 				}
 			
 			if(proCount == 0)

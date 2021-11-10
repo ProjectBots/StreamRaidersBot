@@ -21,7 +21,6 @@ import program.Donators.Don;
 public class Donators {
 
 	public static void open(GUI parent) {
-		//TODO fonts
 		GUI gui = new GUI("Donators", 700, 800, parent, null);
 		gui.setBackgroundGradient(Fonts.getGradient("donators background"));
 		

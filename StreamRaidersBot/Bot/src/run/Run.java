@@ -10,6 +10,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -60,6 +61,7 @@ public class Run {
 	 * 	fonts config import
 	 * 	option to suppress specific error popups
 	 * 	rename Fonts to CS (ColorScheme)
+	 * 	update xX_DEV_Xx
 	 * 
 	 * 	after release:
 	 * 	get Donators from github source
@@ -80,6 +82,7 @@ public class Run {
 	private String currentLayer = "(default)";
 	private String currentLayerId = null;
 	private boolean[] isRunning = new boolean[5];
+	private boolean[] isActiveRunning = new boolean[5];
 	private boolean[] change = new boolean[4];
 	private int[] sleep = new int[5];
 	
@@ -240,24 +243,64 @@ public class Run {
 		setRunning(!isRunning(slot), slot);
 	}
 	
+	
+	
+	private List<List<Boolean>> queue = Collections.synchronizedList(new ArrayList<List<Boolean>>() {
+		private static final long serialVersionUID = 1L;
+		{
+			add(Collections.synchronizedList(new ArrayList<>()));
+			add(Collections.synchronizedList(new ArrayList<>()));
+			add(Collections.synchronizedList(new ArrayList<>()));
+			add(Collections.synchronizedList(new ArrayList<>()));
+			add(Collections.synchronizedList(new ArrayList<>()));
+		}
+	});
+	
 	public void setRunning(boolean b, int slot) {
-		if(isRunning(slot) == b)
-			return;
-		if(b) {
-			feh.onStart(pn, cid, slot);
-		} else {
-			feh.onStop(pn, cid, slot);
-		}
-		isRunning[slot] = b;
-		if(b) {
-			Thread t = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					slotSequence(slot);
+		Thread th = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				List<Boolean> q = queue.get(slot);
+				q.add(b);
+				if(q.size() == 1) {
+					Timer t = new Timer();
+					t.schedule(new TimerTask() {
+						@Override
+						public void run() {
+							if(q.size() == 0) {
+								t.cancel();
+								return;
+							}
+							boolean b = q.remove(0);
+							if(b)
+								feh.onStart(pn, cid, slot);
+							else 
+								feh.onStop(pn, cid, slot);
+							
+							if(isRunning[slot] == b)
+								return;
+							isRunning[slot] = b;
+							while(isActiveRunning[slot]) {
+								try {
+									Thread.sleep(100);
+								} catch (InterruptedException e) {}
+							}
+							if(b) {
+								isActiveRunning[slot] = true;
+								Thread t = new Thread(new Runnable() {
+									@Override
+									public void run() {
+										slotSequence(slot);
+									}
+								});
+								t.start();
+							}
+						}
+					}, 100, 500);
 				}
-			});
-			t.start();
-		}
+			}
+		});
+		th.start();
 	}
 	
 	public boolean isRunning(int slot) {
@@ -418,15 +461,16 @@ public class Run {
 				|| (slot == 3 && beh.hasBattlePass());
 	}
 	
-	
 	private void sleep(int sec, int slot) {
 		sleep[slot] = sec;
 		Timer t = new Timer();
 		t.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				if(!isRunning[slot])
+				if(!isRunning[slot]) {
 					t.cancel();
+					isActiveRunning[slot] = false;
+				}
 				
 				int min = sleep[slot] / 60;
 				int sec = sleep[slot] % 60;
@@ -450,8 +494,6 @@ public class Run {
 					t.cancel();
 					slotSequence(slot);
 				}
-				
-				
 			}
 		}, 0, 1000);
 	}
