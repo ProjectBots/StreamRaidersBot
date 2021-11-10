@@ -60,6 +60,7 @@ public class ConfigsV2 {
 	}
 
 	public static final GStr fontFile = new GStr("fontFile");
+	public static final GStr blocked_errors = new GStr("blocked_errors");
 	
 	public static String getGStr(GStr con) {
 		return configs.getAsJsonObject("Global").get(con.get()).getAsString();

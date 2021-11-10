@@ -140,7 +140,7 @@ public class SRR {
 			if(err.isJsonPrimitive() && err.getAsString().equals("User is not authorized.")) {
 				throw new NotAuthorizedException();
 			} else {
-				Debug.print("SRR -> constructor: getUser=" + getUser, Debug.runerr, Debug.fatal, null, null, true);
+				Debug.print("SRR -> constructor: err=failed to get User, getUser=" + getUser, Debug.runerr, Debug.fatal, null, null, true);
 			}
 		}
 	}

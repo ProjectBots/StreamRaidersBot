@@ -60,6 +60,8 @@ public class Run {
 	 * 	option to suppress specific error popups
 	 * 	rename Fonts to CS (ColorScheme)
 	 * 	update xX_DEV_Xx
+	 * 	option to set max profile actions at once
+	 * 	add tooltips
 	 * 
 	 * 	after release:
 	 * 	get Donators from github source
@@ -254,48 +256,42 @@ public class Run {
 		}
 	});
 	
+	private boolean[] setRun = new boolean[5];
 	public void setRunning(boolean b, int slot) {
 		Thread th = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				List<Boolean> q = queue.get(slot);
 				q.add(b);
-				if(q.size() == 1) {
-					Timer t = new Timer();
-					t.schedule(new TimerTask() {
-						@Override
-						public void run() {
-							if(q.size() == 0) {
-								t.cancel();
-								return;
+				if(setRun[slot])
+					return;
+				setRun[slot] = true;
+				while(q.size() > 0) {
+					boolean b = q.remove(0);
+					if(b)
+						feh.onStart(pn, cid, slot);
+					else 
+						feh.onStop(pn, cid, slot);
+					if(isRunning[slot] == b)
+						continue;
+					isRunning[slot] = b;
+					while(isActiveRunning[slot]) {
+						try {
+							Thread.sleep(100);
+						} catch (InterruptedException e) {}
+					}
+					if(b) {
+						isActiveRunning[slot] = true;
+						Thread t = new Thread(new Runnable() {
+							@Override
+							public void run() {
+								slotSequence(slot);
 							}
-							boolean b = q.remove(0);
-							if(b)
-								feh.onStart(pn, cid, slot);
-							else 
-								feh.onStop(pn, cid, slot);
-							
-							if(isRunning[slot] == b)
-								return;
-							isRunning[slot] = b;
-							while(isActiveRunning[slot]) {
-								try {
-									Thread.sleep(100);
-								} catch (InterruptedException e) {}
-							}
-							if(b) {
-								isActiveRunning[slot] = true;
-								Thread t = new Thread(new Runnable() {
-									@Override
-									public void run() {
-										slotSequence(slot);
-									}
-								});
-								t.start();
-							}
-						}
-					}, 100, 500);
+						});
+						t.start();
+					}
 				}
+				setRun[slot] = false;
 			}
 		});
 		th.start();
@@ -427,7 +423,7 @@ public class Run {
 
 					// shift start if before now
 					if(s < n)
-						s += 2015;
+						s += 2016;
 					
 					// calculate time until next layer which is not disabled
 					w = (s-n)*300;
@@ -445,11 +441,25 @@ public class Run {
 		if(w > -1) {
 			Debug.print("sleeping "+w+" sec", Debug.general, Debug.info, pn, slot);
 			sleep(w, slot);
-		} else
-			Debug.print("Run -> slotSequence: err=couldnt find wait time", Debug.runerr, Debug.fatal, pn, slot, true);
+		} else {
+			Debug.print("Run -> slotSequence: err=couldn't find wait time", Debug.runerr, Debug.fatal, pn, slot, true);
+			feh.onStop(pn, cid, slot);
+			isActiveRunning[slot] = false;
+			isRunning[slot] = false;
+		}
 		
-		System.gc();
+		synchronized (gclock) {
+			if(ConfigsV2.getGBoo(ConfigsV2.useMemoryReleaser) && now.isAfter(gcwait)) {
+				System.gc();
+				gcwait = now.plusSeconds(30);
+			}
+		}
+		
 	}
+	
+	private static LocalDateTime gcwait = LocalDateTime.now();
+	private static Object gclock = new Object();
+	
 	
 	public boolean canUseSlot(int slot) throws NoConnectionException, NotAuthorizedException {
 		int uCount = beh.getUnits(pn, SRC.Manager.all, false).length;
@@ -1397,7 +1407,7 @@ public class Run {
 							}
 						} catch (NoConnectionException e) {
 						} catch (NullPointerException e) {
-							Debug.print("Run -> event -> collectEvent(exploit): tier="+tier+", bp="+bp, Debug.runerr, Debug.error, pn, 4, true);
+							Debug.print("Run -> event -> collectEvent(exploit): err=failed to collectEvent(exploit), tier="+tier+", bp="+bp, Debug.runerr, Debug.error, pn, 4, true);
 						}
 						
 					}

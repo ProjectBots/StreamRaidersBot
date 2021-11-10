@@ -1,11 +1,14 @@
 package bot;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 
 import com.google.gson.JsonObject;
 
 import include.GUI;
+import include.GUI.Button;
 import include.GUI.Image;
 import include.GUI.Label;
 import include.GUI.TextArea;
@@ -28,8 +31,27 @@ public class StreamRaiders {
 	
 	private static int error_count = 0;
 	private static GUI err = null;
+	public static final String pre = "StreamRaiders::";
 	
-	synchronized private static void log(String text, Exception e) {
+	
+	synchronized private static void log(String text) {
+		final String errmsg;
+		if_clause:
+		if(Options.is("beta_frame")) {
+			int ind1 = text.indexOf("err=");
+			if(ind1 == -1) {
+				errmsg = null;
+				break if_clause;
+			}
+			int ind2 = text.indexOf(",", ind1);
+			if(ind2 == -1)
+				ind2 = text.length();
+			errmsg = text.substring(ind1+4, ind2);
+			
+			if(ConfigsV2.getGStr(ConfigsV2.blocked_errors).contains(errmsg))
+				return;
+		} else
+			errmsg = null;
 		if(error_count == 0) {
 			err = new GUI("Error occured", 400, 200, Options.is("beta_frame") ? userInterface.MainFrame.getGUI() : bot.MainFrame.getGUI(), null);
 			err.addWinLis(new WinLis() {
@@ -52,19 +74,36 @@ public class StreamRaiders {
 			l.setText("<html>see logs.txt for more informations</html>");
 			l.setInsets(2, 10, 2, 2);
 			err.addLabel(l);
-			TextArea ta = new TextArea();
-			ta.setPos(1, error_count++);
-			ta.setText(text);
-			ta.setInsets(2, 10, 2, 2);
-			err.addTextArea(ta);
+			log(text);
 			err.refresh();
 		} else {
 			TextArea ta = new TextArea();
-			ta.setPos(1, error_count++);
+			ta.setPos(1, error_count);
 			ta.setText(text);
+			ta.setEditable(false);
 			ta.setInsets(2, 10, 2, 2);
 			err.addTextArea(ta);
+			
+			if(errmsg != null) {
+				Button block = new Button();
+				block.setPos(2, error_count);
+				block.setText("block");
+				block.setAL(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						String blocked = ConfigsV2.getGStr(ConfigsV2.blocked_errors);
+						if(blocked.contains(errmsg))
+							return;
+						if(!blocked.equals(""))
+							blocked += "|";
+						blocked += errmsg;
+						ConfigsV2.setGStr(ConfigsV2.blocked_errors, blocked);
+					}
+				});
+				err.addBut(block);
+			}
 			err.refresh();
+			error_count++;
 		}
 	}
 	
@@ -109,13 +148,13 @@ public class StreamRaiders {
 			@Override
 			public void onPrintLine(String pre, String msg, Scope scope, Type type, String pn, Integer slot, boolean forced) {
 				if(scope.equals(Debug.runerr))
-					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg, null);
+					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
 				DebugEventHandler.super.onPrintLine(pre, msg, scope, type, pn, slot, forced);
 			}
 			@Override
 			public void onWriteLine(String path, String pre, String msg, Scope scope, Type type, String pn, Integer slot, boolean forced) {
 				if(scope.equals(Debug.runerr))
-					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg, null);
+					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
 				if(Debug.getSevertyOf(type) > 1 && !msg.contains("couldnt set image"))
 					System.err.println(pre+msg);
 				DebugEventHandler.super.onWriteLine(path, pre, msg, scope, type, pn, slot, forced);
@@ -123,13 +162,13 @@ public class StreamRaiders {
 			@Override
 			public void onPrintException(String pre, String msg, Exception e, Scope scope, Type type, String pn, Integer slot, boolean forced) {
 				if(scope.equals(Debug.runerr))
-					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg, e);
+					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
 				DebugEventHandler.super.onPrintException(pre, msg, e, scope, type, pn, slot, forced);
 			}
 			@Override
 			public void onWriteException(String path, String pre, String msg, Exception e, Scope scope, Type type, String pn, Integer slot, boolean forced) {
 				if(scope.equals(Debug.runerr))
-					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg, e);
+					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
 				if(Debug.getSevertyOf(type) > 1) {
 					System.err.println(pre+msg);
 					e.printStackTrace();
@@ -153,7 +192,7 @@ public class StreamRaiders {
 			try {
 				Browser.create();
 			} catch (IOException | RuntimeException e) {
-				Debug.printException("Couldnt initialize embeded Browser", e, Debug.runerr, Debug.error, null, null, true);
+				Debug.printException("err=Couldnt initialize embeded Browser", e, Debug.runerr, Debug.error, null, null, true);
 				WaitScreen.close();
 				return;
 			}
@@ -171,7 +210,7 @@ public class StreamRaiders {
 			else
 				Configs.load();
 		} catch (IOException e) {
-			Debug.printException("load configs", e, Debug.runerr, Debug.error, null, null, true);
+			Debug.printException("err=failed to load configs", e, Debug.runerr, Debug.error, null, null, true);
 			if(GUI.showConfirmationBoxStatic("Loading Configs", "config file is corrupted\r\nreset?")) {
 				try {
 					if(Options.is("beta_frame")) 
@@ -179,7 +218,7 @@ public class StreamRaiders {
 					else
 						Configs.load(true);
 				} catch (IOException e1) {
-					Debug.printException("failed", e, Debug.runerr, Debug.error, null, null, true);
+					Debug.printException("err=failed to reset config", e, Debug.runerr, Debug.error, null, null, true);
 				}
 			} else {
 				return;

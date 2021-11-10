@@ -835,7 +835,7 @@ public class Run {
 					String ct = raids[i].getFromNode(SRC.MapNode.chestType);
 					if(ct == null) {
 						if(ctNull)
-							Debug.print("Run -> captains: ct=null", Debug.runerr, Debug.error, name, null, true);
+							Debug.print("Run -> captains: err=ct equals null", Debug.runerr, Debug.error, name, null, true);
 						ctNull = false;
 						bannedCaps.addProperty(raids[i].get(SRC.Raid.captainId), Time.plusMinutes(srrh.getServerTime(), 30));
 						switchRaid(raids[i].get(SRC.Raid.userSortIndex), true, getCaps(raids[i]));

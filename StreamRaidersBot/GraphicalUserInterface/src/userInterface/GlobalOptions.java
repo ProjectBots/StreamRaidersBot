@@ -5,6 +5,9 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import include.GUI;
 import include.GUI.Button;
@@ -109,9 +112,53 @@ public class GlobalOptions {
 			lff.setForeground(Fonts.getColor("stngs global labels"));
 			lff.setText(ff.substring(0, ff.lastIndexOf(".")));
 			cff.addLabel(lff, uid+"lff");
-			
 		
 		gui.addContainer(cff);
+		
+		Button bbe = new Button();
+		bbe.setPos(0, p++);
+		bbe.setText("Blocked Errors");
+		bbe.setTooltip("Manage blocked errors");
+		bbe.setGradient(Fonts.getGradient("stngs global buttons def"));
+		bbe.setForeground(Fonts.getColor("stngs global buttons def"));
+		bbe.setAL(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				
+				GUI err = new GUI("Blocked Errors", 400, 500, gui, null);
+				
+				
+				List<String> blocked = new ArrayList<>(Arrays.asList(ConfigsV2.getGStr(ConfigsV2.blocked_errors).split("\\|")));
+				if(blocked.get(0).equals("")) {
+					Label lnts = new Label();
+					lnts.setText("Nothing to show :(");
+					err.addLabel(lnts);
+					return;
+				}
+				int y = 0;
+				for(String s : blocked) {
+					final String eid = uid + LocalDateTime.now().toString().hashCode() + "::" + s;
+					
+					Button b = new Button();
+					b.setPos(0, y++);
+					b.setText(s);
+					b.setFill('h');
+					b.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							err.remove(eid);
+							blocked.remove(s);
+							if(blocked.size() == 0)
+								err.close();
+							ConfigsV2.setGStr(ConfigsV2.blocked_errors, String.join("|", blocked));
+						}
+					});
+					err.addBut(b, eid);
+				}
+			}
+		});
+		gui.addBut(bbe);
 		
 		
 		Button resStats = new Button();

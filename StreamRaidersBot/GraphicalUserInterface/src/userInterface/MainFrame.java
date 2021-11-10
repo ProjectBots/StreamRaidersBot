@@ -245,7 +245,7 @@ public class MainFrame {
 					return;
 				} catch (SilentException e) {
 				} catch (NoConnectionException e) {
-					Debug.printException("Run -> Maybe your internet connection failed", e, Debug.general, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
+					Debug.printException("Run -> err=Maybe your internet connection failed", e, Debug.general, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
 				} catch (NotAuthorizedException e3) {
 					GUI err = new GUI("User ("+ ConfigsV2.getPStr(cid, ConfigsV2.pname) +") not authorized", 500, 200, MainFrame.getGUI(), null);
 					Label l = new Label();

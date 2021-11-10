@@ -402,7 +402,7 @@ public class GuideContent {
 				try {
 					GUI.setImage("guide::unit::img", img);
 				} catch (IOException e1) {
-					Debug.printException("GuideContent -> genUnits: uid="+uid, e1, Debug.general, Debug.error, null, null, true);
+					Debug.printException("GuideContent -> genUnits: err=failed to genUnits, uid="+uid, e1, Debug.general, Debug.error, null, null, true);
 				}
 				update(-1);
 			}

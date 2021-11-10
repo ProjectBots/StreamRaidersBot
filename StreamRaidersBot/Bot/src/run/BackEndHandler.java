@@ -111,7 +111,7 @@ public class BackEndHandler {
 					Options.set(c+"date", base.get("LiveEndTime").getAsString());
 					Options.set(c+"price", base.get("BasePrice").getAsString());
 				} catch (NullPointerException e) {
-					Debug.printException("SRRHelper -> updateDataPath: err=failed to update chest, chest="+c, e, Debug.runerr, Debug.error, null, null, true);
+					Debug.printException("BackEndHandler -> updateDataPath: err=failed to update chest, chest="+c, e, Debug.runerr, Debug.error, null, null, true);
 					Options.set(c+"date", "2021-10-10 12:00:00");
 					Options.set(c+"price", "9999");
 				}
@@ -515,7 +515,7 @@ public class BackEndHandler {
 			if(je.isJsonPrimitive()) 
 				return je.getAsString();
 		} catch (NullPointerException e) {
-			Debug.printException("SRRHelper -> placeUnit: err=failed to place Unit, atr=" + atr == null ? "null" : atr, e, Debug.runerr, Debug.error, pn, slot, true);
+			Debug.printException("BackEndHandler -> placeUnit: err=failed to place Unit, atr=" + atr == null ? "null" : atr, e, Debug.runerr, Debug.error, pn, slot, true);
 		}
 		
 		return null;

@@ -254,7 +254,7 @@ public class Map {
 				set(x, y, SRC.Map.isNeutral, true);
 				break;
 			default:
-				Debug.print("Map -> addEntity: team=" + place.getAsJsonPrimitive("team").getAsString(), Debug.runerr, Debug.error, pn, slot, true);
+				Debug.print("Map -> addEntity: err=failed to determine team, team=" + place.getAsJsonPrimitive("team").getAsString(), Debug.runerr, Debug.error, pn, slot, true);
 			}
 			set(x, y, "isEntity", true);
 			set(x, y, "isEmpty", false);
