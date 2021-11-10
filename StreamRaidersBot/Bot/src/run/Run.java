@@ -54,8 +54,6 @@ import program.Options;
 public class Run {
 	
 	/*	TODO
-	 * 	about page
-	 * 	fonts about page
 	 * 	config import
 	 * 	config import from old client
 	 * 	fonts config import

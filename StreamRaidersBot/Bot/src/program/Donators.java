@@ -28,7 +28,7 @@ public class Donators {
 			add(new Don("Obelisk", 2201, "thanks for taking the time from your schedule to make this :)"));
 			add(new Don("Snugsel", 2000, ""));
 			add(new Don("CeKay", 1500, "Thx for this amazing - for me - timesaving project 3  cekay.de"));
-			add(new Don("candyknack", 1258, "He didn't want to say anything"));
+			add(new Don("candyknack", 1258, ""));
 			add(new Don("DeathDriver", 1110, "Thanks for creating this master piece"));
 			add(new Don("Noa3", 1000, ""));
 			add(new Don("CaptainYesz", 791, ""));
