@@ -113,6 +113,14 @@ public class ChestSettings {
 			mima.setAnchor("c");
 			mima.setForeground(Fonts.getColor("stngs chests names"));
 			gui.addLabel(mima);
+			
+			Label mimat = new Label();
+			mimat.setPos(p+5, g);
+			mimat.setText(key+" time");
+			mimat.setSpan(2, 1);
+			mimat.setAnchor("c");
+			mimat.setForeground(Fonts.getColor("stngs chests names"));
+			gui.addLabel(mimat);
 		}
 		
 		g++;
@@ -132,9 +140,9 @@ public class ChestSettings {
 			cname.setForeground(Fonts.getColor("stngs chests names"));
 			gui.addLabel(cname);
 			
-			for(String key : mm) {
+			for(String s : mm) {
 				
-				Integer wins = ConfigsV2.getChestInt(cid, lay, chest, key.equals("min") ? ConfigsV2.minc : ConfigsV2.maxc);
+				Integer wins = ConfigsV2.getChestInt(cid, lay, chest, s.equals("min") ? ConfigsV2.minLoy : ConfigsV2.maxLoy);
 				
 				TextField tmm = new TextField();
 				tmm.setPos(p++, g);
@@ -155,10 +163,10 @@ public class ChestSettings {
 					}
 					public void changed() {
 						try {
-							int wins = Integer.parseInt(GUI.getInputText(uid+chest+"::"+key));
+							int wins = Integer.parseInt(GUI.getInputText(uid+chest+"::loy::"+s));
 							int w;
 							if(wins < 0) 
-								if(key.equals("min"))
+								if(s.equals("min"))
 									w = 1;
 								else
 									w = 3;
@@ -172,27 +180,27 @@ public class ChestSettings {
 							Image img = new Image("data/LoyaltyPics/" + Run.pveloy[w] +".png");
 							img.setSquare(18);
 							try {
-								GUI.setImage(uid+chest+"::loyImg::"+key, img);
+								GUI.setImage(uid+chest+"::loyImg::"+s, img);
 							} catch (IOException e) {
 								Debug.printException("ChestSettings -> changed: err=couldnt set image", e, Debug.general, Debug.error, null, null, true);
 							}
-							GUI.setBackground(uid+chest+"::loyBut::"+key, loyCols[w]);
+							GUI.setBackground(uid+chest+"::loyBut::"+s, loyCols[w]);
 							
-							ConfigsV2.setChestInt(cid, lay, chest, key.equals("min") ? ConfigsV2.minc : ConfigsV2.maxc, wins);
-							GUI.setBackground(uid+chest+"::"+key, Color.white);
+							ConfigsV2.setChestInt(cid, lay, chest, s.equals("min") ? ConfigsV2.minLoy : ConfigsV2.maxLoy, wins);
+							GUI.setBackground(uid+chest+"::loy::"+s, Color.white);
 						} catch (NumberFormatException e) {
-							GUI.setBackground(uid+chest+"::"+key, new Color(255, 122, 122));
+							GUI.setBackground(uid+chest+"::loy::"+s, new Color(255, 122, 122));
 						}
 					}
 				});
-				gui.addTextField(tmm, uid+chest+"::"+key);
+				gui.addTextField(tmm, uid+chest+"::loy::"+s);
 				
 				int w;
 				if(wins == null) {
 					w = 0;
 				} else {
 					if(wins < 0) 
-						if(key.equals("min"))
+						if(s.equals("min"))
 							w = 1;
 						else
 							w = 3;
@@ -207,7 +215,7 @@ public class ChestSettings {
 				Container cimg = new Container();
 				Image img = new Image("data/LoyaltyPics/" + Run.pveloy[w] +".png");
 				img.setSquare(18);
-				cimg.addImage(img, uid+chest+"::loyImg::"+key);
+				cimg.addImage(img, uid+chest+"::loyImg::"+s);
 				
 				Button bmm = new Button();
 				bmm.setPos(p++, g);
@@ -217,12 +225,12 @@ public class ChestSettings {
 				bmm.setAL(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						Integer w = ConfigsV2.getChestInt(cid, lay, chest, key.equals("min") ? ConfigsV2.minc : ConfigsV2.maxc);
+						Integer w = ConfigsV2.getChestInt(cid, lay, chest, s.equals("min") ? ConfigsV2.minLoy : ConfigsV2.maxLoy);
 						int n;
 						if(w == null) {
 							n = -1;
 						} else {
-							if(key.equals("min")) 
+							if(s.equals("min")) 
 								if(w < 15) 
 									n = 15;
 								else if(w < 50)
@@ -237,16 +245,17 @@ public class ChestSettings {
 								else
 									n = -1;
 						}
-						GUI.setText(uid+chest+"::"+key, ""+n);
+						GUI.setText(uid+chest+"::loy::"+s, ""+n);
 					}
 				});
-				gui.addBut(bmm, uid+chest+"::loyBut::"+key);
+				gui.addBut(bmm, uid+chest+"::loyBut::"+s);
 				
 			}
 
 			Button en = new Button();
 			en.setPos(p++, g);
 			en.setSize(90, 23);
+			en.setInsets(2, 2, 2, 10);
 			Boolean ben = ConfigsV2.getChestBoolean(cid, lay, chest, ConfigsV2.enabled);
 			if(ben == null) {
 				en.setText("(---)");
@@ -280,6 +289,58 @@ public class ChestSettings {
 			});
 			gui.addBut(en, uid+chest+"::enable");
 			
+			for(String s : mm) {
+				
+				Integer time = ConfigsV2.getChestInt(cid, lay, chest, s.equals("min") ? ConfigsV2.minTime : ConfigsV2.maxTime);
+				
+				DocumentListener dl = new DocumentListener() {
+					@Override
+					public void removeUpdate(DocumentEvent e) {
+						changed();
+					}
+					@Override
+					public void insertUpdate(DocumentEvent e) {
+						changed();
+					}
+					@Override
+					public void changedUpdate(DocumentEvent e) {
+						changed();
+					}
+					public void changed() {
+						try {
+							int t = Integer.parseInt(GUI.getInputText(uid+chest+"::time::min::"+s)) * 60;
+							t += Integer.parseInt(GUI.getInputText(uid+chest+"::time::sec::"+s));
+							
+							ConfigsV2.setChestInt(cid, lay, chest, s.equals("min") ? ConfigsV2.minTime : ConfigsV2.maxTime, t);
+							
+							GUI.setBackground(uid+chest+"::time::min::"+s, Color.white);
+							GUI.setBackground(uid+chest+"::time::sec::"+s, Color.white);
+						} catch (NumberFormatException e) {
+							GUI.setBackground(uid+chest+"::time::min::"+s, new Color(255, 122, 122));
+							GUI.setBackground(uid+chest+"::time::sec::"+s, new Color(255, 122, 122));
+						}
+					}
+				};
+				
+				
+				TextField tftm = new TextField();
+				tftm.setPos(p++, g);
+				tftm.setText(time == null ? "" : ""+((int) time/60));
+				tftm.setSize(30, 22);
+				tftm.setInsets(2, 7, 2, 2);
+				tftm.setDocLis(dl);
+				gui.addTextField(tftm, uid+chest+"::time::min::"+s);
+				
+				TextField tfts = new TextField();
+				tfts.setPos(p++, g);
+				tfts.setText(time == null ? "" : ""+(time%60));
+				tfts.setSize(30, 22);
+				tfts.setDocLis(dl);
+				tfts.setInsets(2, 2, 2, 7);
+				gui.addTextField(tfts, uid+chest+"::time::sec::"+s);
+				
+			}
+			
 			g++;
 		}
 		
@@ -294,6 +355,14 @@ public class ChestSettings {
 			mima.setInsets(10, 2, 2, 2);
 			mima.setForeground(Fonts.getColor("stngs chests names"));
 			gui.addLabel(mima);
+			
+			Label mimat = new Label();
+			mimat.setPos(p+5, g);
+			mimat.setText(key+" time");
+			mimat.setSpan(2, 1);
+			mimat.setAnchor("c");
+			mimat.setForeground(Fonts.getColor("stngs chests names"));
+			gui.addLabel(mimat);
 		}
 		
 		g++;
@@ -315,7 +384,7 @@ public class ChestSettings {
 		
 		p = 0;
 		for(String key : mm) {
-			Integer rooms = ConfigsV2.getChestInt(cid, lay, chest, key.equals("min") ? ConfigsV2.minc : ConfigsV2.maxc); 
+			Integer rooms = ConfigsV2.getChestInt(cid, lay, chest, key.equals("min") ? ConfigsV2.minLoy : ConfigsV2.maxLoy); 
 			
 			TextField tmm = new TextField();
 			tmm.setPos(p+=2, g);
@@ -339,7 +408,7 @@ public class ChestSettings {
 				public void changed() {
 					try {
 						int wins = Integer.parseInt(GUI.getInputText(uid+chest+"::"+key));
-						ConfigsV2.setChestInt(cid, lay, chest, key.equals("min") ? ConfigsV2.minc : ConfigsV2.maxc, wins);
+						ConfigsV2.setChestInt(cid, lay, chest, key.equals("min") ? ConfigsV2.minLoy : ConfigsV2.maxLoy, wins);
 						GUI.setBackground(uid+chest+"::"+key, Color.white);
 					} catch (NumberFormatException e) {
 						GUI.setBackground(uid+chest+"::"+key, new Color(255, 122, 122));
@@ -347,6 +416,60 @@ public class ChestSettings {
 				}
 			});
 			gui.addTextField(tmm, uid+chest+"::"+key);
+		}
+		
+		p+=3;
+		
+		for(String s : mm) {
+			
+			Integer time = ConfigsV2.getChestInt(cid, lay, chest, s.equals("min") ? ConfigsV2.minTime : ConfigsV2.maxTime);
+			
+			DocumentListener dl = new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					changed();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					changed();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					changed();
+				}
+				public void changed() {
+					try {
+						int t = Integer.parseInt(GUI.getInputText(uid+chest+"::time::min::"+s)) * 60;
+						t += Integer.parseInt(GUI.getInputText(uid+chest+"::time::sec::"+s));
+						
+						ConfigsV2.setChestInt(cid, lay, chest, s.equals("min") ? ConfigsV2.minTime : ConfigsV2.maxTime, t);
+						
+						GUI.setBackground(uid+chest+"::time::min::"+s, Color.white);
+						GUI.setBackground(uid+chest+"::time::sec::"+s, Color.white);
+					} catch (NumberFormatException e) {
+						GUI.setBackground(uid+chest+"::time::min::"+s, new Color(255, 122, 122));
+						GUI.setBackground(uid+chest+"::time::sec::"+s, new Color(255, 122, 122));
+					}
+				}
+			};
+			
+			
+			TextField tftm = new TextField();
+			tftm.setPos(p++, g);
+			tftm.setText(time == null ? "" : ""+((int) time/60));
+			tftm.setSize(30, 22);
+			tftm.setInsets(2, 7, 2, 2);
+			tftm.setDocLis(dl);
+			gui.addTextField(tftm, uid+chest+"::time::min::"+s);
+			
+			TextField tfts = new TextField();
+			tfts.setPos(p++, g);
+			tfts.setText(time == null ? "" : ""+(time%60));
+			tfts.setSize(30, 22);
+			tfts.setDocLis(dl);
+			tfts.setInsets(2, 2, 2, 7);
+			gui.addTextField(tfts, uid+chest+"::time::sec::"+s);
+			
 		}
 	}
 	

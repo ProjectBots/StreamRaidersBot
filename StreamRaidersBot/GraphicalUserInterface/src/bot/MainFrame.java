@@ -1359,7 +1359,7 @@ public class MainFrame {
 					ComboBox cbc = new ComboBox(name+"::canBuyChest");
 					cbc.setPos(3, 0);
 					cbc.setFont(new Font(null, Font.PLAIN, 23));
-					cbc.setList(ArrayUtils.insert(0, ArrayUtils.removeElement("(none) vampire dungeon".split(" "), sel2), sel2));
+					cbc.setList(ArrayUtils.insert(0, ArrayUtils.removeElement("(none) vampire saint".split(" "), sel2), sel2));
 					cbc.setCL(new CombListener() {
 						@Override
 						public void unselected(String id, ItemEvent e) {}
@@ -1371,7 +1371,7 @@ public class MainFrame {
 					cdslot.addComboBox(cbc);
 					
 				sgui.addContainer(cdslot);
-				
+				/*
 				Container becc = new Container();
 				becc.setPos(0, g++);
 					
@@ -1399,7 +1399,7 @@ public class MainFrame {
 					
 				
 				sgui.addContainer(becc);
-				
+				*/
 				Button cbsb = new Button();
 				cbsb.setPos(0, g++);
 				cbsb.setFont(new Font(null, Font.PLAIN, 23));

@@ -266,7 +266,7 @@ public class ProfileSettings {
 			
 			ComboBox cbc = new ComboBox(uid+"canBuyChest");
 			cbc.setPos(3, 0);
-			cbc.setList(putFirst("(none) vampire dungeon".split(" "), canBuyChest));
+			cbc.setList(putFirst("(none) vampire saint".split(" "), canBuyChest));
 			cbc.setCL(new CombListener() {
 				@Override
 				public void unselected(String id, ItemEvent e) {}
@@ -279,6 +279,7 @@ public class ProfileSettings {
 			
 		gui.addContainer(cdslot);
 		
+		/*
 		Container cec = new Container();
 		cec.setPos(0, p++);
 		cec.setInsets(10, 2, 2, 2);
@@ -307,7 +308,7 @@ public class ProfileSettings {
 			cec.addComboBox(cbec);
 		
 		gui.addContainer(cec);
-		
+		*/
 		
 		Container csleep = new Container();
 		csleep.setPos(0, p++);
@@ -434,7 +435,7 @@ public class ProfileSettings {
 		buts.setInsets(10, 2, 2, 2);
 			
 			int g = 0;
-			String[] sbuts = "Campaign Fav Only  Dungeon Fav Only  Campaign Epic Place Fav Only  Dungeon Epic Place Fav Only  Place Marker Only Campaign  Place Marker Only Dungeon  Prefer Rogues On Treasure Maps  Allow Place First".split("  ");
+			String[] sbuts = "Prefer Rogues On Treasure Maps  Allow Place First".split("  ");
 			if(Options.is("exploits"))
 				sbuts = ArrayUtils.addAll(sbuts, "Use Multi Place Exploit  Use Multi Quest Exploit  Use Multi Event Exploit  Use Multi Chest Exploit  Use Multi Unit Exploit".split("  "));
 			
@@ -598,7 +599,7 @@ public class ProfileSettings {
 		cstorem.setPos(0, p++);
 		cstorem.setInsets(10, 0, 0, 0);
 			
-			String[] smgs = "Scrolls Min Gold  Store Min Keys  Upgrade Min Gold  Unlock Min Gold  Unit Place Retries  Map Reload After X Retries  Max Unit Per Raid  Cap Inactive Treshold  Max Time Left  Min Time Left  Unit Update  Raid Update  Map Update  Store Update  Quest Event Rewards Update  Caps Update".split("  ");
+			String[] smgs = "Scrolls Min Gold  Store Min Keys  Upgrade Min Gold  Unlock Min Gold  Unit Place Retries  Map Reload After X Retries  Max Unit Per Raid  Cap Inactive Treshold  Unit Update  Raid Update  Map Update  Store Update  Quest Event Rewards Update  Caps Update".split("  ");
 			int l = 0;
 			for(String key : smgs) {
 				final Int con = new Int(key.substring(0, 1).toLowerCase() + key.substring(1).replace(" ", ""));

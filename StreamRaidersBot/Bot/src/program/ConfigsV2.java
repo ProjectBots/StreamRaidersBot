@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
@@ -158,56 +159,6 @@ public class ConfigsV2 {
 				.remove(lay);
 	}
 	
-	/*
-	private static class Arr extends All {
-		public Arr(String con) {
-			super(con);
-		}
-	}
-	
-	
-	
-	public static JsonArray getArr(String cid, String lay, Arr con) {
-		return getLayer(cid, lay).getAsJsonArray(con.get());
-	}
-	
-	public static void setArr(String cid, String lay, Arr con, JsonArray val) {
-		getLayer(cid, lay).add(con.get(), val);
-	}
-	*/
-	
-	/*
-	public static class Obj extends All {
-		public Obj(String con) {
-			super(con);
-		}
-	}
-	
-	public static final Obj caps = new Obj("caps");
-	
-	public static JsonObject getObj(String cid, String lay, Obj con) {
-		if(lay.equals("(all)")) {
-			JsonObject ret = new JsonObject();
-			String[] lays = getLayers(cid);
-			for(String l : lays)
-				JsonParser.check(ret, getObj(cid, l, con));
-			
-			return ret;
-		}
-		return getLayer(cid, lay).getAsJsonObject(con.get());
-	}
-	
-	public static void setObj(String cid, String lay, Obj con, JsonObject val) {
-		if(lay.equals("(all)")) {
-			String[] lays = getLayers(cid);
-			for(String l : lays) 
-				setObj(cid, l, con, val.deepCopy());
-			
-			return;
-		}
-		getLayer(cid, lay).add(con.get(), val);
-	}
-	*/
 	
 	
 	public static class Str extends All {
@@ -268,8 +219,6 @@ public class ConfigsV2 {
 	public static final Int scrollsMinGold = new Int("scrollsMinGold");
 	public static final Int upgradeMinGold = new Int("upgradeMinGold");
 	public static final Int unlockMinGold = new Int("unlockMinGold");
-	public static final Int maxTimeLeft = new Int("maxTimeLeft");
-	public static final Int minTimeLeft = new Int("minTimeLeft");
 	public static final Int color = new Int("color");
 	public static final Int unitUpdate = new Int("unitUpdate");
 	public static final Int raidUpdate = new Int("raidUpdate");
@@ -316,15 +265,9 @@ public class ConfigsV2 {
 	public static final Boo useMultiUnitExploit = new Boo("useMultiUnitExploit");
 	public static final Boo useMultiChestExploit = new Boo("useMultiChestExploit");
 	public static final Boo useMultiEventExploit = new Boo("useMultiEventExploit");
-	public static final Boo placeMarkerOnlyCampaign = new Boo("placeMarkerOnlyCampaign");
-	public static final Boo placeMarkerOnlyDungeon = new Boo("placeMarkerOnlyDungeon");
 	public static final Boo preferRoguesOnTreasureMaps = new Boo("preferRoguesOnTreasureMaps");
 	public static final Boo allowPlaceFirst = new Boo("allowPlaceFirst");
 	public static final Boo proxyMandatory = new Boo("proxyMandatory");
-	public static final Boo campaignEpicPlaceFavOnly = new Boo("campaignEpicPlaceFavOnly");
-	public static final Boo dungeonEpicPlaceFavOnly = new Boo("dungeonEpicPlaceFavOnly");
-	public static final Boo campaignFavOnly = new Boo("campaignFavOnly");
-	public static final Boo dungeonFavOnly = new Boo("dungeonFavOnly");
 	
 	public static Boolean getBoolean(String cid, String lay, Boo con) {
 		if(lay.equals("(all)")) {
@@ -361,10 +304,6 @@ public class ConfigsV2 {
 	public static final UniInt epic = new UniInt("epic");
 	public static final UniInt placedun = new UniInt("placedun");
 	public static final UniInt epicdun = new UniInt("epicdun");
-	public static final UniInt difmin = new UniInt("difmin");
-	public static final UniInt difmax = new UniInt("difmax");
-	public static final UniInt epicdifmin = new UniInt("epicdifmin");
-	public static final UniInt epicdifmax = new UniInt("epicdifmax");
 	public static final UniInt upgrade = new UniInt("upgrade");
 	public static final UniInt unlock = new UniInt("unlock");
 	public static final UniInt dupe = new UniInt("dupe");
@@ -400,13 +339,17 @@ public class ConfigsV2 {
 	}
 	
 	
-	private static class UniStr extends All {
+	public static class UniStr extends All {
 		public UniStr(String con) {
 			super(con);
 		}
 	}
 	
 	public static final UniStr spec = new UniStr("spec");
+	public static final UniStr chests = new UniStr("chests");
+	public static final UniStr favOnly = new UniStr("favOnly");
+	public static final UniStr markerOnly = new UniStr("markerOnly");
+	public static final UniStr canVibe = new UniStr("canVibe");
 	
 	public static String getUnitString(String cid, String lay, String uType, UniStr con) {
 		if(lay.equals("(all)")) {
@@ -423,13 +366,17 @@ public class ConfigsV2 {
 						ret += "::" + str;
 				}
 			}
-			
 			return ret == null ? sel : ret;
 		}
-		return getLayer(cid, lay)
-				.getAsJsonObject("units")
-				.getAsJsonObject(uType)
-				.get(con.get()).getAsString();
+		//TODO remove try catch
+		try {
+			return getLayer(cid, lay)
+					.getAsJsonObject("units")
+					.getAsJsonObject(uType)
+					.get(con.get()).getAsString();
+		} catch (NullPointerException e) {
+			return "";
+		}
 	}
 	
 	public static void setUnitString(String cid, String lay, String uType, UniStr con, String str) {
@@ -495,8 +442,10 @@ public class ConfigsV2 {
 		}
 	}
 	
-	public static final CheInt minc = new CheInt("min");
-	public static final CheInt maxc = new CheInt("max");
+	public static final CheInt minLoy = new CheInt("minLoy");
+	public static final CheInt maxLoy = new CheInt("maxLoy");
+	public static final CheInt minTime = new CheInt("minTime");
+	public static final CheInt maxTime = new CheInt("maxTime");
 	
 	public static Integer getChestInt(String cid, String lay, String cType, CheInt con) {
 		if(lay.equals("(all)")) {
@@ -657,31 +606,30 @@ public class ConfigsV2 {
 		
 	}
 	
-	public static JsonArray getFavCaps(String cid, String lay, ListType list) {
-		JsonArray ret = new JsonArray();
+	public static HashSet<String> getFavCaps(String cid, String lay, ListType list) {
+		HashSet<String> ret = new HashSet<>();
 		if(lay.equals("(all)")) {
 			String[] lays = getLayerIds(cid);
 			for(String l : lays) {
-				JsonArray caps = getFavCaps(cid, l, list);
-				for(int i=0; i<caps.size(); i++)
-					if(!ret.contains(caps.get(i)))
-						ret.add(caps.get(i));
+				HashSet<String> caps = getFavCaps(cid, l, list);
+				for(String c : caps)
+					ret.add(c);
 			}
 				
 			return ret;
 		}
 		if(list.equals(all)) {
 			ret = getFavCaps(cid, lay, campaign);
-			JsonArray caps2 = getFavCaps(cid, lay, dungeon);
-			for(int i=0; i<caps2.size(); i++)
-				if(!ret.contains(caps2.get(i)))
-					ret.add(caps2.get(i));
+			HashSet<String> caps = getFavCaps(cid, lay, dungeon);
+			for(String c : caps)
+				ret.add(c);
 			
 			return ret;
 		}
 		JsonObject caps = getList(cid, lay, list);
 		for(String key : caps.keySet())
 			ret.add(key);
+		
 		return ret;
 	}
 	
@@ -1340,9 +1288,9 @@ public class ConfigsV2 {
 				List<String> cls = lconfs.get("CaptainList");
 				for(String cl : cls) {
 					String pcl = pl+"caps "+cl+" ";
-					JsonArray caps = getFavCaps(p.getCid(), l.getLid(), new ListType(cl));
-					for(int j=0; j<caps.size(); j++) {
-						String pc = pcl+caps.get(j).getAsString()+" ";
+					HashSet<String> caps = getFavCaps(p.getCid(), l.getLid(), new ListType(cl));
+					for(String pc : caps) {
+						pc = pcl+pc+" ";
 						for(String s : a)
 							Json.set(res, pc+s, Json.get(configs, pc+s));
 					}

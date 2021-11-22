@@ -73,14 +73,18 @@
       "rarescrolls_6": 30,
       "rarescrolls_7": 15,
       "skinfullmusketeerbeastlands": 10,
-      "skinfulltemplarbeastlands": 10
+      "skinfulltemplarbeastlands": 10,
+      "skinfullbarbarianbeastlands": 10,
+      "skinfullmonkbeastlands": 10
     },
     "viewerboostedskinbeastlands2": {
       "goldbag_100": 15,
       "rarescrolls_6": 30,
       "rarescrolls_7": 15,
       "skinfullmusketeerbeastlands": 20,
-      "skinfulltemplarbeastlands": 20
+      "skinfulltemplarbeastlands": 20,
+      "skinfullbarbarianbeastlands": 20,
+      "skinfullmonkbeastlands": 20
     }
   },
   "chestboostedgold": {
@@ -666,6 +670,75 @@
       "skinfullmusketeersummer": 1
     }
   },
+  "dungeons5saintchest": {
+    "bonussaint": {
+      "goldbag_10": 50,
+      "goldbag_15": 30,
+      "goldbag_20": 20
+    },
+    "viewersaint1": {
+      "scrollsaint_1": 80,
+      "scrollsaint_3": 19,
+      "scrollsaint_10": 1
+    },
+    "viewersaint2": {
+      "epicpotion_1": 50,
+      "epicpotion_2": 10,
+      "epicpotion_3": 5,
+      "scrollsaint_1": 20,
+      "scrollsaint_3": 10,
+      "scrollsaint_5": 5
+    },
+    "viewersaint3": {
+      "cooldown_1": 3,
+      "cooldown_3": 1,
+      "scrollsaint_1": 80,
+      "scrollsaint_3": 13,
+      "scrollsaint_5": 3
+    },
+    "viewersaint4": {
+      "eventtoken_2": 50,
+      "goldbag_25": 25,
+      "goldbag_50": 15,
+      "goldbag_75real": 5,
+      "skinfullsaintdungeons": 5
+    }
+  },
+  "dungeons5vampirechest": {
+    "bonusvampire": {
+      "goldbag_10": 50,
+      "goldbag_15": 30,
+      "goldbag_20": 20
+    },
+    "viewervampire1": {
+      "scrollvampire_1": 80,
+      "scrollvampire_3": 19,
+      "scrollvampire_10": 1
+    },
+    "viewervampire2": {
+      "epicpotion_1": 50,
+      "epicpotion_2": 10,
+      "epicpotion_3": 5,
+      "scrollvampire_1": 20,
+      "scrollvampire_3": 10,
+      "scrollvampire_5": 5
+    },
+    "viewervampire3": {
+      "cooldown_1": 3,
+      "cooldown_3": 1,
+      "scrollvampire_1": 80,
+      "scrollvampire_3": 13,
+      "scrollvampire_5": 3
+    },
+    "viewervampire4": {
+      "eventtoken_2": 50,
+      "goldbag_25": 25,
+      "goldbag_50": 15,
+      "goldbag_75real": 5,
+      "skinfullvampiresummer": 3,
+      "skinfullrisingsunvampire": 2
+    }
+  },
   "icefallchest": {
     "bonusboostedgold": {
       "goldbag_1000": 75,
@@ -1239,7 +1312,7 @@
       "scrollvampire_5": 3
     },
     "viewervampire4": {
-      "eventtoken_1": 50,
+      "eventtoken_2": 50,
       "goldbag_25": 25,
       "goldbag_50": 15,
       "goldbag_75real": 5,

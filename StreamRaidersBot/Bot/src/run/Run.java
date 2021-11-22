@@ -22,7 +22,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 import include.Heatmap;
 import include.Json;
@@ -62,6 +61,10 @@ public class Run {
 	 * 	update xX_DEV_Xx
 	 * 	option to set max profile actions at once
 	 * 	add tooltips
+	 * 	fonts manage error blocks (GlobalOptions)
+	 * 	config version
+	 * 	unsync acc on removal
+	 * 	check place settings (eg.: min loy/room) before placement (bcs of locked slots)
 	 * 
 	 * 	after release:
 	 * 	get Donators from github source
@@ -95,7 +98,7 @@ public class Run {
 	
 	private static final String[] rew_sources = "chests bought event".split(" ");
 	private static final String[] rew_chests_chests = "chestboostedgold chestbosssuper chestboostedskin chestboss chestboostedtoken chestgold chestsilver chestbronze chestsalvage".split(" ");
-	private static final String[] rew_bought_chests = "polterheistorangechest polterheistgreenchest polterheistpurplechest dungeonchest vampirechest".split(" ");
+	private static final String[] rew_bought_chests = "polterheistorangechest polterheistgreenchest polterheistpurplechest dungeonchest vampirechest saintchest".split(" ");
 	private static final String[] rew_types = "gold potions token candy keys meat bones skins scrollmage scrollwarbeast scrolltemplar scrollorcslayer scrollballoonbuster scrollartillery scrollflyingarcher scrollberserker scrollcenturion scrollmusketeer scrollmonk scrollbuster scrollbomber scrollbarbarian scrollpaladin scrollhealer scrollvampire scrollsaint scrollflagbearer scrollrogue scrollwarrior scrolltank scrollarcher".split(" ");
 	
 	
@@ -208,9 +211,8 @@ public class Run {
 						for(Captain c : caps)
 							got.add(c.get(SRC.Captain.twitchDisplayName));
 						
-						JsonArray favs = ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign);
-						for(int i=0; i<favs.size(); i++) {
-							String tdn = favs.get(i).getAsString();
+						HashSet<String> favs = ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign);
+						for(String tdn : favs) {
 							if(got.contains(tdn) || !ConfigsV2.getCapBoo(cid, currentLayer, tdn, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign, ConfigsV2.il))
 								continue;
 							
@@ -536,12 +538,7 @@ public class Run {
 		
 		
 		Integer potionsc = beh.getCurrency(pn, Store.potions, true);
-		boolean epic = (potionsc == null ? false : (potionsc >= 45))
-						&& (!(dungeon 
-								? ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.dungeonEpicPlaceFavOnly)
-								: ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.campaignEpicPlaceFavOnly))
-							|| ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign)
-									.contains(new JsonPrimitive(r.get(SRC.Raid.twitchDisplayName))));
+		boolean epic = potionsc == null ? false : (potionsc >= 45);
 		
 		final Unit[] units = beh.getPlaceableUnits(slot);
 		Debug.print("units="+Arrays.toString(units), Debug.units, Debug.info, pn, slot);
@@ -553,22 +550,13 @@ public class Run {
 		
 		Debug.print("upts="+upts, Debug.units, Debug.info, pn, slot);
 		
-		if((((!dungeon && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnlyCampaign))
-						|| (dungeon && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnlyDungeon))) 
-					&& upts.size() == 0)
-				|| (!ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.allowPlaceFirst) 
-					&& (placeSer == null ? true : Json.parseArr(placeSer).size() == 0))) 
+		if(!ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.allowPlaceFirst) 
+			&& (placeSer == null ? true : Json.parseArr(placeSer).size() == 0))
 			return;
 		
 		
 		int[] mh = new Heatmap().getMaxHeat(map);
 		
-		int mdif = Json.parseObj(Options.get("mapDifficulty"))
-				.getAsJsonObject(Json.parseObj(Options.get("mapNodes"))
-						.getAsJsonObject(map.getNode())
-						.get("NodeDifficulty")
-						.getAsString())
-				.get("Value").getAsInt();
 		
 		int re = 0;
 		int retries = ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unitPlaceRetries);
@@ -593,7 +581,8 @@ public class Run {
 				//	TODO multi place exploit
 				goMultiPlace = false;
 				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
-					final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, mdif, dungeon, slot);
+					final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, dungeon, r.getFromNode(SRC.MapNode.chestType),
+							ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign).contains(r.get(SRC.Raid.twitchDisplayName)), slot);
 					if(pla == null)
 						continue;
 					bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
@@ -618,7 +607,8 @@ public class Run {
 				} catch (InterruptedException e) {}
 				break;
 			} else {
-				final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, mdif, dungeon, slot);
+				final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, dungeon, r.getFromNode(SRC.MapNode.chestType),
+						ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign).contains(r.get(SRC.Raid.twitchDisplayName)), slot);
 				if(pla == null) {
 					Debug.print("Place=null", Debug.units, Debug.info, pn, slot);
 					break;
@@ -683,52 +673,20 @@ public class Run {
 		}
 	}
 	
-	private static class Prios {
-		private int[][] prio;
-		private boolean[][] vibe;
-		private Unit[] units;
-		public Prios(Unit[] units) {
-			this.units = units;
-			prio = new int[units.length][4];
-			for(int i=0; i<prio.length; i++)
-				for(int j=0; j<prio[i].length; j++)
-					prio[i][j] = -1;
-			vibe = new boolean[units.length][4];
-		}
-		public void setPrio(int p, int epicPlan, boolean evibe, int normPlan, boolean nvibe, int epic, int norm) {
-			prio[p][0] = epicPlan;
-			vibe[p][0] = evibe;
-			prio[p][1] = normPlan;
-			vibe[p][1] = nvibe;
-			prio[p][2] = epic;
-			prio[p][3] = norm;
-		}
-		public int[] get(int m) {
-			return get(m, false);
-		}
-		public int[] get(int m, boolean allowVibe) {
-			int p = 0;
-			for(int i=1; i<prio.length; i++)
-				if((allowVibe
-						|| !vibe[i][m])
-					&& (prio[i][m] > prio[p][m]
-						|| (prio[i][m] == prio[p][m]
-							&& Integer.parseInt(units[i].get(SRC.Unit.level)) > Integer.parseInt(units[p].get(SRC.Unit.level)))))
-					p = i;
-			
-			if(!allowVibe && prio[p][m] < 0)
-				return get(m, true);
-			
-			int[] ret = {p, prio[p][m]};
-			prio[p][m] = -1;
-			return ret;
-		}
-		public boolean isVibe(int p, int m) {
-			return vibe[p][m];
+	
+	
+	private static class Prio {
+		public final Unit unit;
+		public final int[] ps;
+		public final boolean[] vs;
+		public Prio(Unit unit, int np, int ep, int n, int e, boolean vn, boolean ve) {
+			this.unit = unit;
+			ps = new int[] {ep, np, e, n};
+			vs = new boolean[] {ve, vn};
 		}
 	}
 	
-	private Place findPlace(Map map, int[] mh, HashSet<String> upts, List<String> neededUnits, Unit[] units, boolean epic, int mdif, boolean dungeon, int slot) {
+	private Place findPlace(Map map, int[] mh, HashSet<String> upts, List<String> neededUnits, final Unit[] units, boolean epic, boolean dungeon, String chest, boolean fav, int slot) {
 		HashSet<String> epts = new HashSet<>();
 		if(epic) {
 			String[][] mpts = new String[map.width()][map.length()];
@@ -750,91 +708,110 @@ public class Run {
 			}
 		}
 		
-		Prios prio = new Prios(units);
+		Prio[] prios = new Prio[units.length];
 		for(int i=0; i<units.length; i++) {
 			final String utype = units[i].get(SRC.Unit.unitType);
 			
-			int p = ConfigsV2.getUnitInt(cid, currentLayer, utype, dungeon ? ConfigsV2.placedun : ConfigsV2.place);
+			int n = ConfigsV2.getUnitInt(cid, currentLayer, utype, dungeon ? ConfigsV2.placedun : ConfigsV2.place);
 			int e = ConfigsV2.getUnitInt(cid, currentLayer, utype, dungeon ? ConfigsV2.epicdun : ConfigsV2.epic);
+			String chests = ConfigsV2.getUnitString(cid, currentLayer, utype, ConfigsV2.chests);
+			String favOnly = ConfigsV2.getUnitString(cid, currentLayer, utype, ConfigsV2.favOnly);
+			String markerOnly = ConfigsV2.getUnitString(cid, currentLayer, utype, ConfigsV2.markerOnly);
+			String canVibe = ConfigsV2.getUnitString(cid, currentLayer, utype, ConfigsV2.canVibe);
 			
-			if(!dungeon) {
-				int pdi = ConfigsV2.getUnitInt(cid, currentLayer, utype, ConfigsV2.difmin);
-				int edi = ConfigsV2.getUnitInt(cid, currentLayer, utype, ConfigsV2.epicdifmin);
-				int pda = ConfigsV2.getUnitInt(cid, currentLayer, utype, ConfigsV2.difmax);
-				int eda = ConfigsV2.getUnitInt(cid, currentLayer, utype, ConfigsV2.epicdifmax);
-				
-				if(mdif < pdi || mdif > pda)
-					p = -1;
-				
-				if(mdif < edi || mdif > eda)
-					e = -1;
+			final String nx = dungeon ? "nd" : "nc";
+			final String ex = dungeon ? "ed" : "ec";
+			
+			
+			if(!fav && favOnly.contains(nx))
+				n = -1;
+			
+			if(!fav && favOnly.contains(ex))
+				e = -1;
+			
+			if(!chests.contains(chest+",")) {
+				n = -1;
+				e = -1;
 			}
 			
-			int pp = -1;
-			int pe = -1;
+			if(neededUnits.contains(utype))
+				n = Integer.MAX_VALUE;
+			
+			
+			int np = -1;
+			int ep = -1;
 			
 			HashSet<String> pts = units[i].getPlanTypes();
 			pts.remove("vibe");
 			for(String pt : pts) {
 				if(epts.contains(pt))
-					pe = e;
+					ep = e;
 				if(upts.contains(pt))
-					pp = p;
+					np = n;
 			}
 			
-			
+
+			boolean vn = false;
 			boolean ve = false;
 			
-			if(pe == -1 && epts.contains("vibe")) {
-				pe = e;
+
+			if(np < 0 && upts.contains("vibe") && canVibe.contains(nx)) {
+				np = n;
+				vn = true;
+			}
+			
+			if(ep < 0 && epts.contains("vibe") && canVibe.contains(ex)) {
+				ep = e;
 				ve = true;
 			}
 			
-			boolean vp = false;
+			if(markerOnly.contains(nx))
+				n = -1;
 			
-			if(pp == -1 && upts.contains("vibe")) {
-				pp = p;
-				vp = true;
-			}
-			
-			if(neededUnits.contains(utype)) {
-				pp = Integer.MAX_VALUE;
-				p = Integer.MAX_VALUE;
-			}
+			if(markerOnly.contains(ex))
+				e = -1;
 			
 			
-			prio.setPrio(i, pe, ve, pp, vp, e, p);
+			prios[i] = new Prio(units[i], np, ep, n, e, vn, ve);
 		}
+		
+		
 		
 		for(int i=0; i<4; i++) {
 			if(!epic && i%2 == 0)
 				continue;
 			
 			while(true) {
-				int[] p = prio.get(i);
-				if(p[1] < 0)
+				int p = 0;
+				
+				for(int j=1; j<prios.length; j++) 
+					if(prios[j].ps[i] > prios[p].ps[i] 
+						|| ((prios[j].ps[i] == prios[p].ps[i])
+							&& (Integer.parseInt(prios[j].unit.get(SRC.Unit.level)) > Integer.parseInt(prios[p].unit.get(SRC.Unit.level)))))
+						p = j;
+				
+				if(prios[p].ps[i] < 0)
 					break;
+				
+				prios[p].ps[i] = -1;
+				
+				final Unit u = prios[p].unit;
 				
 				HashSet<String> pts = null;
 				if(i<2) {
-					pts = units[p[0]].getPlanTypes();
-					if(!prio.isVibe(p[0], i))
+					pts = u.getPlanTypes();
+					if(!prios[p].vs[i])
 						pts.remove("vibe");
 				}
 				
 				int[] pos = null;
 				try {
-					pos = new Pathfinding().search(new MapConv().asField(map, units[p[0]].canFly(), pts, mh, bannedPos), pn, slot, i%2==0);
+					pos = new Pathfinding().search(new MapConv().asField(map, u.canFly(), pts, mh, bannedPos), pn, slot, i%2==0);
 				} catch (NoFinException e) {}
 				if(pos == null)
 					continue;
-				return new Place(units[p[0]], pos, i%2==0, i<2);
+				return new Place(u, pos, i%2==0, i<2);
 			}
-			
-			if(i==1 
-				&& ((!dungeon && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnlyCampaign))
-					|| (dungeon && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.placeMarkerOnlyDungeon))))
-				return null;
 		}
 		
 		return null;
@@ -907,45 +884,53 @@ public class Run {
 
 		int loy = dungeon ? (r.get(SRC.Raid.allyBoons)+",").split(",").length : Integer.parseInt(r.get(SRC.Raid.pveWins));
 		
-		Integer aloy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.maxc);
-		Integer iloy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.minc);
+		Integer maxLoy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.maxLoy);
+		Integer minLoy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.minLoy);
 		Boolean enabled = ConfigsV2.getChestBoolean(cid, currentLayer, ct, ConfigsV2.enabled);
-		if(aloy == null || iloy == null || enabled == null) {
+		Integer maxTimeLeft = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.maxTime);
+		Integer minTimeLeft = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.minTime);
+		if(maxLoy == null || minLoy == null || enabled == null || maxTimeLeft == null || minTimeLeft == null) {
 			Debug.print("Run -> captain: ct="+ct+", err=failed to get chest config", Debug.runerr, Debug.error, pn, slot, true);
 			//	prevents picking the chest
-			aloy = 5;
-			iloy = 8;
+			maxLoy = 5;
+			minLoy = 8;
 			enabled = false;
-		} else if(aloy < 0)
-			aloy = Integer.MAX_VALUE;
+			maxTimeLeft = 10;
+			minTimeLeft = 20;
+		} else if(maxLoy < 0)
+			maxLoy = Integer.MAX_VALUE;
 			
+		int length;
+		if(dungeon)
+			length = 420;
+		else
+			length = 1800;
 		
-		int maxTimeLeft = 30 - ConfigsV2.getInt(cid, currentLayer, ConfigsV2.maxTimeLeft);
+		maxTimeLeft = length - maxTimeLeft;
+		
 		if(!ic && Time.isAfter(Time.parse(r.get(SRC.Raid.creationDate))
-									.plusMinutes(maxTimeLeft),
+									.plusSeconds(maxTimeLeft),
 								beh.getServerTime())) {
 			switchCap(slot, dungeon, r, tdn, noCap, first, maxTimeLeft);
 			return;
 		}
 		
-		int minRaidTimeLeft = ConfigsV2.getInt(cid, currentLayer, ConfigsV2.minTimeLeft);
+		
 		JsonArray users = Json.parseArr(r.get(SRC.Raid.users));
 		if(users != null) {
 			String uid = beh.getUserId();
 			for(int i=0; i<users.size(); i++)
 				if(users.get(i).getAsJsonObject().get("userId").getAsString().equals(uid))
-					minRaidTimeLeft = Integer.MIN_VALUE;
+					minTimeLeft = Integer.MIN_VALUE;
 		}
 		
 		if((dungeon ^ r.isDungeon())
 			|| r.isOffline(beh.getServerTime(), il, ConfigsV2.getInt(cid, currentLayer, ConfigsV2.capInactiveTreshold))
 			|| (!ic && Time.isAfter(beh.getServerTime(),
 							Time.parse(r.get(SRC.Raid.creationDate))
-								.plusMinutes(30 - minRaidTimeLeft)))
+								.plusSeconds(length - minTimeLeft)))
 			|| (!ic && !dungeon && !enabled)
-			|| (!ic && (loy < iloy || loy > aloy))
-			|| (ConfigsV2.getBoolean(cid, currentLayer, dungeon ? ConfigsV2.dungeonFavOnly : ConfigsV2.campaignFavOnly) 
-					&& !ConfigsV2.getFavCaps(cid, currentLayer, list).contains(new JsonPrimitive(tdn)))
+			|| (!ic && (loy < minLoy || loy > maxLoy))
 			|| fav < 0
 			) {
 			switchCap(slot, dungeon, r, tdn, noCap, first, null);
@@ -992,15 +977,15 @@ public class Run {
 			if(overrideBanTime != null)
 				plus = overrideBanTime;
 			else if(r.isVersus()) 
-				plus = 7;
+				plus = 420;
 			else if(r.isDungeon())
-				plus = 7;
+				plus = 420;
 			else
-				plus = 35;
-			if(now.isAfter(start.plusMinutes(plus-2)))
-				banned.put(disname, now.plusMinutes(2));
+				plus = 2100;
+			if(now.isAfter(start.plusSeconds(plus-120)))
+				banned.put(disname, now.plusSeconds(120));
 			else
-				banned.put(disname, start.plusMinutes(plus));
+				banned.put(disname, start.plusSeconds(plus));
 			Debug.print("blocked " + disname, Debug.caps, Debug.info, pn, slot);
 		}
 		
@@ -1031,7 +1016,7 @@ public class Run {
 		
 		
 		Captain best = null;
-		int val = ConfigsV2.getBoolean(cid, currentLayer, dungeon ? ConfigsV2.dungeonFavOnly : ConfigsV2.campaignFavOnly) ? 0 : -1;
+		int val = -1;
 		int loy = 0;
 		
 		HashSet<String> skipped = new HashSet<>();
@@ -1214,15 +1199,12 @@ public class Run {
 			String chest;
 			JsonObject bc;
 			switch(sel) {
-			case "dungeon":
-				if(Time.isAfter(beh.getServerTime(), Options.get("dungeonchestdate")))
-					bc = beh.buyChest("dungeonchest2");
-				else
-					bc = beh.buyChest("dungeonchest");
-				chest = "dungeonchest";
+			case "saint":
+				bc = beh.buyChest("dungeons5saintchest");
+				chest = "saintchest";
 				break;
 			case "vampire":
-				bc = beh.buyChest("vampirechest");
+				bc = beh.buyChest("dungeons5vampirechest");
 				chest = "vampirechest";
 				break;
 			default:
@@ -1240,7 +1222,7 @@ public class Run {
 			} else if(!(err.getAsString().equals("after end") || err.getAsString().startsWith("not enough ")))
 				Debug.print("Run -> store -> buyChest: err="+err.getAsString()+", chest="+sel, Debug.runerr, Debug.error, pn, 4, true);
 		}
-		
+		/*
 		ec: {
 			String sel = ConfigsV2.getStr(cid, currentLayer, ConfigsV2.canBuyEventChest);
 			if(sel.equals("(none)"))
@@ -1260,7 +1242,7 @@ public class Run {
 			} else if(!(err.getAsString().equals("after end") || err.getAsString().startsWith("not enough ")))
 				Debug.print("Run -> store -> buyChest: err="+err.getAsString()+", chest="+sel, Debug.runerr, Debug.error, pn, 4, true);
 		}
-		
+		*/
 		if(beh.getCurrency(pn, Store.gold, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.scrollsMinGold)) {
 			JsonArray items = beh.getStoreItems(SRC.Store.notPurchased);
 			if(items.size() != 0) {

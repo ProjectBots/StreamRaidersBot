@@ -1371,8 +1371,8 @@ public class GUI{
 	}
 	
 	public void addBut(Button opt, String id) {
-		Container pane = opt.getContainer();
 		MyButton but = new MyButton();
+		Container pane = opt.getContainer();
 		if(pane != null)
 			but.add(asContainer(pane));
 		else 

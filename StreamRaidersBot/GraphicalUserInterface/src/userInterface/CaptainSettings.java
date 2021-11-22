@@ -6,13 +6,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashSet;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.google.gson.JsonArray;
 import include.GUI;
 import include.GUI.Button;
 import include.GUI.CombListener;
@@ -175,12 +175,8 @@ public class CaptainSettings {
 			
 		gui.addContainer(ccaps, uid+"caps");
 		
-		JsonArray caps = ConfigsV2.getFavCaps(cid, lay, list);
-		String[] scaps = new String[caps.size()];
-		
-		
-		for(int i=0; i<caps.size(); i++) 
-			scaps[i] = caps.get(i).getAsString();
+		HashSet<String> caps = ConfigsV2.getFavCaps(cid, lay, list);
+		String[] scaps = caps.toArray(new String[caps.size()]);
 		
 		Arrays.sort(scaps);
 		

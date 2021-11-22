@@ -7,14 +7,19 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import include.GUI;
 import include.GUI.Button;
@@ -28,6 +33,7 @@ import include.Json;
 import include.NEF;
 import program.ConfigsV2;
 import program.ConfigsV2.UniInt;
+import program.ConfigsV2.UniStr;
 import program.Debug;
 import program.Options;
 import program.Unit;
@@ -39,8 +45,19 @@ public class UnitSettings {
 	private final String uid, cid, lay;
 	private String pn;
 	
-	private static String[] prios = "place epic placedun epicdun upgrade unlock dupe buy difmin difmax epicdifmin epicdifmax".split(" ");
-	private static String prio_jump = "difmin";
+	private static final String[] prios = "place epic placedun epicdun upgrade unlock dupe buy".split(" ");
+	private static final String[] opts = "favOnly markerOnly canVibe".split(" ");
+	private static final String[] optopts = "nc nd ec ed".split(" ");
+	private static final List<String> chests = Collections.unmodifiableList(new ArrayList<String>() {
+		private static final long serialVersionUID = 1L;
+		{
+			JsonArray cts = Json.parseArr(Options.get("chests"));
+			cts.remove(new JsonPrimitive("chestsalvage"));
+			for(int i=0; i<cts.size(); i++)
+				add(cts.get(i).getAsString());
+			add("dungeonchest");
+		}
+	});
 	
 	public UnitSettings(String cid, String lay) {
 		this.cid = cid;
@@ -50,7 +67,6 @@ public class UnitSettings {
 	
 	
 	public void open(GUI parent) {
-		
 		
 		pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
 		
@@ -126,16 +142,24 @@ public class UnitSettings {
 		gui.addLabel(llp);
 		
 		for(String key : prios) {
-			
-			if(key.equals(prio_jump))
-				p+=3;
-			
 			Label lp = new Label();
 			lp.setPos(p++, g);
 			lp.setText(key + "");
+			lp.setAnchor("c");
 			lp.setForeground(Fonts.getColor("stngs units labels"));
 			gui.addLabel(lp);
-			
+		}
+		
+		p+=3+chests.size()-optopts.length;
+		
+		for(String s : opts) {
+			Label lp = new Label();
+			lp.setPos(p+=optopts.length+1, g);
+			lp.setSpan(optopts.length, 1);
+			lp.setText(s + "");
+			lp.setAnchor("c");
+			lp.setForeground(Fonts.getColor("stngs units labels"));
+			gui.addLabel(lp);
 		}
 		
 		g++;
@@ -146,7 +170,7 @@ public class UnitSettings {
 			
 			Image upic = new Image("data/UnitPics/"+type.replace("allies", "")+".png");
 			upic.setPos(p++, g);
-			upic.setSquare(22);
+			upic.setSquare(18);
 			gui.addImage(upic);
 			
 			Label lun = new Label();
@@ -155,14 +179,8 @@ public class UnitSettings {
 			lun.setForeground(Fonts.getColor("stngs units labels"));
 			gui.addLabel(lun);
 			
-			int sp = 0;
-			
 			for(String key : prios) {
 				
-				if(key.equals(prio_jump)) {
-					sp = p;
-					p+=3;
-				}
 				
 				if(key.equals("buy") && Unit.isLegendary(type)) {
 					p++;
@@ -193,8 +211,6 @@ public class UnitSettings {
 					private void check() {
 						try {
 							int val = Integer.parseInt(GUI.getInputText(id));
-							if((val > 5 || val < 1) && key.contains("dif"))
-								throw new NumberFormatException();
 							ConfigsV2.setUnitInt(cid, lay, uns.get(un).getAsString(), new UniInt(key), val);
 							GUI.setBackground(id, Color.white);
 						} catch (NumberFormatException e1) {
@@ -214,7 +230,7 @@ public class UnitSettings {
 				final String u = uids.get(i).getAsJsonObject().getAsJsonPrimitive("uid").getAsString();
 				final int ii = i;
 				Button buid = new Button();
-				buid.setPos(sp++, g);
+				buid.setPos(p++, g);
 				buid.setText(uids.get(i).getAsJsonObject().getAsJsonPrimitive("name").getAsString());
 				if(old.equals(u)) {
 					buid.setGradient(Fonts.getGradient("stngs units buttons on"));
@@ -246,6 +262,141 @@ public class UnitSettings {
 					}
 				});
 				gui.addBut(buid, uid+"spec::"+type+"::"+i);
+			}
+			
+			
+			String val = ConfigsV2.getUnitString(cid, lay, type, ConfigsV2.chests);
+			int c = StringUtils.countMatches(val, "::") + 1;
+			
+			for(final String s : chests) {
+				
+				int m = StringUtils.countMatches(val, s+",");
+				
+				Container cimg = new Container();
+				Image img = new Image("data/ChestPics/"+s+".png");
+				img.setSquare(18);
+				cimg.addImage(img);
+				
+				Button bcs = new Button();
+				bcs.setPos(p++, g);
+				bcs.setContainer(cimg);
+				if(m == c) {
+					bcs.setGradient(Fonts.getGradient("stngs units buttons on"));
+					bcs.setForeground(Fonts.getColor("stngs units buttons on"));
+				} else if(m == 0) {
+					bcs.setGradient(Fonts.getGradient("stngs units buttons def"));
+					bcs.setForeground(Fonts.getColor("stngs units buttons def"));
+				} else {
+					bcs.setGradient(Fonts.getGradient("stngs units buttons cat"));
+					bcs.setForeground(Fonts.getColor("stngs units buttons cat"));
+				}
+				bcs.setAL(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						String val = ConfigsV2.getUnitString(cid, lay, type, ConfigsV2.chests);
+						if(lay.equals("(all)")) {
+							int c = StringUtils.countMatches(val, "::") + 1;
+							int m = StringUtils.countMatches(val, s+",");
+							if(m == c) {
+								for(String lay : ConfigsV2.getLayerIds(cid))
+									ConfigsV2.setUnitString(cid, lay, type, ConfigsV2.chests, ConfigsV2.getUnitString(cid, lay, type, ConfigsV2.chests).replace(s+",", ""));
+								GUI.setGradient(uid+type+"::chests::"+s, Fonts.getGradient("stngs units buttons def"));
+							} else {
+								for(String lay : ConfigsV2.getLayerIds(cid)) {
+									String old = ConfigsV2.getUnitString(cid, lay, type, ConfigsV2.chests);
+									if(old.contains(s+","))
+										continue;
+									old += s+",";
+									ConfigsV2.setUnitString(cid, lay, type, ConfigsV2.chests, old);
+								}
+								GUI.setGradient(uid+type+"::chests::"+s, Fonts.getGradient("stngs units buttons on"));
+							}
+						} else {
+							if(val.contains(s+",")) {
+								val = val.replace(s+",", "");
+								GUI.setGradient(uid+type+"::chests::"+s, Fonts.getGradient("stngs units buttons def"));
+							} else {
+								val += s+",";
+								GUI.setGradient(uid+type+"::chests::"+s, Fonts.getGradient("stngs units buttons on"));
+							}
+							ConfigsV2.setUnitString(cid, lay, type, ConfigsV2.chests, val);
+						}
+					}
+				});
+				gui.addBut(bcs, uid+type+"::chests::"+s);
+			}
+			
+			for(String o : opts) {
+				Label space = new Label();
+				space.setPos(p++, g);
+				space.setSize(15, 1);
+				space.setText("");
+				gui.addLabel(space);
+				
+				final UniStr us = new UniStr(o);
+				val = ConfigsV2.getUnitString(cid, lay, type, us);
+				c = StringUtils.countMatches(val, "::") + 1;
+				
+				for(String s : optopts) {
+					Button bopt = new Button();
+					bopt.setPos(p++, g);
+					bopt.setText(s);
+					int m = StringUtils.countMatches(val, s);
+					if(m == c) {
+						bopt.setGradient(Fonts.getGradient("stngs units buttons on"));
+						bopt.setForeground(Fonts.getColor("stngs units buttons on"));
+					} else if(m == 0) {
+						bopt.setGradient(Fonts.getGradient("stngs units buttons def"));
+						bopt.setForeground(Fonts.getColor("stngs units buttons def"));
+					} else {
+						bopt.setGradient(Fonts.getGradient("stngs units buttons cat"));
+						bopt.setForeground(Fonts.getColor("stngs units buttons cat"));
+					}
+					bopt.setAL(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							String val = ConfigsV2.getUnitString(cid, lay, type, us);
+							if(lay.equals("(all)")) {
+								int c = StringUtils.countMatches(val, "::") + 1;
+								int m = StringUtils.countMatches(val, s);
+								if(m == c) {
+									for(String lay : ConfigsV2.getLayerIds(cid))
+										ConfigsV2.setUnitString(cid, lay, type, us, ConfigsV2.getUnitString(cid, lay, type, us).replaceFirst(s+",?", ""));
+									GUI.setGradient(uid+type+"::opt::"+o+"::"+s, Fonts.getGradient("stngs units buttons def"));
+									GUI.setForeground(uid+type+"::opt::"+o+"::"+s, Fonts.getColor("stngs units buttons def"));
+								} else {
+									for(String lay : ConfigsV2.getLayerIds(cid)) {
+										String old = ConfigsV2.getUnitString(cid, lay, type, us);
+										if(old.contains(s))
+											continue;
+										if(old.equals(""))
+											old = s;
+										else
+											old += ","+s;
+										ConfigsV2.setUnitString(cid, lay, type, us, old);
+									}
+									GUI.setGradient(uid+type+"::opt::"+o+"::"+s, Fonts.getGradient("stngs units buttons on"));
+									GUI.setForeground(uid+type+"::opt::"+o+"::"+s, Fonts.getColor("stngs units buttons on"));
+								}
+							} else {
+								if(val.contains(s)) {
+									val = val.replaceFirst(s+",?", "");
+									GUI.setGradient(uid+type+"::opt::"+o+"::"+s, Fonts.getGradient("stngs units buttons def"));
+									GUI.setForeground(uid+type+"::opt::"+o+"::"+s, Fonts.getColor("stngs units buttons def"));
+								} else {
+									if(val.equals(""))
+										val = s;
+									else
+										val += ","+s;
+									GUI.setGradient(uid+type+"::opt::"+o+"::"+s, Fonts.getGradient("stngs units buttons on"));
+									GUI.setForeground(uid+type+"::opt::"+o+"::"+s, Fonts.getColor("stngs units buttons on"));
+								}
+								ConfigsV2.setUnitString(cid, lay, type, us, val);
+							}
+						}
+					});
+					gui.addBut(bopt, uid+type+"::opt::"+o+"::"+s);
+				}
 			}
 			
 			g++;

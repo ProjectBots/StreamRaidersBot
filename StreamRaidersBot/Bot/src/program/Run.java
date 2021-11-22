@@ -421,14 +421,11 @@ public class Run {
 			String sel = Configs.getStr(name, Configs.canBuyChest);
 			String err;
 			switch(sel) {
-			case "dungeon":
-				if(Time.isAfter(srrh.getServerTime(), Options.get("dungeonchestdate")))
-					err = srrh.buyChest("dungeonchest2");
-				else
-					err = srrh.buyChest("dungeonchest");
+			case "saint":
+				err = srrh.buyChest("dungeons5saintchest");
 				break;
 			case "vampire":
-				err = srrh.buyChest("vampirechest");
+				err = srrh.buyChest("dungeons5vampirechest");
 				break;
 			default:
 				throw new NullPointerException();
@@ -562,7 +559,7 @@ public class Run {
 		}
 	}
 	
-	public static final String[] pveloy = "? bronze silver gold".split(" ");
+	public static final String[] pveloy = "noloy bronze silver gold".split(" ");
 	
 	private boolean raids() throws NoConnectionException, NotAuthorizedException {
 		boolean ret = false;
