@@ -441,6 +441,7 @@ public class Run {
 			}
 		} catch (NullPointerException e) {}
 		
+		/*
 		br: {
 			String sel = Configs.getStr(name, Configs.buyEventChest);
 			if(sel.equals("(none)"))
@@ -456,7 +457,7 @@ public class Run {
 					bought.addProperty(chest, 1);
 			}
 		}
-			
+		*/
 				
 		
 		if(Configs.getBoolean(name, Configs.canBuyScrolls)) {
