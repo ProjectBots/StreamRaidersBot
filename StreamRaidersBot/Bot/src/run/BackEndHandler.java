@@ -104,7 +104,7 @@ public class BackEndHandler {
 				Options.set("eventTiers", currentTiers.toString());
 			} else {
 				Options.set("eventTiers", "{}");
-			}													//	
+			}
 			for(String c : "dungeons5saintchest dungeons5vampirechest".split(" ")) {
 				try {
 					JsonObject base = s.getAsJsonObject(c);

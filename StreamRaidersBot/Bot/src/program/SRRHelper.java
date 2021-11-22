@@ -72,7 +72,7 @@ public class SRRHelper {
 			JsonObject store = data.getAsJsonObject("Store");
 			Options.set("store", store.toString());
 			Options.set("rewards", data.getAsJsonObject("ChestRewards").toString());
-			for(String c : "dungeonchest dungeonchest2 vampirechest polterheistorangechest polterheistgreenchest polterheistpurplechest".split(" ")) {
+			for(String c : "dungeons5saintchest dungeons5vampirechest".split(" ")) {
 				try {
 					JsonObject base = store.getAsJsonObject(c);
 					Options.set(c+"date", base.get("LiveEndTime").getAsString());
