@@ -79,6 +79,8 @@ public class SRRHelper {
 					Options.set(c+"price", base.get("BasePrice").getAsString());
 				} catch (NullPointerException e) {
 					Debug.printException("SRRHelper -> updateDataPath: err=failed to update chest, chest="+c, e, Debug.runerr, Debug.error, null, null, true);
+					Options.set(c+"date", "2021-10-10 12:00:00");
+					Options.set(c+"price", "9999");
 				}
 			}
 			Options.set("data", dataPath);
