@@ -43,7 +43,7 @@ public class Store {
 	public static final C potions = new C("potions");
 	public static final C gold = new C("gold");
 	public static final C keys = new C("keys");
-	public static final C candy = new C("candy");
+	public static final C eventcurrency = new C("eventcurrency");
 	public static final C bones = new C("bones");
 	public static final C meat = new C("meat");
 	
@@ -57,7 +57,7 @@ public class Store {
 		add(potions.get());
 		add(gold.get());
 		add(keys.get());
-		add(candy.get());
+		add(eventcurrency.get());
 		add(bones.get());
 		add(meat.get());
 	}};
@@ -135,7 +135,7 @@ public class Store {
 		JsonArray cs = Json.parseObj(r).getAsJsonArray("data");
 		for(int i=0; i<cs.size(); i++) {
 			JsonObject c = cs.get(i).getAsJsonObject();
-			currencies.put(c.getAsJsonPrimitive("currencyId").getAsString().replace("cooldown", meat.get()), Integer.parseInt(c.getAsJsonPrimitive("quantity").getAsString()));
+			currencies.put(c.getAsJsonPrimitive("currencyId").getAsString().replace("cooldown", meat.get()).replace("snowflake", eventcurrency.get()), Integer.parseInt(c.getAsJsonPrimitive("quantity").getAsString()));
 		}
 		JsonObject user = Json.parseObj(req.getUser()).getAsJsonObject("data");
 		int potion = user.get("epicProgression").getAsInt();
@@ -301,7 +301,17 @@ public class Store {
 		if(price > getCurrency(gold)) 
 			return "not enough gold";
 		
-		JsonObject resp = Json.parseObj(req.purchaseStoreItem(item.getAsJsonPrimitive("itemId").getAsString()));
+		String itemId = item.getAsJsonPrimitive("itemId").getAsString();
+		
+		if(itemId.equals("dailydrop")) {
+			JsonObject resp = Json.parseObj(req.grantDailyDrop());
+			JsonElement err = resp.get(SRC.errorMessage);
+			if(err.isJsonPrimitive())
+				return err.getAsString();
+			return null;
+		}
+		
+		JsonObject resp = Json.parseObj(req.purchaseStoreItem(itemId));
 		
 		JsonElement err = resp.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
@@ -321,7 +331,7 @@ public class Store {
 		
 		int price = Integer.parseInt(Options.get(chest+"price"));
 		
-		C cur = chest.contains("polterheist") ? candy : keys;
+		C cur = chest.contains("snowfall") ? eventcurrency : keys;
 		
 		if(getCurrency(cur) < price) {
 			ret.addProperty(SRC.errorMessage, "not enough "+cur.get());

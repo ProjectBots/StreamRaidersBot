@@ -27,7 +27,7 @@ public class ConfigsGUI {
 	
 	private static JsonObject configs;
 
-	private static String[] exopts = "cookies unit_place unit_epic unit_upgrade unit_unlock unit_dupe unit_buy unit_spec chests_min chests_max chests_enabled blockedSlots lockedSlots dungeonSlot time maxPage unitPlaceDelay canBuyChest canBuyScrolls storeRefresh favs stats".split(" ");
+	private static String[] exopts = "cookies unit_place unit_epic unit_upgrade unit_unlock unit_dupe unit_buy unit_spec chests_min chests_max chests_enabled blockedSlots lockedSlots dungeonSlot time maxPage unitPlaceDelay canBuyChest buyEventChest canBuyScrolls storeRefresh favs stats".split(" ");
 	
 	public static void exportConfig(GUI parent) {
 		

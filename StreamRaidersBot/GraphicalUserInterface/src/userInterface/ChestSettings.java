@@ -50,7 +50,7 @@ public class ChestSettings {
 		JsonArray cts = Json.parseArr(Options.get("chests"));
 		cts.remove(new JsonPrimitive("chestsalvage"));
 		
-		GUI gui = new GUI("Chest Settings for " + ConfigsV2.getPStr(cid, ConfigsV2.pname), 500, 500, parent, null);
+		GUI gui = new GUI("Chest Settings for " + ConfigsV2.getPStr(cid, ConfigsV2.pname), 750, 500, parent, null);
 		gui.setBackgroundGradient(Fonts.getGradient("stngs chests background"));
 		
 		

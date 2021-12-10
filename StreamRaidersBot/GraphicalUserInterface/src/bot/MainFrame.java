@@ -1371,7 +1371,7 @@ public class MainFrame {
 					cdslot.addComboBox(cbc);
 					
 				sgui.addContainer(cdslot);
-				/*
+				
 				Container becc = new Container();
 				becc.setPos(0, g++);
 					
@@ -1384,7 +1384,7 @@ public class MainFrame {
 					String sel3 = Configs.getStr(name, Configs.buyEventChest);
 					
 					ComboBox beccb = new ComboBox(name+"::canBuyEventChest");
-					beccb.setList(ArrayUtils.insert(0, ArrayUtils.removeElement("(none) orange green purple".split(" "), sel3), sel3));
+					beccb.setList(ArrayUtils.insert(0, ArrayUtils.removeElement("(none)  St. Jude  AFSP  MHA  Toys For Tots".split("  "), sel3), sel3));
 					beccb.setPos(1, 0);
 					beccb.setFont(new Font(null, Font.PLAIN, 23));
 					beccb.setCL(new CombListener() {
@@ -1399,7 +1399,7 @@ public class MainFrame {
 					
 				
 				sgui.addContainer(becc);
-				*/
+				
 				Button cbsb = new Button();
 				cbsb.setPos(0, g++);
 				cbsb.setFont(new Font(null, Font.PLAIN, 23));

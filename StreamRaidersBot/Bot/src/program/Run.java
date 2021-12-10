@@ -441,48 +441,72 @@ public class Run {
 			}
 		} catch (NullPointerException e) {}
 		
-		/*
-		br: {
+		
+		ec: {
 			String sel = Configs.getStr(name, Configs.buyEventChest);
-			if(sel.equals("(none)"))
-				break br;
-			String chest = "polterheist"+sel+"chest";
+			String chest;
+			switch(sel) {
+			case "St. Jude":
+				chest = "snowfallcharitychest1";
+				break;
+			case "AFSP":
+				chest = "snowfallcharitychest2";
+				break;
+			case "MHA":
+				chest = "snowfallcharitychest3";
+				break;
+			case "Toys For Tots":
+				chest = "snowfallcharitychest4";
+				break;
+			default:
+				break ec;
+			}
 			String err = srrh.buyChest(chest);
 			if(err != null && !(err.equals("after end") || err.startsWith("not enough ")))
 				Debug.print(name+" -> Run -> store -> buyChest: err="+err+", chest="+sel, Debug.runerr, Debug.error, name, null, true);
 			if(err == null) {
+				chest = "snowfallcharitychest";
 				if(bought.has(chest))
 					bought.addProperty(chest, bought.get(chest).getAsInt() + 1);
 				else 
 					bought.addProperty(chest, 1);
 			}
 		}
-		*/
+		
 				
 		
 		if(Configs.getBoolean(name, Configs.canBuyScrolls)) {
 			JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
 			if(items.size() != 0) {
+				JsonObject allPacks = Json.parseObj(Options.get("store"));
 				int[] ps = new int[items.size()];
-				String[] types = new String[items.size()];
+				JsonObject[] packs = new JsonObject[items.size()];
 				for(int i=0; i<items.size(); i++) {
 					try {
-						types[i] = items.get(i).getAsJsonObject()
-								.getAsJsonPrimitive("itemId")
-								.getAsString()
-								.split("pack")[0]
-								.replace("scroll", "")
-								.replace("paladin", "alliespaladin");
-					
-						ps[i] = Configs.getUnitInt(name, types[i], Configs.buy);
+						packs[i] = allPacks.get(items.get(i)
+								.getAsJsonObject()
+								.get("itemId")
+								.getAsString())
+							.getAsJsonObject();
+			
+						String type = packs[i].get("Item").getAsString().replace("scroll", "");
+						
+						//	switch if sr decides to add more units with allias
+						switch(type) {
+						case "paladin":
+							type = "allies" + type;
+						}
+						
+						if(type.equals("eventcurrency"))
+							ps[i] = Integer.MAX_VALUE;
+						else
+							ps[i] = Configs.getUnitInt(name, type, Configs.buy);
 						
 					} catch (NullPointerException e) {
 						Debug.printException(name + ": Run -> store: item=" + items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString() + ", err=item is not correct", e, Debug.runerr, Debug.error, name, null, true);
 						ps[i] = -1;
 					}
 				}
-				
-				JsonObject packs = Json.parseObj(Options.get("store"));
 				
 				while(true) {
 					int ind = 0;
@@ -497,14 +521,15 @@ public class Run {
 					if(err != null && !err.equals("not enough gold"))
 						Debug.print(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, Debug.lowerr, Debug.error, name, null, true);
 					
-					int amount = packs.get(items.get(ind).getAsJsonObject().get("itemId").getAsString())
+					int amount = allPacks.get(items.get(ind).getAsJsonObject().get("itemId").getAsString())
 							.getAsJsonObject().get("Quantity").getAsInt();
 					
 					if(err == null) {
-						if(bought.has(types[ind]))
-							bought.addProperty(types[ind], bought.get(types[ind]).getAsInt() + amount);
+						String type = packs[ind].get("Item").getAsString();
+						if(bought.has(type))
+							bought.addProperty(type, bought.get(type).getAsInt() + amount);
 						else 
-							bought.addProperty(types[ind], amount);
+							bought.addProperty(type, amount);
 					}
 					
 					ps[ind] = -1;

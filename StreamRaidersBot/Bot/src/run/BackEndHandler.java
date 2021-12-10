@@ -105,7 +105,7 @@ public class BackEndHandler {
 			} else {
 				Options.set("eventTiers", "{}");
 			}
-			for(String c : "dungeons5saintchest dungeons5vampirechest".split(" ")) {
+			for(String c : "dungeons5saintchest dungeons5vampirechest snowfallcharitychest1 snowfallcharitychest2 snowfallcharitychest3 snowfallcharitychest4".split(" ")) {
 				try {
 					JsonObject base = s.getAsJsonObject(c);
 					Options.set(c+"date", base.get("LiveEndTime").getAsString());

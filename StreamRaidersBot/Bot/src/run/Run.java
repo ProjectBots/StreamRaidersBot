@@ -98,8 +98,8 @@ public class Run {
 	
 	private static final String[] rew_sources = "chests bought event".split(" ");
 	private static final String[] rew_chests_chests = "chestboostedgold chestbosssuper chestboostedskin chestboss chestboostedtoken chestgold chestsilver chestbronze chestsalvage".split(" ");
-	private static final String[] rew_bought_chests = "polterheistorangechest polterheistgreenchest polterheistpurplechest dungeonchest vampirechest saintchest".split(" ");
-	private static final String[] rew_types = "gold potions token candy keys meat bones skins scrollmage scrollwarbeast scrolltemplar scrollorcslayer scrollballoonbuster scrollartillery scrollflyingarcher scrollberserker scrollcenturion scrollmusketeer scrollmonk scrollbuster scrollbomber scrollbarbarian scrollpaladin scrollhealer scrollvampire scrollsaint scrollflagbearer scrollrogue scrollwarrior scrolltank scrollarcher".split(" ");
+	private static final String[] rew_bought_chests = "snowfallcharitychest dungeonchest vampirechest saintchest".split(" ");
+	private static final String[] rew_types = "gold potions token eventcurrency keys meat bones skins scrollmage scrollwarbeast scrolltemplar scrollorcslayer scrollballoonbuster scrollartillery scrollflyingarcher scrollberserker scrollcenturion scrollmusketeer scrollmonk scrollbuster scrollbomber scrollbarbarian scrollpaladin scrollhealer scrollvampire scrollsaint scrollflagbearer scrollrogue scrollwarrior scrolltank scrollarcher".split(" ");
 	
 	
 	private void iniRews() {
@@ -684,6 +684,10 @@ public class Run {
 			ps = new int[] {ep, np, e, n};
 			vs = new boolean[] {ve, vn};
 		}
+		@Override
+		public String toString() {
+			return "{" + unit.get(SRC.Unit.unitType) + "|ps=" + Arrays.toString(ps) + "|vs=" + Arrays.toString(vs) + "}";
+		}
 	}
 	
 	private Place findPlace(Map map, int[] mh, HashSet<String> upts, List<String> neededUnits, final Unit[] units, boolean epic, boolean dungeon, String chest, boolean fav, int slot) {
@@ -775,7 +779,7 @@ public class Run {
 			prios[i] = new Prio(units[i], np, ep, n, e, vn, ve);
 		}
 		
-		
+		Debug.print("prios=" + Arrays.toString(prios), Debug.units, Debug.info, pn, slot);
 		
 		for(int i=0; i<4; i++) {
 			if(!epic && i%2 == 0)
@@ -1246,18 +1250,29 @@ public class Run {
 		if(beh.getCurrency(pn, Store.gold, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.scrollsMinGold)) {
 			JsonArray items = beh.getStoreItems(SRC.Store.notPurchased);
 			if(items.size() != 0) {
+				JsonObject allPacks = Json.parseObj(Options.get("store"));
 				int[] ps = new int[items.size()];
-				String[] types = new String[items.size()];
+				JsonObject[] packs = new JsonObject[items.size()];
 				for(int i=0; i<items.size(); i++) {
 					try {
-						types[i] = items.get(i).getAsJsonObject()
-								.getAsJsonPrimitive("itemId")
-								.getAsString()
-								.split("pack")[0]
-								.replace("scroll", "")
-								.replace("paladin", "alliespaladin");
+						packs[i] = allPacks.get(items.get(i)
+										.getAsJsonObject()
+										.get("itemId")
+										.getAsString())
+									.getAsJsonObject();
 					
-						ps[i] = ConfigsV2.getUnitInt(cid, currentLayer, types[i], ConfigsV2.buy);
+						String type = packs[i].get("Item").getAsString().replace("scroll", "");
+						
+						//	switch if sr decides to add more units with allias
+						switch(type) {
+						case "paladin":
+							type = "allies" + type;
+						}
+						
+						if(type.equals("eventcurrency"))
+							ps[i] = Integer.MAX_VALUE;
+						else
+							ps[i] = ConfigsV2.getUnitInt(cid, currentLayer, type, ConfigsV2.buy);
 						
 					} catch (NullPointerException e) {
 						Debug.printException("Run -> store: item=" + items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString() + ", err=item is not correct", e, Debug.runerr, Debug.error, pn, 4, true);
@@ -1265,7 +1280,6 @@ public class Run {
 					}
 				}
 				
-				JsonObject packs = Json.parseObj(Options.get("store"));
 				
 				while(true) {
 					int ind = 0;
@@ -1276,12 +1290,11 @@ public class Run {
 					if(ps[ind] < 0)
 						break;
 					
-					int amount = packs.get(items.get(ind).getAsJsonObject().get("itemId").getAsString())
-							.getAsJsonObject().get("Quantity").getAsInt();
+					int amount = packs[ind].get("Quantity").getAsInt();
 					
 					String err = beh.buyItem(items.get(ind).getAsJsonObject());
 					if(err == null)
-						addRew(SRC.Run.bought, "scroll"+types[ind].replace("allies", ""), amount);
+						addRew(SRC.Run.bought, packs[ind].get("Item").getAsString(), amount);
 					else if(!err.equals("not enough gold"))
 						Debug.print("Run -> store: item=" + items.get(ind) + ", err=" + err, Debug.lowerr, Debug.error, pn, 4, true);
 					
@@ -1420,7 +1433,7 @@ public class Run {
 		return currentLayer;
 	}
 	
-	private static final C[] sc = new C[] {Store.gold, Store.potions, Store.meat, Store.candy, Store.keys, Store.bones};
+	private static final C[] sc = new C[] {Store.gold, Store.potions, Store.meat, Store.eventcurrency, Store.keys, Store.bones};
 	public static final String[] pveloy = "noloy bronze silver gold".split(" ");
 	
 	synchronized public void updateFrame() throws NoConnectionException, NotAuthorizedException {

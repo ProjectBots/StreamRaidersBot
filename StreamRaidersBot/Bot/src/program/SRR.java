@@ -264,6 +264,12 @@ public class SRR {
 		return sendPost(post);
 	}
 	
+	public String grantDailyDrop() throws NoConnectionException {
+		Http post = getPost("grantDailyDrop");
+		post.addEncArg("storeUid", "dailydrop");
+		return sendPost(post);
+	}
+	
 	
 	public String grantEventReward(String eventId, String rewardTier, boolean collectBattlePass) throws NoConnectionException {
 		Http post = getPost("grantEventReward");
