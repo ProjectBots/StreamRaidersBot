@@ -121,7 +121,7 @@ public class Store {
 		currencies = new Hashtable<>();
 		for(int i=0; i<availableCurrencies.size(); i++) {
 			JsonObject c = availableCurrencies.get(i).getAsJsonObject();
-			currencies.put(c.getAsJsonPrimitive("currencyId").getAsString().replace("cooldown", "meat"), Integer.parseInt(c.getAsJsonPrimitive("quantity").getAsString()));
+			currencies.put(c.getAsJsonPrimitive("currencyId").getAsString().replace("cooldown", meat.get()).replace("snowflake", eventcurrency.get()), Integer.parseInt(c.getAsJsonPrimitive("quantity").getAsString()));
 		}
 		int potion = user.get("epicProgression").getAsInt();
 		currencies.put(potions.get(), potion > 60 ? 60 : potion);
@@ -294,11 +294,11 @@ public class Store {
 	}
 	
 	
-	public String buyItem(JsonObject item, SRR req) throws NoConnectionException {
+	public String buyItem(JsonObject item, JsonObject pack, SRR req) throws NoConnectionException {
 		if(item.getAsJsonPrimitive("purchased").getAsInt() == 1) return "already purchased";
 		
 		int price = item.getAsJsonPrimitive("price").getAsInt();
-		if(price > getCurrency(gold)) 
+		if(price > getCurrency(gold))
 			return "not enough gold";
 		
 		String itemId = item.getAsJsonPrimitive("itemId").getAsString();
@@ -308,17 +308,18 @@ public class Store {
 			JsonElement err = resp.get(SRC.errorMessage);
 			if(err.isJsonPrimitive())
 				return err.getAsString();
-			return null;
+		} else {
+			JsonObject resp = Json.parseObj(req.purchaseStoreItem(itemId));
+			
+			JsonElement err = resp.get(SRC.errorMessage);
+			if(err.isJsonPrimitive())
+				return err.getAsString();
+			
+			decreaseCurrency(gold, price);
+			shopItems = resp.getAsJsonArray("data");
 		}
 		
-		JsonObject resp = Json.parseObj(req.purchaseStoreItem(itemId));
-		
-		JsonElement err = resp.get(SRC.errorMessage);
-		if(err.isJsonPrimitive())
-			return err.getAsString();
-		
-		decreaseCurrency(gold, price);
-		shopItems = resp.getAsJsonArray("data");
+		addCurrency(pack.get("Item").getAsString(), pack.get("Quantity").getAsInt());
 		return null;
 	}
 	

@@ -279,7 +279,7 @@ public class ProfileSettings {
 			
 		gui.addContainer(cdslot);
 		
-		/*
+		
 		Container cec = new Container();
 		cec.setPos(0, p++);
 		cec.setInsets(10, 2, 2, 2);
@@ -296,7 +296,7 @@ public class ProfileSettings {
 			
 			ComboBox cbec = new ComboBox(uid+"canBuyEventChest");
 			cbec.setPos(1, 0);
-			cbec.setList(putFirst("(none) orange green purple".split(" "), canBuyEventChest));
+			cbec.setList(putFirst("(none)  St. Jude  AFSP  MHA  Toys For Tots".split("  "), canBuyEventChest));
 			cbec.setCL(new CombListener() {
 				@Override
 				public void unselected(String id, ItemEvent e) {}
@@ -308,7 +308,7 @@ public class ProfileSettings {
 			cec.addComboBox(cbec);
 		
 		gui.addContainer(cec);
-		*/
+		
 		
 		Container csleep = new Container();
 		csleep.setPos(0, p++);

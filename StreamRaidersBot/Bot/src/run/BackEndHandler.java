@@ -593,8 +593,8 @@ public class BackEndHandler {
 		return store.getCurrencies();
 	}
 	
-	public String buyItem(JsonObject item) throws NoConnectionException {
-		return store.buyItem(item, req);
+	public String buyItem(JsonObject item, JsonObject pack) throws NoConnectionException {
+		return store.buyItem(item, pack, req);
 	}
 	
 	public JsonArray getStoreItems(int con) {

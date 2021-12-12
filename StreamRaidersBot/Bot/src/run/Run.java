@@ -56,15 +56,19 @@ public class Run {
 	 * 	config import
 	 * 	config import from old client
 	 * 	fonts config import
-	 * 	option to suppress specific error popups
 	 * 	rename Fonts to CS (ColorScheme)
 	 * 	update xX_DEV_Xx
 	 * 	option to set max profile actions at once
-	 * 	add tooltips
+	 * 	add tooltips (everywhere)
 	 * 	fonts manage error blocks (GlobalOptions)
-	 * 	config version
+	 * 	config versioning
 	 * 	unsync acc on removal
 	 * 	check place settings (eg.: min loy/room) before placement (bcs of locked slots)
+	 * 	fix bug with not placing a unit sometimes
+	 * 	fix bug with placing on versus raids if slot is locked
+	 * 	add a check all or uncheck all button in unit settings for the "nc nd ec ed"
+	 * 	fix bug with claiming potions as used even if not placed as epic
+	 * 	
 	 * 
 	 * 	after release:
 	 * 	get Donators from github source
@@ -1226,18 +1230,32 @@ public class Run {
 			} else if(!(err.getAsString().equals("after end") || err.getAsString().startsWith("not enough ")))
 				Debug.print("Run -> store -> buyChest: err="+err.getAsString()+", chest="+sel, Debug.runerr, Debug.error, pn, 4, true);
 		}
-		/*
+		
 		ec: {
 			String sel = ConfigsV2.getStr(cid, currentLayer, ConfigsV2.canBuyEventChest);
-			if(sel.equals("(none)"))
+			String chest;
+			switch(sel) {
+			case "St. Jude":
+				chest = "snowfallcharitychest1";
+				break;
+			case "AFSP":
+				chest = "snowfallcharitychest2";
+				break;
+			case "MHA":
+				chest = "snowfallcharitychest3";
+				break;
+			case "Toys For Tots":
+				chest = "snowfallcharitychest4";
+				break;
+			default:
 				break ec;
-			
-			String chest = "polterheist"+sel+"chest";
+			}
 			JsonObject bc = beh.buyChest(chest);
 			JsonElement err = bc.get(SRC.errorMessage);
 			if(err == null || !err.isJsonPrimitive()) {
+				chest = "snowfallcharitychest";
 				addRew(SRC.Run.bought, chest, 1);
-				JsonArray data = bc.getAsJsonArray("data");
+				JsonArray data = bc.getAsJsonObject("data").getAsJsonArray("rewards");
 				Raid.updateChestRews();
 				for(int i=0; i<data.size(); i++) {
 					Reward rew = new Reward(data.get(i).getAsString());
@@ -1246,7 +1264,7 @@ public class Run {
 			} else if(!(err.getAsString().equals("after end") || err.getAsString().startsWith("not enough ")))
 				Debug.print("Run -> store -> buyChest: err="+err.getAsString()+", chest="+sel, Debug.runerr, Debug.error, pn, 4, true);
 		}
-		*/
+		
 		if(beh.getCurrency(pn, Store.gold, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.scrollsMinGold)) {
 			JsonArray items = beh.getStoreItems(SRC.Store.notPurchased);
 			if(items.size() != 0) {
@@ -1292,7 +1310,7 @@ public class Run {
 					
 					int amount = packs[ind].get("Quantity").getAsInt();
 					
-					String err = beh.buyItem(items.get(ind).getAsJsonObject());
+					String err = beh.buyItem(items.get(ind).getAsJsonObject(), packs[ind]);
 					if(err == null)
 						addRew(SRC.Run.bought, packs[ind].get("Item").getAsString(), amount);
 					else if(!err.equals("not enough gold"))

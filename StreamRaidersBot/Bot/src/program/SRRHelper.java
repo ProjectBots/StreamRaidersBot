@@ -384,8 +384,8 @@ public class SRRHelper {
 		return store == null ? null : store.getCurrency(con);
 	}
 	
-	public String buyItem(JsonObject item) throws NoConnectionException {
-		return store.buyItem(item, req);
+	public String buyItem(JsonObject item, JsonObject pack) throws NoConnectionException {
+		return store.buyItem(item, pack, req);
 	}
 	
 	public String buyChest(String chest) throws NoConnectionException {

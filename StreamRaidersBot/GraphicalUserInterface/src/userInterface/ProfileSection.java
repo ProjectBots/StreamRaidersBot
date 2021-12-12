@@ -23,7 +23,7 @@ public class ProfileSection {
 	public static final String pre = "ProfileSection::";
 	
 	
-	private static String[] sc = "Gold Potions Meat Candy Keys Bones".split(" ");
+	private static String[] sc = "Gold Potions Meat EventCurrency Keys Bones".split(" ");
 	
 	private final String cid;
 	

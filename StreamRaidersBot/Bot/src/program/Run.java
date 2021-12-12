@@ -495,6 +495,7 @@ public class Run {
 						switch(type) {
 						case "paladin":
 							type = "allies" + type;
+							break;
 						}
 						
 						if(type.equals("eventcurrency"))
@@ -517,7 +518,7 @@ public class Run {
 					if(ps[ind] < 0)
 						break;
 					
-					String err = srrh.buyItem(items.get(ind).getAsJsonObject());
+					String err = srrh.buyItem(items.get(ind).getAsJsonObject(), packs[ind]);
 					if(err != null && !err.equals("not enough gold"))
 						Debug.print(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, Debug.lowerr, Debug.error, name, null, true);
 					
