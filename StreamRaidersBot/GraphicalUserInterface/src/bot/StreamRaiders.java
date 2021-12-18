@@ -28,7 +28,6 @@ import run.BackEndHandler;
 
 public class StreamRaiders {
 	
-	
 	private static int error_count = 0;
 	private static GUI err = null;
 	public static final String pre = "StreamRaiders::";

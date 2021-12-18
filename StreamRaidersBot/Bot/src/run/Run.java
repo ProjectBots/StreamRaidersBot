@@ -62,12 +62,10 @@ public class Run {
 	 * 	add tooltips (everywhere)
 	 * 	fonts manage error blocks (GlobalOptions)
 	 * 	config versioning
-	 * 	unsync acc on removal
-	 * 	check place settings (eg.: min loy/room) before placement (bcs of locked slots)
-	 * 	fix bug with not placing a unit sometimes
-	 * 	fix bug with placing on versus raids if slot is locked
+	 * 	make epic slot dependent
 	 * 	add a check all or uncheck all button in unit settings for the "nc nd ec ed"
-	 * 	fix bug with claiming potions as used even if not placed as epic
+	 * 	add quest rewards to stats and store
+	 * 	add option to enable closing window only after confirmation
 	 * 	
 	 * 
 	 * 	after release:
@@ -517,7 +515,6 @@ public class Run {
 	private LocalDateTime placeTime = LocalDateTime.now();
 	
 	private void place(int slot) throws NoConnectionException, NotAuthorizedException {
-		
 		//	Unit place delay
 		long tdif = ChronoUnit.MILLIS.between(LocalDateTime.now(), placeTime);
 		if(tdif > 0) {
@@ -530,6 +527,9 @@ public class Run {
 		if(r == null)
 			return;
 
+		if(r.isVersus())
+			return;
+		
 		String placeSer = r.get(SRC.Raid.placementsSerialized);
 		if(!r.canPlaceUnit(beh.getServerTime())
 			|| ConfigsV2.getInt(cid, currentLayer, ConfigsV2.maxUnitPerRaid) <= (placeSer == null 
@@ -537,10 +537,52 @@ public class Run {
 																					: placeSer.split(beh.getUserId()).length-1))
 			return;
 		
-
+		
 		boolean dungeon = r.isDungeon();
 		
+		//	check place settings (eg.: min loy/room) before placement (bcs of locked slots)
 		
+		String tdn = r.get(SRC.Raid.twitchDisplayName);
+		Boolean ic = ConfigsV2.getCapBoo(cid, currentLayer, tdn, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign, ConfigsV2.ic);
+		if(ic == null)
+			ic = false;
+		
+		String ct = r.getFromNode(SRC.MapNode.chestType);
+		if(ct == null)
+			return;
+		ct = Remaper.map(ct);
+
+		int loy = dungeon ? (r.get(SRC.Raid.allyBoons)+",").split(",").length : Integer.parseInt(r.get(SRC.Raid.pveWins));
+		
+		int maxLoy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.maxLoy);
+		int minLoy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.minLoy);
+		boolean enabled = ConfigsV2.getChestBoolean(cid, currentLayer, ct, ConfigsV2.enabled);
+		int maxTimeLeft = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.maxTime);
+		int minTimeLeft = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.minTime);
+		
+		int length = dungeon ? 420 : 1800;
+		
+		maxTimeLeft = length - maxTimeLeft;
+		
+		if(!ic && Time.isAfter(Time.parse(r.get(SRC.Raid.creationDate))
+									.plusSeconds(maxTimeLeft),
+								beh.getServerTime())) {
+			return;
+		}
+		
+		if((dungeon ^ r.isDungeon())
+			|| (!ic && Time.isAfter(beh.getServerTime(),
+							Time.parse(r.get(SRC.Raid.creationDate))
+								.plusSeconds(length - minTimeLeft)))
+			|| (!ic && !enabled)
+			|| (!ic && (loy < minLoy || loy > maxLoy))
+			) {
+			return;
+		}
+		
+		
+		//	check if epic is available
+		//	TODO make epic slot dependent
 		Integer potionsc = beh.getCurrency(pn, Store.potions, true);
 		boolean epic = potionsc == null ? false : (potionsc >= 45);
 		
@@ -560,7 +602,6 @@ public class Run {
 		
 		
 		int[] mh = new Heatmap().getMaxHeat(map);
-		
 		
 		int re = 0;
 		int retries = ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unitPlaceRetries);
@@ -611,8 +652,9 @@ public class Run {
 				} catch (InterruptedException e) {}
 				break;
 			} else {
-				final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, dungeon, r.getFromNode(SRC.MapNode.chestType),
-						ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign).contains(r.get(SRC.Raid.twitchDisplayName)), slot);
+				String node = Remaper.map(r.getFromNode(SRC.MapNode.chestType));
+				boolean fav = ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign).contains(r.get(SRC.Raid.twitchDisplayName));
+				final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, dungeon, node, fav, slot);
 				if(pla == null) {
 					Debug.print("Place=null", Debug.units, Debug.info, pn, slot);
 					break;
@@ -621,12 +663,14 @@ public class Run {
 				String err = beh.placeUnit(pn, slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
 				bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
 				
-				if(epic && err == null)
-					beh.decreaseCurrency(Store.potions, 45);
-				
 				if(err == null) {
+					if(pla.epic)
+						beh.decreaseCurrency(Store.potions, 45);
+					
 					beh.addCurrency(Store.potions, 1);
-					beh.addCurrency(pla.unit.get(SRC.Unit.unitType), 1);
+					String ut = pla.unit.get(SRC.Unit.unitType);
+					if(!Unit.isLegendary(ut))
+						beh.addCurrency(pla.unit.get(SRC.Unit.unitType), 1);
 					placeTime = LocalDateTime.now().plus(Maths.ranInt(ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.minu),
 																	ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.maxu)), 
 														ChronoUnit.MILLIS);
@@ -825,7 +869,6 @@ public class Run {
 		return null;
 	}
 	
-	
 	private void captain(int slot) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 		captain(slot, true, false);
 	}
@@ -891,7 +934,7 @@ public class Run {
 		ct = Remaper.map(ct);
 
 		int loy = dungeon ? (r.get(SRC.Raid.allyBoons)+",").split(",").length : Integer.parseInt(r.get(SRC.Raid.pveWins));
-		
+		//TODO
 		Integer maxLoy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.maxLoy);
 		Integer minLoy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.minLoy);
 		Boolean enabled = ConfigsV2.getChestBoolean(cid, currentLayer, ct, ConfigsV2.enabled);
@@ -908,11 +951,7 @@ public class Run {
 		} else if(maxLoy < 0)
 			maxLoy = Integer.MAX_VALUE;
 			
-		int length;
-		if(dungeon)
-			length = 420;
-		else
-			length = 1800;
+		int length = dungeon ? 420 : 1800;
 		
 		maxTimeLeft = length - maxTimeLeft;
 		
@@ -937,7 +976,7 @@ public class Run {
 			|| (!ic && Time.isAfter(beh.getServerTime(),
 							Time.parse(r.get(SRC.Raid.creationDate))
 								.plusSeconds(length - minTimeLeft)))
-			|| (!ic && !dungeon && !enabled)
+			|| (!ic && !enabled)
 			|| (!ic && (loy < minLoy || loy > maxLoy))
 			|| fav < 0
 			) {
@@ -1366,6 +1405,7 @@ public class Run {
 					Thread.sleep(3000);
 				} catch (InterruptedException e) {}
 			} else {
+				//TODO add quest rewards to stats and store
 				String err = beh.claimQuest(quests[i]);
 				if(err != null)
 					Debug.print("Run -> claimQuests: err=" + err, Debug.runerr, Debug.error, pn, 4, true);

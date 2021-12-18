@@ -36,6 +36,9 @@ public class ConfigsV2 {
 	
 	public static void remProfile(String cid) {
 		configs.remove(cid);
+		for(String c : getCids())
+			if(getPStr(c, synced).equals(cid))
+				sync(c, null);
 	}
 	
 	private static class All {
@@ -368,15 +371,10 @@ public class ConfigsV2 {
 			}
 			return ret == null ? sel : ret;
 		}
-		//TODO remove try catch
-		try {
-			return getLayer(cid, lay)
-					.getAsJsonObject("units")
-					.getAsJsonObject(uType)
-					.get(con.get()).getAsString();
-		} catch (NullPointerException e) {
-			return "";
-		}
+		return getLayer(cid, lay)
+				.getAsJsonObject("units")
+				.getAsJsonObject(uType)
+				.get(con.get()).getAsString();
 	}
 	
 	public static void setUnitString(String cid, String lay, String uType, UniStr con, String str) {
@@ -1009,7 +1007,7 @@ public class ConfigsV2 {
 			times.addProperty(s+"-"+2015, "(default)");
 	}
 	
-	//	TODO
+	
 	public static void sync(String cid, String defCid) {
 		JsonObject toSync = getProfile(cid);
 		if(defCid == null) {

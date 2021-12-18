@@ -6,20 +6,23 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSyntaxException;
 
 public class Json {
 
 	public static JsonObject parseObj(String json) {
-		try {
-			return new Gson().fromJson(json, JsonObject.class);
-		} catch (JsonSyntaxException e) {
-			return null;
-		}
+		return new Gson().fromJson(json, JsonObject.class);
 	}
 	
 	public static JsonArray parseArr(String json) {
 		return new Gson().fromJson(json, JsonArray.class);
+	}
+
+	public static JsonElement fromObj(Object in) {
+		return new Gson().toJsonTree(in);
+	}
+	
+	public static <T>T toObj(JsonElement in, Class<T> c) {
+		return new Gson().fromJson(in, c);
 	}
 	
 	public static JsonObject check(JsonObject json, JsonObject def) {
