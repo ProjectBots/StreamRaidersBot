@@ -30,32 +30,39 @@ public class GlobalOptions {
 		
 		gui.setBackgroundGradient(Fonts.getGradient("stngs global background"));
 		
-		Button umr = new Button();
-		umr.setPos(0, p++);
-		umr.setText("Prevent spiking Memory");
-		if(ConfigsV2.getGBoo(ConfigsV2.useMemoryReleaser)) {
-			umr.setGradient(Fonts.getGradient("stngs global buttons on"));
-			umr.setForeground(Fonts.getColor("stngs global buttons on"));
-		} else {
-			umr.setGradient(Fonts.getGradient("stngs global buttons def"));
-			umr.setForeground(Fonts.getColor("stngs global buttons def"));
-		}
-			
-		umr.setAL(new ActionListener() {
+		Button bumr = new Button();
+		bumr.setPos(0, p++);
+		bumr.setText("Prevent spiking Memory");
+		boolean umr = ConfigsV2.getGBoo(ConfigsV2.useMemoryReleaser);
+		bumr.setGradient(Fonts.getGradient("stngs global buttons "+(umr?"on":"def")));
+		bumr.setForeground(Fonts.getColor("stngs global buttons "+(umr?"on":"def")));
+		bumr.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(ConfigsV2.getGBoo(ConfigsV2.useMemoryReleaser)) {
-					ConfigsV2.setGBoo(ConfigsV2.useMemoryReleaser, false);
-					GUI.setGradient(uid+"umr", Fonts.getGradient("stngs global buttons def"));
-					GUI.setForeground(uid+"umr", Fonts.getColor("stngs global buttons def"));
-				} else {
-					ConfigsV2.setGBoo(ConfigsV2.useMemoryReleaser, true);
-					GUI.setGradient(uid+"umr", Fonts.getGradient("stngs global buttons on"));
-					GUI.setForeground(uid+"umr", Fonts.getColor("stngs global buttons on"));
-				}
+				boolean umr = ConfigsV2.getGBoo(ConfigsV2.useMemoryReleaser);
+				ConfigsV2.setGBoo(ConfigsV2.useMemoryReleaser, !umr);
+				GUI.setGradient(uid+"umr", Fonts.getGradient("stngs global buttons "+(umr?"def":"on")));
+				GUI.setForeground(uid+"umr", Fonts.getColor("stngs global buttons "+(umr?"def":"on")));
 			}
 		});
-		gui.addBut(umr, uid+"umr");
+		gui.addBut(bumr, uid+"umr");
+		
+		Button bncc = new Button();
+		bncc.setPos(0, p++);
+		bncc.setText("Need Close Confirmation");
+		boolean ncc = ConfigsV2.getGBoo(ConfigsV2.needCloseConfirm);
+		bncc.setGradient(Fonts.getGradient("stngs global buttons "+(ncc?"on":"def")));
+		bncc.setForeground(Fonts.getColor("stngs global buttons "+(ncc?"on":"def")));
+		bncc.setAL(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				boolean ncc = ConfigsV2.getGBoo(ConfigsV2.needCloseConfirm);
+				ConfigsV2.setGBoo(ConfigsV2.needCloseConfirm, !ncc);
+				GUI.setGradient(uid+"ncc", Fonts.getGradient("stngs global buttons "+(ncc?"def":"on")));
+				GUI.setForeground(uid+"ncc", Fonts.getColor("stngs global buttons "+(ncc?"def":"on")));
+			}
+		});
+		gui.addBut(bncc, uid+"ncc");
 		
 		Container cff = new Container();
 		cff.setPos(0, p++);

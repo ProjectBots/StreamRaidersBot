@@ -64,8 +64,7 @@ public class Run {
 	 * 	config versioning
 	 * 	make epic slot dependent
 	 * 	add a check all or uncheck all button in unit settings for the "nc nd ec ed"
-	 * 	add quest rewards to stats and store
-	 * 	add option to enable closing window only after confirmation
+	 * 	get unlock/upgrade cost from datapath
 	 * 	
 	 * 
 	 * 	after release:
@@ -1406,9 +1405,24 @@ public class Run {
 				} catch (InterruptedException e) {}
 			} else {
 				//TODO add quest rewards to stats and store
-				String err = beh.claimQuest(quests[i]);
-				if(err != null)
-					Debug.print("Run -> claimQuests: err=" + err, Debug.runerr, Debug.error, pn, 4, true);
+				JsonObject dat = beh.claimQuest(quests[i]);
+				JsonElement err = dat.get(SRC.errorMessage);
+				if(err.isJsonPrimitive())
+					Debug.print("Run -> claimQuests: err=" + err.getAsString(), Debug.runerr, Debug.error, pn, 4, true);
+				else {
+					dat = dat.getAsJsonObject("data").getAsJsonObject("rewardData");
+					String item = dat.get("ItemId").getAsString();
+					if(item.equals("goldpiecebag"))
+						item = Store.gold.get();
+					else if(item.startsWith("skin"))
+						item = "skin";
+					else if(!item.startsWith("scroll") && !item.equals("eventcurrency")) {
+						Debug.print("Run -> claimQuests: err=unknown reward, item="+item, Debug.lowerr, Debug.error, pn, null, true);
+						return;
+					}
+					int a = dat.get("Amount").getAsInt();
+					addRew(SRC.Run.event, item, a);
+				}
 			}
 		}
 	}

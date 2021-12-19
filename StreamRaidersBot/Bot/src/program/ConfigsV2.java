@@ -83,6 +83,7 @@ public class ConfigsV2 {
 	}
 
 	public static final GBoo useMemoryReleaser = new GBoo("useMemoryReleaser");
+	public static final GBoo needCloseConfirm = new GBoo("needCloseConfirm");
 	
 	public static boolean getGBoo(GBoo con) {
 		return configs.getAsJsonObject("Global").get(con.get()).getAsBoolean();

@@ -12,6 +12,8 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.WindowConstants;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonPrimitive;
 
@@ -367,6 +369,8 @@ public class MainFrame {
 		String bver = Options.get("botVersion");
 		
 		gui = new GUI("StreamRaider Bot v" + bver, 1000, 700);
+		gui.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		gui.removeDefaultCloseListener();
 		
 		gui.setBackgroundGradient(Fonts.getGradient("main background"));
 		
@@ -395,6 +399,9 @@ public class MainFrame {
 			public void onDeIconfied(WindowEvent e) {}
 			@Override
 			public void onClose(WindowEvent e) {
+				if(ConfigsV2.getGBoo(ConfigsV2.needCloseConfirm) && !gui.showConfirmationBox("Exit?"))
+					return;
+				
 				close();
 			}
 		});

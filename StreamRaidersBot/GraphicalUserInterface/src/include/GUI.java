@@ -290,6 +290,12 @@ public class GUI{
 		setGlobalKeyLis(kl);
 	}
 	
+	public WindowAdapter defaultCloseListener = new WindowAdapter() {
+		public void windowClosing(WindowEvent e) {
+	        close();
+	    }
+	};
+	
 	private void window(boolean container, boolean opaque, GUI relativeTo, Point pos) {
 		isContainer = container;
 		if(!container) {
@@ -310,11 +316,7 @@ public class GUI{
 			
 			//	set the default close operation
 			frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-			frame.addWindowListener(new WindowAdapter() {
-				public void windowClosing(WindowEvent e) {
-			        close();
-			    }
-			});
+			frame.addWindowListener(defaultCloseListener);
 			
 			if(defIcon != null) {
 				frame.setIconImage(defIcon);
@@ -374,6 +376,10 @@ public class GUI{
 				lis.onFocusLost(e);
 			}
 		});
+	}
+	
+	public void removeDefaultCloseListener() {
+		frame.removeWindowListener(defaultCloseListener);
 	}
 	
 	public void addKeyListener(KeyListener kl) {

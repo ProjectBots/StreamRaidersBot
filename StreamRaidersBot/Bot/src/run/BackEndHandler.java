@@ -651,12 +651,8 @@ public class BackEndHandler {
 		return qer.getClaimableQuests();
 	}
 	
-	public String claimQuest(Quest quest) throws NoConnectionException {
-		JsonElement err = Json.parseObj(req.collectQuestReward(quest.getSlot())).get(SRC.errorMessage);
-		if(err.isJsonPrimitive()) 
-			return err.getAsString();
-		
-		return null;
+	public JsonObject claimQuest(Quest quest) throws NoConnectionException {
+		return Json.parseObj(req.collectQuestReward(quest.getSlot()));
 	}
 	
 	public List<String> getNeededUnitTypesForQuests() {
