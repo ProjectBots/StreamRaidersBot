@@ -928,15 +928,15 @@
       "uncommonscrolls_1": 25,
       "uncommonscrolls_2": 5
     },
-    "viewerplasma1": {
+    "viewerplasma1_2": {
       "goldbag_100": 20,
       "goldbag_75": 26,
       "rarescrolls_4": 84,
       "rarescrolls_6": 50,
-      "skinfullroguebattletech": 4,
-      "skinfullbarbarianbattletech": 3,
-      "skinfullcenturionbattletech": 2,
-      "skinfullartillerybattletech": 1
+      "skinfullflagbearerbattletech": 4,
+      "skinfullbomberbattletech": 3,
+      "skinfullberserkerbattletech": 2,
+      "skinfullballoonbusterbattletech": 1
     },
     "viewerplasma2": {
       "cooldown_20": 1,
@@ -972,15 +972,15 @@
       "uncommonscrolls_1": 25,
       "uncommonscrolls_2": 5
     },
-    "viewerplasma1": {
+    "viewerplasma1_3": {
       "goldbag_100": 20,
       "goldbag_75": 26,
       "rarescrolls_4": 84,
       "rarescrolls_6": 50,
-      "skinfullroguebattletech": 4,
-      "skinfullbarbarianbattletech": 3,
-      "skinfullcenturionbattletech": 2,
-      "skinfullartillerybattletech": 1
+      "skinfullarcherbattletech": 4,
+      "skinfullbusterbattletech": 3,
+      "skinfullmonkbattletech": 2,
+      "skinfullorcslayerbattletech": 1
     },
     "viewerplasma2": {
       "cooldown_20": 1,

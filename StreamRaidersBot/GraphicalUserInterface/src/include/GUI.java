@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.imageio.ImageIO;
@@ -396,8 +397,8 @@ public class GUI{
 		frame.setVisible(true);
 	}
 	
-	public void setIcon(String name) {
-		frame.setIconImage(Toolkit.getDefaultToolkit().createImage(ClassLoader.getSystemResource(name)));
+	public void setIcon(String path) {
+		frame.setIconImage(Toolkit.getDefaultToolkit().createImage(path));
 	}
 	
 	public void setAlwaysOnTop(boolean b) {
@@ -526,8 +527,18 @@ public class GUI{
 	private SystemTray tray;
 	private TrayIcon ticon;
 	
+	private static class TrayPair {
+		public final String name;
+		public final ActionListener al;
+		public TrayPair(String name, ActionListener al) {
+			this.name = name;
+			this.al = al;
+		}
+	}
+	
 	public static class TrayMenu {
-		private Hashtable<String, ActionListener> items = new Hashtable<>();
+		private java.util.List<TrayPair> items = new ArrayList<>();
+		//private Hashtable<String, ActionListener> items = new Hashtable<>();
 		private String name;
 		private String picPath;
 		
@@ -537,14 +548,14 @@ public class GUI{
 		}
 		
 		public void addItem(String name, ActionListener al) {
-			items.put(name, al);
+			items.add(new TrayPair(name, al));
 		}
 		
 		private PopupMenu getMenu() {
 			PopupMenu menu = new PopupMenu();
-			for(String key : items.keySet()) {
-				MenuItem item = new MenuItem(key);
-				item.addActionListener(items.get(key));
+			for(TrayPair tp : items) {
+				MenuItem item = new MenuItem(tp.name);
+				item.addActionListener(tp.al);
 				menu.add(item);
 			}
 			return menu;

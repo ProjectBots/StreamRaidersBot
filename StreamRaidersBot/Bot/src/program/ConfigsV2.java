@@ -964,16 +964,18 @@ public class ConfigsV2 {
 	}
 	
 	private static JsonObject cmain = Json.parseObj(Options.get("cmain"));
+	private static JsonObject cmainspare = Json.parseObj(Options.get("cmainspare"));
 	private static JsonObject clayer = Json.parseObj(Options.get("clayer"));
+	private static JsonObject clayerspare = Json.parseObj(Options.get("clayerspare"));
 	private static JsonObject ccap = Json.parseObj(Options.get("ccap"));
 	
 	public static void check(String cid) {
 		JsonObject main = configs.getAsJsonObject(cid);
-		Json.check(main, cmain.deepCopy());
+		Json.check(main, cmain.deepCopy(), true, cmainspare.deepCopy());
 		JsonObject layers = main.getAsJsonObject("layers");
 		for(String lay : layers.keySet()) {
 			JsonObject layer = layers.getAsJsonObject(lay);
-			Json.check(layer, clayer.deepCopy());
+			Json.check(layer, clayer.deepCopy(), true, clayerspare);
 			JsonObject lists = layer.getAsJsonObject("caps");
 			for(String l : lists.keySet()) {
 				JsonObject caps = lists.getAsJsonObject(l);
@@ -1042,9 +1044,9 @@ public class ConfigsV2 {
 			Debug.print("Failed to save configs", Debug.runerr, Debug.error, null, null, true);
 		}
 	}
-	
+	//TODO
 	public static class ConfigTypes {
-		private static enum ConfigClasses {
+		public static enum ConfigClasses {
 			GStr, GBoo, PStr, PObj, Str, Int, Boo, UniInt, UniStr, CheInt, CheBoo, SleInt, UPDInt, ListType, CapInt, CapBoo
 		}
 		public static final Hashtable<String, List<String>> all = new Hashtable<String, List<String>>() {
@@ -1232,7 +1234,6 @@ public class ConfigsV2 {
 		List<String> gconfs = ex.getGConfs();
 		for(String c : gconfs)
 			Json.set(res, "Global "+c, Json.get(configs, "Global "+c));
-		
 		
 		List<Profile> pros = ex.getList();
 		for(Profile p : pros) {

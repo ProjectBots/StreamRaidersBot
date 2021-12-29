@@ -1404,7 +1404,6 @@ public class Run {
 					Thread.sleep(3000);
 				} catch (InterruptedException e) {}
 			} else {
-				//TODO add quest rewards to stats and store
 				JsonObject dat = beh.claimQuest(quests[i]);
 				JsonElement err = dat.get(SRC.errorMessage);
 				if(err.isJsonPrimitive())
@@ -1415,7 +1414,7 @@ public class Run {
 					if(item.equals("goldpiecebag"))
 						item = Store.gold.get();
 					else if(item.startsWith("skin"))
-						item = "skin";
+						item = "skins";
 					else if(!item.startsWith("scroll") && !item.equals("eventcurrency")) {
 						Debug.print("Run -> claimQuests: err=unknown reward, item="+item, Debug.lowerr, Debug.error, pn, null, true);
 						return;
