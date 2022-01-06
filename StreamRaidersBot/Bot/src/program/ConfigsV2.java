@@ -95,7 +95,7 @@ public class ConfigsV2 {
 	
 	
 	
-	private static class PStr extends All {
+	public static class PStr extends All {
 		public PStr(String con) {
 			super(con);
 		}
@@ -918,12 +918,7 @@ public class ConfigsV2 {
 				}
 			}
 			
-			JsonObject global = Json.parseObj(Options.get("cglobal"));
-			
-			Json.check(configs, global);
-			
-			for(String key : getCids()) 
-				check(key);
+			checkAll();
 			
 			for(String key : getCids()) {
 				String sync = getPStr(key, synced);
@@ -945,29 +940,40 @@ public class ConfigsV2 {
 	
 	
 	public static boolean isPNameTaken(String name) {
+		if(name.startsWith("(") && name.endsWith(")"))
+			return true;
 		List<String> taken = new ArrayList<String>();
 		for(String cid : getCids())
 			taken.add(getPStr(cid, pname));
 		taken.add("Global");
-		taken.add("(none)");
-		taken.add("(all)");
 		return taken.contains(name);
 	}
 	
 	public static boolean isLNameTaken(String cid, String name) {
+		if(name.startsWith("(") && name.endsWith(")"))
+			return true;
 		List<String> taken = new ArrayList<String>();
 		for(String lid : getLayerIds(cid))
 			taken.add(getStr(cid, lid, lname));
-		taken.add("(none)");
-		taken.add("(all)");
 		return taken.contains(name);
 	}
 	
+	private static JsonObject cglobal = Json.parseObj(Options.get("cglobal"));
 	private static JsonObject cmain = Json.parseObj(Options.get("cmain"));
 	private static JsonObject cmainspare = Json.parseObj(Options.get("cmainspare"));
 	private static JsonObject clayer = Json.parseObj(Options.get("clayer"));
 	private static JsonObject clayerspare = Json.parseObj(Options.get("clayerspare"));
 	private static JsonObject ccap = Json.parseObj(Options.get("ccap"));
+	
+	
+	public static void checkAll() {
+		if(!configs.has("Global"))
+			configs.add("Global", new JsonObject());
+		Json.check(configs.getAsJsonObject("Global"), cglobal.deepCopy(), true, null);
+		
+		for(String key : getCids()) 
+			check(key);
+	}
 	
 	public static void check(String cid) {
 		JsonObject main = configs.getAsJsonObject(cid);
@@ -975,7 +981,7 @@ public class ConfigsV2 {
 		JsonObject layers = main.getAsJsonObject("layers");
 		for(String lay : layers.keySet()) {
 			JsonObject layer = layers.getAsJsonObject(lay);
-			Json.check(layer, clayer.deepCopy(), true, clayerspare);
+			Json.check(layer, clayer.deepCopy(), true, clayerspare.deepCopy());
 			JsonObject lists = layer.getAsJsonObject("caps");
 			for(String l : lists.keySet()) {
 				JsonObject caps = lists.getAsJsonObject(l);
@@ -986,28 +992,39 @@ public class ConfigsV2 {
 			}
 		}
 		JsonObject times = main.getAsJsonObject("times");
-		boolean[] got = new boolean[2016];
+		String[] nts = new String[2016];
 		Integer s;
 		int e;
+		String[] lids = getLayerIds(cid);
 		for(String key : times.keySet()) {
+			String lid = times.get(key).getAsString();
+			if(!ArrayUtils.contains(lids, lid))
+				continue;
 			String[] time = key.split("-");
 			s = Integer.parseInt(time[0]);
 			e = Integer.parseInt(time[1]);
 			for(; s<=e; s++)
-				got[s] = true;
+				nts[s] = lid;
 		}
-		s = null;
+		
+		times = new JsonObject();
+		
+		for(int i=0; i<2016; i++)
+			if(nts[i] == null)
+				nts[i] = "(default)";
+		
 		for(int i=0; i<2016; i++) {
-			if(!got[i]) {
-				if(s == null)
-					s = i;
-			} else if(s != null) {
-				times.addProperty(s+"-"+i, "(default)");
-				s = null;
-			}
+			s = i;
+			String lid = nts[i];
+			for(i++;i<2016;i++)
+				if(!lid.equals(nts[i]))
+					break;
+			
+			times.addProperty(s+"-"+--i, lid);
 		}
-		if(s != null)
-			times.addProperty(s+"-"+2015, "(default)");
+		
+		
+		main.add("times", times);
 	}
 	
 	
@@ -1044,7 +1061,6 @@ public class ConfigsV2 {
 			Debug.print("Failed to save configs", Debug.runerr, Debug.error, null, null, true);
 		}
 	}
-	//TODO
 	public static class ConfigTypes {
 		public static enum ConfigClasses {
 			GStr, GBoo, PStr, PObj, Str, Int, Boo, UniInt, UniStr, CheInt, CheBoo, SleInt, UPDInt, ListType, CapInt, CapBoo
@@ -1230,6 +1246,7 @@ public class ConfigsV2 {
 	
 	public static void exportConfig(Exportable ex) throws IOException {
 		JsonObject res = new JsonObject();
+		res.addProperty("version", 1);
 		
 		List<String> gconfs = ex.getGConfs();
 		for(String c : gconfs)
@@ -1306,11 +1323,73 @@ public class ConfigsV2 {
 	
 	
 	public static class Importable {
+		private static class Layer {
+			public final String cid;
+			public final List<String> ptimes;
+			public final JsonObject lay;
+			public Layer(String cid, List<String> ptime, JsonObject lay) {
+				this.cid = cid;
+				this.ptimes = ptime;
+				this.lay = lay;
+			}
+		}
+		
+		
 		//TODO importable
+		private JsonObject g = null;
+		public void addGlobal(JsonObject g) {
+			this.g = g;
+		}
+		
+		public JsonObject getGlobal() {
+			return g;
+		}
+		
+		private List<JsonObject> ps = new ArrayList<>();
+		public void addProfile(JsonObject p) {
+			ps.add(p);
+		}
+		
+		public List<JsonObject> getProfiles() {
+			return ps;
+		}
+		
+		private List<Layer> ls = new ArrayList<>();
+		public void addLayer(String cid, List<String> ptime, JsonObject layer) {
+			ls.add(new Layer(cid, ptime, layer));
+		}
+		
+		
 	}
 	
 	public static void importConfig(Importable im) {
 		//TODO import
+		//applying global options
+		if(im.g != null) {
+			JsonObject g = configs.get("Global").getAsJsonObject();
+			for(String key : im.g.keySet())
+				g.add(key, im.g.get(key));
+		}
+		
+		//adding new Profiles
+		for(JsonObject p : im.ps) {
+			String cid = ""+LocalDateTime.now().toString().hashCode();
+			configs.add(cid, p);
+			//check bcs profile may not contain everything
+			check(cid);
+		}
+		
+		//applying layers to profiles
+		for(program.ConfigsV2.Importable.Layer l : im.ls) {
+			JsonObject main = configs.getAsJsonObject(l.cid);
+			String lid = ""+LocalDateTime.now().toString().hashCode();
+			main.getAsJsonObject("layers").add(lid, l.lay);
+			for(String t : l.ptimes)
+				main.getAsJsonObject("times").addProperty(t, lid);
+		}
+		
+		//basically: repair everything
+		checkAll();
 	}
 	
 	
