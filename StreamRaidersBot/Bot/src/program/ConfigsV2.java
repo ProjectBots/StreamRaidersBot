@@ -17,6 +17,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import include.Json;
+import include.Maths;
 import include.NEF;
 import program.ConfigsV2.Exportable.Profile;
 import program.ConfigsV2.Exportable.Profile.Layer;
@@ -1128,6 +1129,8 @@ public class ConfigsV2 {
 							continue;
 						case CapInt:
 						case CapBoo:
+							if(ArrayUtils.contains("fav".split(" "), con))
+								continue;
 							get("Captain").add(con);
 							continue;
 						}
@@ -1177,7 +1180,7 @@ public class ConfigsV2 {
 				}
 				private String lid;
 				private Hashtable<String, List<String>> items = new Hashtable<>();
-				public Layer(String lid) {
+				public Layer(String lid) {//TODO
 					this.lid = lid;
 				}
 				public void add(String list, String conf) {
@@ -1247,7 +1250,7 @@ public class ConfigsV2 {
 	public static void exportConfig(Exportable ex) throws IOException {
 		JsonObject res = new JsonObject();
 		res.addProperty("version", 1);
-		
+		//TODO
 		List<String> gconfs = ex.getGConfs();
 		for(String c : gconfs)
 			Json.set(res, "Global "+c, Json.get(configs, "Global "+c));
@@ -1268,20 +1271,25 @@ public class ConfigsV2 {
 				Hashtable<String, List<String>> lconfs = l.getItems();
 				
 				List<String> i = lconfs.get("Simple");
+				if(i == null)
+					i = new ArrayList<>();
 				i.add("name");
 				i.add("color");
 				for(String s : i)
 					Json.set(res, pl+s, Json.get(configs, pl+s));
 				
 				List<String> u = lconfs.get("Unit");
+				if(u == null)
+					u = new ArrayList<>();
 				for(String ut : Unit.getTypes().keySet()) {
 					String pu = pl+"units "+ut+" ";
-					for(String s : u) {
+					for(String s : u)
 						Json.set(res, pu+s, Json.get(configs, pu+s));
-					}
 				}
 				
 				List<String> c = lconfs.get("Chest");
+				if(c == null)
+					c = new ArrayList<>();
 				JsonArray chests = Json.parseArr(Options.get("chests").replace("chestsalvage", "dungeonchest"));
 				for(int j=0; j<chests.size(); j++) {
 					String pc = pl+"chests "+chests.get(j).getAsString()+" ";
@@ -1290,6 +1298,8 @@ public class ConfigsV2 {
 				}
 				
 				List<String> t = lconfs.get("Sleep");
+				if(t == null)
+					t = new ArrayList<>();
 				for(int j=0; j<5; j++) {
 					String ps = pl+"sleep "+j+" ";
 					for(String s : t)
@@ -1297,12 +1307,19 @@ public class ConfigsV2 {
 				}
 				
 				List<String> d = lconfs.get("PlaceDelay");
+				if(d == null)
+					d = new ArrayList<>();
 				String pd = pl+"unitPlaceDelay ";
 				for(String s : d)
 					Json.set(res, pd+s, Json.get(configs, pd+s));
 				
 				List<String> a = lconfs.get("Captain");
+				if(a == null)
+					a = new ArrayList<>();
+				a.add("fav");
 				List<String> cls = lconfs.get("CaptainList");
+				if(cls == null)
+					cls = new ArrayList<>();
 				for(String cl : cls) {
 					String pcl = pl+"caps "+cl+" ";
 					HashSet<String> caps = getFavCaps(p.getCid(), l.getLid(), new ListType(cl));
@@ -1383,6 +1400,9 @@ public class ConfigsV2 {
 		for(program.ConfigsV2.Importable.Layer l : im.ls) {
 			JsonObject main = configs.getAsJsonObject(l.cid);
 			String lid = ""+LocalDateTime.now().toString().hashCode();
+			String name = l.lay.get(lname.get()).getAsString();
+			if(isLNameTaken(l.cid, name))
+				name += "_" + Maths.ranString(3);
 			main.getAsJsonObject("layers").add(lid, l.lay);
 			for(String t : l.ptimes)
 				main.getAsJsonObject("times").addProperty(t, lid);

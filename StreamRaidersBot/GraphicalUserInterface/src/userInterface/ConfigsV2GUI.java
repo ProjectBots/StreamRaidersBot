@@ -432,7 +432,7 @@ public class ConfigsV2GUI {
 		Hashtable<String, Integer> poss = new Hashtable<>();
 		
 		for(String cid : c.keySet()) {
-			if(cid.equals("Global"))
+			if(ArrayUtils.contains("version Global".split(" "), cid))
 				continue;
 			JsonObject pro = c.getAsJsonObject(cid);
 			String name = pro.get("name").getAsString();
@@ -648,7 +648,7 @@ public class ConfigsV2GUI {
 		
 		for(String cid : addLays.keySet()) {
 			for(String ln : addLays.get(cid)) {
-				Triple t = layers.get(ArrayUtils.indexOf(lnames, ln));
+				Triple t = layers.get(ArrayUtils.indexOf(lnames, ln)-1);
 				JsonObject pro = c.getAsJsonObject(t.cid);
 				List<String> times = new ArrayList<>();
 				if(pro.has("times")) {

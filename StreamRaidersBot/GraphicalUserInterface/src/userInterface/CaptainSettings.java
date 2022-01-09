@@ -271,6 +271,8 @@ public class CaptainSettings {
 								GUI.setForeground(uid+key+"::"+tdn, Fonts.getColor("stngs caps buttons icil on"));
 								GUI.setGradient(uid+key+"::"+tdn, Fonts.getGradient("stngs caps buttons icil on"));
 							}
+							new CaptainSettings(cid, lay).setList(list.get()).open(gui);
+							gui.close();
 						}
 					});
 					ccap.addBut(but, uid+key+"::"+tdn);
