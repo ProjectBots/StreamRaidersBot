@@ -1406,13 +1406,15 @@ public class ConfigsV2 {
 			String lid;
 			if(l.overrideLid != null) {
 				lid = l.overrideLid;
-				if(layers.has(lid))
+				if(layers.has(lid)) {
+					layer.remove(lname.get());
 					layer = Json.override(layers.getAsJsonObject(lid), layer);
-				layers.remove(lid);
+					layers.remove(lid);
+				}
 			} else
 				lid = ""+LocalDateTime.now().toString().hashCode();
 			
-			String name = l.lay.get(lname.get()).getAsString();
+			String name = layer.get(lname.get()).getAsString();
 			if(isLNameTaken(l.cid, name))
 				name += "_" + Maths.ranString(3);
 			layers.add(lid, layer);
