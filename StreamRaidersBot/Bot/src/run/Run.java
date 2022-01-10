@@ -65,6 +65,7 @@ public class Run {
 	 * 	make epic slot dependent
 	 * 	add a check all or uncheck all button in unit settings for the "nc nd ec ed"
 	 * 	get unlock/upgrade cost from datapath
+	 *	make epic slot dependent
 	 * 	
 	 * 
 	 * 	after release:
@@ -559,6 +560,10 @@ public class Run {
 		int maxTimeLeft = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.maxTime);
 		int minTimeLeft = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.minTime);
 		
+		if(maxLoy < 0)
+			maxLoy = Integer.MAX_VALUE;
+		
+		
 		int length = dungeon ? 420 : 1800;
 		
 		maxTimeLeft = length - maxTimeLeft;
@@ -581,7 +586,6 @@ public class Run {
 		
 		
 		//	check if epic is available
-		//	TODO make epic slot dependent
 		Integer potionsc = beh.getCurrency(pn, Store.potions, true);
 		boolean epic = potionsc == null ? false : (potionsc >= 45);
 		

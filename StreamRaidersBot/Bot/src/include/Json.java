@@ -151,6 +151,21 @@ public class Json {
 		return json.get(path[path.length-1]);
 	}
 	
-	
+	public static JsonObject override(JsonObject json, JsonObject override) {
+		for(String key : override.keySet()) {
+			JsonElement jeover = override.get(key);
+			if(jeover.isJsonObject()) {
+				JsonElement jejson = json.get(key);
+				if(jejson == null || !jejson.isJsonObject()) {
+					json.add(key, jeover);
+					continue;
+				}
+				override(jejson.getAsJsonObject(), jeover.getAsJsonObject());
+				continue;
+			}
+			json.add(key, jeover);
+		}
+		return json;
+	}
 	
 }

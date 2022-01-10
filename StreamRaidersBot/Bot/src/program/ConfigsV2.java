@@ -1342,10 +1342,12 @@ public class ConfigsV2 {
 	public static class Importable {
 		private static class Layer {
 			public final String cid;
+			public final String overrideLid;
 			public final List<String> ptimes;
 			public final JsonObject lay;
-			public Layer(String cid, List<String> ptime, JsonObject lay) {
+			public Layer(String cid, String overrideLid, List<String> ptime, JsonObject lay) {
 				this.cid = cid;
+				this.overrideLid = overrideLid;
 				this.ptimes = ptime;
 				this.lay = lay;
 			}
@@ -1372,8 +1374,8 @@ public class ConfigsV2 {
 		}
 		
 		private List<Layer> ls = new ArrayList<>();
-		public void addLayer(String cid, List<String> ptime, JsonObject layer) {
-			ls.add(new Layer(cid, ptime, layer));
+		public void addLayer(String cid, String overrideLid, List<String> ptime, JsonObject layer) {
+			ls.add(new Layer(cid, overrideLid, ptime, layer));
 		}
 		
 		
@@ -1398,14 +1400,24 @@ public class ConfigsV2 {
 		
 		//applying layers to profiles
 		for(program.ConfigsV2.Importable.Layer l : im.ls) {
-			JsonObject main = configs.getAsJsonObject(l.cid);
-			String lid = ""+LocalDateTime.now().toString().hashCode();
+			JsonObject pro = configs.getAsJsonObject(l.cid);
+			JsonObject layers = pro.getAsJsonObject("layers");
+			JsonObject layer = l.lay;
+			String lid;
+			if(l.overrideLid != null) {
+				lid = l.overrideLid;
+				if(layers.has(lid))
+					layer = Json.override(layers.getAsJsonObject(lid), layer);
+				layers.remove(lid);
+			} else
+				lid = ""+LocalDateTime.now().toString().hashCode();
+			
 			String name = l.lay.get(lname.get()).getAsString();
 			if(isLNameTaken(l.cid, name))
 				name += "_" + Maths.ranString(3);
-			main.getAsJsonObject("layers").add(lid, l.lay);
+			layers.add(lid, layer);
 			for(String t : l.ptimes)
-				main.getAsJsonObject("times").addProperty(t, lid);
+				pro.getAsJsonObject("times").addProperty(t, lid);
 		}
 		
 		//basically: repair everything

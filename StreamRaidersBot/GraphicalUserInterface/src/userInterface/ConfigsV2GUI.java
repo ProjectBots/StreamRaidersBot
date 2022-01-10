@@ -8,8 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.event.DocumentEvent;
@@ -402,7 +402,7 @@ public class ConfigsV2GUI {
 	List<Pair> profiles;
 	List<Triple> layers;
 	String[] lnames;
-	Hashtable<String, List<String>> addLays;
+	Hashtable<String, HashMap<String, String>> addLays;
 	
 	public void importConfig(GUI parent) {
 		File file;
@@ -466,7 +466,11 @@ public class ConfigsV2GUI {
 		List<String> cids = ConfigsV2.getCids();
 		for(final String cid : cids) {
 			poss.put(cid, 2);
-			addLays.put(cid, new LinkedList<>());
+			addLays.put(cid, new HashMap<>());
+			List<String> overLays = new ArrayList<>();
+			overLays.add("(override)");
+			for(String s : ConfigsV2.getLayerIds(cid))
+				overLays.add(ConfigsV2.getStr(cid, s, ConfigsV2.lname));
 			
 			Container cal = new Container();
 			cal.setPos(0, y++);
@@ -486,10 +490,10 @@ public class ConfigsV2GUI {
 					public void selected(String id, ItemEvent e) {
 						final String sel = GUI.getSelected(id);
 						GUI.setSelected(id, 0);
-						if(sel.equals("(add layer)") || addLays.get(cid).contains(sel))
+						if(sel.equals("(add layer)") || addLays.get(cid).containsKey(sel))
 							return;
 						
-						addLays.get(cid).add(sel);
+						addLays.get(cid).put(sel, null);
 						
 						int x = poss.get(cid);
 						poss.put(cid, x+1);
@@ -499,6 +503,8 @@ public class ConfigsV2GUI {
 							Button bal = new Button();
 							bal.setPos(0, 0);
 							bal.setText(sel);
+							bal.setInsets(2, 2, 0, 2);
+							bal.setFill('h');
 							bal.setAL(new ActionListener() {
 								@Override
 								public void actionPerformed(ActionEvent e) {
@@ -508,6 +514,25 @@ public class ConfigsV2GUI {
 								}
 							});
 							call.addBut(bal);
+							
+							
+							//TODO
+							ComboBox cbover = new ComboBox(uid+cid+"::add::layer::over::"+sel);
+							cbover.setPos(0, 1);
+							cbover.setList(overLays.toArray(new String[overLays.size()]));
+							cbover.setInsets(0, 1, 1, 1);
+							cbover.setFill('h');
+							cbover.setCL(new CombListener() {
+								@Override
+								public void unselected(String id, ItemEvent e) {}
+								@Override
+								public void selected(String id, ItemEvent e) {
+									String s = GUI.getSelected(id);
+									addLays.get(cid).put(sel, s.equals("(override)") ? null : s);
+								}
+							});
+							call.addComboBox(cbover);
+							
 						gui.addToContainer(uid+cid+"::add::layer::con", call, uid+cid+"::add::layer::"+sel);
 						gui.refresh();
 					}
@@ -647,7 +672,9 @@ public class ConfigsV2GUI {
 			imp.addGlobal(c.getAsJsonObject("Global").deepCopy());
 		
 		for(String cid : addLays.keySet()) {
-			for(String ln : addLays.get(cid)) {
+			HashMap<String, String> map = addLays.get(cid);
+			String[] lids = ConfigsV2.getLayerIds(cid);
+			for(String ln : map.keySet()) {
 				Triple t = layers.get(ArrayUtils.indexOf(lnames, ln)-1);
 				JsonObject pro = c.getAsJsonObject(t.cid);
 				List<String> times = new ArrayList<>();
@@ -657,7 +684,17 @@ public class ConfigsV2GUI {
 						if(ptimes.get(key).getAsString().equals(t.lid))
 							times.add(key);
 				}
-				imp.addLayer(cid, times, pro.getAsJsonObject("layers").getAsJsonObject(t.lid).deepCopy());
+				String over = map.get(ln);
+				if(over != null) {
+					for(String lid : lids) {
+						String n = ConfigsV2.getStr(cid, lid, ConfigsV2.lname);
+						if(n.equals(over)) {
+							over = n;
+							break;
+						}
+					}
+				}
+				imp.addLayer(cid, over, times, pro.getAsJsonObject("layers").getAsJsonObject(t.lid).deepCopy());
 			}
 		}
 		
