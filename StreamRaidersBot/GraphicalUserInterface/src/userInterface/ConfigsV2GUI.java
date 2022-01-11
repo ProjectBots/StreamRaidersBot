@@ -452,14 +452,16 @@ public class ConfigsV2GUI {
 		for(Triple t : layers)
 			lnames[y++] = t.name;
 		
-		//TODO import
+		
 		y = 0;
 		gui = new GUI("Import Config", 400, 500, parent, null);
+		gui.setBackgroundGradient(Fonts.getGradient("stngs import background"));
 		
 		if(global) {
 			CButton bg = new CButton(uid + "global");
 			bg.setPos(0, y++);
 			bg.setText("import global options");
+			bg.setForeground(Fonts.getColor("stngs import labels"));
 			gui.addCheckBox(bg);
 		}
 		
@@ -478,6 +480,7 @@ public class ConfigsV2GUI {
 				Label lpn = new Label();
 				lpn.setPos(0, 0);
 				lpn.setText(ConfigsV2.getPStr(cid, ConfigsV2.pname));
+				lpn.setForeground(Fonts.getColor("stngs import labels"));
 				cal.addLabel(lpn);
 				
 				ComboBox cbal = new ComboBox(uid+cid+"::add::layer");
@@ -505,6 +508,8 @@ public class ConfigsV2GUI {
 							bal.setText(sel);
 							bal.setInsets(2, 2, 0, 2);
 							bal.setFill('h');
+							bal.setForeground(Fonts.getColor("stngs import buttons"));
+							bal.setForeground(Fonts.getColor("stngs import buttons"));
 							bal.setAL(new ActionListener() {
 								@Override
 								public void actionPerformed(ActionEvent e) {
@@ -516,7 +521,6 @@ public class ConfigsV2GUI {
 							call.addBut(bal);
 							
 							
-							//TODO
 							ComboBox cbover = new ComboBox(uid+cid+"::add::layer::over::"+sel);
 							cbover.setPos(0, 1);
 							cbover.setList(overLays.toArray(new String[overLays.size()]));
@@ -588,6 +592,7 @@ public class ConfigsV2GUI {
 						Label lon = new Label();
 						lon.setPos(0, 0);
 						lon.setText(sel);
+						lon.setForeground(Fonts.getColor("stngs import labels"));
 						cnp.addLabel(lon);
 					
 						TextField tfsn = new TextField();
@@ -628,6 +633,8 @@ public class ConfigsV2GUI {
 								GUI.removeFromContainer(uid+"container::new::profiles", uid+"new::profile::"+sel);
 							}
 						});
+						brnp.setForeground(Fonts.getColor("stngs import buttons"));
+						brnp.setGradient(Fonts.getGradient("stngs import buttons"));
 						cnp.addBut(brnp);
 						
 					gui.addToContainer(uid+"container::new::profiles", cnp, uid+"new::profile::"+sel);
@@ -648,6 +655,8 @@ public class ConfigsV2GUI {
 				importc(c);
 			}
 		});
+		bi.setForeground(Fonts.getColor("stngs import buttons"));
+		bi.setGradient(Fonts.getGradient("stngs import buttons"));
 		gui.addBut(bi);
 		
 		gui.refresh();
@@ -666,7 +675,6 @@ public class ConfigsV2GUI {
 	}
 	
 	private void importc(JsonObject c) {
-		//TODO import
 		Importable imp = new Importable();
 		if(global && GUI.isCButSelected(uid + "global"))
 			imp.addGlobal(c.getAsJsonObject("Global").deepCopy());
