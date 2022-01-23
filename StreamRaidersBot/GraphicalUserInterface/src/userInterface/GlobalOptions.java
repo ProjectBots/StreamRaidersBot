@@ -1,5 +1,6 @@
 package userInterface;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -9,10 +10,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
 import include.GUI;
 import include.GUI.Button;
 import include.GUI.Container;
 import include.GUI.Label;
+import include.GUI.TextField;
 import program.ConfigsV2;
 import run.Manager;
 
@@ -64,6 +69,45 @@ public class GlobalOptions {
 			}
 		});
 		gui.addBut(bncc, uid+"ncc");
+		
+		Container cmca = new Container();
+		cmca.setPos(0, p++);
+		
+			Label lmca = new Label();
+			lmca.setPos(0, 0);
+			lmca.setText("max concurrent actions:");
+			lmca.setForeground(Fonts.getColor("stngs global labels"));
+			cmca.addLabel(lmca);
+			
+			TextField tfmca = new TextField();
+			tfmca.setPos(1, 0);
+			tfmca.setText(""+ConfigsV2.getGInt(ConfigsV2.maxProfileActions));
+			tfmca.setSize(80, 22);
+			tfmca.setDocLis(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					update();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					update();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					update();
+				}
+				public void update() {
+					try {
+						ConfigsV2.setGInt(ConfigsV2.maxProfileActions, Integer.parseInt(GUI.getInputText(uid+"maxactions")));
+						GUI.setBackground(uid+"maxactions", Color.white);
+					} catch (NumberFormatException e) {
+						GUI.setBackground(uid+"maxactions", new Color(255, 125, 125));
+					}
+				}
+			});
+			cmca.addTextField(tfmca, uid+"maxactions");
+		
+		gui.addContainer(cmca);
 		
 		Container cff = new Container();
 		cff.setPos(0, p++);
