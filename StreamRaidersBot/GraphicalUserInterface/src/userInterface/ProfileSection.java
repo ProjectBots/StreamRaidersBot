@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Hashtable;
-
 import bot.MapGUI;
 import include.GUI;
 import include.GUI.Button;
@@ -14,9 +12,7 @@ import include.GUI.Image;
 import include.GUI.Label;
 import program.ConfigsV2;
 import program.Debug;
-import include.Http.NoConnectionException;
-import program.SRR.NotAuthorizedException;
-import run.Run;
+import run.Manager;
 
 public class ProfileSection {
 
@@ -80,7 +76,7 @@ public class ProfileSection {
 				start.setAL(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						MainFrame.getProfiles().get(cid).switchRunning(4);
+						Manager.switchRunning(cid, 4);
 					}
 				});
 				head.addBut(start, pre+cid+"::4::run");
@@ -93,7 +89,7 @@ public class ProfileSection {
 				skiph.setAL(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						MainFrame.getProfiles().get(cid).skip(4);
+						Manager.skipSleep(cid, 4);
 					}
 				});
 				head.addBut(skiph);
@@ -147,7 +143,7 @@ public class ProfileSection {
 						run.setAL(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								MainFrame.getProfiles().get(cid).switchRunning(ii);
+								Manager.switchRunning(cid, ii);
 							}
 						});
 						tsr.addBut(run, pre+cid+"::"+i+"::run");
@@ -160,7 +156,7 @@ public class ProfileSection {
 						skip.setAL(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								MainFrame.getProfiles().get(cid).skip(ii);
+								Manager.skipSleep(cid, ii);
 							}
 						});
 						tsr.addBut(skip);
@@ -190,7 +186,7 @@ public class ProfileSection {
 					twitch.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							MainFrame.getProfiles().get(cid).openBrowser(ii);
+							MainFrame.openDesktopBrowser(Manager.getTwitchCaptainLink(cid, ii));
 						}
 					});
 					raid.addBut(twitch);
@@ -219,7 +215,7 @@ public class ProfileSection {
 						change.setAL(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								MainFrame.getProfiles().get(cid).change(ii);
+								Manager.switchSlotChangeMarker(cid, ii);
 							}
 						});
 						cloy.addBut(change, pre+cid+"::"+i+"::change");
@@ -237,8 +233,7 @@ public class ProfileSection {
 						lock.setAL(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								String cl = MainFrame.getProfiles().get(cid).getCurrentLayer();
-								ConfigsV2.setSlotLocked(cid, cl, ""+ii, !ConfigsV2.isSlotLocked(cid, cl, ""+ii));
+								ConfigsV2.setSlotLocked(cid, "(all)", ""+ii, !ConfigsV2.isSlotLocked(cid, "(all)", ""+ii));
 								update();
 							}
 						});
@@ -252,7 +247,7 @@ public class ProfileSection {
 						fav.setAL(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								MainFrame.getProfiles().get(cid).fav(ii, 10);
+								Manager.favCaptain(cid, ii, 10);
 								update();
 							}
 						});
@@ -266,7 +261,7 @@ public class ProfileSection {
 						block.setAL(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								MainFrame.getProfiles().get(cid).fav(ii, -1);
+								Manager.favCaptain(cid, ii, -1);
 								update();
 							}
 						});
@@ -292,7 +287,7 @@ public class ProfileSection {
 						map.setAL(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								MapGUI.asGui(MainFrame.getProfiles().get(cid), ii);
+								MapGUI.asGui(Manager.getProfile(cid), ii);
 							}
 						});
 						mapchest.addBut(map);
@@ -356,7 +351,7 @@ public class ProfileSection {
 								
 								sc.getDeclaredMethod("open", GUI.class)
 									.invoke(sc.getDeclaredConstructor(String.class, String.class)
-												.newInstance(cid, MainFrame.getProfiles().get(cid).getCurrentLayer()),
+												.newInstance(cid, Manager.getCurrentLayer(cid)),
 											MainFrame.getGUI());
 							} catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException | ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException e1) {
 								Debug.printException("ProfileSection -> create: err=couldn't get Settings class for " + key, e1, Debug.runerr, Debug.error, null, null, true);
@@ -375,16 +370,11 @@ public class ProfileSection {
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				Hashtable<String, Run> runs = MainFrame.getProfiles();
 				String syncTo = ConfigsV2.getPStr(cid, ConfigsV2.synced);
 				if(syncTo.equals("(none)")) {
-					for(String s : ConfigsV2.getCids())
+					for(String s : Manager.getLoadedProfiles())
 						if(ConfigsV2.getPStr(s, ConfigsV2.synced).equals(cid) || s.equals(cid))
-							try {
-								runs.get(s).updateFrame();
-							} catch (NoConnectionException | NotAuthorizedException e) {
-								Debug.printException("ProfileSection -> update: err=failed to update profile", e, Debug.general, Debug.error, ConfigsV2.getPStr(s, ConfigsV2.pname), null, true);
-							}
+							Manager.updateProfile(s);
 				} else 
 					MainFrame.getSections().get(syncTo).update();
 				

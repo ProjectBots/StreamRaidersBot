@@ -27,6 +27,7 @@ import include.Http;
 import include.Http.NotAllowedProxyException;
 import program.ConfigsV2;
 import program.Options;
+import run.Manager;
 import program.ConfigsV2.Boo;
 import program.ConfigsV2.Int;
 import program.ConfigsV2.SleInt;
@@ -61,7 +62,7 @@ public class ProfileSettings {
 			public void onDeIconfied(WindowEvent e) {}
 			@Override
 			public void onClose(WindowEvent e) {
-				MainFrame.getProfiles().get(cid).updateSettings();
+				Manager.getProfile(cid).updateProxySettings();
 			}
 		});
 		
@@ -943,8 +944,10 @@ public class ProfileSettings {
 		bdelpro.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(MainFrame.forget(cid, false))
+				if(gui.showConfirmationBox("delete " + ConfigsV2.getPStr(cid, ConfigsV2.pname) + "?")) {
 					gui.close();
+					Manager.remProfile(cid);
+				}
 			}
 		});
 		gui.addBut(bdelpro);

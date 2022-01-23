@@ -21,10 +21,9 @@ import org.cef.network.CefCookieManager;
 import com.google.gson.JsonObject;
 
 import program.Configs;
-import program.ConfigsV2;
 import program.Debug;
 import program.Options;
-import userInterface.MainFrame;
+import run.Manager;
 
 public class Browser {
 
@@ -86,11 +85,9 @@ public class Browser {
 				frame.dispose();
 				
 				if(Options.is("beta_frame")) {
-					if(cookies.has("ACCESS_INFO")) {
-						ConfigsV2.add(name, cookies.get("ACCESS_INFO").getAsString());
-						ConfigsV2.saveb();
-						MainFrame.refresh(true);
-					} else
+					if(cookies.has("ACCESS_INFO"))
+						Manager.addProfile(name, cookies.get("ACCESS_INFO").getAsString());
+					else
 						Debug.print("Browser -> add: err=no access_info, got="+cookies.keySet().toString(), Debug.runerr, Debug.error, null, null, true);
 				} else {
 					Configs.add(name, cookies);

@@ -38,6 +38,7 @@ import program.ConfigsV2.Exportable.Profile;
 import program.ConfigsV2.Exportable.Profile.Layer;
 import program.ConfigsV2.Importable;
 import program.Debug;
+import run.Manager;
 
 public class ConfigsV2GUI {
 
@@ -714,9 +715,11 @@ public class ConfigsV2GUI {
 			}
 		}
 		
+		
+		
 		ConfigsV2.importConfig(imp);
 		ConfigsV2.saveb();
-		MainFrame.refresh(true);
+		Manager.loadAllNewProfiles();
 	}
 	
 	private void importFromOldClient(JsonObject c) {
@@ -760,7 +763,7 @@ public class ConfigsV2GUI {
 		
 		ConfigsV2.importConfig(imp);
 		ConfigsV2.saveb();
-		MainFrame.refresh(true);
+		Manager.loadAllNewProfiles();
 	}
 	
 }

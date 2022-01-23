@@ -465,8 +465,14 @@ public class GUI{
 	}
 	
 	public static void setText(String id, String text) {
+		setText(id, text, false);
+	}
+	
+	public static void setText(String id, String text, boolean forceUpdate) {
 		try {
 			getComp(id).getClass().getMethod("setText", String.class).invoke(getComp(id), text);
+			if(forceUpdate)
+				((JComponent) getComp(id)).paintImmediately(((JComponent) getComp(id)).getVisibleRect());
 		} catch (Exception e) {
 			e(e);
 		}
@@ -597,6 +603,10 @@ public class GUI{
 	public void show() {
 		tray.remove(ticon);
 		frame.setVisible(true);
+	}
+	
+	public void setVisible(boolean b) {
+		frame.setVisible(b);
 	}
 	
 	public static class MsgConst {

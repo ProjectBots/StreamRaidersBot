@@ -1,5 +1,6 @@
 package bot;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -18,13 +19,16 @@ import program.Configs;
 import program.ConfigsV2;
 import program.Debug;
 import program.Options;
+import program.Raid;
 import program.Remaper;
 import program.SRRHelper;
 import program.Debug.DebugEventHandler;
 import program.Debug.Scope;
 import program.Debug.Type;
 import program.SRRHelper.DataPathEventListener;
-import run.BackEndHandler;
+import run.Manager;
+import run.BotListener;
+import run.Manager.IniCanceledException;
 
 public class StreamRaiders {
 	
@@ -117,6 +121,7 @@ public class StreamRaiders {
 				+ "\u0009╚══════╝╚═╝  ╚═╝    ╚═════╝  ╚═════╝    ╚═╝   \r\n"
 				+ "\r\n");
 		
+		//TODO move to manager
 		try {
 			Options.load();
 		} catch (IOException | NullPointerException fnf) {
@@ -143,6 +148,8 @@ public class StreamRaiders {
 			return;
 		}
 		*/
+		
+		//TODO move into manager
 		Debug.setDebugEventHandler(new DebugEventHandler() {
 			@Override
 			public void onPrintLine(String pre, String msg, Scope scope, Type type, String pn, Integer slot, boolean forced) {
@@ -179,15 +186,15 @@ public class StreamRaiders {
 		
 		Debug.print("started", Debug.general, Debug.info, null, null);
 		
-		WaitScreen.open("Initialize Bot");
+		WaitScreen.setText("Initialize Bot");
 		
 		WaitScreen.setText("Initialize Remaper");
+		//TODO move to manager
 		Remaper.load();
 		
 		
 		WaitScreen.setText("Initialize Browser");
 		if(!Options.is("no_browser")) {
-			//	TODO auto disable if it loads infinitely
 			try {
 				Browser.create();
 			} catch (IOException | RuntimeException e) {
@@ -202,41 +209,80 @@ public class StreamRaiders {
 			} catch (InterruptedException e) {}
 		}
 		
-		WaitScreen.setText("Initialize Config");
-		try {
-			if(Options.is("beta_frame")) 
-				ConfigsV2.load();
-			else
-				Configs.load();
-		} catch (IOException e) {
-			Debug.printException("err=failed to load configs", e, Debug.runerr, Debug.error, null, null, true);
-			if(GUI.showConfirmationBoxStatic("Loading Configs", "config file is corrupted\r\nreset?")) {
-				try {
-					if(Options.is("beta_frame")) 
-						ConfigsV2.load(true);
-					else
-						Configs.load(true);
-				} catch (IOException e1) {
-					Debug.printException("err=failed to reset config", e, Debug.runerr, Debug.error, null, null, true);
-				}
-			} else {
-				return;
-			}	
-		}
-		
-		
 		WaitScreen.setText("Initialize MainFrame"); 
 		if(Options.is("beta_frame")) {
-			BackEndHandler.setDataPathEventListener(new run.BackEndHandler.DataPathEventListener() {
-			@Override
-			public void onUpdate(String dataPath, String serverTime, JsonObject data) {
-				run.BackEndHandler.DataPathEventListener.super.onUpdate(dataPath, serverTime, data);
-				GuideContent.saveChestRewards(data);
-				GuideContent.gainStats(data.getAsJsonObject("Units"));
+			//TODO manager
+			try {
+				Manager.ini(new BotListener() {
+					@Override
+					public boolean configNotReadable() {
+						return GUI.showConfirmationBoxStatic("Loading Configs", "config file is corrupted\r\nreset?");
+					}
+					@Override
+					public void onDataPathUpdate(String dataPath, String serverTime, JsonObject data) {
+						GuideContent.saveChestRewards(data);
+						GuideContent.gainStats(data.getAsJsonObject("Units"));
+					}
+					@Override
+					public void onProfileStartedLoading(String cid) {
+						userInterface.MainFrame.updateWS(false, false);
+					}
+					@Override
+					public void onProfileLoadComplete(String cid, int pos) {
+						userInterface.MainFrame.addLoadedProfile(cid, pos);
+					}
+					@Override
+					public void onProfileLoadError(String cid, int pos, Exception e) {
+						userInterface.MainFrame.addFailedProfile(cid, pos, e);
+					}
+					@Override
+					public void onProfileUnloaded(String cid) {
+						userInterface.MainFrame.remProfile(cid);
+					}
+					@Override
+					public void onProfileChangedRunning(String cid, int slot, boolean run) {
+						userInterface.MainFrame.updateSlotRunning(cid, slot, run);
+					}
+					@Override
+					public void onProfileTimerUpdate(String cid, int slot, String time) {
+						userInterface.MainFrame.updateTimer(cid, slot, time);
+					}
+					@Override
+					public void onProfileUpdateCurrency(String cid, String type, int amount) {
+						userInterface.MainFrame.updateCurrency(cid, type, amount);
+					}
+					@Override
+					public void onProfileUpdateGeneral(String cid, String pn, String ln, Color lc) {
+						userInterface.MainFrame.updateGeneral(cid, pn, ln, lc);
+					}
+					@Override
+					public void onProfileUpdateSlot(String cid, int slot, Raid raid, boolean locked, boolean change) {
+						userInterface.MainFrame.updateSlot(cid, slot, raid, locked, change);
+					}
+				});
+			} catch (IniCanceledException e1) {
+				return;
 			}
-			});
-			userInterface.MainFrame.open(true);
+			userInterface.MainFrame.open();
+			Manager.loadAllNewProfiles();
 		} else {
+			//TODO remove on v7 release
+			WaitScreen.setText("Initialize Config");
+			try {
+				Configs.load();
+			} catch (IOException e) {
+				Debug.printException("err=failed to load configs", e, Debug.runerr, Debug.error, null, null, true);
+				if(GUI.showConfirmationBoxStatic("Loading Configs", "config file is corrupted\r\nreset?")) {
+					try {
+						Configs.load(true);
+					} catch (IOException e1) {
+						Debug.printException("err=failed to reset config", e, Debug.runerr, Debug.error, null, null, true);
+					}
+				} else {
+					return;
+				}	
+			}
+			
 			startMemReleaser();
 			
 			SRRHelper.setDataPathEventListener(new DataPathEventListener() {

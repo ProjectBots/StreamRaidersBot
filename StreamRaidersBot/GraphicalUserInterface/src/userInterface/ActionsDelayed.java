@@ -8,6 +8,7 @@ import include.GUI;
 import include.GUI.Button;
 import include.GUI.TextField;
 import program.SRC;
+import run.Manager;
 
 public class ActionsDelayed {
 	
@@ -34,9 +35,9 @@ public class ActionsDelayed {
 						try {
 							int time = (int) (Float.parseFloat(GUI.getInputText(uid+"tf")) * 1000);
 							if(start) {
-								MainFrame.doAll(SRC.MainFrame.start, time);
+								Manager.doAll(SRC.Manager.start, time);
 							} else {
-								MainFrame.doAll(SRC.MainFrame.skip, time);
+								Manager.doAll(SRC.Manager.skip, time);
 							}
 						} catch (NumberFormatException e) {
 							t.msg("Wrong Input", "You can't do that", GUI.MsgConst.WARNING);

@@ -10,6 +10,7 @@ import include.GUI.Button;
 import include.GUI.Label;
 import include.GUI.TextField;
 import program.ConfigsV2;
+import run.Manager;
 
 public class NewProfile {
 	
@@ -81,8 +82,7 @@ public class NewProfile {
 					return;
 				}
 				np.close();
-				ConfigsV2.add(name, ai);
-				MainFrame.refresh(true);
+				Manager.addProfile(name, ai);
 			}
 		};
 		

@@ -95,6 +95,23 @@ public class ConfigsV2 {
 	}
 	
 	
+	private static class GInt extends All {
+		public GInt(String con) {
+			super(con);
+		}
+	}
+
+	public static final GInt maxProfileActions = new GInt("maxProfileActions");
+	
+	public static int getGInt(GInt con) {
+		return configs.getAsJsonObject("Global").get(con.get()).getAsInt();
+	}
+	
+	public static void setGInt(GInt con, int x) {
+		configs.getAsJsonObject("Global").addProperty(con.get(), x);
+	}
+	
+	
 	
 	public static class PStr extends All {
 		public PStr(String con) {
@@ -896,7 +913,7 @@ public class ConfigsV2 {
 	
 	
 	public static List<String> getCids() {
-		List<String> cids = new ArrayList<>(Arrays.asList(configs.keySet().toArray(new String[configs.size()])));
+		List<String> cids = new ArrayList<>(configs.keySet());
 		cids.remove("Global");
 		return cids;
 	}
@@ -930,13 +947,14 @@ public class ConfigsV2 {
 		}
 	}
 	
-	public static void add(String name, String access_info) {
+	public static String add(String name, String access_info) {
 		JsonObject jo = new JsonObject();
 		jo.addProperty("cookies", "ACCESS_INFO="+access_info);
 		jo.addProperty("name", name);
 		String key = ""+LocalDateTime.now().toString().hashCode();
 		configs.add(key, jo);
 		check(key);
+		return key;
 	}
 	
 	

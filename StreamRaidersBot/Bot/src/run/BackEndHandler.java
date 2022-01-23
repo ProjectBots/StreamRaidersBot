@@ -83,7 +83,29 @@ public class BackEndHandler {
 	
 	
 	public static interface DataPathEventListener {
-		public default void onUpdate(String dataPath, String serverTime, JsonObject data) {
+		public default void onUpdate(String dataPath, String serverTime, JsonObject data) {}
+	}
+	
+	private static DataPathEventListener dpelis = new DataPathEventListener() {};
+	
+	public static void setDataPathEventListener(DataPathEventListener dpelis) {
+		BackEndHandler.dpelis = dpelis;
+	}
+	
+	public static interface UpdateEventListener {
+		public default void afterUpdate(String obj) {};
+	}
+	
+	private UpdateEventListener uelis = new UpdateEventListener() {};
+	
+	public void setUpdateEventListener(UpdateEventListener uelis) {
+		this.uelis = uelis;
+	}
+	
+	
+	synchronized private static void updateDataPath(String dataPath, String serverTime, SRR req) throws NoConnectionException, NotAuthorizedException {
+		if(!Options.get("data").equals(dataPath)) {
+			JsonObject data = Json.parseObj(SRR.getData(dataPath)).getAsJsonObject("sheets");
 			Options.set("obstacles", data.getAsJsonObject("Obstacles").toString());
 			Options.set("quests", data.getAsJsonObject("Quests").toString());
 			Options.set("mapNodes", data.getAsJsonObject("MapNodes").toString());
@@ -119,29 +141,6 @@ public class BackEndHandler {
 			Options.set("mapDifficulty", data.getAsJsonObject("MapNodeDifficulty").toString());
 			Options.set("data", dataPath);
 			Options.save();
-		}
-	}
-	
-	private static DataPathEventListener dpelis = new DataPathEventListener() {};
-	
-	public static void setDataPathEventListener(DataPathEventListener dpelis) {
-		BackEndHandler.dpelis = dpelis;
-	}
-	
-	public static interface UpdateEventListener {
-		public default void afterUpdate(String obj) {};
-	}
-	
-	private UpdateEventListener uelis = new UpdateEventListener() {};
-	
-	public void setUpdateEventListener(UpdateEventListener uelis) {
-		this.uelis = uelis;
-	}
-	
-	
-	synchronized private static void updateDataPath(String dataPath, String serverTime, SRR req) throws NoConnectionException, NotAuthorizedException {
-		if(!Options.get("data").equals(dataPath)) {
-			JsonObject data = Json.parseObj(SRR.getData(dataPath)).getAsJsonObject("sheets");
 			dpelis.onUpdate(dataPath, serverTime, data);
 		}
 		try {
@@ -372,9 +371,9 @@ public class BackEndHandler {
 		Raid[] ret = new Raid[0];
 		for(int i=0; i<raids.length; i++) {
 			switch(con) {
-			case SRC.Manager.all:
+			case SRC.BackEndHandler.all:
 				return raids.clone();
-			case SRC.Manager.isRaidReward:
+			case SRC.BackEndHandler.isRaidReward:
 				if(raids[i].isReward())
 					ret = add(ret, raids[i]);
 				break;
@@ -430,17 +429,17 @@ public class BackEndHandler {
 		Unit[] ret = new Unit[0];
 		for(int i=0; i<units.length; i++) {
 			switch(con) {
-			case SRC.Manager.all:
+			case SRC.BackEndHandler.all:
 				ret = add(ret, units[i]);
 				break;
-			case SRC.Manager.isUnitPlaceable:
+			case SRC.BackEndHandler.isUnitPlaceable:
 				if(units[i].isAvailable(getServerTime()))
 					ret = add(ret, units[i]);
 				break;
-			case SRC.Manager.isUnitUnlockable:
+			case SRC.BackEndHandler.isUnitUnlockable:
 				updateStore(pn, true);
 				return store.getUnlockableUnits(units);
-			case SRC.Manager.isUnitUpgradeable:
+			case SRC.BackEndHandler.isUnitUpgradeable:
 				updateStore(pn, true);
 				return store.getUpgradeableUnits(units);
 			}

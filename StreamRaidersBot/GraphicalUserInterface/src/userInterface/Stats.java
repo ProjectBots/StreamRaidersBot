@@ -23,6 +23,7 @@ import program.SRR.NotAuthorizedException;
 import program.Store;
 import program.Unit;
 import run.BackEndHandler;
+import run.Manager;
 import run.Run;
 
 public class Stats {
@@ -38,7 +39,7 @@ public class Stats {
 	
 	private String pn;
 	private Run run = null;
-	private BackEndHandler man = null;
+	private BackEndHandler beh = null;
 	
 	private static final AffineTransform affinetransform = new AffineTransform();     
 	private static final FontRenderContext frc = new FontRenderContext(affinetransform,true,true);     
@@ -46,18 +47,18 @@ public class Stats {
 	
 	public void open() {
 		
-		run = MainFrame.getProfiles().get(cid);
+		run = Manager.getProfile(cid);
 		pn = run.getPN();
 		
-		man = run.getBackEndHandler();
+		beh = run.getBackEndHandler();
 		
 		int[] pos = new int[5];
 		
 		Unit[] units;
 		Hashtable<String, Integer> curs;
 		try {
-			units = man.getUnits(pn, SRC.Manager.all, false);
-			curs = man.getCurrencies(pn);
+			units = beh.getUnits(pn, SRC.BackEndHandler.all, false);
+			curs = beh.getCurrencies(pn);
 		} catch (NoConnectionException | NotAuthorizedException e) {
 			Debug.printException("Stats -> open: err=failed to get infos", e, Debug.general, Debug.error, pn, null, true);
 			return;

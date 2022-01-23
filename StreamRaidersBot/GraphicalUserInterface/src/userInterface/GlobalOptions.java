@@ -14,6 +14,7 @@ import include.GUI.Button;
 import include.GUI.Container;
 import include.GUI.Label;
 import program.ConfigsV2;
+import run.Manager;
 
 public class GlobalOptions {
 
@@ -197,7 +198,11 @@ public class GlobalOptions {
 		fm.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				MainFrame.forgetMe();
+				if(gui.showConfirmationBox("do you really want\nto delete all your\nprofiles?")) {
+					List<String> cids = Manager.getLoadedProfiles();
+					for(String cid : cids)
+						Manager.remProfile(cid);
+				}
 			}
 		});
 		gui.addBut(fm);

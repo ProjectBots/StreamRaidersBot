@@ -1,10 +1,6 @@
 package run;
 
 import java.awt.Color;
-import java.awt.Desktop;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.WeekFields;
@@ -16,7 +12,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.gson.JsonArray;
@@ -53,11 +48,7 @@ import program.Options;
 public class Run {
 	
 	/*	TODO
-	 * 	config import
-	 * 	config import from old client
-	 * 	fonts config import
 	 * 	rename Fonts to CS (ColorScheme)
-	 * 	update xX_DEV_Xx
 	 * 	option to set max profile actions at once
 	 * 	add tooltips (everywhere)
 	 * 	fonts manage error blocks (GlobalOptions)
@@ -152,21 +143,6 @@ public class Run {
 		iniRews();
 	}
 	
-	public static interface FrontEndHandler {
-		public default void onStart(String pn, String cid, int slot) {}
-		public default void onStop(String pn, String cid, int slot) {}
-		public default void onTimerUpdate(String pn, String cid, int slot, String time) {}
-		public default void onUpdateSlot(String pn, String cid, int slot, Raid raid, boolean locked, boolean change) {}
-		public default void onUpdateCurrency(String pn, String type, int amount) {}
-		public default void onUpdateLayer(String pn, String name, Color col) {}
-	}
-	
-	private FrontEndHandler feh = new FrontEndHandler() {};
-	
-	public void setFrontEndHandler(FrontEndHandler feh) {
-		this.feh = feh;
-	}
-	
 	
 	public static class StreamRaidersException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
@@ -196,10 +172,10 @@ public class Run {
 	}
 	
 	
-	public Run(String cid, String cookies) throws NotAuthorizedException, NoConnectionException, OutdatedDataException {
+	public Run(String cid) throws NotAuthorizedException, NoConnectionException, OutdatedDataException {
 		this.cid = cid;
 		pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
-		beh = new BackEndHandler(pn, cookies);
+		beh = new BackEndHandler(pn, ConfigsV2.getPStr(cid, ConfigsV2.cookies));
 		beh.setUpdateEventListener(new UpdateEventListener() {
 			@Override
 			public void afterUpdate(String obj) {
@@ -243,11 +219,6 @@ public class Run {
 		return beh;
 	}
 	
-	public void switchRunning(int slot) {
-		setRunning(!isRunning(slot), slot);
-	}
-	
-	
 	
 	private List<List<Boolean>> queue = Collections.synchronizedList(new ArrayList<List<Boolean>>() {
 		private static final long serialVersionUID = 1L;
@@ -272,10 +243,7 @@ public class Run {
 				setRun[slot] = true;
 				while(q.size() > 0) {
 					boolean b = q.remove(0);
-					if(b)
-						feh.onStart(pn, cid, slot);
-					else 
-						feh.onStop(pn, cid, slot);
+					Manager.blis.onProfileChangedRunning(cid, slot, b);
 					if(isRunning[slot] == b)
 						continue;
 					isRunning[slot] = b;
@@ -325,7 +293,7 @@ public class Run {
 		
 		Integer v = ConfigsV2.getCapInt(cid, "(all)", cap, cnames[slot+8].equals("d") ? ConfigsV2.dungeon : ConfigsV2.campaign, ConfigsV2.fav);
 		if(v == null 
-				|| v == Integer.MAX_VALUE-1 
+				|| v == Integer.MAX_VALUE-1
 				|| v == Integer.MIN_VALUE+1
 				|| Math.signum(val)*Math.signum(v) <= 0)
 			ConfigsV2.favCap(cid, "(all)", cap, ConfigsV2.all, val);
@@ -340,6 +308,11 @@ public class Run {
 	}
 	
 	synchronized private void slotSequence(int slot) {
+		try {
+			Manager.requestAction();
+		} catch (InterruptedException e1) {
+			return;
+		}
 		pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
 		try {
 			if_clause:
@@ -377,7 +350,6 @@ public class Run {
 				place(slot);
 				
 			}
-			
 
 			Debug.print("updateFrame", Debug.general, Debug.info, pn, slot);
 			updateFrame();
@@ -388,6 +360,7 @@ public class Run {
 			Debug.printException("Run -> slotSequence: slot=" + slot + " err=unknown", e, Debug.runerr, Debug.fatal, pn, slot, true);
 		}
 		
+		Manager.releaseAction();
 		
 		LocalDateTime now = LocalDateTime.now();
 		// current time in layer-units
@@ -447,7 +420,7 @@ public class Run {
 			sleep(w, slot);
 		} else {
 			Debug.print("Run -> slotSequence: err=couldn't find wait time", Debug.runerr, Debug.fatal, pn, slot, true);
-			feh.onStop(pn, cid, slot);
+			Manager.blis.onProfileChangedRunning(cid, slot, false);
 			isActiveRunning[slot] = false;
 			isRunning[slot] = false;
 		}
@@ -466,7 +439,7 @@ public class Run {
 	
 	
 	public boolean canUseSlot(int slot) throws NoConnectionException, NotAuthorizedException {
-		int uCount = beh.getUnits(pn, SRC.Manager.all, false).length;
+		int uCount = beh.getUnits(pn, SRC.BackEndHandler.all, false).length;
 		return (slot == 0)
 				|| (slot == 1 && uCount > 4)
 				|| (slot == 2 && uCount > 7)
@@ -484,22 +457,21 @@ public class Run {
 					isActiveRunning[slot] = false;
 				}
 				
-				int min = sleep[slot] / 60;
-				int sec = sleep[slot] % 60;
+				int mm = sleep[slot] / 60;
+				int ss = sleep[slot] % 60;
 				
 				String ms = "";
 				
-				if(min != 0) {
-					ms += min+":";
-					if(sec < 10)
+				if(mm != 0) {
+					ms += mm+":";
+					if(ss < 10)
 						ms += "0";
 				}
 				
-				ms += sec;
+				ms += ss;
 				
-				feh.onTimerUpdate(pn, cid, slot, ms);
+				Manager.blis.onProfileTimerUpdate(cid, slot, ms);
 				
-
 				sleep[slot]--;
 				
 				if(sleep[slot] < 0) {
@@ -884,7 +856,7 @@ public class Run {
 		
 		if(r != null && ConfigsV2.isSlotLocked(cid, currentLayer, ""+slot)) {
 			if(r.isDungeon() && !dungeon) {
-				Raid[] all = beh.getRaids(SRC.Manager.all);
+				Raid[] all = beh.getRaids(SRC.BackEndHandler.all);
 				boolean change = true;
 				for(int i=0; i<all.length; i++) {
 					if(i == slot || all[i] == null)
@@ -1056,7 +1028,7 @@ public class Run {
 				? ConfigsV2.dungeon 
 				: ConfigsV2.campaign;
 
-		Raid[] all = beh.getRaids(SRC.Manager.all);
+		Raid[] all = beh.getRaids(SRC.BackEndHandler.all);
 		ArrayList<String> otherCaps = new ArrayList<>();
 		for(Raid raid : all) {
 			if(raid == null)
@@ -1150,7 +1122,7 @@ public class Run {
 		if(beh.getCurrency(pn, Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.upgradeMinGold))
 			return;
 		
-		Unit[] us = beh.getUnits(pn, SRC.Manager.isUnitUpgradeable, false);
+		Unit[] us = beh.getUnits(pn, SRC.BackEndHandler.isUnitUpgradeable, false);
 		if(us.length == 0)
 			return;
 		
@@ -1184,7 +1156,7 @@ public class Run {
 		if(beh.getCurrency(pn, Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unlockMinGold))
 			return;
 		
-		Unit[] unlockable = beh.getUnits(pn, SRC.Manager.isUnitUnlockable, true);
+		Unit[] unlockable = beh.getUnits(pn, SRC.BackEndHandler.isUnitUnlockable, true);
 		if(unlockable.length == 0)
 			return;
 		
@@ -1517,7 +1489,7 @@ public class Run {
 		
 		updateLayer();
 		
-		Raid[] raids = beh.getRaids(SRC.Manager.all);
+		Raid[] raids = beh.getRaids(SRC.BackEndHandler.all);
 		
 		for(int i=0; i<raids.length; i++) {
 			
@@ -1531,12 +1503,12 @@ public class Run {
 				cnames[i+8] = raids[i].isDungeon() ? "d" : "c";
 			}
 
-			feh.onUpdateSlot(pn, cid, i, raids[i], ConfigsV2.isSlotLocked(cid, currentLayer, ""+i), change[i]);
+			Manager.blis.onProfileUpdateSlot(cid, i, raids[i], ConfigsV2.isSlotLocked(cid, currentLayer, ""+i), change[i]);
 			
 		}
 		
 		for(C key : sc)
-			feh.onUpdateCurrency(pn, key.get(), beh.getCurrency(pn, key, false));
+			Manager.blis.onProfileUpdateCurrency(cid, key.get(), beh.getCurrency(pn, key, false));
 		
 	}
 	
@@ -1556,36 +1528,26 @@ public class Run {
 					break;
 				currentLayer = ptimes.get(key).getAsString();
 				currentLayerId = key;
-				updateSettings();
+				updateProxySettings();
 				break;
 			}
 		}
 		
-		feh.onUpdateLayer(pn, ConfigsV2.getStr(cid, currentLayer, ConfigsV2.lname), new Color(ConfigsV2.getInt(cid, currentLayer, ConfigsV2.color)));
+		Manager.blis.onProfileUpdateGeneral(cid, pn, ConfigsV2.getStr(cid, currentLayer, ConfigsV2.lname), new Color(ConfigsV2.getInt(cid, currentLayer, ConfigsV2.color)));
 	}
 	
 	
 	private String[] cnames = new String[12];
 	
-	public void openBrowser(int slot) {
-		if(cnames[slot] == null)
-			return;
-		if(Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-			try {
-				Desktop.getDesktop().browse(new URI("https://twitch.tv/"+cnames[slot]));
-			} catch (IOException | URISyntaxException e) {
-				Debug.printException("Run -> openBrowser: err=can't open DesktopBrowser", e, Debug.runerr, Debug.error, pn, slot, true);
-			}
-		} else {
-			Debug.print("Run -> openBrowser: err=desktop not supported", Debug.runerr, Debug.error, pn, slot, true);
-		}
+	public String getTwitchLink(int slot) {
+		return "https://twitch.tv/"+cnames[slot];
 	}
 	
 	public Map getMap(int slot) throws NoConnectionException, NotAuthorizedException {
 		return beh.getMap(pn, slot, false);
 	}
 	
-	public void updateSettings() {
+	public void updateProxySettings() {
 		String proxy = ConfigsV2.getStr(cid, currentLayer, ConfigsV2.proxyDomain);
 		String user = ConfigsV2.getStr(cid, currentLayer, ConfigsV2.proxyUser);
 		beh.setOptions(proxy.equals("") ? null : proxy, 

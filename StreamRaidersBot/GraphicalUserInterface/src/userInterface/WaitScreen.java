@@ -11,14 +11,13 @@ public class WaitScreen {
 	
 	public static final String pre = "WaitScreen::";
 	
-	public static void open(String startText) {
+	private static void open() {
 		ws = new GUI("Loading ...", 400, 200);
 		ws.setAlwaysOnTop(true);
 		ws.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		
-		
 		Label l = new Label();
-		l.setText(startText);
+		l.setText("");
 		ws.addLabel(l, pre+"lab");
 		
 		ws.refresh();
@@ -26,9 +25,8 @@ public class WaitScreen {
 	
 	public static void setText(String text) {
 		if(ws == null)
-			open(text);
-		else
-			GUI.setText(pre+"lab", text);
+			open();
+		GUI.setText(pre+"lab", text, true);
 	}
 	
 	public static void close() {

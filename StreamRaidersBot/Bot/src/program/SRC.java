@@ -106,7 +106,7 @@ public class SRC {
 		public static final String disName = "disName";
 	}
 	
-	public static class Manager {
+	public static class BackEndHandler {
 		public static final int all = 0;
 		public static final int isRaidReward = 1;
 		public static final int isUnitPlaceable = 3;
@@ -122,7 +122,7 @@ public class SRC {
 		public static final int exploitThreadCount = 50;
 	}
 	
-	public static class MainFrame {
+	public static class Manager {
 		public static final int start = 0;
 		public static final int skip = 1;
 		public static final int stop = 3;
