@@ -596,8 +596,8 @@ public class BackEndHandler {
 		return store.buyItem(item, pack, req);
 	}
 	
-	public JsonArray getStoreItems(int con) {
-		return store.getStoreItems(con);
+	public JsonArray getStoreItems(int con, String section) {
+		return store.getStoreItems(con, section);
 	}
 	
 	public String refreshStore() throws NoConnectionException, NotAuthorizedException {

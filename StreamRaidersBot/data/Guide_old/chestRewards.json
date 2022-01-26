@@ -747,6 +747,40 @@
       "skinfullrisingsunvampire": 2
     }
   },
+  "dungeons6necrochest": {
+    "bonusnecromancer": {
+      "goldbag_10": 50,
+      "goldbag_15": 30,
+      "goldbag_20": 20
+    },
+    "viewernecromancer1": {
+      "eventtoken_2": 100
+    },
+    "viewernecromancer2": {
+      "epicpotion_1": 50,
+      "epicpotion_2": 10,
+      "epicpotion_3": 5,
+      "uncommonscrolls_5": 20,
+      "rarescrolls_2": 10,
+      "rarescrolls_5": 5
+    },
+    "viewernecromancer3": {
+      "cooldown_1": 3,
+      "cooldown_3": 1,
+      "commonscrolls_5": 80,
+      "commonscrolls_7": 13,
+      "uncommonscrolls_3": 3
+    },
+    "viewernecromancer4": {
+      "eventtoken_1": 50,
+      "goldbag_25": 25,
+      "goldbag_50": 15,
+      "goldbag_75real": 5,
+      "skinfullnecromancercat": 1,
+      "skinfullnecromancerplant": 2,
+      "skinfullnecromancerclockwork": 2
+    }
+  },
   "icefallchest": {
     "bonusboostedgold": {
       "goldbag_1000": 75,

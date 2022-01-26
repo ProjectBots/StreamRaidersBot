@@ -368,8 +368,8 @@ public class SRRHelper {
 		store = new Store(req);
 	}
 	
-	public JsonArray getStoreItems(int con) {
-		return store.getStoreItems(con);
+	public JsonArray getStoreItems(int con, String section) {
+		return store.getStoreItems(con, section);
 	}
 	
 	public String refreshStore() throws NoConnectionException {

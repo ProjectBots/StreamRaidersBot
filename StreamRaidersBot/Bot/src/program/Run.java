@@ -476,7 +476,7 @@ public class Run {
 				
 		
 		if(Configs.getBoolean(name, Configs.canBuyScrolls)) {
-			JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased);
+			JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased, SRC.Store.scrolls);
 			if(items.size() != 0) {
 				JsonObject allPacks = Json.parseObj(Options.get("store"));
 				int[] ps = new int[items.size()];

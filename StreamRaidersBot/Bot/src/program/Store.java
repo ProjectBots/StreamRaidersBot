@@ -349,21 +349,22 @@ public class Store {
 		return ret;
 	}
 	
-	public JsonArray getStoreItems(int con) {
+	public JsonArray getStoreItems(int con, String section) {
 		switch(con) {
 		case SRC.Store.notPurchased:
 			JsonArray ret = new JsonArray();
 			for(int i=0; i<shopItems.size(); i++) {
 				JsonObject item = shopItems.get(i).getAsJsonObject();
-				if(item.getAsJsonPrimitive("purchased").getAsString().equals("0")) {
+				if(item.get("purchased").getAsString().equals("0") && item.get("section").getAsString().equals("0")) {
 					ret.add(item);
 				}
 			}
 			return ret;
 		default:
-			return shopItems;
+			return shopItems.deepCopy();
 		}
 	}
+	
 	
 	
 	private <T>T[] add(T[] arr, T item) {

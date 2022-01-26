@@ -49,7 +49,6 @@ public class Run {
 	
 	/*	TODO
 	 * 	rename Fonts to CS (ColorScheme)
-	 * 	option to set max profile actions at once
 	 * 	add tooltips (everywhere)
 	 * 	fonts manage error blocks (GlobalOptions)
 	 * 	config versioning
@@ -57,9 +56,7 @@ public class Run {
 	 * 	add a check all or uncheck all button in unit settings for the "nc nd ec ed"
 	 * 	get unlock/upgrade cost from datapath
 	 *	make epic slot dependent
-	 * 	
-	 * 
-	 * 	after release:
+	 *	get unit types from datapath
 	 * 	get Donators from github source
 	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
 	 * 	add Account Manager (to further split user interface with bot)
@@ -1280,7 +1277,7 @@ public class Run {
 		}
 		
 		if(beh.getCurrency(pn, Store.gold, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.scrollsMinGold)) {
-			JsonArray items = beh.getStoreItems(SRC.Store.notPurchased);
+			JsonArray items = beh.getStoreItems(SRC.Store.notPurchased, SRC.Store.scrolls);
 			if(items.size() != 0) {
 				JsonObject allPacks = Json.parseObj(Options.get("store"));
 				int[] ps = new int[items.size()];
@@ -1293,9 +1290,16 @@ public class Run {
 										.getAsString())
 									.getAsJsonObject();
 					
+						String let = packs[i].get("LiveEndTime").getAsString();
+						
+						if(!let.equals("") && Time.isAfter(beh.getServerTime(), let)) {
+							ps[i] = Integer.MIN_VALUE;
+							continue;
+						}
+						
 						String type = packs[i].get("Item").getAsString().replace("scroll", "");
 						
-						//	switch if sr decides to add more units with allias
+						//	switch if sr decides to add more units with allies
 						switch(type) {
 						case "paladin":
 							type = "allies" + type;
