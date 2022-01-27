@@ -298,7 +298,8 @@ public class Store {
 	
 	public String buyItem(JsonObject item, JsonObject pack, SRR req, String serverTime) throws NoConnectionException {
 		if(item.get("purchased").getAsInt() == 1) return "already purchased";
-		if(Time.isAfter(serverTime, pack.get("LiveEndTime").getAsString())) return "after end";
+		String let = pack.get("LiveEndTime").getAsString();
+		if(!let.equals("") && Time.isAfter(serverTime, let)) return "after end";
 		
 		int price = item.get("price").getAsInt();
 		C cur = pack.get("Section").getAsString().equals("Dungeon") ? keys : gold;
@@ -357,7 +358,7 @@ public class Store {
 			JsonArray ret = new JsonArray();
 			for(int i=0; i<shopItems.size(); i++) {
 				JsonObject item = shopItems.get(i).getAsJsonObject();
-				if(item.get("purchased").getAsString().equals("0") && item.get("section").getAsString().equals("0")) {
+				if(item.get("purchased").getAsString().equals("0") && item.get("section").getAsString().equals(section)) {
 					ret.add(item.deepCopy());
 				}
 			}
