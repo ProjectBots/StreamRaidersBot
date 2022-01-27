@@ -593,7 +593,7 @@ public class BackEndHandler {
 	}
 	
 	public String buyItem(JsonObject item, JsonObject pack) throws NoConnectionException {
-		return store.buyItem(item, pack, req);
+		return store.buyItem(item, pack, req, getServerTime());
 	}
 	
 	public JsonArray getStoreItems(int con, String section) {

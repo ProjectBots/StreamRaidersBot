@@ -1,11 +1,7 @@
 package program;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
-
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.gson.JsonArray;
@@ -250,29 +246,35 @@ public class Store {
 		
 		JsonObject allTypes = Unit.getTypes();
 		
-		List<String> gotTypes = new ArrayList<>();
-		for(int i=0; i<units.length; i++)
-			gotTypes.add(units[i].get(SRC.Unit.unitType));
-		
+		Hashtable<String, Boolean> gotTypes = new Hashtable<>();
+		for(int i=0; i<units.length; i++) {
+			String type = units[i].get(SRC.Unit.unitType);
+			int lvl = Integer.parseInt(units[i].get(SRC.Unit.level));
+			if(gotTypes.contains(type))
+				gotTypes.put(type, gotTypes.get(type) && lvl == 30);
+			else
+				gotTypes.put(type, lvl == 30);
+		}
 		
 		Unit[] ret = new Unit[0];
 		
+		//	normal unlock
 		for(String type : allTypes.keySet()) {
-			if(gotTypes.contains(type))
+			if(gotTypes.containsKey(type))
 				continue;
 			
 			if(getCost(type, 0, false)[1] <= getCurrency(type))
 				ret = add(ret, Unit.createTypeOnly(type, false));
 		}
 		
-		for(Unit unit : units) {
-			String type = unit.get(SRC.Unit.unitType);
-			if(!unit.get(SRC.Unit.level).equals("30") || Collections.frequency(gotTypes, type) >= 2)
+		//	dupe unlock
+		for(String type : gotTypes.keySet()) {
+			//	only !true if every unit of this type is lvl 30
+			if(!gotTypes.get(type))
 				continue;
 			
 			if(getCost(type, 0, true)[1] <= getCurrency(type))
 				ret = add(ret, Unit.createTypeOnly(type, true));
-			
 		}
 		return ret;
 	}
@@ -294,14 +296,16 @@ public class Store {
 	}
 	
 	
-	public String buyItem(JsonObject item, JsonObject pack, SRR req) throws NoConnectionException {
-		if(item.getAsJsonPrimitive("purchased").getAsInt() == 1) return "already purchased";
+	public String buyItem(JsonObject item, JsonObject pack, SRR req, String serverTime) throws NoConnectionException {
+		if(item.get("purchased").getAsInt() == 1) return "already purchased";
+		if(Time.isAfter(serverTime, pack.get("LiveEndTime").getAsString())) return "after end";
 		
-		int price = item.getAsJsonPrimitive("price").getAsInt();
-		if(price > getCurrency(gold))
-			return "not enough gold";
+		int price = item.get("price").getAsInt();
+		C cur = pack.get("Section").getAsString().equals("Dungeon") ? keys : gold;
+		if(price > getCurrency(cur))
+			return "not enough " + cur.get();
 		
-		String itemId = item.getAsJsonPrimitive("itemId").getAsString();
+		String itemId = item.get("itemId").getAsString();
 		
 		if(itemId.equals("dailydrop")) {
 			JsonObject resp = Json.parseObj(req.grantDailyDrop());
@@ -315,7 +319,7 @@ public class Store {
 			if(err.isJsonPrimitive())
 				return err.getAsString();
 			
-			decreaseCurrency(gold, price);
+			decreaseCurrency(cur, price);
 			shopItems = resp.getAsJsonArray("data");
 		}
 		
@@ -332,10 +336,8 @@ public class Store {
 		
 		int price = Integer.parseInt(Options.get(chest+"price"));
 		
-		C cur = chest.contains("snowfall") ? eventcurrency : keys;
-		
-		if(getCurrency(cur) < price) {
-			ret.addProperty(SRC.errorMessage, "not enough "+cur.get());
+		if(getCurrency(keys) < price) {
+			ret.addProperty(SRC.errorMessage, "not enough "+keys.get());
 			return ret;
 		}
 		
@@ -344,7 +346,7 @@ public class Store {
 		JsonElement err = ret.get(SRC.errorMessage);
 		
 		if(!err.isJsonPrimitive())
-			decreaseCurrency(cur, price);
+			decreaseCurrency(keys, price);
 		
 		return ret;
 	}
@@ -356,7 +358,7 @@ public class Store {
 			for(int i=0; i<shopItems.size(); i++) {
 				JsonObject item = shopItems.get(i).getAsJsonObject();
 				if(item.get("purchased").getAsString().equals("0") && item.get("section").getAsString().equals("0")) {
-					ret.add(item);
+					ret.add(item.deepCopy());
 				}
 			}
 			return ret;

@@ -206,8 +206,9 @@ public class Run {
 			part = Debug.print("upgradeUnits", Debug.run, Debug.info, name, null);
 			upgradeUnits();
 			
-			part = Debug.print("grantTeamReward", Debug.run, Debug.info, name, null);
+			part = Debug.print("grantExtraRewards", Debug.run, Debug.info, name, null);
 			srrh.getSRR().grantTeamReward();
+			srrh.getSRR().grantEventQuestMilestoneReward();
 			
 			int min = Configs.getTime(name, Configs.min);
 			int max = Configs.getTime(name, Configs.max);
@@ -416,7 +417,7 @@ public class Run {
 	}
 	
 	private void store() throws NoConnectionException {
-		
+		/*	TODO enable when active again
 		try {
 			String sel = Configs.getStr(name, Configs.canBuyChest);
 			String err;
@@ -440,27 +441,69 @@ public class Run {
 				
 			}
 		} catch (NullPointerException e) {}
-		
+		*/
 		
 		ec: {
 			String sel = Configs.getStr(name, Configs.buyEventChest);
-			String chest;
+			//String chest;
 			switch(sel) {
-			case "St. Jude":
-				chest = "snowfallcharitychest1";
+			case "Necro Chest":
+				String err = srrh.buyChest("dungeons6necrochest");
+				if(err != null && !(err.equals("after end") || err.startsWith("not enough ")))
+					Debug.print(name+" -> Run -> store -> buyChest: err="+err+", chest="+sel, Debug.runerr, Debug.error, name, null, true);
+				if(err == null) {
+					if(bought.has("dungeonchest"))
+						bought.addProperty("dungeonchest", bought.get("dungeonchest").getAsInt() + 1);
+					else 
+						bought.addProperty("dungeonchest", 1);
+				}
 				break;
-			case "AFSP":
-				chest = "snowfallcharitychest2";
+			case "Necro Scrolls":
+				JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased, SRC.Store.dungeon);
+				int[] lowest = {-1, Integer.MAX_VALUE};
+				for(int i=0; i<items.size(); i++) {
+					JsonObject item = items.get(i).getAsJsonObject();
+					int p = item.get("price").getAsInt();
+					if(p < lowest[1]) {
+						lowest[0] = i;
+						lowest[1] = p;
+					}
+				}
+				if(lowest[0] < 0) {
+					Debug.print("Run -> store -> ec: already bought all necro scrolls", Debug.runerr, Debug.info, name, 4, true);
+					break ec;
+				}
+				
+				JsonObject pack = Json.parseObj(Options.get("store"))
+							.get(items.get(lowest[0])
+								.getAsJsonObject()
+								.get("itemId")
+								.getAsString())
+							.getAsJsonObject();
+				
+				String err2 = srrh.buyItem(items.get(lowest[0]).getAsJsonObject(), pack);
+				
+				if(err2 != null && !err2.startsWith("not enough ") && !err2.equals("after end"))
+					Debug.print(name + ": Run -> store: item=" + items.get(lowest[0]) + ", err=" + err2, Debug.lowerr, Debug.error, name, null, true);
+				
+				if(err2 == null) {
+					String type = pack.get("Item").getAsString();
+					int amount = pack.get("Quantity").getAsInt();
+					if(bought.has(type))
+						bought.addProperty(type, bought.get(type).getAsInt() + amount);
+					else 
+						bought.addProperty(type, amount);
+				}
 				break;
-			case "MHA":
-				chest = "snowfallcharitychest3";
-				break;
+			/*
 			case "Toys For Tots":
 				chest = "snowfallcharitychest4";
 				break;
+			*/
 			default:
 				break ec;
 			}
+			/*
 			String err = srrh.buyChest(chest);
 			if(err != null && !(err.equals("after end") || err.startsWith("not enough ")))
 				Debug.print(name+" -> Run -> store -> buyChest: err="+err+", chest="+sel, Debug.runerr, Debug.error, name, null, true);
@@ -471,6 +514,7 @@ public class Run {
 				else 
 					bought.addProperty(chest, 1);
 			}
+			*/
 		}
 		
 				
@@ -519,14 +563,12 @@ public class Run {
 						break;
 					
 					String err = srrh.buyItem(items.get(ind).getAsJsonObject(), packs[ind]);
-					if(err != null && !err.equals("not enough gold"))
+					if(err != null && !err.startsWith("not enough ") && !err.equals("after end"))
 						Debug.print(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, Debug.lowerr, Debug.error, name, null, true);
-					
-					int amount = allPacks.get(items.get(ind).getAsJsonObject().get("itemId").getAsString())
-							.getAsJsonObject().get("Quantity").getAsInt();
 					
 					if(err == null) {
 						String type = packs[ind].get("Item").getAsString();
+						int amount = packs[ind].get("Quantity").getAsInt();
 						if(bought.has(type))
 							bought.addProperty(type, bought.get(type).getAsInt() + amount);
 						else 

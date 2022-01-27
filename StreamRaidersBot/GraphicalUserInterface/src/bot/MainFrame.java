@@ -1347,7 +1347,7 @@ public class MainFrame {
 						}
 					});
 					cdslot.addComboBox(dslot);
-					
+					/*	Dungeon chest, currently disabled
 					Label bc = new Label();
 					bc.setPos(2, 0);
 					bc.setText("buy Chest:");
@@ -1369,14 +1369,14 @@ public class MainFrame {
 						}
 					});
 					cdslot.addComboBox(cbc);
-					
+					*/
 				sgui.addContainer(cdslot);
 				
 				Container becc = new Container();
 				becc.setPos(0, g++);
 					
 					Label becl = new Label();
-					becl.setText("Buy Event Chest: ");
+					becl.setText("Buy Event Stuff: ");//TODO rename when over
 					becl.setPos(0, 0);
 					becl.setFont(new Font(null, Font.PLAIN, 25));
 					becc.addLabel(becl);
@@ -1384,7 +1384,7 @@ public class MainFrame {
 					String sel3 = Configs.getStr(name, Configs.buyEventChest);
 					
 					ComboBox beccb = new ComboBox(name+"::canBuyEventChest");
-					beccb.setList(ArrayUtils.insert(0, ArrayUtils.removeElement("(none)  St. Jude  AFSP  MHA  Toys For Tots".split("  "), sel3), sel3));
+					beccb.setList(ArrayUtils.insert(0, ArrayUtils.removeElement("(none)  Necro Chest  Necro Scrolls".split("  "), sel3), sel3));
 					beccb.setPos(1, 0);
 					beccb.setFont(new Font(null, Font.PLAIN, 23));
 					beccb.setCL(new CombListener() {

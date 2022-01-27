@@ -309,12 +309,12 @@ public class Configs {
 			try {
 				configs = Json.parseObj(NEF.read(bpath));
 				for(String key : configs.keySet())
-					Json.check(configs.getAsJsonObject(key), def);
+					Json.check(configs.getAsJsonObject(key), def.deepCopy());
 			} catch (IOException e) {
 				try {
 					configs = Json.parseObj(NEF.read(path));
 					for(String key : configs.keySet())
-						Json.check(configs.getAsJsonObject(key), def);
+						Json.check(configs.getAsJsonObject(key), def.deepCopy());
 				} catch (FileNotFoundException e1) {
 					configs = new JsonObject();
 				}

@@ -429,4 +429,8 @@ public class SRR {
 	public String grantTeamReward() throws NoConnectionException {
 		return sendPost(getPost("grantTeamReward"));
 	}
+	
+	public String grantEventQuestMilestoneReward() throws NoConnectionException {
+		return sendPost(getPost("grantEventQuestMilestoneReward"));
+	}
 }

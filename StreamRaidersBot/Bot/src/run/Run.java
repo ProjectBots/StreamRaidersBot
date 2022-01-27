@@ -54,9 +54,10 @@ public class Run {
 	 * 	config versioning
 	 * 	make epic slot dependent
 	 * 	add a check all or uncheck all button in unit settings for the "nc nd ec ed"
-	 * 	get unlock/upgrade cost from datapath
+	 * 	get unlock/upgrade cost from datapath (sheets\UnitCosts\...)
 	 *	make epic slot dependent
 	 *	get unit types from datapath
+	 *	get unit costs (unlock/upgrade) from datapath
 	 * 	get Donators from github source
 	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
 	 * 	add Account Manager (to further split user interface with bot)

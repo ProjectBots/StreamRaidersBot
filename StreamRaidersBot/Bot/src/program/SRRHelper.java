@@ -72,7 +72,7 @@ public class SRRHelper {
 			JsonObject store = data.getAsJsonObject("Store");
 			Options.set("store", store.toString());
 			Options.set("rewards", data.getAsJsonObject("ChestRewards").toString());
-			for(String c : "dungeons5saintchest dungeons5vampirechest snowfallcharitychest1 snowfallcharitychest2 snowfallcharitychest3 snowfallcharitychest4".split(" ")) {
+			for(String c : "dungeons6necrochest".split(" ")) {
 				try {
 					JsonObject base = store.getAsJsonObject(c);
 					Options.set(c+"date", base.get("LiveEndTime").getAsString());
@@ -385,7 +385,7 @@ public class SRRHelper {
 	}
 	
 	public String buyItem(JsonObject item, JsonObject pack) throws NoConnectionException {
-		return store.buyItem(item, pack, req);
+		return store.buyItem(item, pack, req, serverTime);
 	}
 	
 	public String buyChest(String chest) throws NoConnectionException {
@@ -456,7 +456,8 @@ public class SRRHelper {
 	}
 	
 	public String unlockUnit(Unit unit) throws NoConnectionException {
-		return store.unlockUnit(unit.get(SRC.Unit.unitType), unit.isDupe(), req);
+		
+		return store.canUnlockUnit(unit.get(SRC.Unit.unitType), unit.isDupe()) ? store.unlockUnit(unit.get(SRC.Unit.unitType), unit.isDupe(), req) : "not enough gold";
 	}
 	
 	public String upgradeUnit(Unit unit, String specUID) throws NoConnectionException {
