@@ -1,4 +1,4 @@
-botVersion=6.5.0beta
+botVersion=6.5.1beta
 clientVersion=0.173.3
 
 ## default config
