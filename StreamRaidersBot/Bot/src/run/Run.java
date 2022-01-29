@@ -35,6 +35,7 @@ import program.SRR.NotAuthorizedException;
 import program.SRR.OutdatedDataException;
 
 import program.Store.C;
+import program.Store.Item;
 import program.Unit;
 import run.BackEndHandler.UpdateEventListener;
 import program.ConfigsV2.ListType;
@@ -1239,7 +1240,7 @@ public class Run {
 					Reward rew = new Reward(data.get(i).getAsString());
 					addRew(SRC.Run.bought, rew.name, rew.quantity);
 				}
-			} else if(!(err.getAsString().equals("after end") || err.getAsString().startsWith("not enough ")))
+			} else if(!(err.getAsString().startsWith("not enough ") || ArrayUtils.contains("after end  before start".split("  "), err)))
 				Debug.print("Run -> store -> buyChest: err="+err.getAsString()+", chest="+sel, Debug.runerr, Debug.error, pn, 4, true);
 		}
 		
@@ -1278,42 +1279,28 @@ public class Run {
 		}
 		
 		if(beh.getCurrency(pn, Store.gold, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.scrollsMinGold)) {
-			JsonArray items = beh.getStoreItems(SRC.Store.notPurchased, SRC.Store.scrolls);
+			List<Item> items = beh.getStoreItems(SRC.Store.purchasable, SRC.Store.scrolls);
 			if(items.size() != 0) {
-				JsonObject allPacks = Json.parseObj(Options.get("store"));
 				int[] ps = new int[items.size()];
-				JsonObject[] packs = new JsonObject[items.size()];
 				for(int i=0; i<items.size(); i++) {
-					try {
-						packs[i] = allPacks.get(items.get(i)
-										.getAsJsonObject()
-										.get("itemId")
-										.getAsString())
-									.getAsJsonObject();
+					Item item = items.get(i);
+					String type = item.getItem().replace("scroll", "");
 					
-						String let = packs[i].get("LiveEndTime").getAsString();
-						
-						if(!let.equals("") && Time.isAfter(beh.getServerTime(), let)) {
-							ps[i] = Integer.MIN_VALUE;
-							continue;
-						}
-						
-						String type = packs[i].get("Item").getAsString().replace("scroll", "");
-						
-						//	switch if sr decides to add more units with allies
-						switch(type) {
-						case "paladin":
-							type = "allies" + type;
-						}
-						
-						if(type.equals("eventcurrency"))
-							ps[i] = Integer.MAX_VALUE;
-						else
+					//	switch if sr decides to add more units with allies
+					switch(type) {
+					case "paladin":
+						type = "allies" + type;
+					}
+					
+					if(type.equals("eventcurrency"))
+						ps[i] = Integer.MAX_VALUE;
+					else {
+						try {
 							ps[i] = ConfigsV2.getUnitInt(cid, currentLayer, type, ConfigsV2.buy);
-						
-					} catch (NullPointerException e) {
-						Debug.printException("Run -> store: item=" + items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString() + ", err=item is not correct", e, Debug.runerr, Debug.error, pn, 4, true);
-						ps[i] = -1;
+						} catch (NullPointerException e) {
+							Debug.printException("Run -> store: err=item is not correct, item=" + item.toStringOneLine(), e, Debug.runerr, Debug.error, pn, 4, true);
+							ps[i] = -1;
+						}
 					}
 				}
 				
@@ -1327,13 +1314,13 @@ public class Run {
 					if(ps[ind] < 0)
 						break;
 					
-					int amount = packs[ind].get("Quantity").getAsInt();
+					Item item = items.get(ind);
 					
-					String err = beh.buyItem(items.get(ind).getAsJsonObject(), packs[ind]);
+					String err = beh.buyItem(item);
 					if(err == null)
-						addRew(SRC.Run.bought, packs[ind].get("Item").getAsString(), amount);
+						addRew(SRC.Run.bought, item.getItem(), item.getQuantity());
 					else if(!err.equals("not enough gold"))
-						Debug.print("Run -> store: item=" + items.get(ind) + ", err=" + err, Debug.lowerr, Debug.error, pn, 4, true);
+						Debug.print("Run -> store: err=" + err + ", item=" + item.toString(), Debug.lowerr, Debug.error, pn, 4, true);
 					
 					ps[ind] = -1;
 				}

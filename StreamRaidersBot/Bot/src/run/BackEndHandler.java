@@ -27,6 +27,7 @@ import program.SRR.NotAuthorizedException;
 import program.SRR.OutdatedDataException;
 import program.Store;
 import program.Store.C;
+import program.Store.Item;
 import program.Options;
 import program.Unit;
 import program.QuestEventRewards.Quest;
@@ -592,12 +593,12 @@ public class BackEndHandler {
 		return store.getCurrencies();
 	}
 	
-	public String buyItem(JsonObject item, JsonObject pack) throws NoConnectionException {
-		return store.buyItem(item, pack, req, getServerTime());
+	public String buyItem(Item item) throws NoConnectionException {
+		return store.buyItem(item, req, getServerTime());
 	}
 	
-	public JsonArray getStoreItems(int con, String section) {
-		return store.getStoreItems(con, section);
+	public List<Item> getStoreItems(int con, String section) {
+		return store.getStoreItems(con, section, getServerTime());
 	}
 	
 	public String refreshStore() throws NoConnectionException, NotAuthorizedException {

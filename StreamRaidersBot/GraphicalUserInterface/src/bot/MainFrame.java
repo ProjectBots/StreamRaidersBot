@@ -1890,17 +1890,17 @@ public class MainFrame {
 	
 	
 	public static void refresh(boolean reload) {
-		try {
-			if(reload)
+		if(reload)
+			try {
 				Configs.load();
-			if(gui != null) {
-				for(String key : Configs.keySet()) 
-					if(!profiles.keySet().contains(key)) 
-						add(key, new Run(key, Configs.getStr(key, Configs.cookies)));
-				
-				gui.refresh();
-			}
-		} catch (IOException e) {}
+			} catch (IOException e) {}
+		
+		if(gui != null) {
+			for(String key : Configs.keySet()) 
+				if(!profiles.keySet().contains(key)) 
+					add(key, new Run(key, Configs.getStr(key, Configs.cookies)));
+			gui.refresh();
+		}
 	}
 
 	public static void close() {

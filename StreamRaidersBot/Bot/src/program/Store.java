@@ -1,7 +1,11 @@
 package program;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
+
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.gson.JsonArray;
@@ -296,17 +300,17 @@ public class Store {
 	}
 	
 	
-	public String buyItem(JsonObject item, JsonObject pack, SRR req, String serverTime) throws NoConnectionException {
-		if(item.get("purchased").getAsInt() == 1) return "already purchased";
-		String let = pack.get("LiveEndTime").getAsString();
-		if(!let.equals("") && Time.isAfter(serverTime, let)) return "after end";
+	public String buyItem(Item item, SRR req, String serverTime) throws NoConnectionException {
+		if(item.isPurchased()) return "already purchased";
+		if(Time.isAfter(serverTime, item.getLiveEndTime())) return "after end";
+		if(Time.isAfter(item.getLiveStartTime(), serverTime)) return "before start";
 		
-		int price = item.get("price").getAsInt();
-		C cur = pack.get("Section").getAsString().equals("Dungeon") ? keys : gold;
+		int price = item.getPrice();
+		C cur = item.getStr("Section").equals("Dungeon") ? keys : gold;
 		if(price > getCurrency(cur))
 			return "not enough " + cur.get();
 		
-		String itemId = item.get("itemId").getAsString();
+		String itemId = item.getStr("itemId");
 		
 		if(itemId.equals("dailydrop")) {
 			JsonObject resp = Json.parseObj(req.grantDailyDrop());
@@ -324,7 +328,7 @@ public class Store {
 			shopItems = resp.getAsJsonArray("data");
 		}
 		
-		addCurrency(pack.get("Item").getAsString(), pack.get("Quantity").getAsInt());
+		addCurrency(item.getItem(), item.getQuantity());
 		return null;
 	}
 	
@@ -352,22 +356,87 @@ public class Store {
 		return ret;
 	}
 	
-	public JsonArray getStoreItems(int con, String section) {
-		switch(con) {
-		case SRC.Store.notPurchased:
-			JsonArray ret = new JsonArray();
-			for(int i=0; i<shopItems.size(); i++) {
-				JsonObject item = shopItems.get(i).getAsJsonObject();
-				if(item.get("purchased").getAsString().equals("0") && item.get("section").getAsString().equals(section)) {
-					ret.add(item.deepCopy());
-				}
-			}
-			return ret;
-		default:
-			return shopItems.deepCopy();
+	public static class Item {
+		@Override
+		public String toString() {
+			return Json.prettyJson(item);
+		}
+		public String toStringOneLine() {
+			return item.toString();
+		}
+		private final JsonObject item;
+		public Item(JsonObject item, JsonObject pack) {
+			this.item = item;
+			for(String key : pack.keySet())
+				this.item.add(key, pack.get(key));
+		}
+		//	commonly used
+		public String getItem() {
+			return getStr("Item");
+		}
+		public int getPrice() {
+			return getInt("price");
+		}
+		public int getQuantity() {
+			return getInt("Quantity");
+		}
+		public boolean isPurchased() {
+			return getInt("purchased") == 1;
+		}
+		public String getLiveEndTime() {
+			String let = getStr("LiveEndTime");
+			return let.equals("")
+				? Time.parse(LocalDateTime.MAX)
+				: let;
+		}
+		public String getLiveStartTime() {
+			String lst = getStr("LiveStartTime");
+			return lst.equals("")
+				? Time.parse(LocalDateTime.MIN)
+				: lst;
+		}
+		
+		//	for not common usecases
+		public String getStr(String key) {
+			return item.get(key).getAsString();
+		}
+		public int getInt(String key) {
+			return item.get(key).getAsInt();
 		}
 	}
 	
+	public List<Item> getStoreItems(int con, String section, String serverTime) {
+		JsonObject packs = Json.parseObj(Options.get("store"));
+		List<Item> ret = new ArrayList<>();
+		switch(con) {
+		case SRC.Store.currentlyInShop:
+			for(int i=0; i<shopItems.size(); i++) {
+				JsonObject item = shopItems.get(i).getAsJsonObject().deepCopy();
+				if(item.get("purchased").getAsInt() == 0 && item.get("section").getAsString().equals(section))
+					ret.add(new Item(item, packs.get(item.get("itemId").getAsString()).getAsJsonObject().deepCopy()));
+			}
+			break;
+		case SRC.Store.purchasable:
+			for(int i=0; i<shopItems.size(); i++) {
+				JsonObject item = shopItems.get(i).getAsJsonObject().deepCopy();
+				JsonObject pack = packs.get(item.get("itemId").getAsString()).getAsJsonObject().deepCopy();
+				String let = pack.get("LiveEndTime").getAsString();
+				if(item.get("purchased").getAsInt() == 0 
+					&& item.get("section").getAsString().equals(section)
+					&& (let.equals("") || Time.isAfter(let, serverTime)))
+					ret.add(new Item(item, pack));
+			}
+			break;
+		case SRC.Store.wholeSection:
+			for(int i=0; i<shopItems.size(); i++) {
+				JsonObject item = shopItems.get(i).getAsJsonObject().deepCopy();
+				if(item.get("section").getAsString().equals(section))
+					ret.add(new Item(item, packs.get(item.get("itemId").getAsString()).getAsJsonObject().deepCopy()));
+			}
+			break;
+		}
+		return ret;
+	}
 	
 	
 	private <T>T[] add(T[] arr, T item) {

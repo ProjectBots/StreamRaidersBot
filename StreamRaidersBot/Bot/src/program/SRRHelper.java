@@ -16,6 +16,7 @@ import include.Http.NoConnectionException;
 import program.SRR.NotAuthorizedException;
 import program.SRR.OutdatedDataException;
 import program.Store.C;
+import program.Store.Item;
 
 public class SRRHelper {
 
@@ -368,8 +369,8 @@ public class SRRHelper {
 		store = new Store(req);
 	}
 	
-	public JsonArray getStoreItems(int con, String section) {
-		return store.getStoreItems(con, section);
+	public List<Item> getStoreItems(int con, String section) {
+		return store.getStoreItems(con, section, serverTime);
 	}
 	
 	public String refreshStore() throws NoConnectionException {
@@ -384,8 +385,8 @@ public class SRRHelper {
 		return store == null ? null : store.getCurrency(con);
 	}
 	
-	public String buyItem(JsonObject item, JsonObject pack) throws NoConnectionException {
-		return store.buyItem(item, pack, req, serverTime);
+	public String buyItem(Item item) throws NoConnectionException {
+		return store.buyItem(item, req, serverTime);
 	}
 	
 	public String buyChest(String chest) throws NoConnectionException {

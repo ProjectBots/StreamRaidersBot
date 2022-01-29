@@ -30,8 +30,9 @@ public class SRC {
 	}
 
 	public static class Store {
-		public static final int all = 0;
-		public static final int notPurchased = 1;
+		public static final int wholeSection = 0;
+		public static final int currentlyInShop = 1;
+		public static final int purchasable = 2;
 		public static final String daily = "Daily";
 		public static final String scrolls = "Scrolls";
 		public static final String dungeon = "Dungeon";

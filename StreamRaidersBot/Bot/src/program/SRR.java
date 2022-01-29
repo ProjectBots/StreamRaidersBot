@@ -107,34 +107,34 @@ public class SRR {
 		gameDataVersion = "";
 		isCaptain = "";
 		JsonObject raw = Json.parseObj(getUser());
-		String data = raw.getAsJsonObject("info")
-				.get("dataPath").getAsString();
+		JsonObject info = raw.getAsJsonObject("info");
+		String datapath = info.get("dataPath").getAsString();
 		
-		if(!data.equals(Options.get("data"))) 
-			throw new OutdatedDataException(data, raw.getAsJsonObject("info")
-					.get("serverTime").getAsString());
+		if(!datapath.equals(Options.get("data")))
+			throw new OutdatedDataException(datapath, info.get("serverTime").getAsString());
 		
-		String ver = raw.getAsJsonObject("info")
-				.get("version").getAsString();
+		String ver = info.get("version").getAsString();
 		
 		if(!ver.equals(clientVersion)) {
 			this.clientVersion = ver;
 			raw = Json.parseObj(getUser());
-		} else {
+			Options.set("clientVersion", ver);
+			Options.save();
+		} else
 			ver = null;
-		}
+		
 		constructor(raw);
 		return ver;
 	}
 	
 	private void constructor(JsonObject getUser) throws NotAuthorizedException {
-		this.gameDataVersion = getUser.getAsJsonObject("info").getAsJsonPrimitive("dataVersion").getAsString();
+		this.gameDataVersion = getUser.getAsJsonObject("info").get("dataVersion").getAsString();
 		try {
 			JsonObject data = getUser.getAsJsonObject("data");
 			this.isCaptain = "0";
-			this.userId = data.getAsJsonPrimitive("userId").getAsString();
+			this.userId = data.get("userId").getAsString();
 			if(userId.endsWith("c"))
-				userId = data.getAsJsonPrimitive("otherUserId").getAsString();
+				userId = data.get("otherUserId").getAsString();
 		} catch (ClassCastException e) {
 			JsonElement err = getUser.get(SRC.errorMessage);
 			if(err.isJsonPrimitive() && err.getAsString().equals("User is not authorized.")) {

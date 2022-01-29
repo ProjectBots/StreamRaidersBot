@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -24,11 +26,11 @@ import include.Http.NoConnectionException;
 import program.SRR.NotAuthorizedException;
 import program.SRRHelper.DungeonException;
 import program.SRRHelper.PvPException;
+import program.Store.Item;
 
 public class Run {
 
 	private String cookies = "";
-	private static String clientVersion = Options.get("clientVersion");
 	
 	private String name = "";
 	private LocalDateTime started = null;
@@ -109,7 +111,7 @@ public class Run {
 				@Override
 				public void run() {
 					try {
-						srrh = new SRRHelper(cookies, clientVersion);
+						srrh = new SRRHelper(cookies, Options.get("clientVersion"));
 						isReloading = false;
 						runs();
 					} catch (NoConnectionException e) {
@@ -459,11 +461,11 @@ public class Run {
 				}
 				break;
 			case "Necro Scrolls":
-				JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased, SRC.Store.dungeon);
+				List<Item> items = srrh.getStoreItems(SRC.Store.purchasable, SRC.Store.dungeon);
+				
 				int[] lowest = {-1, Integer.MAX_VALUE};
 				for(int i=0; i<items.size(); i++) {
-					JsonObject item = items.get(i).getAsJsonObject();
-					int p = item.get("price").getAsInt();
+					int p = items.get(i).getPrice();
 					if(p < lowest[1]) {
 						lowest[0] = i;
 						lowest[1] = p;
@@ -474,21 +476,16 @@ public class Run {
 					break ec;
 				}
 				
-				JsonObject pack = Json.parseObj(Options.get("store"))
-							.get(items.get(lowest[0])
-								.getAsJsonObject()
-								.get("itemId")
-								.getAsString())
-							.getAsJsonObject();
+				Item item = items.get(lowest[0]);
 				
-				String err2 = srrh.buyItem(items.get(lowest[0]).getAsJsonObject(), pack);
+				String err2 = srrh.buyItem(item);
 				
-				if(err2 != null && !err2.startsWith("not enough ") && !err2.equals("after end"))
-					Debug.print(name + ": Run -> store: item=" + items.get(lowest[0]) + ", err=" + err2, Debug.lowerr, Debug.error, name, null, true);
+				if(!(err2 == null || err2.startsWith("not enough ") || ArrayUtils.contains("after end  before start".split("  "), err2)))
+					Debug.print(name + ": Run -> store: item=" + item + ", err=" + err2, Debug.lowerr, Debug.error, name, null, true);
 				
 				if(err2 == null) {
-					String type = pack.get("Item").getAsString();
-					int amount = pack.get("Quantity").getAsInt();
+					String type = item.getItem();
+					int amount = item.getQuantity();
 					if(bought.has(type))
 						bought.addProperty(type, bought.get(type).getAsInt() + amount);
 					else 
@@ -520,20 +517,12 @@ public class Run {
 				
 		
 		if(Configs.getBoolean(name, Configs.canBuyScrolls)) {
-			JsonArray items = srrh.getStoreItems(SRC.Store.notPurchased, SRC.Store.scrolls);
+			List<Item> items = srrh.getStoreItems(SRC.Store.purchasable, SRC.Store.scrolls);
 			if(items.size() != 0) {
-				JsonObject allPacks = Json.parseObj(Options.get("store"));
 				int[] ps = new int[items.size()];
-				JsonObject[] packs = new JsonObject[items.size()];
 				for(int i=0; i<items.size(); i++) {
-					try {
-						packs[i] = allPacks.get(items.get(i)
-								.getAsJsonObject()
-								.get("itemId")
-								.getAsString())
-							.getAsJsonObject();
-			
-						String type = packs[i].get("Item").getAsString().replace("scroll", "");
+					Item item = items.get(i);
+						String type = item.getItem().replace("scroll", "");
 						
 						//	switch if sr decides to add more units with allias
 						switch(type) {
@@ -541,15 +530,15 @@ public class Run {
 							type = "allies" + type;
 							break;
 						}
-						
-						if(type.equals("eventcurrency"))
-							ps[i] = Integer.MAX_VALUE;
-						else
+					if(type.equals("eventcurrency"))
+						ps[i] = Integer.MAX_VALUE;
+					else {
+						try {
 							ps[i] = Configs.getUnitInt(name, type, Configs.buy);
-						
-					} catch (NullPointerException e) {
-						Debug.printException(name + ": Run -> store: item=" + items.get(i).getAsJsonObject().getAsJsonPrimitive("itemId").getAsString() + ", err=item is not correct", e, Debug.runerr, Debug.error, name, null, true);
-						ps[i] = -1;
+						} catch (NullPointerException e) {
+							Debug.printException(name + ": Run -> store: err=item is not correct, item=" + item.toStringOneLine(), e, Debug.runerr, Debug.error, name, null, true);
+							ps[i] = -1;
+						}
 					}
 				}
 				
@@ -562,13 +551,15 @@ public class Run {
 					if(ps[ind] < 0)
 						break;
 					
-					String err = srrh.buyItem(items.get(ind).getAsJsonObject(), packs[ind]);
-					if(err != null && !err.startsWith("not enough ") && !err.equals("after end"))
-						Debug.print(name + ": Run -> store: item=" + items.get(ind) + ", err=" + err, Debug.lowerr, Debug.error, name, null, true);
+					Item item = items.get(ind);
+					
+					String err = srrh.buyItem(item);
+					if(!(err == null || err.startsWith("not enough ") || ArrayUtils.contains("after end  before start".split("  "), err)))
+						Debug.print(name + ": Run -> store: err=" + err + ", item=" + item.toString(), Debug.lowerr, Debug.error, name, null, true);
 					
 					if(err == null) {
-						String type = packs[ind].get("Item").getAsString();
-						int amount = packs[ind].get("Quantity").getAsInt();
+						String type = item.getItem();
+						int amount = item.getQuantity();
 						if(bought.has(type))
 							bought.addProperty(type, bought.get(type).getAsInt() + amount);
 						else 
