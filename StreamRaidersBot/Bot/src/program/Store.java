@@ -386,13 +386,13 @@ public class Store {
 		public String getLiveEndTime() {
 			String let = getStr("LiveEndTime");
 			return let.equals("")
-				? Time.parse(LocalDateTime.MAX)
+				? Time.parse(LocalDateTime.MAX.minusYears(1))
 				: let;
 		}
 		public String getLiveStartTime() {
 			String lst = getStr("LiveStartTime");
 			return lst.equals("")
-				? Time.parse(LocalDateTime.MIN)
+				? Time.parse(LocalDateTime.MIN.plusYears(1))
 				: lst;
 		}
 		
