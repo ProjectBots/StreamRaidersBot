@@ -386,7 +386,7 @@ public class SRRHelper {
 	}
 	
 	public String buyItem(Item item) throws NoConnectionException {
-		return store.buyItem(item, req, serverTime);
+		return store.buyStoreItem(item, req, serverTime);
 	}
 	
 	public String buyChest(String chest) throws NoConnectionException {

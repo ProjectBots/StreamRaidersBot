@@ -206,7 +206,7 @@ public class Raid {
 			if(Time.isAfter(Time.plusMinutes(date.getAsString(), node.contains("dungeon") ? 2 : 5), serverTime)) 
 				return false;
 
-		if(Time.isAfter(serverTime, Time.plusMinutes(raid.get(SRC.Raid.creationDate).getAsString(), node.contains("dungeon") ? 5 : 30))) 
+		if(Time.isAfter(serverTime, Time.plusMinutes(raid.get(SRC.Raid.creationDate).getAsString(), node.contains("dungeon") ? 6 : 30))) 
 			return false;
 
 		if(node.contains("dungeon") && Time.isAfter(Time.plusSeconds(raid.get(SRC.Raid.creationDate).getAsString(), 60), serverTime))

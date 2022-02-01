@@ -90,6 +90,7 @@ public class Store {
 	}
 	
 	public void addCurrency(String type, int amount) {
+		type = type.replace("scroll", "").replace("cooldown", meat.get());
 		if(currencyTypes.contains(type)) {
 			if(currencies.containsKey(type))
 				setCurrency(type, currencies.get(type) + amount);
@@ -158,22 +159,17 @@ public class Store {
 		
 		shopItems = raw.getAsJsonArray("data");
 		storeRefreshCount++;
-		if(storeRefreshCount > 3) {
-			currencies.put("gold", currencies.get("gold") - 400);
-		} else {
-			currencies.put("gold", currencies.get("gold") - (storeRefreshCount * 100));
-		}
+		currencies.put(gold.get(), currencies.get(gold.get()) 
+				- (storeRefreshCount > 3 ? 400 : storeRefreshCount * 100));
 		
 		return null;
 	}
 	
 	public void refreshStore(JsonArray shopItems) throws NoConnectionException {
 		this.shopItems = shopItems;
-		if(++storeRefreshCount > 3) {
-			currencies.put("gold", currencies.get("gold") - 400);
-		} else {
-			currencies.put("gold", currencies.get("gold") - (storeRefreshCount * 100));
-		}
+		storeRefreshCount++;
+		currencies.put(gold.get(), currencies.get(gold.get()) 
+				- (storeRefreshCount > 3 ? 400 : storeRefreshCount * 100));
 	}
 	
 	
@@ -299,11 +295,12 @@ public class Store {
 		return null;
 	}
 	
-	
-	public String buyItem(Item item, SRR req, String serverTime) throws NoConnectionException {
+	//TODO remove
+	@Deprecated
+	public String buyStoreItem(Item item, SRR req, String serverTime) throws NoConnectionException {
 		if(item.isPurchased()) return "already purchased";
-		if(Time.isAfter(serverTime, item.getLiveEndTime())) return "after end";
-		if(Time.isAfter(item.getLiveStartTime(), serverTime)) return "before start";
+		if(Time.isAfter(serverTime, item.getEndTime())) return "after end";
+		if(Time.isAfter(item.getStartTime(), serverTime)) return "before start";
 		
 		int price = item.getPrice();
 		C cur = item.getStr("Section").equals("Dungeon") ? keys : gold;
@@ -328,10 +325,11 @@ public class Store {
 			shopItems = resp.getAsJsonArray("data");
 		}
 		
-		addCurrency(item.getItem(), item.getQuantity());
 		return null;
 	}
 	
+	//TODO remove
+	@Deprecated
 	public JsonObject buyChest(String serverTime, String chest, SRR req) throws NoConnectionException {
 		JsonObject ret = new JsonObject();
 		if(Time.isAfter(serverTime, Options.get(chest+"date"))) {
@@ -366,16 +364,17 @@ public class Store {
 		}
 		private final JsonObject item;
 		public Item(JsonObject item, JsonObject pack) {
-			this.item = item;
-			for(String key : pack.keySet())
-				this.item.add(key, pack.get(key));
+			this.item = pack;
+			if(item != null)
+				for(String key : item.keySet())
+					this.item.add(key, item.get(key));
 		}
 		//	commonly used
 		public String getItem() {
 			return getStr("Item");
 		}
 		public int getPrice() {
-			return getInt("price");
+			return getInt("BasePrice");
 		}
 		public int getQuantity() {
 			return getInt("Quantity");
@@ -383,16 +382,20 @@ public class Store {
 		public boolean isPurchased() {
 			return getInt("purchased") == 1;
 		}
-		public String getLiveEndTime() {
+		public String getEndTime() {
 			String let = getStr("LiveEndTime");
+			if(let.equals(""))
+				let = getStr("BonesEndTime");
 			return let.equals("")
 				? Time.parse(LocalDateTime.MAX.minusYears(1))
 				: let;
 		}
-		public String getLiveStartTime() {
+		public String getStartTime() {
 			String lst = getStr("LiveStartTime");
+			if(lst.equals(""))
+				lst = getStr("BonesStartTime");
 			return lst.equals("")
-				? Time.parse(LocalDateTime.MIN.plusYears(1))
+				? Time.parse(LocalDateTime.now().minusYears(100))
 				: lst;
 		}
 		
@@ -421,7 +424,7 @@ public class Store {
 				JsonObject item = shopItems.get(i).getAsJsonObject().deepCopy();
 				JsonObject pack = packs.get(item.get("itemId").getAsString()).getAsJsonObject().deepCopy();
 				String let = pack.get("LiveEndTime").getAsString();
-				if(item.get("purchased").getAsInt() == 0 
+				if(item.get("purchased").getAsInt() == 0 //TODO
 					&& item.get("section").getAsString().equals(section)
 					&& (let.equals("") || Time.isAfter(let, serverTime)))
 					ret.add(new Item(item, pack));
@@ -435,6 +438,100 @@ public class Store {
 			}
 			break;
 		}
+		return ret;
+	}
+	
+	public List<Item> getAvailableEventStoreItems(String section, String serverTime) {
+		JsonObject store = Json.parseObj(Options.get("store"));
+		List<Item> ret = new ArrayList<>();
+		outer:
+		for(String key : store.keySet()) {
+			JsonObject pack = store.getAsJsonObject(key);
+			
+			//filter out different sections
+			if(!pack.get("Section").getAsString().equals(section))
+				continue;
+			
+			//filtering out stuff for real money
+			if(pack.get("BasePrice").getAsInt() == -1)
+				continue;
+			
+			//filtering out stuff which is not available to account type
+			String at = pack.get("AvailableTo").getAsString();
+			if(!(at.equals("All") || at.equals("Viewer")))
+				continue;
+			
+			//filtering out stuff which isn't available atm 
+			String let = pack.get("LiveEndTime").getAsString();
+			if(let.equals(""))
+				let = pack.get("BonesEndTime").getAsString();
+			if(!let.equals("") && Time.isAfter(serverTime, let))
+				continue;
+			
+			String lst = pack.get("LiveStartTime").getAsString();
+			if(lst.equals(""))
+				lst = pack.get("BonesStartTime").getAsString();
+			if(!lst.equals("") && Time.isAfter(lst, serverTime))
+				continue;
+			
+			//check if sold out and assign (if available) a item
+			JsonObject item = null;
+			for(int i=0; i<shopItems.size(); i++) {
+				JsonObject item_ = shopItems.get(i).getAsJsonObject();
+				if(item_.get("itemId").getAsString().equals(key)) {
+					if(item_.get("purchased").getAsInt() == 1)
+						continue outer;
+					item = item_.deepCopy();
+					break;
+				}
+			}
+			
+			//item passed all filters
+			ret.add(new Item(item, pack));
+		}
+		
+		return ret;
+	}
+	
+	//TODO
+	public JsonObject buyItem(Item item, SRR req) throws NoConnectionException {
+		JsonObject ret = new JsonObject();
+		C cur = item.getStr("Section").equals("Dungeon") ? keys : gold;
+		int price = item.getPrice();
+		
+		if(price > getCurrency(cur)) {
+			ret.addProperty(SRC.errorMessage, "not enough "+cur.get());
+			return ret;
+		}
+		
+		String itype = item.getItem().replace("scroll", "").replace("cooldown", meat.get());
+		String itemId = item.getStr("Uid");
+		if(itype.equals("chest")) {
+			ret.addProperty("buyType", "chest");
+			
+			Json.override(ret, Json.parseObj(req.purchaseChestItem(itemId)));
+			
+			if(ret.get(SRC.errorMessage).isJsonPrimitive())
+				return ret;
+			
+		} else {
+			if(itemId.equals("dailydrop")) {
+				ret.addProperty("buyType", "daily");
+				Json.override(ret, Json.parseObj(req.grantDailyDrop()));
+			} else {
+				ret.addProperty("buyType", "item");
+				
+				Json.override(ret, Json.parseObj(req.purchaseStoreItem(itemId)));
+				
+				if(ret.get(SRC.errorMessage).isJsonPrimitive())
+					return ret;
+				
+				shopItems = ret.getAsJsonArray("data").deepCopy();
+			}
+		}
+		
+		decreaseCurrency(cur, price);
+		
 		return ret;
 	}
 	

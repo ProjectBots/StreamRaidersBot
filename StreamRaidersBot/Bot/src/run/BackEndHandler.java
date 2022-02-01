@@ -594,7 +594,7 @@ public class BackEndHandler {
 	}
 	
 	public String buyItem(Item item) throws NoConnectionException {
-		return store.buyItem(item, req, getServerTime());
+		return store.buyStoreItem(item, req, getServerTime());
 	}
 	
 	public List<Item> getStoreItems(int con, String section) {

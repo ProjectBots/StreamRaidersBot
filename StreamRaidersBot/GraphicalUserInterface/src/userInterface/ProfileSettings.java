@@ -254,7 +254,7 @@ public class ProfileSettings {
 				}
 			});
 			cdslot.addComboBox(dslot);
-			
+			/*TODO
 			Label bc = new Label();
 			bc.setPos(2, 0);
 			bc.setText("buy Chest:");
@@ -277,10 +277,10 @@ public class ProfileSettings {
 				}
 			});
 			cdslot.addComboBox(cbc);
-			
+			*/
 		gui.addContainer(cdslot);
 		
-		
+		/*TODO
 		Container cec = new Container();
 		cec.setPos(0, p++);
 		cec.setInsets(10, 2, 2, 2);
@@ -309,7 +309,7 @@ public class ProfileSettings {
 			cec.addComboBox(cbec);
 		
 		gui.addContainer(cec);
-		
+		*/
 		
 		Container csleep = new Container();
 		csleep.setPos(0, p++);
@@ -478,6 +478,15 @@ public class ProfileSettings {
 		gui.addContainer(buts);
 		
 		
+		Container csi = new Container();
+		csi.setPos(0, p++);
+		csi.setInsets(10, 2, 2, 2);
+		
+			//TODO better store
+			
+		
+		
+		gui.addContainer(csi);
 		
 		Container csr = new Container();
 		csr.setPos(0, p++);

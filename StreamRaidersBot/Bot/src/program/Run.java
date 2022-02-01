@@ -459,7 +459,7 @@ public class Run {
 					else 
 						bought.addProperty("dungeonchest", 1);
 				}
-				break;
+				break ec;
 			case "Necro Scrolls":
 				List<Item> items = srrh.getStoreItems(SRC.Store.purchasable, SRC.Store.dungeon);
 				
@@ -491,7 +491,7 @@ public class Run {
 					else 
 						bought.addProperty(type, amount);
 				}
-				break;
+				break ec;
 			/*
 			case "Toys For Tots":
 				chest = "snowfallcharitychest4";
@@ -574,7 +574,7 @@ public class Run {
 			if(gold != null) {
 				int src = srrh.getStoreRefreshCount();
 				int min = Configs.getStoreRefreshInt(name, src > 3 ? 3 : src);
-				if(min > -1 && min < gold) {
+				if(min > 0 && min < gold) {
 					String err = srrh.refreshStore();
 					if(err != null)
 						Debug.print(name+" -> Run -> Store: err="+err, Debug.runerr, Debug.error, name, null, true);

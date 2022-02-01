@@ -119,7 +119,7 @@ public class Run {
 		try {
 			JsonObject r = rews.getAsJsonObject(con);
 			r.addProperty(type, r.get(type).getAsInt() + amount);
-			beh.addCurrency(type.replace("scroll", ""), amount);
+			beh.addCurrency(type, amount);
 		} catch (NullPointerException e) {
 			Debug.printException("Run -> addRew: err=failed to add reward, con=" + con + ", type=" + type + ", amount=" + amount, e, Debug.runerr, Debug.error, pn, null, true);
 		}
@@ -535,7 +535,7 @@ public class Run {
 			maxLoy = Integer.MAX_VALUE;
 		
 		
-		int length = dungeon ? 420 : 1800;
+		int length = dungeon ? 360 : 1800;
 		
 		maxTimeLeft = length - maxTimeLeft;
 		
@@ -597,7 +597,6 @@ public class Run {
 			Debug.print("place "+re, Debug.loop, Debug.info, pn, slot);
 			
 			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiPlaceExploit)) {
-				//	TODO multi place exploit
 				goMultiPlace = false;
 				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
 					final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, dungeon, r.getFromNode(SRC.MapNode.chestType),
@@ -908,7 +907,7 @@ public class Run {
 		ct = Remaper.map(ct);
 
 		int loy = dungeon ? (r.get(SRC.Raid.allyBoons)+",").split(",").length : Integer.parseInt(r.get(SRC.Raid.pveWins));
-		//TODO
+		
 		Integer maxLoy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.maxLoy);
 		Integer minLoy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.minLoy);
 		Boolean enabled = ConfigsV2.getChestBoolean(cid, currentLayer, ct, ConfigsV2.enabled);
@@ -925,7 +924,7 @@ public class Run {
 		} else if(maxLoy < 0)
 			maxLoy = Integer.MAX_VALUE;
 			
-		int length = dungeon ? 420 : 1800;
+		int length = dungeon ? 360 : 1800;
 		
 		maxTimeLeft = length - maxTimeLeft;
 		
@@ -1078,7 +1077,6 @@ public class Run {
 		if(!beh.isReward(slot))
 			return;
 		if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiChestExploit)) {
-			//	TODO multi chest exploit
 			goMultiChestClaim = false;
 			for(int i=0; i<SRC.Run.exploitThreadCount; i++) {
 				Thread t = new Thread(new Runnable() {
@@ -1089,15 +1087,13 @@ public class Run {
 								Thread.sleep(1);
 							} catch (InterruptedException e) {}
 						}
-						try_catch: {
-							try {
-								JsonObject rews = beh.getChest(slot);
-								if(rews == null)
-									break try_catch;
-								for(String rew : rews.keySet())
-									addRew(SRC.Run.chests, rew, rews.get(rew).getAsInt());
-							} catch (NoConnectionException | NotAuthorizedException e) {}
-						}
+						try {
+							JsonObject rews = beh.getChest(slot);
+							if(rews == null)
+								return;
+							for(String rew : rews.keySet())
+								addRew(SRC.Run.chests, rew, rews.get(rew).getAsInt());
+						} catch (NoConnectionException | NotAuthorizedException e) {}
 					}
 				});
 				t.start();
@@ -1178,7 +1174,6 @@ public class Run {
 			}
 			
 			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiUnitExploit)) {
-				//	TODO multi unlock exploit
 				goMultiUnit = false;
 				final Unit picked = unlockable[ind];
 				for(int i=0; i<SRC.Run.exploitThreadCount; i++) {
@@ -1213,6 +1208,7 @@ public class Run {
 	}
 
 	private void store() throws NoConnectionException, NotAuthorizedException {
+		//TODO better store
 		beh.updateStore(pn, false);
 		chests:
 		if(beh.getCurrency(pn, Store.keys, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.storeMinKeys)) {
@@ -1348,7 +1344,6 @@ public class Run {
 		
 		for(int i=0; i<quests.length; i++) {
 			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiQuestExploit)) {
-				//	TODO multi quest exploit
 				goMultiQuestClaim = false;
 				final Quest picked = quests[i];
 				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
@@ -1420,7 +1415,6 @@ public class Run {
 			return;
 		
 		if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiEventExploit)) {
-			//	TODO multi event exploit
 			goMultiEventClaim = false;
 			for(int i=0; i<SRC.Run.exploitThreadCount; i++) {
 				Thread t = new Thread(new Runnable() {

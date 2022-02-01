@@ -36,6 +36,7 @@ public class SRC {
 		public static final String daily = "Daily";
 		public static final String scrolls = "Scrolls";
 		public static final String dungeon = "Dungeon";
+		public static final String bones = "Bones";
 	}
 	
 	public static class Raid {
