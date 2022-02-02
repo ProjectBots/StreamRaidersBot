@@ -257,19 +257,27 @@ public class BackEndHandler {
 		JsonObject user = Json.parseObj(req.getUser());
 		if(testUpdate(user))
 			user = Json.parseObj(req.getUser());
-		JsonObject cur = Json.parseObj(req.getAvailableCurrencies());
-		JsonObject items = Json.parseObj(req.getCurrentStoreItems());
 		
+		JsonObject cur = Json.parseObj(req.getAvailableCurrencies());
 		JsonElement err = cur.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
 			Debug.print("BackEndHandler -> updateStore: cur, err="+err.getAsString(), Debug.runerr, Debug.error, pn, 4, true);
+
+		JsonObject items = Json.parseObj(req.getCurrentStoreItems());
 		err = items.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
 			Debug.print("BackEndHandler -> updateStore: items, err="+err.getAsString(), Debug.runerr, Debug.error, pn, 4, true);
 		
+		JsonObject skins = Json.parseObj(req.getUserItems());
+		err = skins.get(SRC.errorMessage);
+		if(err.isJsonPrimitive())
+			Debug.print("BackEndHandler -> updateStore: skins, err="+err.getAsString(), Debug.runerr, Debug.error, pn, 4, true);
+		
+		
 		store = new Store(user.getAsJsonObject("data"),
 				cur.getAsJsonArray("data"),
-				items.getAsJsonArray("data"));
+				items.getAsJsonArray("data"),
+				skins.get("data").isJsonArray() ? skins.getAsJsonArray("data") : null);
 		
 		
 		rts.put("store", now);

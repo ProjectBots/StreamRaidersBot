@@ -326,7 +326,7 @@ public class QuestEventRewards {
 				rew = "badges";
 				qty = 1;
 			} else if(rew.startsWith("skin")) {
-				rew = "skins";
+				rew = "skin";
 			} else if(rewardUnknown.contains(rew)) {
 				rew = grantEventReward.get("data").getAsString();
 			} else if(rewardRenames.containsKey(rew)) {

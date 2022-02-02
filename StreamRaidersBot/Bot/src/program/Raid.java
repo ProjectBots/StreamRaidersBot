@@ -187,7 +187,7 @@ public class Raid {
 			} else if(rew.length == 2) {
 				name = rew[1];
 			} else if(rew[0].contains("skin")) {
-				name = "skins";
+				name = "skin";
 			} else {
 				Debug.print("Raid -> Reward -> const.: err=failed to determine reward, reward=" + reward, Debug.runerr, Debug.error, null, null, true);
 				name = "unknown";

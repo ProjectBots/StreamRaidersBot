@@ -343,6 +343,13 @@ public class SRR {
 	}
 	
 	
+	public String purchaseStoreSkin(String itemId) throws NoConnectionException {
+		Http post = getPost("purchaseStoreSkin");
+		post.addEncArg("itemId", itemId);
+		return sendPost(post);
+	}
+	
+	
 	public String purchaseStoreRefresh() throws NoConnectionException {
 		Http post = getPost("purchaseStoreRefresh");
 		return sendPost(post);
@@ -424,6 +431,10 @@ public class SRR {
 	
 	public String getUserUnits() throws NoConnectionException {
 		return sendPost(getPost("getUserUnits"));
+	}
+	
+	public String getUserItems() throws NoConnectionException {
+		return sendPost(getPost("getUserItems"));
 	}
 	
 	public String grantTeamReward() throws NoConnectionException {

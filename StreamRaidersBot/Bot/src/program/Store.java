@@ -23,6 +23,7 @@ public class Store {
 	
 	private JsonArray shopItems = new JsonArray();
 	private Hashtable<String, Integer> currencies = new Hashtable<>();
+	private HashSet<String> skins = new HashSet<>();
 	
 	private int storeRefreshCount = 0;
 	
@@ -118,7 +119,7 @@ public class Store {
 		getCurrentStoreItems(req);
 	}
 	
-	public Store(JsonObject user, JsonArray availableCurrencies, JsonArray currentStoreItems) {
+	public Store(JsonObject user, JsonArray availableCurrencies, JsonArray currentStoreItems, JsonArray skins) {
 		currencies = new Hashtable<>();
 		for(int i=0; i<availableCurrencies.size(); i++) {
 			JsonObject c = availableCurrencies.get(i).getAsJsonObject();
@@ -128,6 +129,10 @@ public class Store {
 		currencies.put(potions.get(), potion > 60 ? 60 : potion);
 		storeRefreshCount = user.get("storeRefreshCount").getAsInt();
 		shopItems = currentStoreItems;
+		if(skins != null)
+			for(int i=0; i<skins.size(); i++)
+				this.skins.add(skins.get(i).getAsJsonObject().get("productId").getAsString());
+		
 	}
 	
 	public void refreshCurrency(SRR req) throws NoConnectionException {
@@ -492,6 +497,9 @@ public class Store {
 				}
 			}
 			
+			if(!includePurchased && skins.contains(pack.get("Uid").getAsString()))
+				continue;
+			
 			//item passed all filters
 			ret.add(new Item(item, pack));
 		}
@@ -520,6 +528,15 @@ public class Store {
 			if(ret.get(SRC.errorMessage).isJsonPrimitive())
 				return ret;
 			
+		} else if(itype.equals("skin")) {
+			ret.addProperty("buyType", "skin");
+			
+			Json.override(ret, Json.parseObj(req.purchaseStoreSkin(itemId)));
+			
+			if(ret.get(SRC.errorMessage).isJsonPrimitive())
+				return ret;
+			
+			skins.add(item.getStr("Uid"));
 		} else {
 			if(itemId.equals("dailydrop")) {
 				ret.addProperty("buyType", "daily");

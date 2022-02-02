@@ -439,7 +439,7 @@ public class ProfileSettings {
 			ltsi.setText("Special Store:");
 			ltsi.setForeground(Fonts.getColor("stngs profile labels"));
 			csi.addLabel(ltsi);
-		
+			
 			
 			List<Item> items = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(SRC.Store.dungeon, true);
 			List<Item> items_ = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(SRC.Store.dungeon, false);

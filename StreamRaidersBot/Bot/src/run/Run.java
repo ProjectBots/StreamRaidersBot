@@ -89,7 +89,7 @@ public class Run {
 	private static final String[] rew_sources = "chests bought event".split(" ");
 	private static final String[] rew_chests_chests = "chestboostedgold chestbosssuper chestboostedskin chestboss chestboostedtoken chestgold chestsilver chestbronze chestsalvage".split(" ");
 	private static final String[] rew_bought_chests = "snowfallcharitychest dungeonchest vampirechest saintchest".split(" ");
-	private static final String[] rew_types = "gold potions token eventcurrency keys meat bones skins scrollnecromancer scrollmage scrollwarbeast scrolltemplar scrollorcslayer scrollballoonbuster scrollartillery scrollflyingarcher scrollberserker scrollcenturion scrollmusketeer scrollmonk scrollbuster scrollbomber scrollbarbarian scrollpaladin scrollhealer scrollvampire scrollsaint scrollflagbearer scrollrogue scrollwarrior scrolltank scrollarcher".split(" ");
+	private static final String[] rew_types = "gold potions token eventcurrency keys meat bones skin scrollnecromancer scrollmage scrollwarbeast scrolltemplar scrollorcslayer scrollballoonbuster scrollartillery scrollflyingarcher scrollberserker scrollcenturion scrollmusketeer scrollmonk scrollbuster scrollbomber scrollbarbarian scrollpaladin scrollhealer scrollvampire scrollsaint scrollflagbearer scrollrogue scrollwarrior scrolltank scrollarcher".split(" ");
 	
 	
 	private void iniRews() {
@@ -1224,6 +1224,7 @@ public class Run {
 			}
 			if(p < 0)
 				break dungeon;
+			
 			JsonObject resp = beh.buyItem(best);
 			
 			JsonElement err = resp.get(SRC.errorMessage);
@@ -1241,6 +1242,8 @@ public class Run {
 						addRew(SRC.Run.bought, rew.name, rew.quantity);
 					}
 					break;
+				case "skin":
+					addRew(SRC.Run.bought, "skin", 1);
 				default:
 					Debug.print("Run -> store -> buyItem: err=unknown buyType, buyType="+resp.get("buyType").getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
 				}
@@ -1353,7 +1356,7 @@ public class Run {
 					if(item.equals("goldpiecebag"))
 						item = Store.gold.get();
 					else if(item.startsWith("skin"))
-						item = "skins";
+						item = "skin";
 					else if(!item.startsWith("scroll") && !item.equals("eventcurrency")) {
 						Debug.print("Run -> claimQuests: err=unknown reward, item="+item, Debug.lowerr, Debug.error, pn, null, true);
 						return;
