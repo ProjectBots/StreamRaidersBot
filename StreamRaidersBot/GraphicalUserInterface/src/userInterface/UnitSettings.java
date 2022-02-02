@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,11 +29,9 @@ import include.GUI.Image;
 import include.GUI.Label;
 import include.GUI.TextField;
 import include.Json;
-import include.NEF;
 import program.ConfigsV2;
 import program.ConfigsV2.UniInt;
 import program.ConfigsV2.UniStr;
-import program.Debug;
 import program.Options;
 import program.Unit;
 
@@ -43,7 +40,6 @@ public class UnitSettings {
 	public static final String pre = "UnitSettings::";
 	
 	private final String uid, cid, lay;
-	private String pn;
 	
 	private static final String[] prios = "place epic placedun epicdun upgrade unlock dupe buy".split(" ");
 	private static final String[] opts = "favOnly markerOnly canVibe".split(" ");
@@ -67,16 +63,6 @@ public class UnitSettings {
 	
 	
 	public void open(GUI parent) {
-		
-		pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
-		
-		JsonObject uns;
-		try {
-			uns = Json.parseObj(NEF.read("data/Guide_old/unitDisName.json")).getAsJsonObject("byName");
-		} catch (IOException e) {
-			Debug.printException("UnitSettings -> open: err=couldn't get unit names", e, Debug.runerr, Debug.error, pn, null, true);
-			return;
-		}
 		
 		int g = 0;
 		
@@ -164,9 +150,10 @@ public class UnitSettings {
 		
 		g++;
 		
-		for(String un : uns.keySet()) {
+		JsonObject utypes = Unit.getTypes();
+		
+		for(String type : utypes.keySet()) {
 			p = 0;
-			String type = uns.get(un).getAsString();
 			
 			Image upic = new Image("data/UnitPics/"+type.replace("allies", "")+".png");
 			upic.setPos(p++, g);
@@ -175,7 +162,7 @@ public class UnitSettings {
 			
 			Label lun = new Label();
 			lun.setPos(p++, g);
-			lun.setText(un);
+			lun.setText(utypes.getAsJsonObject(type).get("name").getAsString());
 			lun.setForeground(Fonts.getColor("stngs units labels"));
 			gui.addLabel(lun);
 			
@@ -187,7 +174,7 @@ public class UnitSettings {
 					continue;
 				}
 				
-				String id = uid+un+"::"+key;
+				String id = uid+type+"::"+key;
 				
 				Integer val = ConfigsV2.getUnitInt(cid, lay, type, new UniInt(key));
 				
@@ -211,7 +198,7 @@ public class UnitSettings {
 					private void check() {
 						try {
 							int val = Integer.parseInt(GUI.getInputText(id));
-							ConfigsV2.setUnitInt(cid, lay, uns.get(un).getAsString(), new UniInt(key), val);
+							ConfigsV2.setUnitInt(cid, lay, type, new UniInt(key), val);
 							GUI.setBackground(id, Color.white);
 						} catch (NumberFormatException e1) {
 							GUI.setBackground(id, new Color(255, 122, 122));

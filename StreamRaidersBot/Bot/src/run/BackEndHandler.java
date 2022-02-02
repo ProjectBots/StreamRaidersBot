@@ -593,12 +593,21 @@ public class BackEndHandler {
 		return store.getCurrencies();
 	}
 	
-	public String buyItem(Item item) throws NoConnectionException {
+	@Deprecated
+	public String buyStoreItem(Item item) throws NoConnectionException {
 		return store.buyStoreItem(item, req, getServerTime());
+	}
+	
+	public JsonObject buyItem(Item item) throws NoConnectionException {
+		return store.buyItem(item, req);
 	}
 	
 	public List<Item> getStoreItems(int con, String section) {
 		return store.getStoreItems(con, section, getServerTime());
+	}
+	
+	public List<Item> getAvailableEventStoreItems(String section) {
+		return store.getAvailableEventStoreItems(section, getServerTime());
 	}
 	
 	public String refreshStore() throws NoConnectionException, NotAuthorizedException {
@@ -618,6 +627,7 @@ public class BackEndHandler {
 		return store.getStoreRefreshCount();
 	}
 	
+	@Deprecated
 	public JsonObject buyChest(String chest) throws NoConnectionException {
 		return store.buyChest(getServerTime(), chest, req);
 	}
@@ -661,6 +671,10 @@ public class BackEndHandler {
 	
 	public String grantTeamReward() throws NoConnectionException {
 		return req.grantTeamReward();
+	}
+	
+	public String grantEventQuestMilestoneReward() throws NoConnectionException {
+		return req.grantEventQuestMilestoneReward();
 	}
 	
 	private static <T>T[] add(T[] arr, T item) {

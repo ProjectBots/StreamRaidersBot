@@ -191,8 +191,8 @@ public class ConfigsV2 {
 	
 	public static final Str dungeonSlot = new Str("dungeonSlot");
 	public static final Str lname = new Str("name");
-	public static final Str canBuyChest = new Str("canBuyChest");
-	public static final Str canBuyEventChest = new Str("canBuyEventChest");
+	//public static final Str canBuyChest = new Str("canBuyChest");
+	//public static final Str canBuyEventChest = new Str("canBuyEventChest");
 	public static final Str userAgent = new Str("userAgent");
 	public static final Str proxyDomain = new Str("proxyDomain");
 	public static final Str proxyUser = new Str("proxyUser");
@@ -911,6 +911,68 @@ public class ConfigsV2 {
 	}
 	
 	
+	private static class StorePrioType extends All {
+		public StorePrioType(String con) {
+			super(con);
+		}
+	}
+	
+	public static final StorePrioType keys = new StorePrioType("Key");
+	public static final StorePrioType bones = new StorePrioType("Bone");
+
+	//TODO
+	public static HashSet<String> getStorePrioList(String cid, String lay, StorePrioType spt) {
+		HashSet<String> ret = new HashSet<>();
+		if(lay.equals("(all)")) {
+			String[] lays = getLayerIds(cid);
+			for(int i=0; i<lays.length; i++)
+				ret.addAll(getStorePrioList(cid, lays[i], spt));
+		} else 
+			ret.addAll(getLayer(cid, lay).getAsJsonObject("store"+spt.get()+"Prios").keySet());
+		return ret;
+	}
+	
+	public static Integer getStorePrioInt(String cid, String lay, StorePrioType spt, String type) {
+		if(lay.equals("(all)")) {
+			String[] lays = getLayerIds(cid);
+			int sel = getStorePrioInt(cid, lays[0], spt, type);
+			for(int i=1; i<lays.length; i++)
+				if(!(sel == getStorePrioInt(cid, lays[i], spt, type)))
+					return null;
+			return sel;
+		}
+		JsonObject sp = getLayer(cid, lay)
+				.getAsJsonObject("store"+spt.get()+"Prios");
+		
+		return sp.has(type)
+				? sp.get(type).getAsInt()
+				: -1;
+	}
+	
+	public static void setStorePrioInt(String cid, String lay, StorePrioType spt, String type, int val) {
+		if(lay.equals("(all)")) {
+			String[] lays = getLayerIds(cid);
+			for(String l : lays)
+				setStorePrioInt(cid, l, spt, type, val);
+			return;
+		}
+		getLayer(cid, lay)
+				.getAsJsonObject("store"+spt.get()+"Prios")
+				.addProperty(type, val);
+	}
+	
+	public static void remStorePrioInt(String cid, String lay, StorePrioType spt, String type) {
+		if(lay.equals("(all)")) {
+			String[] lays = getLayerIds(cid);
+			for(String l : lays)
+				remStorePrioInt(cid, l, spt, type);
+			return;
+		}
+		getLayer(cid, lay)
+				.getAsJsonObject("store"+spt.get()+"Prios")
+				.remove(type);
+	}
+	
 	
 	public static List<String> getCids() {
 		List<String> cids = new ArrayList<>(configs.keySet());
@@ -1082,7 +1144,7 @@ public class ConfigsV2 {
 	}
 	public static class ConfigTypes {
 		public static enum ConfigClasses {
-			GStr, GBoo, PStr, PObj, Str, Int, Boo, UniInt, UniStr, CheInt, CheBoo, SleInt, UPDInt, ListType, CapInt, CapBoo
+			GStr, GBoo, GInt, PStr, PObj, Str, Int, Boo, UniInt, UniStr, CheInt, CheBoo, SleInt, UPDInt, ListType, CapInt, CapBoo
 		}
 		public static final Hashtable<String, List<String>> all = new Hashtable<String, List<String>>() {
 			private static final long serialVersionUID = 1L;
@@ -1111,6 +1173,7 @@ public class ConfigsV2 {
 						switch(ConfigClasses.valueOf(classname)) {
 						case GStr:
 						case GBoo:
+						case GInt:
 							get("Global").add(con);
 							continue;
 						case PStr:

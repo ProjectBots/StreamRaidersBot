@@ -15,6 +15,7 @@ public class WaitScreen {
 		ws = new GUI("Loading ...", 400, 200);
 		ws.setAlwaysOnTop(true);
 		ws.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		ws.removeDefaultCloseListener();
 		
 		Label l = new Label();
 		l.setText("");

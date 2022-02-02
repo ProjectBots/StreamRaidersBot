@@ -7,6 +7,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.WindowEvent;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.WindowConstants;
@@ -27,6 +29,8 @@ import include.Http;
 import include.Http.NotAllowedProxyException;
 import program.ConfigsV2;
 import program.Options;
+import program.SRC;
+import program.Store.Item;
 import run.Manager;
 import program.ConfigsV2.Boo;
 import program.ConfigsV2.Int;
@@ -481,9 +485,65 @@ public class ProfileSettings {
 		Container csi = new Container();
 		csi.setPos(0, p++);
 		csi.setInsets(10, 2, 2, 2);
+
+			int y = 0;
+			Label ltsi = new Label();
+			ltsi.setPos(0, y++);
+			ltsi.setText("Special Store:");
+			ltsi.setForeground(Fonts.getColor("stngs profile labels"));
+			csi.addLabel(ltsi);
 		
 			//TODO better store
+			List<Item> items = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(SRC.Store.dungeon);
+			HashSet<String> gotPrios = new HashSet<>();
+			for(Item item : items) {
+				final String iuid = item.getStr("Uid");
+				gotPrios.add(iuid);
+				
+				Label lsi = new Label();
+				lsi.setPos(0, y);
+				lsi.setText(iuid+" ("+item.getItem()+")"+(item.getQuantity()==-1?"":" x"+item.getQuantity())+" @"+item.getPrice()+(item.getStr("Section").equals(SRC.Store.dungeon)?" keys":" gold"));
+				lsi.setForeground(Fonts.getColor("stngs profile labels"));
+				csi.addLabel(lsi);
+				
+				Integer prioint = ConfigsV2.getStorePrioInt(cid, lay, ConfigsV2.keys, iuid);
+				
+				TextField tfsi = new TextField();
+				tfsi.setText(prioint == null ? "" : ""+prioint);
+				tfsi.setSize(55, 21);
+				tfsi.setPos(1, y);
+				tfsi.setDocLis(new DocumentListener() {
+					@Override
+					public void removeUpdate(DocumentEvent e) {
+						update();
+					}
+					@Override
+					public void insertUpdate(DocumentEvent e) {
+						update();
+					}
+					@Override
+					public void changedUpdate(DocumentEvent e) {
+						update();
+					}
+					private void update() {
+						try {
+							ConfigsV2.setStorePrioInt(cid, lay, ConfigsV2.keys, iuid, Integer.parseInt(GUI.getInputText(uid+"storePrios::tf::"+iuid)));
+							GUI.setBackground(uid+"storePrios::tf::"+iuid, Color.white);
+						} catch (NumberFormatException e) {
+							GUI.setBackground(uid+"storePrios::tf::"+iuid, new Color(255, 122, 122));
+						}
+					}
+				});;
+				csi.addTextField(tfsi, uid+"storePrios::tf::"+iuid);
+				
+				
+				y++;
+			}
 			
+			HashSet<String> all = ConfigsV2.getStorePrioList(cid, lay, ConfigsV2.keys);
+			for(String pr : new ArrayList<>(all))
+				if(!gotPrios.contains(pr))
+					ConfigsV2.remStorePrioInt(cid, lay, ConfigsV2.keys, pr);
 		
 		
 		gui.addContainer(csi);

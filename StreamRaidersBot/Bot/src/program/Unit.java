@@ -23,8 +23,8 @@ public class Unit {
 	private HashSet<String> ptags = new HashSet<>();
 	
 	
-	public static final JsonObject uTypes = Json.parseObj(Options.get("unitTypes"));
-	public static final JsonObject specs = Json.parseObj(Options.get("specUIDs"));
+	private static final JsonObject uTypes = Json.parseObj(Options.get("unitTypes"));
+	private static final JsonObject specs = Json.parseObj(Options.get("specUIDs"));
 	
 	public static JsonArray getAllPlanTypes() {
 		return uTypes.getAsJsonArray("allTypes").deepCopy();

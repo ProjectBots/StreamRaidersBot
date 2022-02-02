@@ -91,7 +91,7 @@ public class Run {
 	private static final String[] rew_sources = "chests bought event".split(" ");
 	private static final String[] rew_chests_chests = "chestboostedgold chestbosssuper chestboostedskin chestboss chestboostedtoken chestgold chestsilver chestbronze chestsalvage".split(" ");
 	private static final String[] rew_bought_chests = "snowfallcharitychest dungeonchest vampirechest saintchest".split(" ");
-	private static final String[] rew_types = "gold potions token eventcurrency keys meat bones skins scrollmage scrollwarbeast scrolltemplar scrollorcslayer scrollballoonbuster scrollartillery scrollflyingarcher scrollberserker scrollcenturion scrollmusketeer scrollmonk scrollbuster scrollbomber scrollbarbarian scrollpaladin scrollhealer scrollvampire scrollsaint scrollflagbearer scrollrogue scrollwarrior scrolltank scrollarcher".split(" ");
+	private static final String[] rew_types = "gold potions token eventcurrency keys meat bones skins scrollnecromancer scrollmage scrollwarbeast scrolltemplar scrollorcslayer scrollballoonbuster scrollartillery scrollflyingarcher scrollberserker scrollcenturion scrollmusketeer scrollmonk scrollbuster scrollbomber scrollbarbarian scrollpaladin scrollhealer scrollvampire scrollsaint scrollflagbearer scrollrogue scrollwarrior scrolltank scrollarcher".split(" ");
 	
 	
 	private void iniRews() {
@@ -331,8 +331,9 @@ public class Run {
 				Debug.print("upgrade", Debug.general, Debug.info, pn, slot);
 				upgrade();
 				
-				Debug.print("grantTeamReward", Debug.general, Debug.info, pn, slot);
+				Debug.print("grantExtraRewards", Debug.general, Debug.info, pn, slot);
 				beh.grantTeamReward();
+				beh.grantEventQuestMilestoneReward();
 				
 			} else {
 				
@@ -1210,6 +1211,46 @@ public class Run {
 	private void store() throws NoConnectionException, NotAuthorizedException {
 		//TODO better store
 		beh.updateStore(pn, false);
+		
+		dungeon:
+		if(beh.getCurrency(pn, Store.keys, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.storeMinKeys)) {
+			List<Item> items = beh.getAvailableEventStoreItems(SRC.Store.dungeon);
+			Item best = null;
+			int p = -1;
+			for(Item item : items) {
+				int p_ = ConfigsV2.getStorePrioInt(cid, currentLayer, ConfigsV2.keys, item.getStr("Uid"));
+				if(p_ > p) {
+					best = item;
+					p = p_;
+				}
+			}
+			if(p < 0)
+				break dungeon;
+			JsonObject resp = beh.buyItem(best);
+			
+			JsonElement err = resp.get(SRC.errorMessage);
+			if(err == null || !err.isJsonPrimitive()) {
+				switch(resp.get("buyType").getAsString()) {
+				case "item":
+					addRew(SRC.Run.bought, best.getItem(), best.getQuantity());
+					break;
+				case "chest":
+					addRew(SRC.Run.bought, "dungeonchest", 1);
+					JsonArray data = resp.getAsJsonArray("data");
+					Raid.updateChestRews();
+					for(int i=0; i<data.size(); i++) {
+						Reward rew = new Reward(data.get(i).getAsString());
+						addRew(SRC.Run.bought, rew.name, rew.quantity);
+					}
+					break;
+				default:
+					Debug.print("Run -> store -> buyItem: err=unknown buyType, buyType="+resp.get("buyType").getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
+				}
+			} else if(!err.getAsString().startsWith("not enough "))
+				Debug.print("Run -> store -> buyItem: err="+err.getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
+		}
+		
+		/*TODO rem
 		chests:
 		if(beh.getCurrency(pn, Store.keys, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.storeMinKeys)) {
 			String sel = ConfigsV2.getStr(cid, currentLayer, ConfigsV2.canBuyChest);
@@ -1273,6 +1314,7 @@ public class Run {
 			} else if(!(err.getAsString().equals("after end") || err.getAsString().startsWith("not enough ")))
 				Debug.print("Run -> store -> buyChest: err="+err.getAsString()+", chest="+sel, Debug.runerr, Debug.error, pn, 4, true);
 		}
+		*/
 		
 		if(beh.getCurrency(pn, Store.gold, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.scrollsMinGold)) {
 			List<Item> items = beh.getStoreItems(SRC.Store.purchasable, SRC.Store.scrolls);
@@ -1312,7 +1354,8 @@ public class Run {
 					
 					Item item = items.get(ind);
 					
-					String err = beh.buyItem(item);
+					//TODO make better
+					String err = beh.buyStoreItem(item);
 					if(err == null)
 						addRew(SRC.Run.bought, item.getItem(), item.getQuantity());
 					else if(!err.equals("not enough gold"))
