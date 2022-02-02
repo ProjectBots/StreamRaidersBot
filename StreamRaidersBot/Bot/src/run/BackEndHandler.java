@@ -606,8 +606,8 @@ public class BackEndHandler {
 		return store.getStoreItems(con, section, getServerTime());
 	}
 	
-	public List<Item> getAvailableEventStoreItems(String section) {
-		return store.getAvailableEventStoreItems(section, getServerTime());
+	public List<Item> getAvailableEventStoreItems(String section, boolean includePurchased) {
+		return store.getAvailableEventStoreItems(section, getServerTime(), includePurchased);
 	}
 	
 	public String refreshStore() throws NoConnectionException, NotAuthorizedException {

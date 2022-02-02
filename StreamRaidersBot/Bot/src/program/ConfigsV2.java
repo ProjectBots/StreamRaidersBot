@@ -1144,7 +1144,7 @@ public class ConfigsV2 {
 	}
 	public static class ConfigTypes {
 		public static enum ConfigClasses {
-			GStr, GBoo, GInt, PStr, PObj, Str, Int, Boo, UniInt, UniStr, CheInt, CheBoo, SleInt, UPDInt, ListType, CapInt, CapBoo
+			GStr, GBoo, GInt, PStr, PObj, Str, Int, Boo, UniInt, UniStr, CheInt, CheBoo, SleInt, UPDInt, ListType, CapInt, CapBoo, StorePrioType
 		}
 		public static final Hashtable<String, List<String>> all = new Hashtable<String, List<String>>() {
 			private static final long serialVersionUID = 1L;
@@ -1171,6 +1171,8 @@ public class ConfigsV2 {
 						if(con.endsWith("Exploit"))
 							continue;
 						switch(ConfigClasses.valueOf(classname)) {
+						case StorePrioType:
+							continue;
 						case GStr:
 						case GBoo:
 						case GInt:

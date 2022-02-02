@@ -54,14 +54,12 @@ public class Run {
 	 * 	fonts manage error blocks (GlobalOptions)
 	 * 	config versioning
 	 * 	make epic slot dependent
-	 * 	add a check all or uncheck all button in unit settings for the "nc nd ec ed"
 	 * 	get unlock/upgrade cost from datapath (sheets\UnitCosts\...)
 	 *	make epic slot dependent
 	 *	get unit types from datapath
 	 *	get unit costs (unlock/upgrade) from datapath
 	 * 	get Donators from github source
 	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
-	 * 	add Account Manager (to further split user interface with bot)
 	 * 
 	 * 
 	 * 	???:
@@ -1214,7 +1212,7 @@ public class Run {
 		
 		dungeon:
 		if(beh.getCurrency(pn, Store.keys, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.storeMinKeys)) {
-			List<Item> items = beh.getAvailableEventStoreItems(SRC.Store.dungeon);
+			List<Item> items = beh.getAvailableEventStoreItems(SRC.Store.dungeon, false);
 			Item best = null;
 			int p = -1;
 			for(Item item : items) {
@@ -1250,71 +1248,6 @@ public class Run {
 				Debug.print("Run -> store -> buyItem: err="+err.getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
 		}
 		
-		/*TODO rem
-		chests:
-		if(beh.getCurrency(pn, Store.keys, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.storeMinKeys)) {
-			String sel = ConfigsV2.getStr(cid, currentLayer, ConfigsV2.canBuyChest);
-			String chest;
-			JsonObject bc;
-			switch(sel) {
-			case "saint":
-				bc = beh.buyChest("dungeons5saintchest");
-				chest = "saintchest";
-				break;
-			case "vampire":
-				bc = beh.buyChest("dungeons5vampirechest");
-				chest = "vampirechest";
-				break;
-			default:
-				break chests;
-			}
-			JsonElement err = bc.get(SRC.errorMessage);
-			if(err == null || !err.isJsonPrimitive()) {
-				addRew(SRC.Run.bought, chest, 1);
-				JsonArray data = bc.getAsJsonArray("data");
-				Raid.updateChestRews();
-				for(int i=0; i<data.size(); i++) {
-					Reward rew = new Reward(data.get(i).getAsString());
-					addRew(SRC.Run.bought, rew.name, rew.quantity);
-				}
-			} else if(!(err.getAsString().startsWith("not enough ") || ArrayUtils.contains("after end  before start".split("  "), err)))
-				Debug.print("Run -> store -> buyChest: err="+err.getAsString()+", chest="+sel, Debug.runerr, Debug.error, pn, 4, true);
-		}
-		
-		ec: {
-			String sel = ConfigsV2.getStr(cid, currentLayer, ConfigsV2.canBuyEventChest);
-			String chest;
-			switch(sel) {
-			case "St. Jude":
-				chest = "snowfallcharitychest1";
-				break;
-			case "AFSP":
-				chest = "snowfallcharitychest2";
-				break;
-			case "MHA":
-				chest = "snowfallcharitychest3";
-				break;
-			case "Toys For Tots":
-				chest = "snowfallcharitychest4";
-				break;
-			default:
-				break ec;
-			}
-			JsonObject bc = beh.buyChest(chest);
-			JsonElement err = bc.get(SRC.errorMessage);
-			if(err == null || !err.isJsonPrimitive()) {
-				chest = "snowfallcharitychest";
-				addRew(SRC.Run.bought, chest, 1);
-				JsonArray data = bc.getAsJsonObject("data").getAsJsonArray("rewards");
-				Raid.updateChestRews();
-				for(int i=0; i<data.size(); i++) {
-					Reward rew = new Reward(data.get(i).getAsString());
-					addRew(SRC.Run.bought, rew.name, rew.quantity);
-				}
-			} else if(!(err.getAsString().equals("after end") || err.getAsString().startsWith("not enough ")))
-				Debug.print("Run -> store -> buyChest: err="+err.getAsString()+", chest="+sel, Debug.runerr, Debug.error, pn, 4, true);
-		}
-		*/
 		
 		if(beh.getCurrency(pn, Store.gold, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.scrollsMinGold)) {
 			List<Item> items = beh.getStoreItems(SRC.Store.purchasable, SRC.Store.scrolls);

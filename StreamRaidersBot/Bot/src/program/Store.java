@@ -359,6 +359,12 @@ public class Store {
 		public String toString() {
 			return Json.prettyJson(item);
 		}
+		@Override
+		public boolean equals(Object obj) {
+			if(!(obj instanceof Item))
+				return false;
+			return ((Item) obj).item.equals(item);
+		}
 		public String toStringOneLine() {
 			return item.toString();
 		}
@@ -441,7 +447,7 @@ public class Store {
 		return ret;
 	}
 	
-	public List<Item> getAvailableEventStoreItems(String section, String serverTime) {
+	public List<Item> getAvailableEventStoreItems(String section, String serverTime, boolean includePurchased) {
 		JsonObject store = Json.parseObj(Options.get("store"));
 		List<Item> ret = new ArrayList<>();
 		outer:
@@ -479,7 +485,7 @@ public class Store {
 			for(int i=0; i<shopItems.size(); i++) {
 				JsonObject item_ = shopItems.get(i).getAsJsonObject();
 				if(item_.get("itemId").getAsString().equals(key)) {
-					if(item_.get("purchased").getAsInt() == 1)
+					if(!includePurchased && item_.get("purchased").getAsInt() == 1)
 						continue outer;
 					item = item_.deepCopy();
 					break;

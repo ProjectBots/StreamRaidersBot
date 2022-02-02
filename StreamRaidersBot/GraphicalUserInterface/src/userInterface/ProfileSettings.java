@@ -52,7 +52,7 @@ public class ProfileSettings {
 		
 		int p = 0;
 		
-		GUI gui = new GUI("Profile Settings for " + ConfigsV2.getPStr(cid, ConfigsV2.pname), 400, 500, parent, null);
+		GUI gui = new GUI("Profile Settings for " + ConfigsV2.getPStr(cid, ConfigsV2.pname), 500, 500, parent, null);
 		gui.setBackgroundGradient(Fonts.getGradient("stngs profile background"));
 		
 		gui.addWinLis(new WinLis() {
@@ -258,62 +258,9 @@ public class ProfileSettings {
 				}
 			});
 			cdslot.addComboBox(dslot);
-			/*TODO
-			Label bc = new Label();
-			bc.setPos(2, 0);
-			bc.setText("buy Chest:");
-			bc.setForeground(Fonts.getColor("stngs profile labels"));
-			cdslot.addLabel(bc);
 			
-			String canBuyChest = ConfigsV2.getStr(cid, lay, ConfigsV2.canBuyChest);
-			if(canBuyChest == null)
-				canBuyChest = "(---)";
-			
-			ComboBox cbc = new ComboBox(uid+"canBuyChest");
-			cbc.setPos(3, 0);
-			cbc.setList(putFirst("(none) vampire saint".split(" "), canBuyChest));
-			cbc.setCL(new CombListener() {
-				@Override
-				public void unselected(String id, ItemEvent e) {}
-				@Override
-				public void selected(String id, ItemEvent e) {
-					ConfigsV2.setStr(cid, lay, ConfigsV2.canBuyChest, GUI.getSelected(id));
-				}
-			});
-			cdslot.addComboBox(cbc);
-			*/
 		gui.addContainer(cdslot);
 		
-		/*TODO
-		Container cec = new Container();
-		cec.setPos(0, p++);
-		cec.setInsets(10, 2, 2, 2);
-		
-			Label lec = new Label();
-			lec.setPos(0, 0);
-			lec.setText("buy Event Chest: ");
-			lec.setForeground(Fonts.getColor("stngs profile labels"));
-			cec.addLabel(lec);
-			
-			String canBuyEventChest = ConfigsV2.getStr(cid, lay, ConfigsV2.canBuyEventChest);
-			if(canBuyEventChest == null)
-				canBuyEventChest = "(---)";
-			
-			ComboBox cbec = new ComboBox(uid+"canBuyEventChest");
-			cbec.setPos(1, 0);
-			cbec.setList(putFirst("(none)  St. Jude  AFSP  MHA  Toys For Tots".split("  "), canBuyEventChest));
-			cbec.setCL(new CombListener() {
-				@Override
-				public void unselected(String id, ItemEvent e) {}
-				@Override
-				public void selected(String id, ItemEvent e) {
-					ConfigsV2.setStr(cid, lay, ConfigsV2.canBuyEventChest, GUI.getSelected(id));
-				}
-			});
-			cec.addComboBox(cbec);
-		
-		gui.addContainer(cec);
-		*/
 		
 		Container csleep = new Container();
 		csleep.setPos(0, p++);
@@ -493,8 +440,9 @@ public class ProfileSettings {
 			ltsi.setForeground(Fonts.getColor("stngs profile labels"));
 			csi.addLabel(ltsi);
 		
-			//TODO better store
-			List<Item> items = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(SRC.Store.dungeon);
+			
+			List<Item> items = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(SRC.Store.dungeon, true);
+			List<Item> items_ = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(SRC.Store.dungeon, false);
 			HashSet<String> gotPrios = new HashSet<>();
 			for(Item item : items) {
 				final String iuid = item.getStr("Uid");
@@ -535,6 +483,12 @@ public class ProfileSettings {
 					}
 				});;
 				csi.addTextField(tfsi, uid+"storePrios::tf::"+iuid);
+				
+				Label lsip = new Label();
+				lsip.setPos(2, y);
+				lsip.setText(items_.contains(item) ? "" : "a.b.");
+				lsip.setForeground(Fonts.getColor("stngs profile labels"));
+				csi.addLabel(lsip);
 				
 				
 				y++;
