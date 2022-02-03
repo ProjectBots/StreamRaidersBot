@@ -60,6 +60,7 @@ public class Run {
 	 *	get unit costs (unlock/upgrade) from datapath
 	 * 	get Donators from github source
 	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
+	 * 	add skin equip window (for disnames: sheets\Skins\...)
 	 * 
 	 * 
 	 * 	???:
@@ -1244,6 +1245,7 @@ public class Run {
 					break;
 				case "skin":
 					addRew(SRC.Run.bought, "skin", 1);
+					break;
 				default:
 					Debug.print("Run -> store -> buyItem: err=unknown buyType, buyType="+resp.get("buyType").getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
 				}
