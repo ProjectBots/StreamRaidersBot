@@ -1236,7 +1236,7 @@ public class Run {
 					break;
 				case "chest":
 					addRew(SRC.Run.bought, "dungeonchest", 1);
-					JsonArray data = resp.getAsJsonArray("data");
+					JsonArray data = resp.getAsJsonObject("data").getAsJsonArray("rewards");
 					Raid.updateChestRews();
 					for(int i=0; i<data.size(); i++) {
 						Reward rew = new Reward(data.get(i).getAsString());

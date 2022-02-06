@@ -350,6 +350,15 @@ public class SRR {
 	}
 	
 	
+	public String equipSkin(String unitId, String skinUid, String isEquipped) throws NoConnectionException {
+		Http post = getPost("equipSkin");
+		post.addEncArg("unitId", unitId);
+		post.addEncArg("skinUid", skinUid);
+		post.addEncArg("isEquipped", isEquipped);
+		return sendPost(post);
+	}
+	
+	
 	public String purchaseStoreRefresh() throws NoConnectionException {
 		Http post = getPost("purchaseStoreRefresh");
 		return sendPost(post);

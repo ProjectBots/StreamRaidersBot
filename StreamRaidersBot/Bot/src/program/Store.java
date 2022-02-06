@@ -23,7 +23,6 @@ public class Store {
 	
 	private JsonArray shopItems = new JsonArray();
 	private Hashtable<String, Integer> currencies = new Hashtable<>();
-	private HashSet<String> skins = new HashSet<>();
 	
 	private int storeRefreshCount = 0;
 	
@@ -119,7 +118,7 @@ public class Store {
 		getCurrentStoreItems(req);
 	}
 	
-	public Store(JsonObject user, JsonArray availableCurrencies, JsonArray currentStoreItems, JsonArray skins) {
+	public Store(JsonObject user, JsonArray availableCurrencies, JsonArray currentStoreItems) {
 		currencies = new Hashtable<>();
 		for(int i=0; i<availableCurrencies.size(); i++) {
 			JsonObject c = availableCurrencies.get(i).getAsJsonObject();
@@ -129,10 +128,6 @@ public class Store {
 		currencies.put(potions.get(), potion > 60 ? 60 : potion);
 		storeRefreshCount = user.get("storeRefreshCount").getAsInt();
 		shopItems = currentStoreItems;
-		if(skins != null)
-			for(int i=0; i<skins.size(); i++)
-				this.skins.add(skins.get(i).getAsJsonObject().get("productId").getAsString());
-		
 	}
 	
 	public void refreshCurrency(SRR req) throws NoConnectionException {
@@ -452,7 +447,7 @@ public class Store {
 		return ret;
 	}
 	
-	public List<Item> getAvailableEventStoreItems(String section, String serverTime, boolean includePurchased) {
+	public List<Item> getAvailableEventStoreItems(String section, String serverTime, boolean includePurchased, Skins skins) {
 		JsonObject store = Json.parseObj(Options.get("store"));
 		List<Item> ret = new ArrayList<>();
 		outer:
@@ -497,7 +492,7 @@ public class Store {
 				}
 			}
 			
-			if(!includePurchased && skins.contains(pack.get("Uid").getAsString()))
+			if(!includePurchased && skins.hasSkin(pack.get("Uid").getAsString()))
 				continue;
 			
 			//item passed all filters
@@ -508,7 +503,7 @@ public class Store {
 	}
 	
 	//TODO
-	public JsonObject buyItem(Item item, SRR req) throws NoConnectionException {
+	public JsonObject buyItem(Item item, SRR req, Skins skins) throws NoConnectionException {
 		JsonObject ret = new JsonObject();
 		C cur = item.getStr("Section").equals("Dungeon") ? keys : gold;
 		int price = item.getPrice();
@@ -536,7 +531,7 @@ public class Store {
 			if(ret.get(SRC.errorMessage).isJsonPrimitive())
 				return ret;
 			
-			skins.add(item.getStr("Uid"));
+			skins.addSkin(item.getStr("Uid"));
 		} else {
 			if(itemId.equals("dailydrop")) {
 				ret.addProperty("buyType", "daily");

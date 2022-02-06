@@ -5,9 +5,9 @@ import java.util.HashSet;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import include.Json;
 import include.Time;
+import program.Skins.Skin;
 
 public class Unit {
 	
@@ -81,19 +81,27 @@ public class Unit {
 		switch(con) {
 		case SRC.Unit.rank:
 			return ""+rank;
-		case SRC.Unit.disName:
+		case SRC.Unit.specializationDisName:
 			String spec = get(SRC.Unit.specializationUid);
-			if(spec == null) 
-				return uTypes.getAsJsonObject(get(SRC.Unit.unitType))
-						.get("name").getAsString();
-			
-			JsonArray spc = specs.getAsJsonArray(get(SRC.Unit.unitType));
-			for(int i=0; i<spc.size(); i++) {
-				JsonObject sp = spc.get(i).getAsJsonObject();
-				if(spec.equals(sp.get("uid").getAsString()))
-					return sp.get("name").getAsString();
+			if(spec != null) {
+				JsonArray spc = specs.getAsJsonArray(get(SRC.Unit.unitType));
+				for(int i=0; i<spc.size(); i++) {
+					JsonObject sp = spc.get(i).getAsJsonObject();
+					if(spec.equals(sp.get("uid").getAsString()))
+						return sp.get("name").getAsString();
+				}
 			}
 			return null;
+		case SRC.Unit.disName:
+			String skin = get(SRC.Unit.skin);
+			if(skin != null)
+				return Json.parseObj(Options.get("skins")).getAsJsonObject(skin).get("DisplayName").getAsString();
+			
+			String specname = get(SRC.Unit.specializationDisName);
+			return specname == null
+					? uTypes.getAsJsonObject(get(SRC.Unit.unitType))
+						.get("name").getAsString()
+					: specname;
 		default:
 			JsonElement el = unit.get(con);
 			if(el == null || !el.isJsonPrimitive()) 
@@ -122,6 +130,11 @@ public class Unit {
 	
 	public void setCooldown(String date) {
 		cool = date;
+	}
+	
+	public void setSkin(Skin skin) {
+		unit.addProperty(SRC.Unit.disName, skin==null?uTypes.getAsJsonObject(get(SRC.Unit.unitType)).get("name").getAsString():skin.disname);
+		unit.addProperty(SRC.Unit.skin, skin==null?null:skin.uid);
 	}
 
 

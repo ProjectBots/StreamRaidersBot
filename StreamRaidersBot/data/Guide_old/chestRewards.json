@@ -923,10 +923,10 @@
       "goldbag_75": 26,
       "rarescrolls_4": 84,
       "rarescrolls_6": 50,
-      "skinfulltankbattletech": 4,
-      "skinfullhealerbattletech": 3,
+      "skinfullflagbearerbattletech": 4,
+      "skinfullvampirebattletech": 3,
       "skinfullmusketeerbattletech": 2,
-      "skinfullwarbeastbattletech": 1
+      "skinfullballoonbusterbattletech": 1
     },
     "viewerplasma2": {
       "cooldown_20": 1,
@@ -967,9 +967,9 @@
       "goldbag_75": 26,
       "rarescrolls_4": 84,
       "rarescrolls_6": 50,
-      "skinfullwarriorbattletech": 4,
-      "skinfullpaladinbattletech": 3,
-      "skinfullflyingroguebattletech": 2,
+      "skinfullarcherbattletech": 4,
+      "skinfullbarbarianbattletech": 3,
+      "skinfullcenturionbattletech": 2,
       "skinfulltemplarbattletech": 1
     },
     "viewerplasma2": {
@@ -1011,10 +1011,10 @@
       "goldbag_75": 26,
       "rarescrolls_4": 84,
       "rarescrolls_6": 50,
-      "skinfullroguebattletech": 4,
-      "skinfullsaintbattletech": 3,
-      "skinfullberserkerbattletech": 2,
-      "skinfullmagebattletech": 1
+      "skinfulltankbattletech": 4,
+      "skinfullbomberbattletech": 3,
+      "skinfullflyingroguebattletech": 2,
+      "skinfullwarbeastbattletech": 1
     },
     "viewerplasma2": {
       "cooldown_20": 1,

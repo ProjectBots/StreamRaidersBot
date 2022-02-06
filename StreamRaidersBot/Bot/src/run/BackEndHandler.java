@@ -22,6 +22,8 @@ import program.QuestEventRewards;
 import program.Raid;
 import program.SRC;
 import program.SRR;
+import program.Skins;
+import program.Skins.Skin;
 import include.Http.NoConnectionException;
 import program.SRR.NotAuthorizedException;
 import program.SRR.OutdatedDataException;
@@ -42,6 +44,7 @@ public class BackEndHandler {
 	private Map[] maps = new Map[4];
 	private Unit[] units;
 	private Store store;
+	private Skins skins;
 	private Captain[] caps;
 	private Captain[] dunCaps;
 	private QuestEventRewards qer = new QuestEventRewards();
@@ -71,15 +74,16 @@ public class BackEndHandler {
 		req.setUserAgent(userAgent);
 	}
 	
-	private int[] updateTimes = new int[] {10, 1, 5, 30, 15, 10};
+	private int[] updateTimes = new int[] {10, 1, 5, 30, 15, 10, 60};
 	
-	public void setUpdateTimes(int units, int raids, int maps, int store, int qer, int caps) {
+	public void setUpdateTimes(int units, int raids, int maps, int store, int qer, int caps, int skins) {
 		updateTimes[0] = units;
 		updateTimes[1] = raids;
 		updateTimes[2] = maps;
 		updateTimes[3] = store;
 		updateTimes[4] = qer;
 		updateTimes[5] = caps;
+		updateTimes[6] = skins;
 	}
 	
 	
@@ -107,14 +111,10 @@ public class BackEndHandler {
 	synchronized private static void updateDataPath(String dataPath, String serverTime, SRR req) throws NoConnectionException, NotAuthorizedException {
 		if(!Options.get("data").equals(dataPath)) {
 			JsonObject data = Json.parseObj(SRR.getData(dataPath)).getAsJsonObject("sheets");
-			Options.set("obstacles", data.getAsJsonObject("Obstacles").toString());
-			Options.set("quests", data.getAsJsonObject("Quests").toString());
-			Options.set("mapNodes", data.getAsJsonObject("MapNodes").toString());
-			Options.set("specsRaw", data.getAsJsonObject("Specialization").toString());
-			JsonObject s = data.getAsJsonObject("Store");
-			Options.set("store", s.toString());
-			Options.set("rewards", data.getAsJsonObject("ChestRewards").toString());
-			Options.set("events", data.getAsJsonObject("Events").toString());
+			for(String s : "obstacles Obstacles  quests Quests  mapNodes MapNodes  specsRaw Specialization  store Store  rewards ChestRewards  events Events  skins Skins  mapDifficulty MapNodeDifficulty".split("  ")) {
+				String[] ss = s.split(" ");
+				Options.set(ss[0], data.getAsJsonObject(ss[1]).toString());
+			}
 			QuestEventRewards.updateCurrentEvent(serverTime);
 			String currentEventUid = QuestEventRewards.getCurrentEvent();
 			if(currentEventUid != null) {
@@ -128,18 +128,6 @@ public class BackEndHandler {
 			} else {
 				Options.set("eventTiers", "{}");
 			}
-			for(String c : "dungeons5saintchest dungeons5vampirechest snowfallcharitychest1 snowfallcharitychest2 snowfallcharitychest3 snowfallcharitychest4".split(" ")) {
-				try {
-					JsonObject base = s.getAsJsonObject(c);
-					Options.set(c+"date", base.get("LiveEndTime").getAsString());
-					Options.set(c+"price", base.get("BasePrice").getAsString());
-				} catch (NullPointerException e) {
-					Debug.printException("BackEndHandler -> updateDataPath: err=failed to update chest, chest="+c, e, Debug.runerr, Debug.error, null, null, true);
-					Options.set(c+"date", "2021-10-10 12:00:00");
-					Options.set(c+"price", "9999");
-				}
-			}
-			Options.set("mapDifficulty", data.getAsJsonObject("MapNodeDifficulty").toString());
 			Options.set("data", dataPath);
 			Options.save();
 			dpelis.onUpdate(dataPath, serverTime, data);
@@ -276,12 +264,29 @@ public class BackEndHandler {
 		
 		store = new Store(user.getAsJsonObject("data"),
 				cur.getAsJsonArray("data"),
-				items.getAsJsonArray("data"),
-				skins.get("data").isJsonArray() ? skins.getAsJsonArray("data") : null);
+				items.getAsJsonArray("data"));
 		
+
+		this.skins = new Skins(skins.get("data").isJsonArray() ? skins.getAsJsonArray("data") : null);
 		
 		rts.put("store", now);
 		uelis.afterUpdate("store");
+	}
+	
+	synchronized public void updateSkins(boolean force) throws NoConnectionException, NotAuthorizedException {
+		LocalDateTime rt = rts.get("skins");
+		LocalDateTime now = LocalDateTime.now();
+		if(!(rt == null || now.isAfter(rt.plusMinutes(updateTimes[6]))) && !force)
+			return;
+		
+		JsonObject skins = Json.parseObj(req.getUserItems());
+		if(testUpdate(skins))
+			skins = Json.parseObj(req.getUserItems());
+		
+		this.skins = new Skins(skins.get("data").isJsonArray() ? skins.getAsJsonArray("data") : null);
+		
+		rts.put("skins", now);
+		uelis.afterUpdate("skins");
 	}
 	
 	synchronized public void updateQuestEventRewards(boolean force) throws NoConnectionException, NotAuthorizedException {
@@ -607,15 +612,16 @@ public class BackEndHandler {
 	}
 	
 	public JsonObject buyItem(Item item) throws NoConnectionException {
-		return store.buyItem(item, req);
+		return store.buyItem(item, req, skins);
 	}
 	
 	public List<Item> getStoreItems(int con, String section) {
 		return store.getStoreItems(con, section, getServerTime());
 	}
 	
-	public List<Item> getAvailableEventStoreItems(String section, boolean includePurchased) {
-		return store.getAvailableEventStoreItems(section, getServerTime(), includePurchased);
+	public List<Item> getAvailableEventStoreItems(String section, boolean includePurchased) throws NoConnectionException, NotAuthorizedException {
+		updateSkins(false);
+		return store.getAvailableEventStoreItems(section, getServerTime(), includePurchased, skins);
 	}
 	
 	public String refreshStore() throws NoConnectionException, NotAuthorizedException {
@@ -633,6 +639,24 @@ public class BackEndHandler {
 	
 	public int getStoreRefreshCount() {
 		return store.getStoreRefreshCount();
+	}
+	
+	public Skins getSkins() throws NoConnectionException, NotAuthorizedException {
+		updateSkins(false);
+		return skins;
+	}
+	
+	public String equipSkin(Unit unit, Skin skin) throws NoConnectionException {
+		JsonObject resp = Json.parseObj(req.equipSkin(unit.get(SRC.Unit.unitId),
+					skin == null ? unit.get(SRC.Unit.skin) : skin.uid,
+					skin == null ? "0" : "1"));
+		JsonElement err = resp.get(SRC.errorMessage);
+		
+		if(err == null || !err.isJsonPrimitive()) {
+			unit.setSkin(skin);
+			return null;
+		} else
+			return err.getAsString();
 	}
 	
 	@Deprecated

@@ -26,15 +26,18 @@ import include.GUI.Label;
 import include.GUI.TextField;
 import include.GUI.WinLis;
 import include.Http;
+import include.Http.NoConnectionException;
 import include.Http.NotAllowedProxyException;
 import program.ConfigsV2;
 import program.Options;
 import program.SRC;
+import program.SRR.NotAuthorizedException;
 import program.Store.Item;
 import run.Manager;
 import program.ConfigsV2.Boo;
 import program.ConfigsV2.Int;
 import program.ConfigsV2.SleInt;
+import program.Debug;
 
 public class ProfileSettings {
 
@@ -441,8 +444,16 @@ public class ProfileSettings {
 			csi.addLabel(ltsi);
 			
 			
-			List<Item> items = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(SRC.Store.dungeon, true);
-			List<Item> items_ = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(SRC.Store.dungeon, false);
+			List<Item> items;
+			List<Item> items_;
+			try {
+				items = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(SRC.Store.dungeon, true);
+				items_ = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(SRC.Store.dungeon, false);
+			} catch (NoConnectionException | NotAuthorizedException e3) {
+				Debug.printException("ProfileSettings -> open -> specialShop: err=unable to get items", e3, Debug.runerr, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
+				gui.close();
+				return;
+			}
 			HashSet<String> gotPrios = new HashSet<>();
 			for(Item item : items) {
 				final String iuid = item.getStr("Uid");

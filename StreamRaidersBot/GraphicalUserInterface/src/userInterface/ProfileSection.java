@@ -330,7 +330,7 @@ public class ProfileSection {
 				stngsSymb.setForeground(Fonts.getColor("main labels"));
 				stngs.addLabel(stngsSymb);
 				
-				String[] stngsNames = "Profile Units Chests Layers Captains".split(" ");
+				String[] stngsNames = "Profile Units Chests Layers Captains Skins".split(" ");
 				
 				for(String key : stngsNames) {
 					Button prof = new Button();
