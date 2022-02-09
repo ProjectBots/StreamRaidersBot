@@ -314,6 +314,7 @@ public class SRR {
 	
 	public String getCaptainsForSearch(int page, int resultsPerPage, boolean fav, boolean live, String mode, boolean searchForCaptain, String name) throws NoConnectionException {
 		JsonObject filter = new JsonObject();
+		filter.addProperty("ambassadors", "false");
 		filter.addProperty("favorite", (fav ? "true" : "false"));
 		if(name != null) filter.addProperty((searchForCaptain ? "twitchUserName" : "mainGame"), name);
 		if(live) filter.addProperty("isLive", "1");

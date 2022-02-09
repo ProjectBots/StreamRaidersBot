@@ -238,8 +238,10 @@ public class GuideContent {
 		for(String chest : chests.keySet()) {
 			
 			Image img;
-			if(chest.contains("dungeon") || chest.contains("vampire") || cts.contains(new JsonPrimitive(chest)))
-				img = new Image("data/ChestPics/" + chest.replace("2", "").replace("vampire", "dungeon") + ".png");
+			if(chest.contains("dungeon") || chest.contains("vampire"))
+				img = new Image("data/ChestPics/dungeonchest.png");
+			else if(cts.contains(new JsonPrimitive(chest)))
+				img = new Image("data/ChestPics/" + chest + ".png");
 			else
 				img = new Image("data/ChestPics/chestboostedskin.png");
 			img.setSquare(100);

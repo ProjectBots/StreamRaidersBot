@@ -76,7 +76,7 @@ public static final String pre = "SkinSettings::";
 		for(String suid : skinUids) {
 			Skin s = skins_.getSkin(suid);
 			skins_all.get(s.unit).add(s);
-			skinNames_all.get(s.unit).add(s.disname);
+			skinNames_all.get(s.unit).add(s.disname+" ("+s.type+")");
 		}
 		
 		for(String key : types.keySet()) {
@@ -110,7 +110,7 @@ public static final String pre = "SkinSettings::";
 							for(Skin s : skins) {
 								if(!s.uid.equals(suid))
 									continue;
-								sn = s.disname;
+								sn = s.disname+" ("+s.type+")";
 								break;
 							}
 						}
@@ -131,7 +131,7 @@ public static final String pre = "SkinSettings::";
 								String sel = GUI.getSelected(gid+"cb");
 								Skin s = null;
 								for(Skin s_ : skins) {
-									if(s_.disname.equals(sel)) {
+									if((s_.disname+" ("+s_.type+")").equals(sel)) {
 										s = s_;
 										break;
 									}

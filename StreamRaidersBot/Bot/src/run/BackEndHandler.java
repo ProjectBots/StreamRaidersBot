@@ -66,6 +66,7 @@ public class BackEndHandler {
 		updateRaids(true);
 		updateUnits(true);
 		updateStore(pn, true);
+		updateSkins(true);
 		updateQuestEventRewards(true);
 	}
 	

@@ -34,7 +34,11 @@ public class Skins {
 			JsonObject packs = Json.parseObj(Options.get("skins"));
 			for(int i=0; i<skins.size(); i++) {
 				String uid = skins.get(i).getAsJsonObject().get("productId").getAsString();
-				this.skins.put(uid, new Skin(packs.getAsJsonObject(uid)));
+				try {
+					this.skins.put(uid, new Skin(packs.getAsJsonObject(uid)));
+				} catch (NullPointerException e) {
+					Debug.printException("Skins -> Skins(): err=unable to ini skin, uid="+uid, e, Debug.runerr, Debug.error, null, null, true);
+				}
 			}
 		}
 	}

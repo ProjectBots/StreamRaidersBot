@@ -246,7 +246,9 @@ public class ConfigsV2 {
 	public static final Int raidUpdate = new Int("raidUpdate");
 	public static final Int mapUpdate = new Int("mapUpdate");
 	public static final Int storeUpdate = new Int("storeUpdate");
+	public static final Int skinUpdate = new Int("skinUpdate");
 	public static final Int questEventRewardsUpdate = new Int("questEventRewardsUpdate");
+	public static final Int capsUpdate = new Int("capsUpdate");
 	public static final Int proxyPort = new Int("proxyPort");
 	
 	

@@ -60,7 +60,6 @@ public class Run {
 	 *	get unit costs (unlock/upgrade) from datapath
 	 * 	get Donators from github source
 	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
-	 * 	add skin equip window (for disnames: sheets\Skins\...)
 	 * 
 	 * 
 	 * 	???:
@@ -1501,6 +1500,14 @@ public class Run {
 		}
 		
 		Manager.blis.onProfileUpdateGeneral(cid, pn, ConfigsV2.getStr(cid, currentLayer, ConfigsV2.lname), new Color(ConfigsV2.getInt(cid, currentLayer, ConfigsV2.color)));
+		
+		beh.setUpdateTimes( ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unitUpdate),
+							ConfigsV2.getInt(cid, currentLayer, ConfigsV2.raidUpdate),
+							ConfigsV2.getInt(cid, currentLayer, ConfigsV2.mapUpdate),
+							ConfigsV2.getInt(cid, currentLayer, ConfigsV2.storeUpdate),
+							ConfigsV2.getInt(cid, currentLayer, ConfigsV2.questEventRewardsUpdate),
+							ConfigsV2.getInt(cid, currentLayer, ConfigsV2.capsUpdate),
+							ConfigsV2.getInt(cid, currentLayer, ConfigsV2.skinUpdate));
 	}
 	
 	

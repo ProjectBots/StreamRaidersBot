@@ -634,7 +634,7 @@ public class ProfileSettings {
 		cstorem.setPos(0, p++);
 		cstorem.setInsets(10, 0, 0, 0);
 			
-			String[] smgs = "Scrolls Min Gold  Store Min Keys  Upgrade Min Gold  Unlock Min Gold  Unit Place Retries  Map Reload After X Retries  Max Unit Per Raid  Cap Inactive Treshold  Unit Update  Raid Update  Map Update  Store Update  Quest Event Rewards Update  Caps Update".split("  ");
+			String[] smgs = "Scrolls Min Gold  Store Min Keys  Upgrade Min Gold  Unlock Min Gold  Unit Place Retries  Map Reload After X Retries  Max Unit Per Raid  Cap Inactive Treshold  Unit Update  Raid Update  Map Update  Store Update  Skin Update  Quest Event Rewards Update  Caps Update".split("  ");
 			int l = 0;
 			for(String key : smgs) {
 				final Int con = new Int(key.substring(0, 1).toLowerCase() + key.substring(1).replace(" ", ""));
