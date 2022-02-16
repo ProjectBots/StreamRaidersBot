@@ -3,6 +3,7 @@ package run;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -111,12 +112,17 @@ public class Manager {
 	 * @param cid profile id
 	 */
 	public static void remProfile(String cid) {
-		unloadProfile(cid);
+		if(profiles.containsKey(cid))
+			unloadProfile(cid);
 		ConfigsV2.remProfile(cid);
 		ConfigsV2.saveb();
 		poss.remove(cid);
 		blis.onProfileRemoved(cid);
+		failedProfiles.remove(cid);
 	}
+	
+	private static HashSet<String> loadedProfiles = new HashSet<>();
+	private static HashSet<String> failedProfiles = new HashSet<>();
 	
 	/**
 	 * checks the config for new profiles and loads them
@@ -126,6 +132,7 @@ public class Manager {
 		cids.removeAll(profiles.keySet());
 		for(final String cid : cids)
 			loadProfile(cid);
+		blis.onConfigLoadStatusUpdate(loadedProfiles.size(), failedProfiles.size(), cids.size());
 	}
 	
 	/**
@@ -143,15 +150,19 @@ public class Manager {
 				} catch (InterruptedException e1) {
 					return;
 				}
+				failedProfiles.remove(cid);
 				blis.onProfileStartedLoading(cid);
 				try {
 					Run r = new Run(cid);
 					profiles.put(cid, r);
 					blis.onProfileLoadComplete(cid, poss.get(cid));
 					r.setReady(true);
+					loadedProfiles.add(cid);
 				} catch (Exception e) {
 					blis.onProfileLoadError(cid, poss.get(cid), e);
+					failedProfiles.add(cid);
 				}
+				blis.onConfigLoadStatusUpdate(loadedProfiles.size(), failedProfiles.size(), ConfigsV2.getCids().size());
 				releaseAction();
 			}
 		});
@@ -161,8 +172,8 @@ public class Manager {
 	/**
 	 * @return a list of profile ids which are currently loaded
 	 */
-	public static List<String> getLoadedProfiles() {
-		return new ArrayList<>(profiles.keySet());
+	public static HashSet<String> getLoadedProfiles() {
+		return new HashSet<>(loadedProfiles);
 	}
 	
 	/**
@@ -174,6 +185,7 @@ public class Manager {
 			setRunning(cid, i, false);
 		profiles.remove(cid);
 		blis.onProfileUnloaded(cid);
+		loadedProfiles.remove(cid);
 	}
 	
 	/**

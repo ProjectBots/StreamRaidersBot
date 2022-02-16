@@ -23,21 +23,1069 @@
 
 ##s Home
 ##i icon.png c 200
-##d 50
-##t c
-Hello you lucky one.
-##t c
-You have been chosen to write the new Guide.
-
-This is how to do it:
-
-open data/Guide/guide.txt
-edit it.
-to update just save the file and reopen the guide.
-
+##d 5
+##t c b 20
+StreamRaidersBot
 ##t c b
-syntax explanations are in the file.
+by ProjectBots
+##d 10
+##r Quick-Start
+##r Configure-Basics
+##r Just-let-me-bot
+##r Advanced-Settings
+##r HTML
 
+##s Quick-Start
+##t c b 20
+First steps:
+##d 15
+##t c b 15
+1: Bot -> Add a Profile
+##i gsProfile.png c 300
+##t c b 15
+2: Enter a name for your Profile*
+##t c 10
+* doesn't have to be your Twitch username
+##i gsProfileName.png c 300
+##t c b 15
+3: Open browser to login*
+##t c 10
+* Advanced users can enter their cookie 
+data directly via the ACCESS_INFO= field.
+##i gsProfileNameBrowser.png c 300
+##t c b 15
+4: A browser window is opened, log in.
+##i gsBrowserLogin.png c 300
+##t c b 15
+5: Close the browser, your profile is now loaded.
+##t c 13
+Multiple simultaneous acccounts are supported.
+To add additional profiles just follows steps 1-5 
+again with a different Twitch-account.
+##t c b 15
+All set, now let's:
+##r Configure-Basics
+##r Home
+
+##s Configure-Basics
+##t c b 20
+The Basics:
+##d 15
+##t c 13
+Once you've added your profile, succesfully logged into Twitch and closed the browser window, you'll be
+brought back to the main overview of your current sessions. Since many buttons can be "much confusing"...
+##t c 13
+Time to explain what everthing does:
+##i cbCaptainProfileOverviewTr.png c 889
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Top-Row:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Myprofilename</i></th><td>Name of the profile you've added</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Gold</i></th><td>Amount of gold currentlty owned</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Potions</i></th><td>Amount of epic potions currently owned</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Meat</i></th><td>Slabs of dead animal currently owned</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>EventCurrency</i></th><td>Amount of event currency, in case of an event</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Keys</i></th><td>Amount of dungeon keys currently owned</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Bones</i></th><td>Amount of PvP bones currently owned</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>1:31</i></th><td>Running timer for global actions (claim chest, store, etc)</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;">▶</th><td>Running whilst green<td>
+		</td></tr>
+			<th style="background-color:#ccd7dbff;">⏩</th><td>Skip timer</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>(default)</i></th><td>Current Layer</td>
+		</tr>
+	</table>
+</center>
+
+##i cbCaptainProfileOverviewSb.png c 889
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Side-Bar:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Stats</i></th><td>Loot history and current unit scrolls</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Profile</i></th><td>Profile settings</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Units</i></th><td>Per Unit configuration</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Chests</i></th><td>Chest configuration</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Layers</i></th><td>Layer(s) configuration</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Captains</i></th><td>Custom captain settings</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Skins</i></th><td>Skin picker</td>
+		</tr>
+	</table>
+</center>
+
+##i cbCaptainProfileOverviewCap.png c 889
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Captain-Slot:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>7:15</i></th><td>Next action timer</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>▶</i></th><td>Running whilst green</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>⏩</i></th><td>Skip timer</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>????????</i></th><td>Captain's name</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>watch</i></th><td>View on Twitch</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>62</i></th><td>Captain reputation points</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>⚔️</i></th><td>Captain reputation level</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>♻</i></th><td>Force captain change after this raidK</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>🔓</i></th><td>Lock captain to slot</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>♥</i></th><td>Set captain as favourite</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>🚫</i></th><td>Block this captain</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;">🗺</th>View map<td>
+		</td></tr>
+			<th style="background-color:#ccd7dbff;">💰</th><td>Battle chest type</td>
+		</tr>
+	</table>
+</center>
+##d 30
+##t c b 20
+So Many buttons!
+##d 15
+##t c 13
+Yes, you're right, there are indeed quite a few buttons, a few and then some perhaps.
+Now.. in all honesty, the default settings will work well for just about everyone.
+So if you're "all about that bot", let's get you going right now.
+
+##r Just-let-me-bot
+
+##d 15
+##t c 13
+If you're interested in more than just the basics to getting this bundle of joy up
+and running, how about we play a little game of settings-checkers?
+
+##r Advanced-Settings
+##r Home
+
+##s Just-let-me-bot
+##t c b 20
+Let's get ready to Rumble!
+##d 15
+##t c 13
+Your profile has been added, you've worked your way through all those dreadful buttons,
+enough already! What does a carbon based lifeform have to do to get a dri.. 
+
+##d 10
+##t c 13
+No wait, to get a bot running!
+
+##i lmbCaptainProfileOverview.png c 889
+
+##t c 13
+So, nothing is green, loads of question marks, right.
+##d 15
+
+##i lmbProfilePlay.png c 300
+##t c b 20 
+Click Bot -> start all
+##t c 13
+That's it, no really, you're now up and running.
+Give it a few seconds to find a captain and you're good to go!*
+##t c 13
+Happy botting!
+##d 10
+##t c 10
+*So, if this is a new account, you might get an error initially, unlock your units by hand or force skip/play.
+##d 15
+##r Advanced-Settings
+##r Home
+
+##s Advanced-Settings
+##t c b 20
+Advanced Settings
+##d 15
+##t c 13
+Finally, I thought you'd never ask, luckily we don't just have buttons and more buttons, no no,
+we have actual settings, things to explain and things to configure, as much as you'd like and
+then some!
+##d 15
+
+##r Menu-Bar-Explained
+##r Side-Bar-Explained
+##r Unit-Types
+##r Chest-Types
+##r Other-Projects
+##r Home
+
+##s Menu-Bar-Explained
+##t c b 20
+The Menu-Bar*
+##d 15
+##i asTopMenu.png c 297
+##t c 13
+The Menu-Bar consist of three different sections, Bot, Config and Help.
+##d 15
+
+##r Bot
+##r Config
+##r Help
+##d 30
+##r Advanced-Settings
+##r Home
+##d 10
+##t c 10
+*Yes, no, it's not that type of bar, cheers anyways!
+
+##s Bot
+##t c b 20
+Bot-Menu
+##d 15
+##i asTopMenuBot.png c 300
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Bot:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Hide Window</i></th><td>Hides the window to the taskbar corner, right-click + show to retrieve</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Add a profile</i></th><td>Add a profile, this bot supports simultaneous multi-account usage</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Start all</i></th><td>Start all timers (global + all captains)</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Start all delayed</i></th><td>Start all timers, add a delay for starting in seconds</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Stop all</i></th><td>Stop the time! (all captains + global timer stopped)</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Skip time all</i></th><td>Skip all timers and act right away on all</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Skip time all delayed</i></th><td>Skip all times, add a delay to skip in seconds</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 30
+
+##r Menu-Bar-Explained
+##r Home
+
+##s Config
+##t c b 20
+Config-Menu
+##d 15
+##i asTopMenuConfig.png c 300
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Config:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Export</i></th><td>Option to export per user or all user profiles and application settings</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Import</i></th><td>Json file importer to import exported user profiles and application settings</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Settings</i></th><td>A mix of global application setttings</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 30
+
+##r Export
+##r Import
+##r Settings
+##d 30
+##r Menu-Bar-Explained
+##r Home
+
+##s Export
+##t c b 20
+Config-Export
+##d 15
+##i asTopMenuExport.png c 386
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Export:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Global</i></th><td>Export Global settings, none, all or custom</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Myprofilename</i></th><td>Export profile-specific settings, per account basis, none, all or custom</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Export Selected</i></th><td>Export the selected settings (Global and/or Profile selections)</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Export All</i></th><td>Export all settings (Global + Profiles)</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 30
+##i asTopMenuExportGlobalCustom.png c 386
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Export: custom settings:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Fontfile</i></th><td>Export selected font setting</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Blocked_errors</i></th><td>Export previously chosen blocked error settings</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>useMemoryReleaser</i></th><td>Export memory management settings</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>needCloseConfirm</i></th><td>Export confirmation on program exit setting</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>maxProfileActions</i></th><td>Export concurrent actions setting</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Cookies</i></th><td>Export profile authentication cookie</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Stats</i></th><td>Export stats for this profile</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Times</i></th><td>Export timer settings for this profile</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>(Default)</i></th><td>Export layer-settings, none, all or custom, for in-depth info, see below.</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 30
+
+##r Export-layer-settings
+##d 30
+##r Config
+##r Home
+
+##s Import
+##t c b 20
+Config-Import
+##d 15
+##i asTopMenuImport.png c 502
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Import:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Select Config</i></th><td>Select a previously exported json file to import saved settings</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 30
+
+##r Config
+##r Home
+
+##s Settings
+##t c b 20
+Config-Settings
+##d 15
+##i asTopMenuGlobalSettings.png c 474
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Settings:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Prevent spiking memory</i></th><td>Option to avoid jvm memory spikes</td></tr>
+			<tr><th></th><td><i>(practical for machines with heavy memory loads)</i></td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Need close confirmation</i></th><td>Application will ask for confirmation on exit</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Max concurrent actions</i></th><td>Amount of actions the bot can do at the same time, -1 = no limit</td> </tr>
+			<tr><th></th><td><i>(limiting can be cpu/thread count friendly and thus result in lower cpu load)</i></td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Choose font</i></th><td>You can pick any Font you like, so long as it's black</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Blocked errors</i></th><td>List of errors you've blocked from showing up during normal operations</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Reset all stats</i></th><td>Reset the statistics for all user profiles at once</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Forget me</i></th><td>Erase all user-data. You have the right to be forgotten.</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 30
+
+##r Config
+##r Home
+
+##s Help
+##t c b 20
+Help-Menu
+##d 15
+##i asTopMenuHelp.png c 300
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Help:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Guide</i></th><td>42, The answer to life, the universe and well, basic questions.</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>About</i></th><td>The good stuff</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Donators</i></th><td>The better stuff</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 30
+##r Menu-Bar-Explained
+##r Home
+
+
+##s Export-layer-settings
+##t c b 20
+Export-Layer-Settings
+##d 15
+##t c 13
+You have the option to individually export just about any setting you've made to your current layer.
+##t c 13
+We'll try to explain them all here:
+##d 15
+##i asTopMenuExportLayerSettings1.png c 385
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Simple:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>dungeonSlot</i></th><td>Export saved dungeon slot</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>userAgent</i></th><td>Export User Agent setting</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>proxyDomain</i></th><td>Export proxy hostname</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>proxyUser</i></th><td>Export proxy username</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>proxyPass</i></th><td>Export proxy password</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>unitPlaceRetries</i></th><td>Export retry setting for unit placement</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>mapReloadAfterXRetries</i></th><td>Export number of tries before the map is reloaded</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>maxUnitPerRaid</i></th><td>Export maximum amount of units to place per raid</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>capInactiveThreshold</i></th><td>Export time before captain is removed due to inactivity</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>storeMinKeys</i></th><td>Export amount of keys to save before buying anyting</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>storeMinBones</i></th><td>Export amount of bones to save before buying anytings</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>scrollsMinGold</i></th><td>Export amount of gold to save before buying anyting</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>upgradeMinGold</i></th><td>Export amount of gold to save before any upgrades</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>unlockMinGold</i></th><td>Export amount of gold to save before unlocking a unit</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>unitUpdate</i></th><td>Export interval of unit updates</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>raidUpdate</i></th><td>Export interval of raid updates</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>mapUpdate</i></th><td>Export interval of map updates</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>storeUpdate</i></th><td>Export interval of store updates</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>questEventRewardsUpdate</i></th><td>Export interval of quest event rewards updates</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>proxyPort</i></th><td>Export proxy port setting</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>preferRoguesOnTreasureMaps</i></th><td>Export setting to favour rogues on treasure maps</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>allowPlaceFirst</i></th><td>Export allow placing units before the captain has</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>proxyMandatory</i></th><td>Export setting to fail if no proxy can be used</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 30
+##i asTopMenuExportLayerSettings2.png c 384
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Unit, Chest, Sleep:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>place</i></th><td>Export unit placement priority</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>epic</i></th><td>Export unit epic placement priority</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>placedun</i></th><td>Export dungeon unit placement priority</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>epicdun</i></th><td>Export dungeon epic unit placement priority</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>upgrade</i></th><td>Export unit upgrade priority</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>unlock</i></th><td>Export unit unlock priority</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>dupe</i></th><td>Export unit duplication priority</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>buy</i></th><td>Export unit scroll buy priority</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>spec</i></th><td>Export unit specialization choice</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>chests</i></th><td>Export unit use per chest type</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>favonly</i></th><td>Export unit placement allowed for favourite captains</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>markerOnly</i></th><td>Export unit placement allowed on marker only</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>canvibe</i></th><td>Export unit placement allowed on free placement (vibe)</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>enabled</i></th><td>Export enabled battle chest rewards</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>minLoy</i></th><td>Export minium loyalty setting per chest type</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>maxLoy</i></th><td>Export maximum loyalty setting per chest type</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>minTime</i></th><td>Export minimum time left in battle per chest</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>maxTime</i></th><td>Export maximum time left in battle per chest</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>max</i></th><td>Export maximum sleep timer</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>min</i></th><td>Export minimum sleep timer</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 30
+##i asTopMenuExportLayerSettings3.png c 387
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">PlaceDelay, CaptainList, Captain:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>max</i></th><td>Export unit placement delay maximum setting</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>min</i></th><td>Export unit placement delay minimum setting</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>campaign</i></th><td>Export saved campaign captains</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>dungeono</i></th><td>Export saved dungeon captains</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>ic</i></th><td>Export ignore config for captain setting</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>il</i></th><td>Export ignore live for captain setting</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Export Selected</i></th><td>Export everything selected</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Export All</i></th><td>Export everything</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 30
+
+##r Export
+##r Config
+##r Home
+
+##s Side-Bar-Explained
+##t c b 20
+The Side-Bar*
+##d 15
+##t c 13
+The Side-bar menu allows you to change just about any setting related to the operation of your bot.
+##i cbCaptainProfileOverviewSb.png c 889
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Side-Bar:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Stats</i></th><td>Loot history and current unit scrolls</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Profile</i></th><td>Profile settings</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Units</i></th><td>Per Unit configuration</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Chests</i></th><td>Chest configuration</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Layers</i></th><td>Layer(s) configuration</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Captains</i></th><td>Custom captain settings</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Skins</i></th><td>Skin picker</td>
+		</tr>
+	</table>
+<br>
+<br>
+</center>
+##d 30
+
+##r Stats
+##r Profile
+##r Units
+##r Chests
+##r Layers
+##r Skins
+##d 30
+##r Advanced-Settings
+##r Home
+##d 15
+##t c 10
+*No, I don't know why you keep reading these footnotes either.
+
+##s Stats
+##t c b 20
+Side-Bar: Stats
+##d 15
+##t c 13
+On the stats page you'll find an overview of collected loot for the current profile.
+##i sbStatsDetail.png c 889
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Stats explained:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Today</i></th><td>Todays loot</td></tr>
+			<tr><th></th><td><i>chests: todays loot from chests</i></td></tr>
+			<tr><th></th><td><i>bought: todays loot from the store</i></td></tr>
+			<tr><th></th><td><i>event: todays loot from running events</i></td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Past</i></th><td>Total loot received</td>
+			<tr><th></th><td><i>chests: total loot from chests</i></td></tr>
+			<tr><th></th><td><i>bought: total loot from the store</i></td></tr>
+			<tr><th></th><td><i>event: total loot from running events</i></td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Unit icons</i></th><td>Current scrolls per unit</td>
+		</tr>
+	</table>
+<br>
+<br>
+</center>
+##d 30
+##r Side-Bar-Explained
+##r Home
+
+##s Profile
+##t c b 20
+Side-Bar: Profile
+##d 15
+##t c 13
+On the profile page you'll find a myriad of settings related to the direct operation of your bot.
+##i sbProfileDetail1.png c 486
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Profile explained 1:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Name</i></th><td>Name of the current profile</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Sync With</i></th><td>Profile to sync settings with, if you have multiple profiles</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Layer</i></th><td>Current Layer for this profile, leave default if no layers</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Dungeon Slot</i></th><td>Slot to use for dungeon battles</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Timer</i></th><td>Timers per captain slot and the store, for dungeons change max to 2/300 seconds </td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Locked Slots</i></th><td>Slots locked to a captain</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Prefer Rogues on Treasure Map</i></th><td>Use rogues on treasure maps if possible</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Allow Place First</i></th><td>Enable to allow placing before anyone else does</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 15
+##i sbProfileDetail2.png c 486
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Profile explained 2:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Special Store</i></th><td>If an event is running you can change event store settings here</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Store Refreshes</i></th><td>Amount of gold saved before store refreshes are executed</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Unit Place Delay</i></th><td>Seconds delay between placing individual units at the same time</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Scrolls Min Gold</i></th><td>Amount of gold saved before trying to buy scrolls</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Store Min Keys</i></th><td>Amount of keys saved before spending keys</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Upgrade Min Gold</i></th><td>Amount of gold saved before upgrading units</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Unlock Min Gold</i></th><td>Amount of gold saved before unlocking new units</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Unit Place Retries</i></th><td>Amount of attempts at placing a unit in case of issues</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Map Reload after X Retries</i></th><td>Amount of placing retries before the map is reloaded</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Max Unit Per Raid</i></th><td>Maximum amount of units placed per raid</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Cap Inactive Treshold</i></th><td>Captain inactivity timer in minutes</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Unit Update</i></th><td>Amount of time between attempts to update units in minutes</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Raid Update</i></th><td>Amount of time between raid status updates (for placement, inactivity)</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Map Update</i></th><td>Amount of time between map updates</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Store Update</i></th><td>Amount of time between store updates</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Quest Events Rewards Update</i></th><td>Amount of time between checks to see if we have quest/event loot</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Caps Update</i></th><td>Amount of time between captain page refreshes (live/picture, etc)</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 15
+##i sbProfileDetail3.png c 485
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Profile explained 3:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>User Agent</i></th><td>Browser agent string used for requests, change at will</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Proxy Domain</i></th><td>Hostname of the proxy server you'd like to use</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Proxy Port</i></th><td>Port of the proxy server</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Proxy User</i></th><td>Username for your proxy server</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Proxy Password</i></th><td>Password for your proxy server</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Proxy Mandatory</i></th><td>Enable to force usage of the proxy server</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Proxy Test</i></th><td>Test your proxy settings</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Reset Stats</i></th><td>Reset the collected stats for this profile</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Delete Profile</i></th><td>Delete this profile</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 30
+##r Side-Bar-Explained
+##r Home
+
+##s Units
+##t c b 20
+Side-Bar: Units
+##d 15
+##t c 13
+The units page allows you to customize just about anything when it comes to placing and upgrading your units.
+##d 15
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Priorities:</h2>
+	<br>
+</center>
+##i sbUnitsDetail1.png c 716
+##h
+<center>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Layer:</i></th><td>The current layer</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>Unit</i></th><td>Setting per unit type</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>place</i></th><td>placement priority, higher number = higher priority, -1 = disabled</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>epic</i></th><td>epic placement priority, uses potions, higher number = higher priority, -1 = disabled</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>placedun</i></th><td>dungeon mode placement priority, higher number = higher priority, -1 = disabled</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>epicdun</i></th><td>dungeon mode epic placement priority, uses potions, higher number = higher priority, -1 = disabled</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>upgrade</i></th><td>upgrade priority, higher number = upgrade earlier, -1 = don't upgrade</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>unlock</i></th><td>unit unlock priority, higher number = unlock earlier, -1 = don't unlock</td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>dupe</i></th><td>duplication priority, applies after a unit is level 30, higher number = dupe earlier, -1 = disabled </td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>buy</i></th><td>buy order priority of scrolls per unit type, higher number = buy earlier, -1 = don't buy</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 30
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Unit specializations:</h2>
+</center>
+##i sbUnitsDetail2.png c 531
+##d 30
+##t c 13
+You can set a unit specialization to choose automatically once the unit hits level 20 (or to respecialize to once it hits 30)
+##h
+;- bad: #de9c99
+;- moderate: #dece99
+;- good: #99deab
+<center>
+	<h2 style="border:0px solid Tomato;">Optimal unit specializations:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#b48c63ff;"><i>Archer</i></th><td style="background-color:#dece99;">Deadeye Archer</td><td style="background-color:#dece99;">Pinning Archer</td><td style="background-color:#99deab;">Longshot Archer</td>
+		</tr><tr>
+			<th style="background-color:#b48c63ff;"><i>Tank</i></th><td style="background-color:#de9c99;">Breacher Tank</td><td style="background-color:#99deab;">Heavy Tank</td><td style="background-color:#dece99;">Martyr Tank</td>
+		</tr><tr>
+			<th style="background-color:#b48c63ff;"><i>Warrior</i></th><td style="background-color:#de9c99;">Raging Warrior</td><td style="background-color:#dece99;">Rally Warrior</td><td style="background-color:#99deab;">Vengeful Warrior</td>
+		</tr><tr>
+			<th style="background-color:#b48c63ff;"><i>Flagbearer</i></th><td style="background-color:#dece99;">Cursed Flagbearer</td><td style="background-color:#99deab;">Mighty Flagbearer</td><td style="background-color:#de9c99;">Threatening Flagbearer</td>
+		</tr><tr>
+			<th style="background-color:#b48c63ff;"><i>Rogue</i></th><td style="background-color:#de9c99;">Assassin Rogue</td><td style="background-color:#dece99;">Charming Rogue</td><td style="background-color:#99deab;">Swiftfoot Rogue</td>
+		</tr><tr>
+			<th style="background-color:#8fb8bdff;"><i>Buster</i></th><td style="background-color:#dece99;">Focused Buster</td><td style="background-color:#dece99;">Rushing Buster</td><td style="background-color:#99deab;">Volatile Buster</td>
+		</tr><tr>
+			<th style="background-color:#8fb8bdff;"><i>Bomber</i></th><td style="background-color:#99deab;">Farsight Bomber</td><td style="background-color:#de9c99;">Flak Bomber</td><td style="background-color:#dece99;">Volatile Bomber</td>
+		</tr><tr>
+			<th style="background-color:#8fb8bdff;"><i>Healer</i></th><td style="background-color:#99deab;">Grand Healer</td><td style="background-color:#99deab;">Invigorating Healer</td><td style="background-color:#de9c99;">Hex Healer</td>
+		</tr><tr>
+			<th style="background-color:#8fb8bdff;"><i>Barbarian</i></th><td style="background-color:#99deab;">Wild Barbarian</td><td style="background-color:#dece99;">Heroic Barbarian</td><td style="background-color:#de9c99;">Brawler Barbarian</td>
+		</tr><tr>
+			<th style="background-color:#8fb8bdff;"><i>Paladin</i></th><td style="background-color:#dece99;">Champion Paladin</td><td style="background-color:#de9c99;">Duelist Paladin</td><td style="background-color:#99deab;">Heavy Paladin</td>
+		</tr><tr>
+			<th style="background-color:#8fb8bdff;"><i>Vampire</i></th><td style="background-color:#99deab;">Bloodlust Vampire</td><td style="background-color:#dece99;">Grand Vampire</td><td style="background-color:#de9c99;">Vengeful Vampire</td>
+		</tr><tr>
+			<th style="background-color:#8fb8bdff;"><i>Saint</i></th><td style="background-color:#de9c99;">Martyr Saint</td><td style="background-color:#99deab;">Glorious Saint</td><td style="background-color:#dece99;">Focused Saint</td>
+		</tr><tr>
+			<th style="background-color:#be94daff;"><i>Musketeer</i></th><td style="background-color:#de9c99;">Duelist Musketeer</td><td style="background-color:#99deab;">Sniping Musketeer</td><td style="background-color:#dece99;">Volleymaster Musketeer</td>
+		</tr><tr>
+			<th style="background-color:#be94daff;"><i>Centurion</i></th><td style="background-color:#de9c99;">Brutal Centurion</td><td style="background-color:#99deab;">Heavy Centurion</td><td style="background-color:#dece99;">Master Centurion</td>
+		</tr><tr>
+			<th style="background-color:#be94daff;"><i>Monk</i></th></th><td style="background-color:#99deab;">Grand Monk</td><td style="background-color:#dece99;">Martyr Monk</td><td style="background-color:#dece99;">Mighty Monk</td>
+		</tr><tr>
+			<th style="background-color:#be94daff;"><i>Berserker</i></th><td style="background-color:#de9c99;">Champion Berserker</td><td style="background-color:#99deab;">Rampaging Berserker</td><td style="background-color:#de9c99;">Warpath Berserker</td>
+		</tr><tr>
+			<th style="background-color:#be94daff;"><i>Flying Rogue</i></th><td style="background-color:#dece99;">Amored Flying Rogue</td><td style="background-color:#99deab;">Focused Flying Rogue</td><td style="background-color:#de9c99;">Swift Flying Rogue</td>
+		</tr><tr>
+			<th style="background-color:#e79a21ff;"><i>Mage</i></th><td style="background-color:#dece99;">Ember Mage</td><td style="background-color:#99deab;">Longshot Mage</td><td style="background-color:#de9c99;">Purifier Mage</td>
+		</tr><tr>
+			<th style="background-color:#e79a21ff;"><i>Warbeast</i></th><td style="background-color:#dece99;">Terrifying Warbeast</td><td style="background-color:#dece99;">Ravenous Warbeast</td><td style="background-color:#99deab;">Shredding Warbeast</td>
+		</tr><tr>
+			<th style="background-color:#e79a21ff;"><i>Templar</i></th><td style="background-color:#99deab;">Grand Templar</td><td style="background-color:#99deab;">Duelist Templar</td><td style="background-color:#de9c99;">Knight Templar</td>
+		</tr><tr>
+			<th style="background-color:#e79a21ff;"><i>Orc Slayer</i></th><td style="background-color:#dece99;">Champion Orc Slayer</td><td style="background-color:#99deab;">Rampaging Orc Slayer</td><td style="background-color:#de9c99;">Veteran Orc Slayer</td>
+		</tr><tr>
+			<th style="background-color:#e79a21ff;"><i>Balloon Buster</i></th><td style="background-color:#de9c99;">Ironclad Balloon Buster</td><td style="background-color:#99deab;">Slaying Balloon Buster</td><td style="background-color:#dece99;">Volatile Balloon Buster</td>
+		</tr><tr>
+			<th style="background-color:#e79a21ff;"><i>Artillery</i></th><td style="background-color:#dece99;">Rapid Artillery</td><td style="background-color:#99deab;">Shrapnel Artillery</td><td style="background-color:#dece99;">Sludge Artillery</td>
+		</tr><tr>
+			<th style="background-color:#e79a21ff;"><i>Necromancer</i></th><td style="background-color:#99deab;">Avaricious Necromancer</td><td style="background-color:#dece99;">Enthralled Necromancer</td><td style="background-color:#dece99;">Savant Necromancer</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 30
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Battle participation, chests:</h2>
+</center>
+##i sbUnitsDetail3.png c 542
+##t c 13
+Select which units you would like to use/not use by chest reward type
+##d 15
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Chest reward types</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Chest type</i></th><td>Bronze, Silver, Gold, Loyalty Gold, Loyalty Boss, Super Loyalty Boss, Loyalty Token, Loyalty Skin, Dungeon</td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 30
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Placement marker settings:</h2>
+</center>
+##i sbUnitsDetail4.png c 672
+##t c 13
+Select which which type of unit you'd like to place per battle type, depending on placement marker or reserved for favorites.
+##d 15
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Markers Explained (green is active)</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>favOnly</i></th><td>Favorite captain only</td></tr>
+			<tr><th></th><td><i>nc: Normal unit, Campaign battle: Only use this unit type for battles with favorite captains</i></td></tr>
+			<tr><th></th><td><i>nd: Normal unit, Dungeon battle: Only use this unit type for battles with favorite captains</i></td></tr>
+			<tr><th></th><td><i>ec: Epic unit, Campaign battle: Only use this unit type for battles with favorite captains</i></td></tr>
+			<tr><th></th><td><i>ec: Epic unit, Dungeon battle: Only use this unit type for battles with favorite captains</i></td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>markerOnly</i></th><td>Only place on corresponding marker</td>
+			<tr><th></th><td><i>nc: Normal unit, Campaign battle: Only use this unit type if the captain has set corresponding marker on the map</i></td></tr>
+			<tr><th></th><td><i>nd: Normal unit, Dungeon battle: Only use this unit type if the captain has set corresponding marker on the map</i></td></tr>
+			<tr><th></th><td><i>ec: Epic unit, Campaign battle: Only use this unit type if the captain has set corresponding marker on the map</i></td></tr>
+			<tr><th></th><td><i>ec: Epic unit, Dungeon battle: Only use this unit type if the captain has set corresponding marker on the map</i></td>
+		</tr><tr>
+			<th style="background-color:#ccd7dbff;"><i>canVibe</i></th><td>Place on Vibe marker (default)</td>
+			<tr><th></th><td><i>nc: Normal unit, Campaign battle: use this unit type on Vibe markers set by captain, or free mode</i></td></tr>
+			<tr><th></th><td><i>nd: Normal unit, Dungeon battle: use this unit type on Vibe markers set by captain, or free mode</i></td></tr>
+			<tr><th></th><td><i>ec: Epic unit, Campaign battle: use this unit type on Vibe markers set by captain, or free mode</i></td></tr>
+			<tr><th></th><td><i>ec: Epic unit, Dungeon battle: use this unit type on Vibe markers set by captain, or free mode</i></td>
+		</tr>
+	</table>
+<br>
+<br>
+<hr>
+</center>
+##d 30
+##r Side-Bar-Explained
+##r Home
+
+##s Chests
+##t c b 20
+Side-Bar: Chests
+##d 15
+##t c 13
+The chests page lets you select which chests types to prioritize when selecting captains.
+##i sbChestsDetail.png c 736
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Chests explained:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Layer</i></th><td>Current layer</td>
+		</tr>
+	</table>
+<br>
+<br>
+</center>
+##d 30
+##r Side-Bar-Explained
+##r Home
+
+##s Layers
+##t c b 20
+Side-Bar: Layers
+##d 15
+##t c 13
+The Layers page lets you set multiple sets of configuration per profile.
+##i sbLayerDetails.png 686
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Layers explained:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Layer</i></th><td>Current layer</td>
+		</tr>
+	</table>
+<br>
+<br>
+</center>
+##d 30
+##r Side-Bar-Explained
+##r Home
+
+##s Captains
+##t c b 20
+Side-Bar: Captains
+##d 15
+##t c 13
+The Captains page lets you search, favourite and configure captains.
+##i sbCaptainsDetail.png c 786
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Captains explained:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Layer</i></th><td>Current layer</td>
+		</tr>
+	</table>
+<br>
+<br>
+</center>
+##d 30
+##r Side-Bar-Explained
+##r Home
+
+
+##s Skins
+##t c b 20
+Side-Bar: Skins
+##d 15
+##t c 13
+The Skins page lets you set skins you own per unit type.
+##i sbSkinsDetail.png c 486
+##h
+<center>
+	<h2 style="border:0px solid Tomato;">Skins explained:</h2>
+	<br>
+	<table style="width:100%;border:1px solid black;margin-left:auto;margin-right:auto;"><tr>
+			<th style="background-color:#ccd7dbff;"><i>Dropdown per unit</i></th><td>Select a skin from the dropdown menu to apply</td>
+		</tr>
+	</table>
+<br>
+<br>
+</center>
+##d 30
+##r Side-Bar-Explained
+##r Home
+
+##s HTML
+##h
+<center>
+	<h2 style="border:2px solid Tomato;">HTML can be used to make everything look better</h2>
+	<p style="color:#83eb34;">Forground and</p>
+	<p style="background-color:#F08080;">Background colors can be easily changed</p>
+	<br>
+	<table><tr>
+			<td>And</td><td>it</td><td>can</td>
+		</tr><tr>
+			<td>be</td><td>used </td><td>to</td>
+		</tr><tr>
+			<td>organize</td><td>stuff</td><td>in</td>
+		</tr><tr>
+			<td>a</td><td>table</td>
+		</tr><tr>
+			<td style="color:#d834eb;">even</td><td style="background-color:#347deb;">colored</td>
+	</tr></table>
+	<br>
+	<p>and a lot more...</p>
+</center>
 
 
 
@@ -75,3 +1123,6 @@ features:
 - adjustable autocomplete
 - real time outcome
 ##l https://github.com/ProjectBots/JHtml-Editor GitHub b
+##d 15
+##r Advanced-Settings
+##r Home

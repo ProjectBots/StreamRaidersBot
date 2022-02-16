@@ -224,8 +224,8 @@ public class StreamRaiders {
 						GuideContent.gainStats(data.getAsJsonObject("Units"));
 					}
 					@Override
-					public void onProfileStartedLoading(String cid) {
-						userInterface.MainFrame.updateWS(false, false);
+					public void onConfigLoadStatusUpdate(int loaded, int failed, int total) {
+						userInterface.MainFrame.updateLoadStatus(loaded, failed, total);
 					}
 					@Override
 					public void onProfileLoadComplete(String cid, int pos) {

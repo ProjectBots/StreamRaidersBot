@@ -11,8 +11,8 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
 import javax.swing.WindowConstants;
 
 import com.google.gson.JsonArray;
@@ -55,7 +55,7 @@ public class MainFrame {
 		return sections;
 	}
 	
-	
+	/*
 	private static int proFailed = 0, proComplete = 0;
 	
 	synchronized public static void updateWS(boolean failed, boolean complete) {
@@ -75,28 +75,7 @@ public class MainFrame {
 			frameReady();
 		
 	}
-	
-	private static void frameReady() {
-		WaitScreen.setText("Refreshing Frame");
-		gui.refresh();
-		
-		String bver = Options.get("botVersion");
-		if(bver.contains("beta")) {
-			GUI beta = new GUI("Beta warn", 400, 200, gui, null);
-			Label l = new Label();
-			l.setText("This version is a beta version!");
-			beta.addLabel(l);
-			beta.refresh();
-		} else if(bver.contains("debug")) {
-			GUI debug = new GUI("Debug warn", 400, 200, gui, null);
-			Label l = new Label();
-			l.setText("This version is a debug version!");
-			debug.addLabel(l);
-			debug.refresh();
-		}
-		
-		WaitScreen.close();
-	}
+	*/
 	
 	public static void open() {
 		
@@ -307,6 +286,41 @@ public class MainFrame {
 		gui.addMenu(help);
 	}
 	
+	synchronized public static void updateLoadStatus(int loaded, int failed, int total) {
+		if(frameReady)
+			return;
+		
+		WaitScreen.setText("<html><center>Loading Profiles</center><br><center>Ready: " + (loaded+failed) + "/" + total + "</center><br><center>Failed: " + failed + "</center></html>");
+		
+		if(loaded+failed == total)
+			frameReady();
+	}
+	
+	private static boolean frameReady = false;
+	private static void frameReady() {
+		if(frameReady)
+			return;
+		WaitScreen.setText("Refreshing Frame");
+		gui.refresh();
+		
+		String bver = Options.get("botVersion");
+		if(bver.contains("beta")) {
+			GUI beta = new GUI("Beta warn", 400, 200, gui, null);
+			Label l = new Label();
+			l.setText("This version is a beta version!");
+			beta.addLabel(l);
+			beta.refresh();
+		} else if(bver.contains("debug")) {
+			GUI debug = new GUI("Debug warn", 400, 200, gui, null);
+			Label l = new Label();
+			l.setText("This version is a debug version!");
+			debug.addLabel(l);
+			debug.refresh();
+		}
+		
+		WaitScreen.close();
+		frameReady = true;
+	}
 	
 	synchronized public static void addLoadedProfile(String cid, int pos) {
 		//TODO
@@ -317,7 +331,6 @@ public class MainFrame {
 		gui.addContainer(c, pre+cid+"::profile");
 		
 		sections.put(cid, ps);
-		updateWS(false, true);
 	}
 	
 	public static void addFailedProfile(String cid, int pos, Exception e) {
@@ -325,7 +338,6 @@ public class MainFrame {
 		if(e != null)
 			Debug.printException("Profile failed to load: err=" + e.getClass().getSimpleName(), e, Debug.runerr, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
 		createFailedContainer(cid, pos);
-		updateWS(true, false);
 	}
 	
 	private static void createFailedContainer(String cid, int pos) {
@@ -348,7 +360,6 @@ public class MainFrame {
 			retry.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					proFailed--;
 					gui.remove(pre+cid+"::profile");
 					Manager.loadProfile(cid);
 				}
@@ -363,8 +374,7 @@ public class MainFrame {
 			rem.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					proFailed--;
-					ConfigsV2.remProfile(cid);
+					Manager.remProfile(cid);
 					gui.remove(pre+cid+"::profile");
 				}
 			});
@@ -375,7 +385,6 @@ public class MainFrame {
 	
 	public static void remProfile(String cid) {
 		//TODO
-		proComplete--;
 		sections.remove(cid);
 		if(gui != null) {
 			gui.remove(pre+cid+"::profile");
@@ -384,7 +393,9 @@ public class MainFrame {
 	}
 	
 	public static void updateSlotRunning(String cid, int slot, boolean run) {
-		GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::run", Fonts.getGradient("main buttons " + (run?"on":"def")));
+		
+		if(!GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::run", Fonts.getGradient("main buttons " + (run?"on":"def"))))
+			System.out.println(ConfigsV2.getPStr(cid, ConfigsV2.pname) + " - " + slot);
 		GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::run", Fonts.getColor("main buttons " + (run?"on":"def")));
 	}
 	
@@ -539,13 +550,11 @@ public class MainFrame {
 			System.exit(0);
 		} else {
 			WaitScreen.setText("reloading...");
-			proFailed = 0;
-			proComplete = 0;
 			Thread t = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					open();
-					List<String> loaded = Manager.getLoadedProfiles();
+					HashSet<String> loaded = Manager.getLoadedProfiles();
 					for(String cid : ConfigsV2.getCids()) {
 						if(loaded.contains(cid)) {
 							addLoadedProfile(cid, Manager.getProfilePos(cid));

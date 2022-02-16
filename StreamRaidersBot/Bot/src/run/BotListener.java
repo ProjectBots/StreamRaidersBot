@@ -23,6 +23,14 @@ public interface BotListener {
 	public default void onDataPathUpdate(String dataPath, String serverTime, JsonObject data) {};
 
 	/**
+	 * will be called while loading profiles.
+	 * @param loaded amount of profiles loaded
+	 * @param failed amount of profiles failed to load
+	 * @param total total amount of profiles
+	 */
+	public default void onConfigLoadStatusUpdate(int loaded, int failed, int total) {};
+	
+	/**
 	 * will be called if a new profile has been added
 	 * @param cid profile id
 	 */

@@ -449,13 +449,15 @@ public class GUI{
 		((Component) getComp(id)).setBackground(col);
 	}
 	
-	public static void setGradient(String id, Gradient gr) {
+	public static boolean setGradient(String id, Gradient gr) {
 		Component com = ((Component) getComp(id));
 		try {
 			com.getClass().getMethod("setGradient", Gradient.class).invoke(com, gr);
+			return true;
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
 				| SecurityException e) {
 			e(e);
+			return false;
 		}
 	}
 	

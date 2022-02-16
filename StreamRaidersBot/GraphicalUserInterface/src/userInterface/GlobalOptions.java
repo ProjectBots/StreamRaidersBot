@@ -8,6 +8,7 @@ import java.io.FilenameFilter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.event.DocumentEvent;
@@ -243,7 +244,7 @@ public class GlobalOptions {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(gui.showConfirmationBox("do you really want\nto delete all your\nprofiles?")) {
-					List<String> cids = Manager.getLoadedProfiles();
+					HashSet<String> cids = Manager.getLoadedProfiles();
 					for(String cid : cids)
 						Manager.remProfile(cid);
 				}

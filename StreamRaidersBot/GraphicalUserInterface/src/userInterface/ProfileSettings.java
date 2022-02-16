@@ -510,6 +510,13 @@ public class ProfileSettings {
 				if(!gotPrios.contains(pr))
 					ConfigsV2.remStorePrioInt(cid, lay, ConfigsV2.keys, pr);
 		
+			if(items.size() == 0) {
+				Label lsi = new Label();
+				lsi.setPos(0, y++);
+				lsi.setText("Nothing to show currently :(");
+				lsi.setForeground(Fonts.getColor("stngs profile labels"));
+				csi.addLabel(lsi);
+			}
 		
 		gui.addContainer(csi);
 		

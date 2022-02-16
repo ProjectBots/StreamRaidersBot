@@ -305,9 +305,11 @@ public class Run {
 	}
 	
 	synchronized private void slotSequence(int slot) {
+		Debug.print("requesting action", Debug.general, Debug.info, pn, slot);
 		try {
 			Manager.requestAction();
 		} catch (InterruptedException e1) {
+			Debug.print("action rejected", Debug.general, Debug.info, pn, slot);
 			return;
 		}
 		pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
@@ -358,6 +360,7 @@ public class Run {
 			Debug.printException("Run -> slotSequence: slot=" + slot + " err=unknown", e, Debug.runerr, Debug.fatal, pn, slot, true);
 		}
 		
+		Debug.print("releasing action", Debug.general, Debug.info, pn, slot);
 		Manager.releaseAction();
 		
 		LocalDateTime now = LocalDateTime.now();
@@ -423,17 +426,19 @@ public class Run {
 			isRunning[slot] = false;
 		}
 		
+		Debug.print("before MemoryReleaser", Debug.general, Debug.info, pn, slot);
 		synchronized (gclock) {
 			if(ConfigsV2.getGBoo(ConfigsV2.useMemoryReleaser) && now.isAfter(gcwait)) {
 				System.gc();
 				gcwait = now.plusSeconds(30);
 			}
 		}
+		Debug.print("after MemoryReleaser", Debug.general, Debug.info, pn, slot);
 		
 	}
 	
 	private static LocalDateTime gcwait = LocalDateTime.now();
-	private static Object gclock = new Object();
+	private static final Object gclock = new Object();
 	
 	
 	public boolean canUseSlot(int slot) throws NoConnectionException, NotAuthorizedException {
