@@ -129,6 +129,7 @@ public class BackEndHandler {
 			} else {
 				Options.set("eventTiers", "{}");
 			}
+			Options.set("currentEventCurrency", data.getAsJsonObject("Items").getAsJsonObject("eventcurrency").get("CurrencyTypeAwarded").getAsString());
 			Options.set("data", dataPath);
 			Options.save();
 			dpelis.onUpdate(dataPath, serverTime, data);

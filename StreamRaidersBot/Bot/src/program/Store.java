@@ -119,10 +119,11 @@ public class Store {
 	}
 	
 	public Store(JsonObject user, JsonArray availableCurrencies, JsonArray currentStoreItems) {
+		
 		currencies = new Hashtable<>();
 		for(int i=0; i<availableCurrencies.size(); i++) {
 			JsonObject c = availableCurrencies.get(i).getAsJsonObject();
-			currencies.put(c.getAsJsonPrimitive("currencyId").getAsString().replace("cooldown", meat.get()).replace("snowflake", eventcurrency.get()), Integer.parseInt(c.getAsJsonPrimitive("quantity").getAsString()));
+			currencies.put(c.get("currencyId").getAsString().replace("cooldown", meat.get()).replace(Options.get("currentEventCurrency"), eventcurrency.get()), Integer.parseInt(c.get("quantity").getAsString()));
 		}
 		int potion = user.get("epicProgression").getAsInt();
 		currencies.put(potions.get(), potion > 60 ? 60 : potion);
@@ -136,7 +137,7 @@ public class Store {
 		JsonArray cs = Json.parseObj(r).getAsJsonArray("data");
 		for(int i=0; i<cs.size(); i++) {
 			JsonObject c = cs.get(i).getAsJsonObject();
-			currencies.put(c.getAsJsonPrimitive("currencyId").getAsString().replace("cooldown", meat.get()).replace("snowflake", eventcurrency.get()), Integer.parseInt(c.getAsJsonPrimitive("quantity").getAsString()));
+			currencies.put(c.get("currencyId").getAsString().replace("cooldown", meat.get()).replace(Options.get("currentEventCurrency"), eventcurrency.get()), Integer.parseInt(c.get("quantity").getAsString()));
 		}
 		JsonObject user = Json.parseObj(req.getUser()).getAsJsonObject("data");
 		int potion = user.get("epicProgression").getAsInt();
@@ -505,7 +506,22 @@ public class Store {
 	//TODO
 	public JsonObject buyItem(Item item, SRR req, Skins skins) throws NoConnectionException {
 		JsonObject ret = new JsonObject();
-		C cur = item.getStr("Section").equals("Dungeon") ? keys : gold;
+		C cur;
+		switch(item.getStr("Section")) {
+		case SRC.Store.dungeon:
+			cur = keys;
+			break;
+		case SRC.Store.Event:
+			cur = eventcurrency;
+			break;
+		case SRC.Store.bones:
+			cur = bones;
+			break;
+		default:
+			cur = gold;
+			break;
+		}
+		
 		int price = item.getPrice();
 		
 		if(price > getCurrency(cur)) {
@@ -515,15 +531,16 @@ public class Store {
 		
 		String itype = item.getItem().replace("scroll", "").replace("cooldown", meat.get());
 		String itemId = item.getStr("Uid");
-		if(itype.equals("chest")) {
+		switch(itype) {
+		case "chest":
 			ret.addProperty("buyType", "chest");
 			
 			Json.override(ret, Json.parseObj(req.purchaseChestItem(itemId)));
 			
 			if(ret.get(SRC.errorMessage).isJsonPrimitive())
 				return ret;
-			
-		} else if(itype.equals("skin")) {
+			break;
+		case "skin":
 			ret.addProperty("buyType", "skin");
 			
 			Json.override(ret, Json.parseObj(req.purchaseStoreSkin(itemId)));
@@ -532,7 +549,8 @@ public class Store {
 				return ret;
 			
 			skins.addSkin(item.getStr("Uid"));
-		} else {
+			break;
+		default:
 			if(itemId.equals("dailydrop")) {
 				ret.addProperty("buyType", "daily");
 				Json.override(ret, Json.parseObj(req.grantDailyDrop()));
@@ -546,6 +564,7 @@ public class Store {
 				
 				shopItems = ret.getAsJsonArray("data").deepCopy();
 			}
+			break;
 		}
 		
 		decreaseCurrency(cur, price);

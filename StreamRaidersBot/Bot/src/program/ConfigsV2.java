@@ -913,7 +913,7 @@ public class ConfigsV2 {
 	}
 	
 	
-	private static class StorePrioType extends All {
+	public static class StorePrioType extends All {
 		public StorePrioType(String con) {
 			super(con);
 		}
@@ -921,6 +921,7 @@ public class ConfigsV2 {
 	
 	public static final StorePrioType keys = new StorePrioType("Key");
 	public static final StorePrioType bones = new StorePrioType("Bone");
+	public static final StorePrioType event = new StorePrioType("Event");
 
 	//TODO
 	public static HashSet<String> getStorePrioList(String cid, String lay, StorePrioType spt) {

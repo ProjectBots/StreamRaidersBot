@@ -113,7 +113,7 @@ public class Run {
 	}
 	
 	synchronized public void addRew(String con, String type, int amount) {
-		type = Remaper.map(type);
+		type = Remaper.map(type).replace(Options.get("currentEventCurrency"), Store.eventcurrency.get());
 		try {
 			JsonObject r = rews.getAsJsonObject(con);
 			r.addProperty(type, r.get(type).getAsInt() + amount);
@@ -1215,47 +1215,63 @@ public class Run {
 		//TODO better store
 		beh.updateStore(pn, false);
 		
-		dungeon:
-		if(beh.getCurrency(pn, Store.keys, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.storeMinKeys)) {
-			List<Item> items = beh.getAvailableEventStoreItems(SRC.Store.dungeon, false);
-			Item best = null;
-			int p = -1;
-			for(Item item : items) {
-				int p_ = ConfigsV2.getStorePrioInt(cid, currentLayer, ConfigsV2.keys, item.getStr("Uid"));
-				if(p_ > p) {
-					best = item;
-					p = p_;
-				}
-			}
-			if(p < 0)
-				break dungeon;
-			
-			JsonObject resp = beh.buyItem(best);
-			
-			JsonElement err = resp.get(SRC.errorMessage);
-			if(err == null || !err.isJsonPrimitive()) {
-				switch(resp.get("buyType").getAsString()) {
-				case "item":
-					addRew(SRC.Run.bought, best.getItem(), best.getQuantity());
-					break;
-				case "chest":
-					addRew(SRC.Run.bought, "dungeonchest", 1);
-					JsonArray data = resp.getAsJsonObject("data").getAsJsonArray("rewards");
-					Raid.updateChestRews();
-					for(int i=0; i<data.size(); i++) {
-						Reward rew = new Reward(data.get(i).getAsString());
-						addRew(SRC.Run.bought, rew.name, rew.quantity);
-					}
-					break;
-				case "skin":
-					addRew(SRC.Run.bought, "skin", 1);
-					break;
-				default:
-					Debug.print("Run -> store -> buyItem: err=unknown buyType, buyType="+resp.get("buyType").getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
-				}
-			} else if(!err.getAsString().startsWith("not enough "))
-				Debug.print("Run -> store -> buyItem: err="+err.getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
+		//	collecting daily reward if any
+		List<Item> daily = beh.getStoreItems(SRC.Store.purchasable, SRC.Store.daily);
+		for(Item item : daily) {
+			JsonElement err = beh.buyItem(item).get(SRC.errorMessage);
+			if(err.isJsonPrimitive())
+				Debug.print("Run -> store -> daily: err="+err.getAsString(), Debug.runerr, Debug.error, pn, 4, true);
+			else
+				addRew(SRC.Run.bought, Store.eventcurrency.get(), item.getQuantity());
 		}
+		
+		//	buying from dungeon store if available
+		for(String section : new String[] {
+				beh.getCurrency(pn, Store.keys, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.storeMinKeys) ? SRC.Store.dungeon : null,
+				SRC.Store.Event
+			}) {
+			sec: {
+				List<Item> items = beh.getAvailableEventStoreItems(section, false);
+				Item best = null;
+				int p = -1;
+				for(Item item : items) {
+					int p_ = ConfigsV2.getStorePrioInt(cid, currentLayer, ConfigsV2.keys, item.getStr("Uid"));
+					if(p_ > p) {
+						best = item;
+						p = p_;
+					}
+				}
+				if(p < 0)
+					break sec;
+				
+				JsonObject resp = beh.buyItem(best);
+				
+				JsonElement err = resp.get(SRC.errorMessage);
+				if(err == null || !err.isJsonPrimitive()) {
+					switch(resp.get("buyType").getAsString()) {
+					case "item":
+						addRew(SRC.Run.bought, best.getItem(), best.getQuantity());
+						break;
+					case "chest":
+						addRew(SRC.Run.bought, "dungeonchest", 1);
+						JsonArray data = resp.getAsJsonObject("data").getAsJsonArray("rewards");
+						Raid.updateChestRews();
+						for(int i=0; i<data.size(); i++) {
+							Reward rew = new Reward(data.get(i).getAsString());
+							addRew(SRC.Run.bought, rew.name, rew.quantity);
+						}
+						break;
+					case "skin":
+						addRew(SRC.Run.bought, "skin", 1);
+						break;
+					default:
+						Debug.print("Run -> store -> buyItem: err=unknown buyType, buyType="+resp.get("buyType").getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
+					}
+				} else if(!err.getAsString().startsWith("not enough "))
+					Debug.print("Run -> store -> buyItem: err="+err.getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
+			}
+		}
+		
 		
 		
 		if(beh.getCurrency(pn, Store.gold, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.scrollsMinGold)) {

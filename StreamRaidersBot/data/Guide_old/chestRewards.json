@@ -166,15 +166,15 @@
       "goldbag_75": 20,
       "rarescrolls_6": 30,
       "rarescrolls_7": 20,
-      "skinfulltanksportia": 7,
-      "skinfullballoonbustersportia": 7
+      "skinfulltemplarnikeolympiad": 7,
+      "skinfullvampirenyxolympiad": 7
     },
     "viewerboostedskin2": {
       "goldbag_100": 10,
       "rarescrolls_6": 10,
       "rarescrolls_7": 15,
-      "skinfulltanksportia": 20,
-      "skinfullballoonbustersportia": 15
+      "skinfulltemplarnikeolympiad": 20,
+      "skinfullvampirenyxolympiad": 15
     }
   },
   "chestboostedskinalternate": {
@@ -867,6 +867,134 @@
       "skinfullmagemythic": 15
     }
   },
+  "olympiaddionysuschest": {
+    "bonusolympiad": {
+      "goldbag_5": 50,
+      "goldbag_7": 30,
+      "goldbag_10": 20
+    },
+    "olympiaddionysusviewerslot1": {
+      "commonscrolls_2": 40,
+      "commonscrolls_7": 20,
+      "uncommonscrolls_3": 15,
+      "uncommonscrolls_5": 10,
+      "rarescrolls_3": 6,
+      "rarescrolls_4": 5,
+      "skinfullarcherapolloolympiad": 1,
+      "skinfullathenacenturionolympiad": 1,
+      "skinfullhealeraphroditeolympiad": 1,
+      "skinfullmagehypnosolympiad": 1
+    },
+    "olympiaddionysusviewerslot2": {
+      "goldbag_10": 51,
+      "goldbag_25": 28,
+      "goldbag_50": 9,
+      "goldbag_75real": 6,
+      "goldbag_100real": 4,
+      "goldbag_150": 2
+    },
+    "olympiaddionysusviewerslot3": {
+      "eventtoken_1": 80,
+      "eventtoken_2": 16,
+      "eventtoken_4": 4
+    }
+  },
+  "olympiadhadeschest": {
+    "bonusolympiad": {
+      "goldbag_5": 50,
+      "goldbag_7": 30,
+      "goldbag_10": 20
+    },
+    "olympiadhadesviewerslot1": {
+      "commonscrolls_2": 40,
+      "commonscrolls_7": 20,
+      "uncommonscrolls_3": 15,
+      "uncommonscrolls_5": 10,
+      "rarescrolls_3": 6,
+      "rarescrolls_4": 5,
+      "skinfullarcherapolloolympiad": 1,
+      "skinfullathenacenturionolympiad": 1,
+      "skinfullhealeraphroditeolympiad": 1,
+      "skinfullmagehypnosolympiad": 1
+    },
+    "olympiadhadesviewerslot2": {
+      "goldbag_10": 51,
+      "goldbag_25": 28,
+      "goldbag_50": 9,
+      "goldbag_75real": 6,
+      "goldbag_100real": 4,
+      "goldbag_150": 2
+    },
+    "olympiadhadesviewerslot3": {
+      "eventtoken_1": 80,
+      "eventtoken_2": 16,
+      "eventtoken_4": 4
+    }
+  },
+  "olympiadherachest": {
+    "bonusolympiad": {
+      "goldbag_5": 50,
+      "goldbag_7": 30,
+      "goldbag_10": 20
+    },
+    "olympiadheraviewerslot1": {
+      "commonscrolls_2": 40,
+      "commonscrolls_7": 20,
+      "uncommonscrolls_3": 15,
+      "uncommonscrolls_5": 10,
+      "rarescrolls_3": 6,
+      "rarescrolls_4": 5,
+      "skinfullarcherapolloolympiad": 1,
+      "skinfullathenacenturionolympiad": 1,
+      "skinfullhealeraphroditeolympiad": 1,
+      "skinfullmagehypnosolympiad": 1
+    },
+    "olympiadheraviewerslot2": {
+      "goldbag_10": 51,
+      "goldbag_25": 28,
+      "goldbag_50": 9,
+      "goldbag_75real": 6,
+      "goldbag_100real": 4,
+      "goldbag_150": 2
+    },
+    "olympiadheraviewerslot3": {
+      "eventtoken_1": 80,
+      "eventtoken_2": 16,
+      "eventtoken_4": 4
+    }
+  },
+  "olympiadzeuschest": {
+    "bonusolympiad": {
+      "goldbag_5": 50,
+      "goldbag_7": 30,
+      "goldbag_10": 20
+    },
+    "olympiadzeusviewerslot1": {
+      "commonscrolls_2": 40,
+      "commonscrolls_7": 20,
+      "uncommonscrolls_3": 15,
+      "uncommonscrolls_5": 10,
+      "rarescrolls_3": 6,
+      "rarescrolls_4": 5,
+      "skinfullarcherapolloolympiad": 1,
+      "skinfullathenacenturionolympiad": 1,
+      "skinfullhealeraphroditeolympiad": 1,
+      "skinfullmagehypnosolympiad": 1
+    },
+    "olympiadzeusviewerslot2": {
+      "goldbag_10": 51,
+      "goldbag_25": 28,
+      "goldbag_50": 9,
+      "goldbag_75real": 6,
+      "goldbag_100real": 4,
+      "goldbag_150": 2
+    },
+    "olympiadzeusviewerslot3": {
+      "eventtoken_1": 80,
+      "eventtoken_2": 16,
+      "eventtoken_4": 4
+    }
+  },
   "orcdromedachest": {
     "bonusboostedgold": {
       "goldbag_1000": 75,
@@ -1121,15 +1249,15 @@
       "goldbag_75": 20,
       "rarescrolls_6": 30,
       "rarescrolls_7": 20,
-      "skinfulltanksportia": 7,
-      "skinfullballoonbustersportia": 7
+      "skinfulltemplarnikeolympiad": 7,
+      "skinfullvampirenyxolympiad": 7
     },
     "viewerboostedskin2": {
       "goldbag_100": 10,
       "rarescrolls_6": 10,
       "rarescrolls_7": 15,
-      "skinfulltanksportia": 20,
-      "skinfullballoonbustersportia": 15
+      "skinfulltemplarnikeolympiad": 20,
+      "skinfullvampirenyxolympiad": 15
     }
   },
   "pvpskincommonchest": {

@@ -84,6 +84,7 @@ public class SRRHelper {
 					Options.set(c+"price", "9999");
 				}
 			}
+			Options.set("currentEventCurrency", data.getAsJsonObject("Items").getAsJsonObject("eventcurrency").get("CurrencyTypeAwarded").getAsString());
 			Options.set("data", dataPath);
 			Options.save();
 		};

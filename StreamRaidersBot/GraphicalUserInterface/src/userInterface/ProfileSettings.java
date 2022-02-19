@@ -31,12 +31,14 @@ import include.Http.NotAllowedProxyException;
 import program.ConfigsV2;
 import program.Options;
 import program.SRC;
+import program.Store;
 import program.SRR.NotAuthorizedException;
 import program.Store.Item;
 import run.Manager;
 import program.ConfigsV2.Boo;
 import program.ConfigsV2.Int;
 import program.ConfigsV2.SleInt;
+import program.ConfigsV2.StorePrioType;
 import program.Debug;
 
 public class ProfileSettings {
@@ -443,74 +445,100 @@ public class ProfileSettings {
 			ltsi.setForeground(Fonts.getColor("stngs profile labels"));
 			csi.addLabel(ltsi);
 			
+			boolean did_sth = false;
 			
-			List<Item> items;
-			List<Item> items_;
-			try {
-				items = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(SRC.Store.dungeon, true);
-				items_ = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(SRC.Store.dungeon, false);
-			} catch (NoConnectionException | NotAuthorizedException e3) {
-				Debug.printException("ProfileSettings -> open -> specialShop: err=unable to get items", e3, Debug.runerr, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
-				gui.close();
-				return;
-			}
-			HashSet<String> gotPrios = new HashSet<>();
-			for(Item item : items) {
-				final String iuid = item.getStr("Uid");
-				gotPrios.add(iuid);
+			for(final int s : new int[]{0,1}) {
+				final String section;
+				final StorePrioType spt;
+				final String cur;
+				switch(s) {
+				case 0:
+					section = SRC.Store.dungeon;
+					spt = ConfigsV2.keys;
+					cur = Store.keys.get();
+					break;
+				case 1:
+					section = SRC.Store.Event;
+					spt = ConfigsV2.event;
+					cur = Options.get("currentEventCurrency");
+					break;
+				default:
+					//	to lazy to handle properly bcs can never happen
+					section = null;
+					spt = null;
+					cur = null;
+				}
 				
-				Label lsi = new Label();
-				lsi.setPos(0, y);
-				lsi.setText(iuid+" ("+item.getItem()+")"+(item.getQuantity()==-1?"":" x"+item.getQuantity())+" @"+item.getPrice()+(item.getStr("Section").equals(SRC.Store.dungeon)?" keys":" gold"));
-				lsi.setForeground(Fonts.getColor("stngs profile labels"));
-				csi.addLabel(lsi);
-				
-				Integer prioint = ConfigsV2.getStorePrioInt(cid, lay, ConfigsV2.keys, iuid);
-				
-				TextField tfsi = new TextField();
-				tfsi.setText(prioint == null ? "" : ""+prioint);
-				tfsi.setSize(55, 21);
-				tfsi.setPos(1, y);
-				tfsi.setDocLis(new DocumentListener() {
-					@Override
-					public void removeUpdate(DocumentEvent e) {
-						update();
-					}
-					@Override
-					public void insertUpdate(DocumentEvent e) {
-						update();
-					}
-					@Override
-					public void changedUpdate(DocumentEvent e) {
-						update();
-					}
-					private void update() {
-						try {
-							ConfigsV2.setStorePrioInt(cid, lay, ConfigsV2.keys, iuid, Integer.parseInt(GUI.getInputText(uid+"storePrios::tf::"+iuid)));
-							GUI.setBackground(uid+"storePrios::tf::"+iuid, Color.white);
-						} catch (NumberFormatException e) {
-							GUI.setBackground(uid+"storePrios::tf::"+iuid, new Color(255, 122, 122));
+				List<Item> items;
+				List<Item> items_;
+				try {
+					items = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(section, true);
+					items_ = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(section, false);
+				} catch (NoConnectionException | NotAuthorizedException e3) {
+					Debug.printException("ProfileSettings -> open -> specialShop: err=unable to get items", e3, Debug.runerr, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
+					gui.close();
+					return;
+				}
+				HashSet<String> gotPrios = new HashSet<>();
+				for(Item item : items) {
+					final String iuid = item.getStr("Uid");
+					gotPrios.add(iuid);
+					
+					Label lsi = new Label();
+					lsi.setPos(0, y);
+					lsi.setText(iuid+" ("+item.getItem()+")"+(item.getQuantity()==-1?"":" x"+item.getQuantity())+" @"+item.getPrice()+" "+cur);
+					lsi.setForeground(Fonts.getColor("stngs profile labels"));
+					csi.addLabel(lsi);
+					
+					Integer prioint = ConfigsV2.getStorePrioInt(cid, lay, spt, iuid);
+					
+					TextField tfsi = new TextField();
+					tfsi.setText(prioint == null ? "" : ""+prioint);
+					tfsi.setSize(55, 21);
+					tfsi.setPos(1, y);
+					tfsi.setDocLis(new DocumentListener() {
+						@Override
+						public void removeUpdate(DocumentEvent e) {
+							update();
 						}
-					}
-				});;
-				csi.addTextField(tfsi, uid+"storePrios::tf::"+iuid);
+						@Override
+						public void insertUpdate(DocumentEvent e) {
+							update();
+						}
+						@Override
+						public void changedUpdate(DocumentEvent e) {
+							update();
+						}
+						private void update() {
+							try {
+								ConfigsV2.setStorePrioInt(cid, lay, spt, iuid, Integer.parseInt(GUI.getInputText(uid+"storePrios::tf::"+iuid)));
+								GUI.setBackground(uid+"storePrios::tf::"+iuid, Color.white);
+							} catch (NumberFormatException e) {
+								GUI.setBackground(uid+"storePrios::tf::"+iuid, new Color(255, 122, 122));
+							}
+						}
+					});;
+					csi.addTextField(tfsi, uid+"storePrios::tf::"+iuid);
+					
+					Label lsip = new Label();
+					lsip.setPos(2, y);
+					lsip.setText(items_.contains(item) ? "" : "a.b.");
+					lsip.setForeground(Fonts.getColor("stngs profile labels"));
+					csi.addLabel(lsip);
+					
+					y++;
+				}
 				
-				Label lsip = new Label();
-				lsip.setPos(2, y);
-				lsip.setText(items_.contains(item) ? "" : "a.b.");
-				lsip.setForeground(Fonts.getColor("stngs profile labels"));
-				csi.addLabel(lsip);
+				HashSet<String> all = ConfigsV2.getStorePrioList(cid, lay, spt);
+				for(String pr : new ArrayList<>(all))
+					if(!gotPrios.contains(pr))
+						ConfigsV2.remStorePrioInt(cid, lay, spt, pr);
 				
-				
-				y++;
+				did_sth = did_sth || (items.size()>0);
 			}
 			
-			HashSet<String> all = ConfigsV2.getStorePrioList(cid, lay, ConfigsV2.keys);
-			for(String pr : new ArrayList<>(all))
-				if(!gotPrios.contains(pr))
-					ConfigsV2.remStorePrioInt(cid, lay, ConfigsV2.keys, pr);
-		
-			if(items.size() == 0) {
+			
+			if(!did_sth) {
 				Label lsi = new Label();
 				lsi.setPos(0, y++);
 				lsi.setText("Nothing to show currently :(");
