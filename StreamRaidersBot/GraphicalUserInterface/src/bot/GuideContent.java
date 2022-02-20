@@ -27,6 +27,7 @@ import include.Guide_old;
 import include.Guide_old.OnLoad;
 import program.Debug;
 import program.Options;
+import program.Remaper;
 import include.Json;
 import include.NEF;
 
@@ -236,6 +237,7 @@ public class GuideContent {
 		
 		int i=-1;
 		for(String chest : chests.keySet()) {
+			chest = Remaper.map(chest);
 			
 			Image img;
 			if(chest.contains("dungeon") || chest.contains("vampire"))
@@ -243,7 +245,8 @@ public class GuideContent {
 			else if(cts.contains(new JsonPrimitive(chest)))
 				img = new Image("data/ChestPics/" + chest + ".png");
 			else
-				img = new Image("data/ChestPics/chestboostedskin.png");
+				continue;
+				//img = new Image("data/ChestPics/nochest.png");
 			img.setSquare(100);
 			img.setPos(0, ++i);
 			c.addImage(img);
@@ -307,7 +310,9 @@ public class GuideContent {
 		JsonObject complete = new JsonObject();
 		
 		for(String key : chests.keySet()) {
-			if(key.equals("anightmarechest") || key.equals("bonechest") || key.contains("achampion")) continue;
+			if(key.equals("anightmarechest") || key.equals("bonechest") || key.contains("achampion"))
+				continue;
+			
 			complete.add(key, new JsonObject());
 			
 			String[] vs = chests.getAsJsonObject(key).getAsJsonPrimitive("ViewerSlots").getAsString().replace(" ", "").split(",");

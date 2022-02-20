@@ -39,6 +39,7 @@ import program.Store.Item;
 import program.Unit;
 import run.BackEndHandler.UpdateEventListener;
 import program.ConfigsV2.ListType;
+import program.ConfigsV2.StorePrioType;
 import program.MapConv.NoFinException;
 import program.QuestEventRewards.Quest;
 import program.Debug;
@@ -60,6 +61,9 @@ public class Run {
 	 *	get unit costs (unlock/upgrade) from datapath
 	 * 	get Donators from github source
 	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
+	 * 	fix bugs (attached to discord message in #lounge)
+	 * 	when creating chest rewards for guide: exclude chest which aren't obtainable, compare to chests in Store
+	 * 	add store refresh gold thresholds to export
 	 * 
 	 * 
 	 * 	???:
@@ -1226,50 +1230,64 @@ public class Run {
 		}
 		
 		//	buying from dungeon store if available
-		for(String section : new String[] {
-				beh.getCurrency(pn, Store.keys, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.storeMinKeys) ? SRC.Store.dungeon : null,
-				SRC.Store.Event
-			}) {
-			sec: {
-				List<Item> items = beh.getAvailableEventStoreItems(section, false);
-				Item best = null;
-				int p = -1;
-				for(Item item : items) {
-					int p_ = ConfigsV2.getStorePrioInt(cid, currentLayer, ConfigsV2.keys, item.getStr("Uid"));
-					if(p_ > p) {
-						best = item;
-						p = p_;
-					}
-				}
-				if(p < 0)
-					break sec;
-				
-				JsonObject resp = beh.buyItem(best);
-				
-				JsonElement err = resp.get(SRC.errorMessage);
-				if(err == null || !err.isJsonPrimitive()) {
-					switch(resp.get("buyType").getAsString()) {
-					case "item":
-						addRew(SRC.Run.bought, best.getItem(), best.getQuantity());
-						break;
-					case "chest":
-						addRew(SRC.Run.bought, "dungeonchest", 1);
-						JsonArray data = resp.getAsJsonObject("data").getAsJsonArray("rewards");
-						Raid.updateChestRews();
-						for(int i=0; i<data.size(); i++) {
-							Reward rew = new Reward(data.get(i).getAsString());
-							addRew(SRC.Run.bought, rew.name, rew.quantity);
-						}
-						break;
-					case "skin":
-						addRew(SRC.Run.bought, "skin", 1);
-						break;
-					default:
-						Debug.print("Run -> store -> buyItem: err=unknown buyType, buyType="+resp.get("buyType").getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
-					}
-				} else if(!err.getAsString().startsWith("not enough "))
-					Debug.print("Run -> store -> buyItem: err="+err.getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
+		for(int sec : new int[] {0,1}) {
+			final String section;
+			final StorePrioType spt;
+			switch(sec) {
+			case 0:
+				if(beh.getCurrency(pn, Store.keys, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.storeMinKeys))
+					continue;
+				section = SRC.Store.dungeon;
+				spt = ConfigsV2.keys;
+				break;
+			case 1:
+				section = SRC.Store.Event;
+				spt = ConfigsV2.event;
+				break;
+			default:
+				//	not gonna happen but important for compiler
+				section = null;
+				spt = null;
 			}
+			
+			List<Item> items = beh.getAvailableEventStoreItems(section, false);
+			Item best = null;
+			int p = -1;
+			for(Item item : items) {
+				int p_ = ConfigsV2.getStorePrioInt(cid, currentLayer, spt, item.getStr("Uid"));
+				if(p_ > p) {
+					best = item;
+					p = p_;
+				}
+			}
+			if(p < 0)
+				continue;
+			
+			JsonObject resp = beh.buyItem(best);
+			
+			JsonElement err = resp.get(SRC.errorMessage);
+			if(err == null || !err.isJsonPrimitive()) {
+				switch(resp.get("buyType").getAsString()) {
+				case "item":
+					addRew(SRC.Run.bought, best.getItem(), best.getQuantity());
+					break;
+				case "chest":
+					addRew(SRC.Run.bought, "dungeonchest", 1);
+					JsonArray data = resp.getAsJsonObject("data").getAsJsonArray("rewards");
+					Raid.updateChestRews();
+					for(int i=0; i<data.size(); i++) {
+						Reward rew = new Reward(data.get(i).getAsString());
+						addRew(SRC.Run.bought, rew.name, rew.quantity);
+					}
+					break;
+				case "skin":
+					addRew(SRC.Run.bought, "skin", 1);
+					break;
+				default:
+					Debug.print("Run -> store -> buyItem: err=unknown buyType, buyType="+resp.get("buyType").getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
+				}
+			} else if(!err.getAsString().startsWith("not enough "))
+				Debug.print("Run -> store -> buyItem: err="+err.getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
 		}
 		
 		

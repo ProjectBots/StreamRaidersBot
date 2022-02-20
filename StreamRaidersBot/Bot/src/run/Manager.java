@@ -123,6 +123,7 @@ public class Manager {
 	
 	private static HashSet<String> loadedProfiles = new HashSet<>();
 	private static HashSet<String> failedProfiles = new HashSet<>();
+	private static final Object config_load_status_update_sync_lock = new Object();
 	
 	/**
 	 * checks the config for new profiles and loads them
@@ -132,7 +133,9 @@ public class Manager {
 		cids.removeAll(profiles.keySet());
 		for(final String cid : cids)
 			loadProfile(cid);
-		blis.onConfigLoadStatusUpdate(loadedProfiles.size(), failedProfiles.size(), cids.size());
+		synchronized(config_load_status_update_sync_lock) {
+			blis.onConfigLoadStatusUpdate(loadedProfiles.size(), failedProfiles.size(), cids.size());
+		}
 	}
 	
 	/**
@@ -152,17 +155,22 @@ public class Manager {
 				}
 				failedProfiles.remove(cid);
 				blis.onProfileStartedLoading(cid);
+				Run r = null;
 				try {
-					Run r = new Run(cid);
+					r = new Run(cid);
 					profiles.put(cid, r);
 					blis.onProfileLoadComplete(cid, poss.get(cid));
 					r.setReady(true);
-					loadedProfiles.add(cid);
 				} catch (Exception e) {
 					blis.onProfileLoadError(cid, poss.get(cid), e);
-					failedProfiles.add(cid);
 				}
-				blis.onConfigLoadStatusUpdate(loadedProfiles.size(), failedProfiles.size(), ConfigsV2.getCids().size());
+				synchronized(config_load_status_update_sync_lock) {
+					(r == null
+						?failedProfiles
+						:loadedProfiles
+						).add(cid);
+					blis.onConfigLoadStatusUpdate(loadedProfiles.size(), failedProfiles.size(), ConfigsV2.getCids().size());
+				}
 				releaseAction();
 			}
 		});

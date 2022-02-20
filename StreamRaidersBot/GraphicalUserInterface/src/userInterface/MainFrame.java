@@ -55,27 +55,6 @@ public class MainFrame {
 		return sections;
 	}
 	
-	/*
-	private static int proFailed = 0, proComplete = 0;
-	
-	synchronized public static void updateWS(boolean failed, boolean complete) {
-		if(failed)
-			proFailed++;
-		
-		if(complete)
-			proComplete++;
-		
-		int proReady = proComplete + proFailed;
-		
-		int proCount = ConfigsV2.getCids().size();
-		
-		WaitScreen.setText("<html><center>Loading Profiles</center><br><center>Ready: " + proReady + "/" + proCount + "</center><br><center>Failed: " + proFailed + "</center></html>");
-		
-		if(proCount == proReady)
-			frameReady();
-		
-	}
-	*/
 	
 	public static void open() {
 		
@@ -286,20 +265,14 @@ public class MainFrame {
 		gui.addMenu(help);
 	}
 	
-	synchronized public static void updateLoadStatus(int loaded, int failed, int total) {
-		if(frameReady)
-			return;
-		
+	public static void updateLoadStatus(int loaded, int failed, int total) {
 		WaitScreen.setText("<html><center>Loading Profiles</center><br><center>Ready: " + (loaded+failed) + "/" + total + "</center><br><center>Failed: " + failed + "</center></html>");
 		
 		if(loaded+failed == total)
 			frameReady();
 	}
 	
-	private static boolean frameReady = false;
 	private static void frameReady() {
-		if(frameReady)
-			return;
 		WaitScreen.setText("Refreshing Frame");
 		gui.refresh();
 		
@@ -319,11 +292,9 @@ public class MainFrame {
 		}
 		
 		WaitScreen.close();
-		frameReady = true;
 	}
 	
 	synchronized public static void addLoadedProfile(String cid, int pos) {
-		//TODO
 		ProfileSection ps = new ProfileSection(cid);
 		
 		Container c = ps.create();
@@ -334,7 +305,6 @@ public class MainFrame {
 	}
 	
 	public static void addFailedProfile(String cid, int pos, Exception e) {
-		//TODO
 		if(e != null)
 			Debug.printException("Profile failed to load: err=" + e.getClass().getSimpleName(), e, Debug.runerr, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
 		createFailedContainer(cid, pos);
@@ -384,7 +354,6 @@ public class MainFrame {
 	}
 	
 	public static void remProfile(String cid) {
-		//TODO
 		sections.remove(cid);
 		if(gui != null) {
 			gui.remove(pre+cid+"::profile");
