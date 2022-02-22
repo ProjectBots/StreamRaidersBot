@@ -22,7 +22,80 @@ the guide can be opened under "Bot" (the guide is not up to date at the moment)
 
 
 ***
-known Issues:  
-- earning normal gold chest even when blacklisted (SR has a chest limit for boosted and boss chests. They replace them with gold chests)  
 
+
+### How to use the bot in your own project
+add the bot module to your project  
+
+Mavem:  
+```xml
+
+  <dependencies>
+    <dependency>
+	  <groupId>com.github.ProjectBots</groupId>
+	  <artifactId>StreamRaidersBot</artifactId>
+	  <version>{last commit id or release tag}</version>
+	</dependency>
+	<dependency>
+	  <groupId>StreamRaidersBot</groupId>
+	  <artifactId>Bot</artifactId>
+	  <version>1.0.0</version>
+	</dependency>
+  </dependencies>
+  
+  <repositories>
+  	<repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
+  </repositories>
+```
+
+Initialise the Manager  
+```java
+Manager.ini(BotListener botlis);
+```
+
+Load all profiles  
+```java
+Manager.loadAllNewProfiles();
+```
+
+Stop the bot  
+```java
+Manager.stop();
+```
+
+
+
+Example:  
+```java
+	public static void main(String[] args) {
+		try {
+			Manager.ini(new BotListener() {
+				@Override
+				public boolean configNotReadable() {
+					return false;
+				}
+			});
+		} catch (IniCanceledException e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		Manager.loadAllNewProfiles();
+		
+		for(String cid : Manager.getLoadedProfiles())
+			for(int i=0; i<5; i++)
+				Manager.setRunning(cid, i, true);
+		
+		try {
+			System.in.read();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		Manager.stop();
+	}
+```
 
