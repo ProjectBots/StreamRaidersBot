@@ -71,6 +71,7 @@ Manager.stop();
 Example:  
 ```java
 	public static void main(String[] args) {
+		//	initialise Manager
 		try {
 			Manager.ini(new BotListener() {
 				@Override
@@ -83,18 +84,22 @@ Example:
 			return;
 		}
 		
+		//	load all profiles
 		Manager.loadAllNewProfiles();
 		
+		//	start all profiles
 		for(String cid : Manager.getLoadedProfiles())
 			for(int i=0; i<5; i++)
 				Manager.setRunning(cid, i, true);
 		
+		//	wait for any key
 		try {
 			System.in.read();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
+		//	exit bot
 		Manager.stop();
 	}
 ```
