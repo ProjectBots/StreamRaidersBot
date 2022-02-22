@@ -32,15 +32,15 @@ Mavem:
 
   <dependencies>
     <dependency>
-	  <groupId>com.github.ProjectBots</groupId>
-	  <artifactId>StreamRaidersBot</artifactId>
-	  <version>{last commit id or release tag}</version>
-	</dependency>
-	<dependency>
-	  <groupId>StreamRaidersBot</groupId>
-	  <artifactId>Bot</artifactId>
-	  <version>1.0.0</version>
-	</dependency>
+      <groupId>com.github.ProjectBots</groupId>
+      <artifactId>StreamRaidersBot</artifactId>
+      <version>{last commit id or release tag}</version>
+    </dependency>
+    <dependency>
+      <groupId>StreamRaidersBot</groupId>
+      <artifactId>Bot</artifactId>
+      <version>1.0.0</version>
+    </dependency>
   </dependencies>
   
   <repositories>
