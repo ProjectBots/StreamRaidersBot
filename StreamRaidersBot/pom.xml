@@ -70,10 +70,10 @@
   <repositories>
    
   </repositories>
+  
   <modules>
   	<module>Bot</module>
   	<module>GraphicalUserInterface</module>
   	<module>ConsoleInterface</module>
-  	<module>Qovery</module>
   </modules>
 </project>
