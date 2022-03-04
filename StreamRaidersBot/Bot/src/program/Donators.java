@@ -24,7 +24,7 @@ public class Donators {
 	public static final List<Don> dons = Collections.unmodifiableList(new ArrayList<Don>() {
 		private static final long serialVersionUID = 1L;
 		{
-			add(new Don("Skyzor", 3212, 0, "Real men support"));
+			add(new Don("Skyzor", 5266, 0, "Real men support"));
 			add(new Don("Obelisk", 2201, 0, "thanks for taking the time from your schedule to make this :)"));
 			add(new Don("Snugsel", 2000, 0, ""));
 			add(new Don("CeKay", 1500, 0, "Thx for this amazing - for me - timesaving project 3  cekay.de"));

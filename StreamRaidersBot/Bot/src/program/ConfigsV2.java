@@ -923,7 +923,7 @@ public class ConfigsV2 {
 	public static final StorePrioType bones = new StorePrioType("Bone");
 	public static final StorePrioType event = new StorePrioType("Event");
 
-	//TODO
+	
 	public static HashSet<String> getStorePrioList(String cid, String lay, StorePrioType spt) {
 		HashSet<String> ret = new HashSet<>();
 		if(lay.equals("(all)")) {
@@ -1224,6 +1224,9 @@ public class ConfigsV2 {
 						Debug.printException("ConfigsV2 -> Exportable -> configsAll: err=didnt catched, class="+classname+", field="+f.getName(), e, Debug.runerr, Debug.error, null, null, true);
 					}
 				} 
+				get("Simple").add("storeKeyPrios");
+				get("Simple").add("storeEventPrios");
+				get("Simple").add("storeRefresh");
 			}
 		};
 	}
@@ -1266,7 +1269,7 @@ public class ConfigsV2 {
 				}
 				private String lid;
 				private Hashtable<String, List<String>> items = new Hashtable<>();
-				public Layer(String lid) {//TODO
+				public Layer(String lid) {
 					this.lid = lid;
 				}
 				public void add(String list, String conf) {
@@ -1336,7 +1339,7 @@ public class ConfigsV2 {
 	public static void exportConfig(Exportable ex) throws IOException {
 		JsonObject res = new JsonObject();
 		res.addProperty("version", 1);
-		//TODO
+		
 		List<String> gconfs = ex.getGConfs();
 		for(String c : gconfs)
 			Json.set(res, "Global "+c, Json.get(configs, "Global "+c));
@@ -1440,7 +1443,6 @@ public class ConfigsV2 {
 		}
 		
 		
-		//TODO importable
 		private JsonObject g = null;
 		public void addGlobal(JsonObject g) {
 			this.g = g;
@@ -1468,7 +1470,6 @@ public class ConfigsV2 {
 	}
 	
 	public static void importConfig(Importable im) {
-		//TODO import
 		//applying global options
 		if(im.g != null) {
 			JsonObject g = configs.get("Global").getAsJsonObject();

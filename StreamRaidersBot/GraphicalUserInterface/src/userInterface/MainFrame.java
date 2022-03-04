@@ -244,7 +244,7 @@ public class MainFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					new Guide("data/Guide").show(gui, "Home");
+					new Guide("data\\Guide").show(gui, "Home");
 				} catch (Exception e1) {
 					Debug.printException("MainFrame -> openGuide: err=sth went wrong", e1, Debug.runerr, Debug.error, null, null, true);
 				}
@@ -372,14 +372,20 @@ public class MainFrame {
 		GUI.setText(ProfileSection.pre+cid+"::"+slot+"::time", time);
 	}
 	
-	public static void updateSlot(String cid, int slot, Raid raid, boolean locked, boolean change) {
+	public static void updateSlot(String cid, int slot, Raid raid, boolean change) {
 		String pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
 		
 		GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::change", Fonts.getColor("main buttons " + (change ? "on" : "def")));
 		GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::change", Fonts.getGradient("main buttons " + (change ? "on" : "def")));
 		
-		GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::lock", Fonts.getGradient("main buttons " + (locked ? "on" : "def")));
-		GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::lock", Fonts.getColor("main buttons " + (locked ? "on" : "def")));
+		Boolean locked = ConfigsV2.isSlotLocked(cid, "(all)", ""+slot);
+		String fid = "main buttons " +(locked == null
+										? "cat"
+										: locked
+											? "on"
+											: "def");
+		GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::lock", Fonts.getGradient(fid));
+		GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::lock", Fonts.getColor(fid));
 
 		if(raid == null) {
 			GUI.setText(ProfileSection.pre+cid+"::"+slot+"::capname", "????????");

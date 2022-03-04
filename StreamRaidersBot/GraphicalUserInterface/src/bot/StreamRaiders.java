@@ -257,7 +257,7 @@ public class StreamRaiders {
 					}
 					@Override
 					public void onProfileUpdateSlot(String cid, int slot, Raid raid, boolean locked, boolean change) {
-						userInterface.MainFrame.updateSlot(cid, slot, raid, locked, change);
+						userInterface.MainFrame.updateSlot(cid, slot, raid, change);
 					}
 				});
 			} catch (IniCanceledException e1) {

@@ -233,7 +233,10 @@ public class ProfileSection {
 						lock.setAL(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								ConfigsV2.setSlotLocked(cid, "(all)", ""+ii, !ConfigsV2.isSlotLocked(cid, "(all)", ""+ii));
+								Boolean isLocked = ConfigsV2.isSlotLocked(cid, "(all)", ""+ii);
+								if(isLocked == null)
+									isLocked = false;
+								ConfigsV2.setSlotLocked(cid, "(all)", ""+ii, !isLocked);
 								update();
 							}
 						});
@@ -375,8 +378,13 @@ public class ProfileSection {
 					for(String s : Manager.getLoadedProfiles())
 						if(ConfigsV2.getPStr(s, ConfigsV2.synced).equals(cid) || s.equals(cid))
 							Manager.updateProfile(s);
-				} else 
-					MainFrame.getSections().get(syncTo).update();
+				} else {
+					ProfileSection section = MainFrame.getSections().get(syncTo);
+					if(section != null)
+						section.update();
+					else
+						Manager.updateProfile(cid);
+				}
 				
 			}
 		});

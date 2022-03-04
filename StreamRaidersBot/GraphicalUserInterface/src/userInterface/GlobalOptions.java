@@ -99,7 +99,9 @@ public class GlobalOptions {
 				}
 				public void update() {
 					try {
-						ConfigsV2.setGInt(ConfigsV2.maxProfileActions, Integer.parseInt(GUI.getInputText(uid+"maxactions")));
+						int val = Integer.parseInt(GUI.getInputText(uid+"maxactions"));
+						ConfigsV2.setGInt(ConfigsV2.maxProfileActions, val);
+						Manager.setMaxConcurrentActions(val);
 						GUI.setBackground(uid+"maxactions", Color.white);
 					} catch (NumberFormatException e) {
 						GUI.setBackground(uid+"maxactions", new Color(255, 125, 125));

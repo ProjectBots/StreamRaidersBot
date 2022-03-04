@@ -310,28 +310,34 @@
   },
   "chestbosssuper": {
     "viewersuperboss": {
-      "rarescrolls_30": 80,
-      "rarescrolls_50": 20
+      "rarescrolls_20": 60,
+      "rarescrolls_30": 30,
+      "rarescrolls_50": 10
     },
     "viewersuperboss_": {
-      "rarescrolls_30": 80,
-      "rarescrolls_50": 20
+      "rarescrolls_20": 60,
+      "rarescrolls_30": 30,
+      "rarescrolls_50": 10
     },
     "viewersuperboss__": {
-      "rarescrolls_30": 80,
-      "rarescrolls_50": 20
+      "rarescrolls_20": 60,
+      "rarescrolls_30": 30,
+      "rarescrolls_50": 10
     },
     "viewersuperboss___": {
-      "rarescrolls_30": 80,
-      "rarescrolls_50": 20
+      "rarescrolls_20": 60,
+      "rarescrolls_30": 30,
+      "rarescrolls_50": 10
     },
     "viewersuperboss____": {
-      "rarescrolls_30": 80,
-      "rarescrolls_50": 20
+      "rarescrolls_20": 60,
+      "rarescrolls_30": 30,
+      "rarescrolls_50": 10
     },
     "viewersuperboss_____": {
-      "rarescrolls_30": 80,
-      "rarescrolls_50": 20
+      "rarescrolls_20": 60,
+      "rarescrolls_30": 30,
+      "rarescrolls_50": 10
     }
   },
   "chestbronze": {

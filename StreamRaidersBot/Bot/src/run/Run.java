@@ -63,7 +63,7 @@ public class Run {
 	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
 	 * 	fix bugs (attached to discord message in #lounge)
 	 * 	when creating chest rewards for guide: exclude chest which aren't obtainable, compare to chests in Store
-	 * 	add store refresh gold thresholds to export
+	 * 	add store refresh gold thresholds and special store values to export
 	 * 
 	 * 
 	 * 	???:
@@ -511,7 +511,7 @@ public class Run {
 		
 		String placeSer = r.get(SRC.Raid.placementsSerialized);
 		if(!r.canPlaceUnit(beh.getServerTime())
-			|| ConfigsV2.getInt(cid, currentLayer, ConfigsV2.maxUnitPerRaid) <= (placeSer == null 
+			|| ConfigsV2.getInt(cid, currentLayer, ConfigsV2.maxUnitPerRaid) < (placeSer == null 
 																					? 0 
 																					: placeSer.split(beh.getUserId()).length-1))
 			return;

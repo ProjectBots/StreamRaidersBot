@@ -101,7 +101,6 @@ public class Manager {
 	public static String addProfile(String name, String access_info) {
 		String cid = ConfigsV2.add(name, access_info);
 		ConfigsV2.saveb();
-		poss.put(cid, poss.put("(next)", poss.get("(next)")+1));
 		loadProfile(cid);
 		blis.onProfileAdded(cid);
 		return cid;
@@ -145,6 +144,8 @@ public class Manager {
 	public static void loadProfile(String cid) {
 		if(profiles.containsKey(cid))
 			return;
+		if(!poss.containsKey(cid))
+			poss.put(cid, poss.put("(next)", poss.get("(next)")+1));
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -319,7 +320,7 @@ public class Manager {
 							currentActions++;
 							Thread ct = actions.remove(0);
 							synchronized (ct) {
-								ct.notify();
+								ct.notifyAll();
 							}
 						}
 						try {
