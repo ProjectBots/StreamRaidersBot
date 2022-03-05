@@ -1,1 +1,2 @@
 -debug =debug general loop srerr
+-beta_frame
