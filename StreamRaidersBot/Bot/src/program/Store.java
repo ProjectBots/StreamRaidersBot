@@ -375,6 +375,15 @@ public class Store {
 			if(item != null)
 				for(String key : item.keySet())
 					this.item.add(key, item.get(key));
+			
+			for(String se : "Start End".split(" ")) {
+				String lt = getStr("Live"+se+"Time");
+				if(lt.equals(""))
+					lt = getStr("Bones"+se+"Time");
+				this.item.addProperty(se+"Time_srb", lt.equals("")
+											? Time.parse(LocalDateTime.now().plusYears(se.equals("End") ? 100 : -100))
+											: lt);
+			}
 		}
 		//	commonly used
 		public String getItem() {
@@ -390,20 +399,10 @@ public class Store {
 			return getInt("purchased") == 1;
 		}
 		public String getEndTime() {
-			String let = getStr("LiveEndTime");
-			if(let.equals(""))
-				let = getStr("BonesEndTime");
-			return let.equals("")
-				? Time.parse(LocalDateTime.MAX.minusYears(1))
-				: let;
+			return getStr("EndTime_srb");
 		}
 		public String getStartTime() {
-			String lst = getStr("LiveStartTime");
-			if(lst.equals(""))
-				lst = getStr("BonesStartTime");
-			return lst.equals("")
-				? Time.parse(LocalDateTime.now().minusYears(100))
-				: lst;
+			return getStr("StartTime_srb");
 		}
 		
 		//	for not common usecases
