@@ -61,9 +61,7 @@ public class Run {
 	 *	get unit costs (unlock/upgrade) from datapath
 	 * 	get Donators from github source
 	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
-	 * 	fix bugs (attached to discord message in #lounge)
 	 * 	when creating chest rewards for guide: exclude chest which aren't obtainable, compare to chests in Store
-	 * 	add store refresh gold thresholds and special store values to export
 	 * 
 	 * 
 	 * 	???:
