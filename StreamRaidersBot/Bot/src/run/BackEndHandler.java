@@ -318,25 +318,9 @@ public class BackEndHandler {
 			return;
 		
 		JsonArray rawCaps = new JsonArray();
-		int last = 10;
-		for(int i=1; i<=last; i++) {
-			JsonObject raw = Json.parseObj(req.getCaptainsForSearch(i, 8, false, true, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, false, null));
-			if(testUpdate(raw))
-				raw = Json.parseObj(req.getCaptainsForSearch(i, 8, false, true, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, false, null));
-			
-			JsonObject data = raw.getAsJsonObject("data");
-			last = data.get("lastPage").getAsInt();
-			
-			JsonArray loyalty = data.getAsJsonArray("pveLoyalty");
-			JsonArray captains = data.getAsJsonArray("captains");
-			
-			for(int j=0; j<loyalty.size(); j++) {
-				captains.get(j).getAsJsonObject().addProperty(SRC.Raid.pveWins, loyalty.get(j).getAsJsonObject().getAsJsonPrimitive(SRC.Raid.pveWins).getAsInt());
-				captains.get(j).getAsJsonObject().addProperty(SRC.Raid.pveLoyaltyLevel, loyalty.get(j).getAsJsonObject().getAsJsonPrimitive(SRC.Raid.pveLoyaltyLevel).getAsInt());
-			}
-			
-			rawCaps.addAll(captains);
-		}
+		SeedAndLastPage sap = new SeedAndLastPage();
+		for(int i=1; i<=sap.lastPage; i++)
+			rawCaps.addAll(searchCap(i, sap, false, true, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, false, null));
 		
 		Captain[] caps = new Captain[rawCaps.size()];
 		
@@ -349,29 +333,48 @@ public class BackEndHandler {
 		uelis.afterUpdate("caps::"+dungeon);
 	}
 	
-	public synchronized void setCaps(Captain[] caps, boolean dungeon) {
+	synchronized public void setCaps(Captain[] caps, boolean dungeon) {
 		if(dungeon)
 			dunCaps = caps;
 		else
 			this.caps = caps;
 	}
 	
-	public JsonArray searchCap(int page, int resultsPerPage, boolean fav, boolean live, String mode, boolean searchForCaptain, String name) throws NoConnectionException, NotAuthorizedException {
-		JsonObject rawd = Json.parseObj(req.getCaptainsForSearch(page, resultsPerPage, fav, live, mode, searchForCaptain, name));
-		if(testUpdate(rawd))
-			rawd = Json.parseObj(req.getCaptainsForSearch(page, resultsPerPage, fav, live, mode, searchForCaptain, name));
+	private static class SeedAndLastPage {
+		public String seed = "0";
+		public int lastPage = 10;
+		public SeedAndLastPage() {}
+		public SeedAndLastPage(String seed) {
+			this.seed = seed;
+		}
+	}
+	
+	private JsonArray searchCap(int page, SeedAndLastPage sap, boolean fav, boolean live, String mode, boolean searchForCaptain, String name) throws NoConnectionException, NotAuthorizedException {
+		JsonObject raw = Json.parseObj(req.getCaptainsForSearch(page, sap.seed, fav, live, mode, searchForCaptain, name));
+		if(testUpdate(raw))
+			raw = Json.parseObj(req.getCaptainsForSearch(page, sap.seed, fav, live, mode, searchForCaptain, name));
 		
-		JsonObject raw = rawd.getAsJsonObject("data");
+		JsonObject data = raw.getAsJsonObject("data");
 		
-		JsonArray loyalty = raw.getAsJsonArray("pveLoyalty");
-		JsonArray captains = raw.getAsJsonArray("captains");
+		sap.seed = data.get("seed").getAsString();
+		sap.lastPage = data.get("lastPage").getAsInt();
 		
-		for(int i=0; i<loyalty.size(); i++) {
-			captains.get(i).getAsJsonObject().addProperty(SRC.Raid.pveWins, loyalty.get(i).getAsJsonObject().getAsJsonPrimitive(SRC.Raid.pveWins).getAsInt());
-			captains.get(i).getAsJsonObject().addProperty(SRC.Raid.pveLoyaltyLevel, loyalty.get(i).getAsJsonObject().getAsJsonPrimitive(SRC.Raid.pveLoyaltyLevel).getAsInt());
+		JsonArray loyalty = data.getAsJsonArray("pveLoyalty");
+		JsonArray captains = data.getAsJsonArray("captains");
+		
+		for(int j=0; j<loyalty.size(); j++) {
+			JsonElement cap = captains.get(j);
+			if(!cap.isJsonObject())
+				continue;
+			cap.getAsJsonObject().addProperty(SRC.Raid.pveWins, loyalty.get(j).getAsJsonObject().getAsJsonPrimitive(SRC.Raid.pveWins).getAsInt());
+			cap.getAsJsonObject().addProperty(SRC.Raid.pveLoyaltyLevel, loyalty.get(j).getAsJsonObject().getAsJsonPrimitive(SRC.Raid.pveLoyaltyLevel).getAsInt());
 		}
 		
 		return captains;
+	}
+	
+	public JsonArray searchCap(int page, String seed, boolean fav, boolean live, String mode, boolean searchForCaptain, String name) throws NoConnectionException, NotAuthorizedException {
+		return searchCap(page, new SeedAndLastPage(seed), fav, live, mode, searchForCaptain, name);
 	}
 	
 	public Captain[] getCaps(boolean dungeon) throws NoConnectionException, NotAuthorizedException {

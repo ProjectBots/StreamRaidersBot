@@ -193,7 +193,7 @@ public class Run {
 							if(got.contains(tdn) || !ConfigsV2.getCapBoo(cid, currentLayer, tdn, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign, ConfigsV2.il))
 								continue;
 							
-							JsonArray results = beh.searchCap(1, 8, false, false, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, true, tdn);
+							JsonArray results = beh.searchCap(1, null, false, false, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, true, tdn);
 							if(results.size() == 0)
 								continue;
 							

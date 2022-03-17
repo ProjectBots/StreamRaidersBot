@@ -309,7 +309,7 @@ public class SRRHelper {
 	}
 	
 	public JsonArray search(int page, int resultsPerPage, boolean fav, boolean live, String mode, boolean searchForCaptain, String name) throws NoConnectionException {
-		JsonObject rawd = Json.parseObj(req.getCaptainsForSearch(page, resultsPerPage, fav, live, mode, searchForCaptain, name));
+		JsonObject rawd = Json.parseObj(req.getCaptainsForSearch(page, null, fav, live, mode, searchForCaptain, name));
 		if(rawd == null) {
 			Debug.print("SRRHelper -> search: rawd=null", Debug.runerr, Debug.error, null, null, true);
 			return new JsonArray();

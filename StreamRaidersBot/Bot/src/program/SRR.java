@@ -312,7 +312,7 @@ public class SRR {
 	
 	
 	
-	public String getCaptainsForSearch(int page, int resultsPerPage, boolean fav, boolean live, String mode, boolean searchForCaptain, String name) throws NoConnectionException {
+	public String getCaptainsForSearch(int page, String seed, boolean fav, boolean live, String mode, boolean searchForCaptain, String name) throws NoConnectionException {
 		JsonObject filter = new JsonObject();
 		filter.addProperty("ambassadors", "false");
 		filter.addProperty("favorite", (fav ? "true" : "false"));
@@ -323,8 +323,9 @@ public class SRR {
 		
 		Http post = getPost("getCaptainsForSearch");
 		post.addEncArg("page", ""+page);
-		post.addEncArg("resultsPerPage", ""+resultsPerPage);
+		post.addEncArg("resultsPerPage", "30");
 		post.addEncArg("filters", filter.toString());
+		post.addEncArg("seed", seed==null?"0":seed);
 		
 		return sendPost(post);
 	}
