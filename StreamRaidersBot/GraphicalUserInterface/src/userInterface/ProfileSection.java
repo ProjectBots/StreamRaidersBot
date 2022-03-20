@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
-import bot.MapGUI;
+
 import include.GUI;
 import include.GUI.Button;
 import include.GUI.Container;
@@ -290,7 +290,7 @@ public class ProfileSection {
 						map.setAL(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								MapGUI.asGui(Manager.getProfile(cid), ii);
+								MapGUI.asGui(MainFrame.getGUI(), Manager.getProfile(cid), ii);
 							}
 						});
 						mapchest.addBut(map);

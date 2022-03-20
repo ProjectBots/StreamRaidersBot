@@ -14,18 +14,17 @@ import include.GUI.Image;
 import include.GUI.Label;
 import include.GUI.TextArea;
 import include.GUI.WinLis;
+import me.friwi.jcefmaven.CefInitializationException;
+import me.friwi.jcefmaven.UnsupportedPlatformException;
+import userInterface.MainFrame;
 import userInterface.WaitScreen;
-import program.Configs;
 import program.ConfigsV2;
 import program.Debug;
 import program.Options;
 import program.Raid;
-import program.Remaper;
-import program.SRRHelper;
 import program.Debug.DebugEventHandler;
 import program.Debug.Scope;
 import program.Debug.Type;
-import program.SRRHelper.DataPathEventListener;
 import run.Manager;
 import run.BotListener;
 import run.Manager.IniCanceledException;
@@ -39,12 +38,11 @@ public class StreamRaiders {
 	
 	synchronized private static void log(String text) {
 		final String errmsg;
-		if_clause:
-		if(Options.is("beta_frame")) {
+		checkBlocked: {
 			int ind1 = text.indexOf("err=");
 			if(ind1 == -1) {
 				errmsg = null;
-				break if_clause;
+				break checkBlocked;
 			}
 			int ind2 = text.indexOf(",", ind1);
 			if(ind2 == -1)
@@ -53,10 +51,9 @@ public class StreamRaiders {
 			
 			if(ConfigsV2.getGStr(ConfigsV2.blocked_errors).contains(errmsg))
 				return;
-		} else
-			errmsg = null;
+		} 
 		if(error_count == 0) {
-			err = new GUI("Error occured", 400, 200, Options.is("beta_frame") ? userInterface.MainFrame.getGUI() : bot.MainFrame.getGUI(), null);
+			err = new GUI("Error occured", 400, 200, MainFrame.getGUI(), null);
 			err.addWinLis(new WinLis() {
 				@Override
 				public void onIconfied(WindowEvent e) {}
@@ -112,25 +109,7 @@ public class StreamRaiders {
 	
 	public static void main(String[] args) {
 		
-		System.out.println("\r\n"
-				+ "\u0009███████╗██████╗     ██████╗  ██████╗ ████████╗\r\n"
-				+ "\u0009██╔════╝██╔══██╗    ██╔══██╗██╔═══██╗╚══██╔══╝\r\n"
-				+ "\u0009███████╗██████╔╝    ██████╔╝██║   ██║   ██║   \r\n"
-				+ "\u0009╚════██║██╔══██╗    ██╔══██╗██║   ██║   ██║   \r\n"
-				+ "\u0009███████║██║  ██║    ██████╔╝╚██████╔╝   ██║   \r\n"
-				+ "\u0009╚══════╝╚═╝  ╚═╝    ╚═════╝  ╚═════╝    ╚═╝   \r\n"
-				+ "\r\n");
 		
-		//TODO move to manager
-		try {
-			Options.load();
-		} catch (IOException | NullPointerException fnf) {
-			System.out.println("Couldnt load options");
-			return;
-		}
-		
-		System.out.println("by ProjectBots https://github.com/ProjectBots/StreamRaiderBot\r\n"
-				+ "Version: " + Options.get("botVersion") + "\r\n");
 		
 		/*	TODO make better / test if bug has been resolved over time
 		if(!System.getProperty("java.version").startsWith("16")) {
@@ -149,7 +128,7 @@ public class StreamRaiders {
 		}
 		*/
 		
-		//TODO move into manager
+		
 		Debug.setDebugEventHandler(new DebugEventHandler() {
 			@Override
 			public void onPrintLine(String pre, String msg, Scope scope, Type type, String pn, Integer slot, boolean forced) {
@@ -186,116 +165,73 @@ public class StreamRaiders {
 		
 		Debug.print("started", Debug.general, Debug.info, null, null);
 		
-		WaitScreen.setText("Initialize Bot");
-		
-		WaitScreen.setText("Initialize Remaper");
-		//TODO move to manager
-		Remaper.load();
-		
-		
-		WaitScreen.setText("Initialize Browser");
 		if(!Options.is("no_browser")) {
+			WaitScreen.setText("Initialize Browser");
 			try {
 				Browser.create();
-			} catch (IOException | RuntimeException e) {
+			} catch (IOException | UnsupportedPlatformException | InterruptedException | CefInitializationException e) {
 				Debug.printException("err=Couldnt initialize embeded Browser", e, Debug.runerr, Debug.error, null, null, true);
 				WaitScreen.close();
 				return;
 			}
-		} else {
-			WaitScreen.setText("Browser disabled");
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {}
 		}
 		
-		WaitScreen.setText("Initialize MainFrame"); 
-		if(Options.is("beta_frame")) {
-			//TODO manager
-			try {
-				Manager.ini(new BotListener() {
-					@Override
-					public boolean configNotReadable() {
-						return GUI.showConfirmationBoxStatic("Loading Configs", "config file is corrupted\r\nreset?");
-					}
-					@Override
-					public void onDataPathUpdate(String dataPath, String serverTime, JsonObject data) {
-						GuideContent.saveChestRewards(data);
-						GuideContent.gainStats(data.getAsJsonObject("Units"));
-					}
-					@Override
-					public void onConfigLoadStatusUpdate(int loaded, int failed, int total) {
-						userInterface.MainFrame.updateLoadStatus(loaded, failed, total);
-					}
-					@Override
-					public void onProfileLoadComplete(String cid, int pos) {
-						userInterface.MainFrame.addLoadedProfile(cid, pos);
-					}
-					@Override
-					public void onProfileLoadError(String cid, int pos, Exception e) {
-						userInterface.MainFrame.addFailedProfile(cid, pos, e);
-					}
-					@Override
-					public void onProfileUnloaded(String cid) {
-						userInterface.MainFrame.remProfile(cid);
-					}
-					@Override
-					public void onProfileChangedRunning(String cid, int slot, boolean run) {
-						userInterface.MainFrame.updateSlotRunning(cid, slot, run);
-					}
-					@Override
-					public void onProfileTimerUpdate(String cid, int slot, String time) {
-						userInterface.MainFrame.updateTimer(cid, slot, time);
-					}
-					@Override
-					public void onProfileUpdateCurrency(String cid, String type, int amount) {
-						userInterface.MainFrame.updateCurrency(cid, type, amount);
-					}
-					@Override
-					public void onProfileUpdateGeneral(String cid, String pn, String ln, Color lc) {
-						userInterface.MainFrame.updateGeneral(cid, pn, ln, lc);
-					}
-					@Override
-					public void onProfileUpdateSlot(String cid, int slot, Raid raid, boolean locked, boolean change) {
-						userInterface.MainFrame.updateSlot(cid, slot, raid, change);
-					}
-				});
-			} catch (IniCanceledException e1) {
-				return;
-			}
-			userInterface.MainFrame.open();
-			Manager.loadAllNewProfiles();
-		} else {
-			//TODO remove on v7 release
-			WaitScreen.setText("Initialize Config");
-			try {
-				Configs.load();
-			} catch (IOException e) {
-				Debug.printException("err=failed to load configs", e, Debug.runerr, Debug.error, null, null, true);
-				if(GUI.showConfirmationBoxStatic("Loading Configs", "config file is corrupted\r\nreset?")) {
-					try {
-						Configs.load(true);
-					} catch (IOException e1) {
-						Debug.printException("err=failed to reset config", e, Debug.runerr, Debug.error, null, null, true);
-					}
-				} else {
-					return;
-				}	
-			}
-			
-			startMemReleaser();
-			
-			SRRHelper.setDataPathEventListener(new DataPathEventListener() {
+		WaitScreen.setText("Initialize Bot"); 
+		try {
+			Manager.ini(new BotListener() {
 				@Override
-				public void onUpdate(String dataPath, JsonObject data) {
-					DataPathEventListener.super.onUpdate(dataPath, data);
+				public boolean configNotReadable() {
+					return GUI.showConfirmationBoxStatic("Loading Configs", "config file is corrupted\r\nreset?");
+				}
+				@Override
+				public void onDataPathUpdate(String dataPath, String serverTime, JsonObject data) {
 					GuideContent.saveChestRewards(data);
 					GuideContent.gainStats(data.getAsJsonObject("Units"));
 				}
+				@Override
+				public void onConfigLoadStatusUpdate(int loaded, int failed, int total) {
+					userInterface.MainFrame.updateLoadStatus(loaded, failed, total);
+				}
+				@Override
+				public void onProfileLoadComplete(String cid, int pos) {
+					userInterface.MainFrame.addLoadedProfile(cid, pos);
+				}
+				@Override
+				public void onProfileLoadError(String cid, int pos, Exception e) {
+					userInterface.MainFrame.addFailedProfile(cid, pos, e);
+				}
+				@Override
+				public void onProfileUnloaded(String cid) {
+					userInterface.MainFrame.remProfile(cid);
+				}
+				@Override
+				public void onProfileChangedRunning(String cid, int slot, boolean run) {
+					userInterface.MainFrame.updateSlotRunning(cid, slot, run);
+				}
+				@Override
+				public void onProfileTimerUpdate(String cid, int slot, String time) {
+					userInterface.MainFrame.updateTimer(cid, slot, time);
+				}
+				@Override
+				public void onProfileUpdateCurrency(String cid, String type, int amount) {
+					userInterface.MainFrame.updateCurrency(cid, type, amount);
+				}
+				@Override
+				public void onProfileUpdateGeneral(String cid, String pn, String ln, Color lc) {
+					userInterface.MainFrame.updateGeneral(cid, pn, ln, lc);
+				}
+				@Override
+				public void onProfileUpdateSlot(String cid, int slot, Raid raid, boolean locked, boolean change) {
+					userInterface.MainFrame.updateSlot(cid, slot, raid, change);
+				}
 			});
-			bot.MainFrame.open();
-			WaitScreen.close();
+		} catch (IniCanceledException e1) {
+			//	exit bot
+			return;
 		}
+		WaitScreen.setText("Initialize MainFrame"); 
+		userInterface.MainFrame.open();
+		Manager.loadAllNewProfiles();
 	}
 	
 	

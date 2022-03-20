@@ -57,12 +57,6 @@ public class Map {
 		map.get(x).getAsJsonArray().get(y).getAsJsonObject().addProperty(key, value);
 	}
 	
-	public Map(JsonArray completeMap) {
-		map = completeMap;
-		width = map.size();
-		length = map.get(0).getAsJsonArray().size();
-	}
-	
 	private String name = "";
 	
 	public String getName() {

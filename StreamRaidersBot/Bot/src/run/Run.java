@@ -1329,11 +1329,13 @@ public class Run {
 					Item item = items.get(ind);
 					
 					//TODO make better
-					String err = beh.buyStoreItem(item);
-					if(err == null)
+					JsonObject ret = beh.buyItem(item);
+					JsonElement err = ret.get(SRC.errorMessage);
+					if(err != null && err.isJsonPrimitive()) {
+						if(!err.getAsString().startsWith("not enough"))
+							Debug.print("Run -> store: err=" + err.getAsString() + ", item=" + item.toString(), Debug.lowerr, Debug.error, pn, 4, true);
+					} else
 						addRew(SRC.Run.bought, item.getItem(), item.getQuantity());
-					else if(!err.equals("not enough gold"))
-						Debug.print("Run -> store: err=" + err + ", item=" + item.toString(), Debug.lowerr, Debug.error, pn, 4, true);
 					
 					ps[ind] = -1;
 				}

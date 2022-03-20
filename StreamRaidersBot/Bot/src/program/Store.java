@@ -113,10 +113,6 @@ public class Store {
 		return currencies;
 	}
 	
-	public Store(SRR req) throws NoConnectionException {
-		refreshCurrency(req);
-		getCurrentStoreItems(req);
-	}
 	
 	public Store(JsonObject user, JsonArray availableCurrencies, JsonArray currentStoreItems) {
 		
@@ -131,40 +127,6 @@ public class Store {
 		shopItems = currentStoreItems;
 	}
 	
-	public void refreshCurrency(SRR req) throws NoConnectionException {
-		currencies = new Hashtable<>();
-		String r = req.getAvailableCurrencies();
-		JsonArray cs = Json.parseObj(r).getAsJsonArray("data");
-		for(int i=0; i<cs.size(); i++) {
-			JsonObject c = cs.get(i).getAsJsonObject();
-			currencies.put(c.get("currencyId").getAsString().replace("cooldown", meat.get()).replace(Options.get("currentEventCurrency"), eventcurrency.get()), Integer.parseInt(c.get("quantity").getAsString()));
-		}
-		JsonObject user = Json.parseObj(req.getUser()).getAsJsonObject("data");
-		int potion = user.get("epicProgression").getAsInt();
-		currencies.put(potions.get(), potion > 60 ? 60 : potion);
-		storeRefreshCount = user.get("storeRefreshCount").getAsInt();
-	}
-	
-	public void getCurrentStoreItems(SRR req) throws NoConnectionException {
-		shopItems = Json.parseObj(req.getCurrentStoreItems()).getAsJsonArray("data");
-	}
-	
-	public String refreshStore(SRR req) throws NoConnectionException {
-		JsonObject raw = Json.parseObj(req.purchaseStoreRefresh());
-		
-		JsonElement err = raw.get(SRC.errorMessage);
-		
-		if(err.isJsonPrimitive())
-			return err.getAsString();
-		
-		
-		shopItems = raw.getAsJsonArray("data");
-		storeRefreshCount++;
-		currencies.put(gold.get(), currencies.get(gold.get()) 
-				- (storeRefreshCount > 3 ? 400 : storeRefreshCount * 100));
-		
-		return null;
-	}
 	
 	public void refreshStore(JsonArray shopItems) throws NoConnectionException {
 		this.shopItems = shopItems;

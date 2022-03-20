@@ -121,19 +121,6 @@ public class QuestEventRewards {
 	}
 	
 	
-	public void updateQuests(SRR req) throws NoConnectionException {
-		questTypes = Json.parseObj(Options.get("quests"));
-		
-		JsonArray raw = Json.parseObj(req.getUserQuests()).getAsJsonArray("data");
-		quests = new Quest[0];
-		
-		for(int i=0; i<raw.size(); i++) {
-			try {
-				quests = add(quests, new Quest(raw.get(i).getAsJsonObject()));
-			} catch (NoQuestException e) {}
-		}
-	}
-	
 	public void updateQuests(JsonArray userQuests) {
 		questTypes = Json.parseObj(Options.get("quests"));
 		
@@ -152,60 +139,6 @@ public class QuestEventRewards {
 			if(quests[i].canClaim()) 
 				ret = add(ret, quests[i]);
 		return ret;
-	}
-	
-	
-	
-	public void updateEvent(SRR req) throws NoConnectionException {
-		JsonObject fullRaw = Json.parseObj(req.getUserEventProgression());
-		String st = fullRaw.getAsJsonObject("info").getAsJsonPrimitive("serverTime").getAsString();
-		JsonArray data = fullRaw.getAsJsonArray("data");
-		
-		for(int i=0; i<data.size(); i++) {
-			JsonObject raw = data.get(i).getAsJsonObject();
-			currentEvent = raw.getAsJsonPrimitive("eventUid").getAsString();
-			
-			if(Time.isAfter(st, Json.parseObj(
-					Options.get("events"))
-						.getAsJsonObject(currentEvent)
-						.getAsJsonPrimitive("EndTime")
-						.getAsString())) 
-				continue;
-			
-			
-			isEvent = true;
-			
-			hasBattlePass = raw.get("hasBattlePass").getAsInt() == 1;
-			tier = raw.get("currentTier").getAsInt();
-			
-			JsonElement rbc = raw.get("basicRewardsCollected");
-			if(rbc.isJsonPrimitive()) {
-				String[] bc = rbc.getAsString().split(",");
-				for(String t : bc) {
-					JsonObject c = new JsonObject();
-					c.addProperty("basic", true);
-					collected.add(t, c);
-				}
-			}
-			
-			JsonElement rpc = raw.get("battlePassRewardsCollected");
-			if(rpc.isJsonPrimitive()) {
-				String[] pc = rpc.getAsString().split(",");
-				for(String t : pc) {
-					JsonElement je = collected.get(t);
-					if(je == null) {
-						JsonObject c = new JsonObject();
-						c.addProperty("pass", true);
-						collected.add(t, c);
-					} else {
-						je.getAsJsonObject().addProperty("pass", true);
-					}
-				}
-			}
-			
-			return;
-		}
-		isEvent = false;
 	}
 	
 	
@@ -267,12 +200,6 @@ public class QuestEventRewards {
 		return !e.getAsBoolean();
 	}
 	
-	public String collectEvent(int p, boolean battlePass, SRR req) throws NoConnectionException {
-		if(!canCollectEvent(p, battlePass)) return "cant collect";
-		JsonObject raw = Json.parseObj(req.grantEventReward(currentEvent, ""+p, battlePass));
-		JsonElement err = raw.get(SRC.errorMessage);
-		return err.isJsonPrimitive() ? err.getAsString() : null;
-	}
 	
 	private static final Hashtable<String, String> rewardRenames = new Hashtable<String, String>() {
 		private static final long serialVersionUID = 8966433027339581222L;

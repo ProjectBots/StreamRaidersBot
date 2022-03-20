@@ -7,13 +7,9 @@ import include.GUI.ComboBox;
 import include.GUI.Container;
 import include.GUI.Image;
 import include.GUI.Label;
-import include.GUI.TextArea;
-import include.GUI.WinLis;
-
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
-import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
@@ -23,8 +19,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import include.GUI;
-import include.Guide_old;
-import include.Guide_old.OnLoad;
 import program.Debug;
 import program.Options;
 import program.Remaper;
@@ -33,194 +27,8 @@ import include.NEF;
 
 public class GuideContent {
 
-	private static final String path = "data/Guide_old/";
+	private static final String path = "data/Guide/";
 	
-	private static boolean uptodate = false;
-	
-	public static void show() {
-		if(!uptodate)
-			if(!MainFrame.getGUI().showConfirmationBox("The Guide isn't up to date\r\nopen anyways?"))
-				return;
-		
-		Guide_old g = new Guide_old();
-		
-		g.addSubject("Home");
-		g.addSection(null, genBasicImage("home.png"));
-		g.addReference("Head Section");
-		g.addReference("Profile Section");
-		g.addReference("Other Projects");
-		
-		g.addSubject("Head Section");
-		g.addSection("Bot", genBasicLabel("<html><font size=5>Guide</font><br>open this Guide<br><br><font size=5>General</font><br>opens the general menu<br><br><font size=5>Add a Profile</font><br>opens the add a profile menu<br><br><font size=5>start all</font><br>starts all non running profiles<br><br><font size=5>start all delayed</font><br>opens a gui where you can enter the delay<br>in which the profiles should start<br>(start - wait - start - wait ... )<br><br><font size=5>stop all</font><br>stops every running profile<br><br><font size=5>skip time all</font><br>skips the time for every profile<br><br><font size=5>skip time all delayed</font><br>opens a gui where you can enter the delay<br>in which the profiles should skip the time<br>(skip - wait - skip - wait ... )<br><br><font size=5>reload Config</font><br>Force Reloads the config File.<br>Causes the removal of every change to<br>the settings and stats since last restart.</html>"));
-		g.addSection("Config", genBasicLabel(""));
-		g.addReference("Add a Profile");
-		g.addReference("General");
-		g.addReference("Config Export");
-		g.addReference("Config Import");
-		
-		g.addSubject("Profile Section");
-		g.addSection(null, genBasicImage("profile.png"));
-		g.addSection("Profile-Name", genBasicLabel("<html>Displays the name of your Profile</html>"));
-		g.addSection("Counter", genBasicLabel("<html>Displays the time till the next Round starts</html>"));
-		g.addSection("Lock", genBasicLabel("<html>The Bot can not switch the Streamer if locked.<br>The Button is green when active</html>"));
-		g.addSection("Delete", genBasicLabel("<html>Removes the Profile from existence</html>"));
-		g.addSection("Start/Stop", genBasicLabel("<html>Starts/Stops the Bot.<br>When stopping the stats will be saved for the profile</html>"));
-		g.addSection("Skip Time", genBasicLabel("<html>Skips the wait time and instantly does the next round</html>"));
-		g.addSection("Streamer", genBasicLabel("<html>Displays the Streamer and your loyalty<br>Streamer_Name - wins|level<br>0-14&nbsp;&nbsp;&nbsp;bronze<br>15-49 silver<br>50+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gold</html>"));
-		g.addSection("Favorite", genBasicLabel("<html>Favorites a Streamer locally (not in SR itself).<br>Favorited Streamers have a higher priority when<br>a Streamer has to be switched out.<br>Heart will turn red when active</html>"));
-		g.addSection("Stats", genBasicLabel("<html>Shows how much this Bot earned in this run</html>"));
-		g.addReference("Chest-Types");
-		g.addReference("Profile Settings");
-		g.addReference("Map");
-		
-		g.addSubject("General");
-		g.addSection("Forget Me", genBasicLabel("<html>Removes every Profile from existence</html>"));
-		g.addSection("Show Stats", genBasicLabel("<html>Shows an average of the Stats per profile per hour</html>"));
-		g.addSection("Update Stats", genBasicLabel("<html>Collects the Stats from running Profiles and saves them.</html>"));
-		g.addSection("Reset all Stats", genBasicLabel("<html>Deletes the Stats from every Profile.</html>"));
-		
-		g.addSubject("Add a Profile");
-		g.addSection(null, addAProfile());
-
-		g.addSubject("Profile Settings");
-		g.addSection(null, genBasicImage("profilesettings.png"));
-		g.addSection("Units", genBasicLabel("<html>Will open a Menu with differnt options about this specific Unit.</html>"));
-		g.addSection("Chests", genBasicLabel("<html>Only Raids with whitelisted Chests will be choosen .<br>The Button is green when the Chest is whitelisted.</html>"));
-		g.addSection("Normal Chests max Loyalty", genBasicLabel("<html>The highest Loyalty for Normal Chests.<br>A Raid will be switched when the condition is not met.</html>"));
-		g.addSection("Loyalty Chests min Loyalty", genBasicLabel("<html>The lowest Loyalty for Loyalty Chests.<br>A Raid will be switched when the condition is not met.</html>"));
-		g.addSection("Exlude Slots", genBasicLabel("<html>Specify the slots that the bot should not use.</html>"));
-		g.addSection("Reset Stats", genBasicLabel("<html>Removes the Stats for this Profile from existence</html>"));
-		g.addReference("Unit Settings");
-		g.addReference("Unit-Types");
-		g.addReference("Chest-Types");
-		
-		g.addSubject("Unit Settings");
-		g.addSection(null, genBasicImage("usettings.png"));
-		g.addSection("can place", genBasicLabel("<html>Set if the Bot can place this Unit.</html>"));
-		g.addSection("can upgrade", genBasicLabel("<html>Set if the Bot can upgrade this Unit.</html>"));
-		g.addSection("can unlock", genBasicLabel("<html>Set if the Bot can unlock this Unit.</html>"));
-		g.addSection("can dupe", genBasicLabel("<html>Set if the Bot can unlock the dupe of this Unit.</html>"));
-		g.addSection("specialize", genBasicLabel("<html>Opens a new window where a specialization can be choosen.</html>"));
-		
-		g.addSubject("Map");
-		g.addSection(null, genBasicImage("map.png"));
-		g.addSection(null, genBasicLabel("<html><font size=6>Colors</font><table><tr><th color=green>Green</th><th>Allies</th></tr><tr><th color=#ffc800>Orange</th><th>You</th></tr><tr><th color=#c8ff00>Yellowish</th><th>Captain</th></tr><tr><th color=red>Red</th><th>Enemies</th></tr><tr><th color=#E77471>Light Red</th><th>Enemie place zone</th></tr><tr><th color=#43BFC4>Blue</th><th>Player place zone</th></tr><tr><th color=#7D0552>Violet</th><th>Holding zone</th></tr><tr><th color=#333333>Dark Gray</th><th>Obstacle</th></tr><tr><th color=#5e5e5e>Gray</th><th>overflyable Obstacle</th></tr></tr><tr><th color =#919191>Light Gray</th><th>overwalkable Obstacle</th></tr></table><br><font size=6>Plan</font><table><tr><th>N</th><th>No Placement</th></tr><tr><th>V</th><th>Vibe</th></tr><tr><th>R</th><th>Ranged</th></tr><tr><th>A</th><th>Armored</th></tr><tr><th>M</th><th>Melee</th></tr><tr><th>S</th><th>Support</th></tr><tr><th>L</th><th>FlagBearer</th></tr><tr><th>H</th><th>Healer</th></tr><tr><th>I</th><th>Assassine</th></tr><tr><th>D</th><th>Rogue</th></tr><tr><th>F</th><th>FlyingRogue</th></tr><tr><th>E</th><th>Buster</th></tr><tr><th>B</th><th>BalloonBuster</th></tr><tr><th>(X</th><th>Not Player Allie)</th></tr></table></html>"));
-		
-		g.addSubject("Chest-Types");
-		g.addSection(null, chestTypes());
-		
-		g.addSubject("Unit-Types");
-		g.addSection(null, genUnits());
-		g.setOnLoad(new OnLoad() {
-			@Override
-			public void run() {
-				loadUnits();
-			}
-		});
-		
-		g.addSubject("Config Export");
-		
-		g.addSubject("Config Import");
-		
-		g.addSubject("Other Projects");
-		g.addSection("JsonExplorer", jsonexplorer());
-		g.addSection("JHtmlEditor", jhtmleditor());
-		
-		g.create(MainFrame.getGUI(), null);
-		
-		g.setWindowEvent(new WinLis() {
-			@Override
-			public void onIconfied(WindowEvent e) {}
-			@Override
-			public void onFocusLost(WindowEvent e) {}
-			@Override
-			public void onFocusGained(WindowEvent e) {}
-			@Override
-			public void onDeIconfied(WindowEvent e) {}
-			@Override
-			public void onClose(WindowEvent e) {
-				epic = false;
-			}
-		});
-	}
-	
-
-	private static Container jhtmleditor() {
-		Container c = new Container();
-		Image img = new Image(path + "jhtmleditor.png");
-		img.setWidth(400);
-		c.addImage(img);
-		Label l = new Label();
-		l.setPos(0, 1);
-		l.setText("<html>Html Editor for Java Applications<br><br>Have you always wanted an editor that shows you what an html page looks like in a JLabel in java?<br>Then this little program is for you!<br><br>features:<br>- adjustable autocomplete<br>- real time outcome</html>");
-		c.addLabel(l);
-		TextArea ta = new TextArea();
-		ta.setPos(0, 2);
-		ta.setText("https://github.com/ProjectBots/JHtml-Editor");
-		ta.setEditable(false);
-		c.addTextArea(ta);
-		return c;
-	}
-
-
-	private static Container jsonexplorer() {
-		Container c = new Container();
-		Image img = new Image(path + "jsonexplorer.png");
-		img.setWidth(400);
-		c.addImage(img);
-		Label l = new Label();
-		l.setPos(0, 1);
-		l.setText("<html>simple commandline based JsonExplorer<br><br>explore and edit realy big jsons without crashing your computer<br>(tested it with a 733.595 lines long file)<br><br>features:<br>exploring like a file system in cmd<br>easy changing of values<br>very customizeable search<br>saving as \"pretty\" json or as \"one line\" json<br>exporting objects/arrays into a new file (search compatible!)</html>");
-		c.addLabel(l);
-		TextArea ta = new TextArea();
-		ta.setPos(0, 2);
-		ta.setText("https://github.com/ProjectBots/JsonExplorer");
-		ta.setEditable(false);
-		ta.setInsets(2, 2, 20, 2);
-		c.addTextArea(ta);
-		return c;
-	}
-
-
-	private static Container genBasicLabel(String text) {
-		Container c = new Container();
-		c.setAnchor("w");
-		Label l = new Label();
-		l.setText(text);
-		c.addLabel(l);
-		return c;
-	}
-	
-	private static Container genBasicImage(String name) {
-		Container c = new Container();
-		Image img = new Image(path + name);
-		img.setWidth(400);
-		c.addImage(img);
-		return c;
-	}
-	
-	private static Container addAProfile() {
-		Container c = new Container();
-		Image img1 = new Image(path + "addaprofile.png");
-		img1.setWidth(200);
-		c.addImage(img1);
-		Label l1 = new Label();
-		l1.setText("<html>Type in the name of your profile.<br>This name does not need to be your real profile name</html>");
-		l1.setPos(0, 1);
-		c.addLabel(l1);
-		Image img2 = new Image(path + "addaprofileload.png");
-		img2.setWidth(200);
-		img2.setInsets(40, 2, 2, 2);
-		img2.setPos(0, 2);
-		c.addImage(img2);
-		Label l2 = new Label();
-		l2.setText("<html>You should let it load until this</html>");
-		l2.setPos(0, 3);
-		c.addLabel(l2);
-		return c;
-	}
-	
-
 	public static Container chestTypes() {
 		Container c = new Container();
 		
@@ -246,7 +54,7 @@ public class GuideContent {
 				img = new Image("data/ChestPics/" + chest + ".png");
 			else
 				continue;
-				//img = new Image("data/ChestPics/nochest.png");
+			
 			img.setSquare(100);
 			img.setPos(0, ++i);
 			c.addImage(img);

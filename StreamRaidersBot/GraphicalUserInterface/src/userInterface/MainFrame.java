@@ -19,7 +19,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonPrimitive;
 
 import bot.Browser;
-import bot.MapGUI;
 import include.GUI;
 import include.Json;
 import include.GUI.Button;
@@ -168,7 +167,7 @@ public class MainFrame {
 		bot.setAL(m++, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				NewProfile.open(gui);
+				NewProfile.open(gui, null);
 			}
 		});
 		bot.setSep(m);
@@ -272,23 +271,28 @@ public class MainFrame {
 			frameReady();
 	}
 	
+	private static boolean verWarnShown = false;
+	
 	private static void frameReady() {
 		WaitScreen.setText("Refreshing Frame");
 		gui.refresh();
 		
-		String bver = Options.get("botVersion");
-		if(bver.contains("beta")) {
-			GUI beta = new GUI("Beta warn", 400, 200, gui, null);
-			Label l = new Label();
-			l.setText("This version is a beta version!");
-			beta.addLabel(l);
-			beta.refresh();
-		} else if(bver.contains("debug")) {
-			GUI debug = new GUI("Debug warn", 400, 200, gui, null);
-			Label l = new Label();
-			l.setText("This version is a debug version!");
-			debug.addLabel(l);
-			debug.refresh();
+		if(!verWarnShown) {
+			verWarnShown = true;
+			String bver = Options.get("botVersion");
+			if(bver.contains("beta")) {
+				GUI beta = new GUI("Beta warn", 400, 200, gui, null);
+				Label l = new Label();
+				l.setText("This version is a beta version!");
+				beta.addLabel(l);
+				beta.refresh();
+			} else if(bver.contains("debug")) {
+				GUI debug = new GUI("Debug warn", 400, 200, gui, null);
+				Label l = new Label();
+				l.setText("This version is a debug version!");
+				debug.addLabel(l);
+				debug.refresh();
+			}
 		}
 		
 		WaitScreen.close();
@@ -336,8 +340,22 @@ public class MainFrame {
 			});
 			c.addBut(retry);
 			
+			Button reAdd = new Button();
+			reAdd.setPos(2, 0);
+			reAdd.setText("update cookies");
+			reAdd.setForeground(Fonts.getColor("main buttons def"));
+			reAdd.setGradient(Fonts.getGradient("main buttons def"));
+			reAdd.setAL(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					gui.remove(pre+cid+"::profile");
+					NewProfile.open(gui, cid);
+				}
+			});
+			c.addBut(reAdd);
+			
 			Button rem = new Button();
-			rem.setPos(2, 0);
+			rem.setPos(3, 0);
 			rem.setText("X");
 			rem.setForeground(Fonts.getColor("main buttons def"));
 			rem.setGradient(Fonts.getGradient("main buttons def"));
@@ -349,6 +367,8 @@ public class MainFrame {
 				}
 			});
 			c.addBut(rem);
+			
+			
 			
 		gui.addContainer(c, pre+cid+"::profile");
 	}
@@ -516,7 +536,6 @@ public class MainFrame {
 		gui = null;
 		
 		if(dispose) {
-			//TODO manager
 			Manager.stop();
 			
 			Browser.dispose();

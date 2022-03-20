@@ -8,7 +8,6 @@ import com.google.gson.JsonObject;
 
 import include.Json;
 import include.Time;
-import include.Http.NoConnectionException;
 
 public class Raid {
 	
@@ -115,12 +114,6 @@ public class Raid {
 		put("potion", Store.potions.get());
 		put("epicpotion", Store.potions.get());
 	}};
-	
-	
-	
-	public JsonObject getChest(SRR req) throws NoConnectionException {
-		return getChest(Json.parseObj(req.getRaidStatsByUser(raid.getAsJsonPrimitive("raidId").getAsString())).getAsJsonObject("data"));
-	}
 	
 	
 	public JsonObject getChest(JsonObject raidStats) {

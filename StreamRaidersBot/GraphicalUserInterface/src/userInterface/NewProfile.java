@@ -10,13 +10,14 @@ import include.GUI.Button;
 import include.GUI.Label;
 import include.GUI.TextField;
 import program.ConfigsV2;
+import program.Debug;
 import run.Manager;
 
 public class NewProfile {
 	
 	private static GUI np = null;
 	
-	public static void open(GUI parent) {
+	public static void open(GUI parent, String cid) {
 		
 		final String uid = LocalDateTime.now().toString().hashCode()+"::";
 		
@@ -34,13 +35,23 @@ public class NewProfile {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String in = GUI.getInputText(uid+"newName");
-				if(checkDupeName(in))
+				if(cid == null && checkDupeName(in))
 					return;
 				
 				Thread t = new Thread(new Runnable() {
 					@Override
 					public void run() {
-						Browser.show(in);
+						String ai = Browser.getAccessInfoCookie();
+						
+						if(ai != null) {
+							if(cid == null)
+								Manager.addProfile(in, ai);
+							else {
+								ConfigsV2.setPStr(cid, ConfigsV2.cookies, "ACCESS_INFO="+ai);
+								Manager.loadProfile(cid);
+							}
+						} else
+							Debug.print("NewProfile -> open -> openBrowser: err=no access_info", Debug.runerr, Debug.error, null, null, true);
 					}
 				});
 				t.start();
@@ -53,6 +64,10 @@ public class NewProfile {
 		name.setText("");
 		name.setFill('h');
 		name.setAL(openBrowser);
+		if(cid != null) {
+			name.setText(ConfigsV2.getPStr(cid, ConfigsV2.pname));
+			name.setEditable(false);
+		}
 		np.addTextField(name, uid+"newName");
 		
 		Button open = new Button();
@@ -73,7 +88,7 @@ public class NewProfile {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String name = GUI.getInputText(uid+"newName");
-				if(checkDupeName(name))
+				if(cid == null && checkDupeName(name))
 					return;
 				
 				String ai = GUI.getInputText(uid+"ai");
@@ -82,7 +97,12 @@ public class NewProfile {
 					return;
 				}
 				np.close();
-				Manager.addProfile(name, ai);
+				if(cid == null)
+					Manager.addProfile(name, ai);
+				else {
+					ConfigsV2.setPStr(cid, ConfigsV2.cookies, ai);
+					Manager.loadProfile(cid);
+				}
 			}
 		};
 		

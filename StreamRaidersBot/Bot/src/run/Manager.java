@@ -13,6 +13,8 @@ import com.google.gson.JsonObject;
 import include.Http.NoConnectionException;
 import program.ConfigsV2;
 import program.Debug;
+import program.Options;
+import program.Remaper;
 import program.SRC;
 import program.SRR.NotAuthorizedException;
 
@@ -61,6 +63,28 @@ public class Manager {
 	 */
 	public static void ini(BotListener blis) throws IniCanceledException {
 		Manager.blis = blis;
+		
+		System.out.println("\r\n"
+				+ "\u0009███████╗██████╗     ██████╗  ██████╗ ████████╗\r\n"
+				+ "\u0009██╔════╝██╔══██╗    ██╔══██╗██╔═══██╗╚══██╔══╝\r\n"
+				+ "\u0009███████╗██████╔╝    ██████╔╝██║   ██║   ██║   \r\n"
+				+ "\u0009╚════██║██╔══██╗    ██╔══██╗██║   ██║   ██║   \r\n"
+				+ "\u0009███████║██║  ██║    ██████╔╝╚██████╔╝   ██║   \r\n"
+				+ "\u0009╚══════╝╚═╝  ╚═╝    ╚═════╝  ╚═════╝    ╚═╝   \r\n"
+				+ "\r\n");
+		
+		try {
+			Options.load();
+		} catch (IOException | NullPointerException fnf) {
+			throw new IniCanceledException("Couldnt load options");
+		}
+		
+		System.out.println("by ProjectBots https://github.com/ProjectBots/StreamRaiderBot\r\n"
+				+ "Version: " + Options.get("botVersion") + "\r\n");
+		
+		
+		Remaper.load();
+		
 		BackEndHandler.setDataPathEventListener(new run.BackEndHandler.DataPathEventListener() {
 			@Override
 			public void onUpdate(String dataPath, String serverTime, JsonObject data) {
@@ -89,6 +113,7 @@ public class Manager {
 		for(String cid : ConfigsV2.getCids())
 			poss.put(cid, i++);
 		poss.put("(next)", i);
+		
 	}
 	
 	

@@ -364,10 +364,14 @@ public class BackEndHandler {
 		
 		for(int j=0; j<loyalty.size(); j++) {
 			JsonElement cap = captains.get(j);
-			if(!cap.isJsonObject())
-				continue;
-			cap.getAsJsonObject().addProperty(SRC.Raid.pveWins, loyalty.get(j).getAsJsonObject().getAsJsonPrimitive(SRC.Raid.pveWins).getAsInt());
-			cap.getAsJsonObject().addProperty(SRC.Raid.pveLoyaltyLevel, loyalty.get(j).getAsJsonObject().getAsJsonPrimitive(SRC.Raid.pveLoyaltyLevel).getAsInt());
+			if(!cap.isJsonObject()) {
+				captains.remove(j);
+				loyalty.remove(j);
+				j--;
+			} else {
+				cap.getAsJsonObject().add(SRC.Raid.pveWins, loyalty.get(j).getAsJsonObject().get(SRC.Raid.pveWins));
+				cap.getAsJsonObject().add(SRC.Raid.pveLoyaltyLevel, loyalty.get(j).getAsJsonObject().get(SRC.Raid.pveLoyaltyLevel));
+			}
 		}
 		
 		return captains;

@@ -1540,6 +1540,7 @@ public class GUI{
 	//	TextField
 	public static class TextField extends Label {
 		ActionListener al = null;
+		boolean editable = true;
 		
 		public void setAL(ActionListener al) {
 			this.al = al;
@@ -1547,6 +1548,14 @@ public class GUI{
 		
 		public ActionListener getAL() {
 			return al;
+		}
+		
+		public void setEditable(boolean b) {
+			editable = b;
+		}
+		
+		public boolean isEditable() {
+			return editable;
 		}
 	}
 	
@@ -1562,6 +1571,7 @@ public class GUI{
 		ActionListener al = opt.getAL();
 		if(al != null) 
 			tf.addActionListener(al);
+		tf.setEditable(opt.isEditable());
 		addObj(opt, tf, id);
 	}
 	

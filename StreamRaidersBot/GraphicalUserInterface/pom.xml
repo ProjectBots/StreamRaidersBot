@@ -16,20 +16,26 @@
 			<version>1.0.0</version>
 		</dependency>
 
-		<!-- https://friwi.me/jcef/maven/org/cef/jcef-main/ -->
+
 		<dependency>
+			<groupId>me.friwi</groupId>
+			<artifactId>jcefmaven</artifactId>
+			<version>95.7.14.9</version>
+		</dependency>
+		<!-- https://friwi.me/jcef/maven/org/cef/jcef-main/ -->
+		<!--<dependency>
 			<groupId>org.cef</groupId>
 			<artifactId>jcef-main</artifactId>
 			<version>84.3.8+gc8a556f+chromium-84.0.4147.105-build-17</version>
-		</dependency>
+		</dependency>-->
 
 	</dependencies>
 
 	<repositories>
-		<repository>
+		<!--<repository>
 			<id>jcef-maven</id>
 			<name>JCef Maven Repository</name>
 			<url>https://friwi.me/jcef/maven</url>
-		</repository>
+		</repository>-->
 	</repositories>
 </project>

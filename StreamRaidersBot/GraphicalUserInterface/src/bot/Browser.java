@@ -8,73 +8,71 @@ import java.io.IOException;
 import javax.swing.JFrame;
 import org.cef.CefApp;
 import org.cef.CefClient;
-import org.cef.CefSettings;
 import org.cef.CefSettings.LogSeverity;
-import org.cef.JCefLoader;
-import org.cef.OS;
 import org.cef.browser.CefBrowser;
 import org.cef.callback.CefCookieVisitor;
 import org.cef.misc.BoolRef;
 import org.cef.network.CefCookie;
 import org.cef.network.CefCookieManager;
 
-import com.google.gson.JsonObject;
-
-import program.Configs;
-import program.Debug;
-import program.Options;
-import run.Manager;
+import me.friwi.jcefmaven.CefAppBuilder;
+import me.friwi.jcefmaven.CefInitializationException;
+import me.friwi.jcefmaven.UnsupportedPlatformException;
 
 public class Browser {
 
-	private static JFrame frame = new JFrame();
 	private static String URL = "https://www.streamraiders.com/game/";
 	
 	private static CefApp cefApp;
-	private static CefClient client;
-	private static CefBrowser browser;
-	private static Component browserUI;
 	
-	private static boolean useOSR = OS.isLinux();
+	private static boolean useOSR = false;
 	private static boolean isTransparent = false;
 	
 	
-	public static void create() throws RuntimeException, IOException {
+	public static void create() throws UnsupportedPlatformException, InterruptedException, CefInitializationException, IOException {
 		
-		CefSettings settings = new CefSettings();
-		settings.windowless_rendering_enabled = useOSR;
-		settings.log_severity = LogSeverity.LOGSEVERITY_DISABLE;
 		
-		cefApp = JCefLoader.installAndLoadCef(settings);
+		CefAppBuilder builder = new CefAppBuilder();
 		
+		builder.getCefSettings().log_severity = LogSeverity.LOGSEVERITY_DISABLE;
+		builder.getCefSettings().windowless_rendering_enabled = useOSR;
+		
+		cefApp = builder.build();
 	}
 	
-	public static void show(String name) {
-		client = cefApp.createClient();
-		browser = client.createBrowser(URL, useOSR, isTransparent);
-		browserUI = browser.getUIComponent();
-		frame = new JFrame();
+	private static String ai = null;
+	private static boolean ready = false;
+	
+	synchronized public static String getAccessInfoCookie() {
+		CefClient client = cefApp.createClient();
+		CefBrowser browser = client.createBrowser(URL, useOSR, isTransparent);
+		Component browserUI = browser.getUIComponent();
+		JFrame frame = new JFrame();
 		frame.getContentPane().add(browserUI, BorderLayout.CENTER);
 		frame.setSize(800,600);
 		frame.setVisible(true);
+		frame.setResizable(false);
+		
+		ready = false;
+		ai = null;
 		
 		frame.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				JsonObject cookies = new JsonObject();
 				
 				CefCookieManager cm = CefCookieManager.getGlobalManager();
 				
 				cm.visitAllCookies(new CefCookieVisitor() {
 					@Override
 					public boolean visit(CefCookie c, int arg1, int arg2, BoolRef arg3) {
-						if(c.domain.contains("streamraiders")) 
-							cookies.addProperty(c.name, c.value);
+						if(c.domain.contains("streamraiders") && c.name.equals("ACCESS_INFO")) 
+							ai = c.value;
 						cm.deleteCookies(c.domain, c.name);
 						return true;
 					}
 				});
 				
+				//	TODO test if bug has been resolved (visitAllCookies not blocking until finished)
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e1) {}
@@ -84,21 +82,21 @@ public class Browser {
 				client.dispose();
 				frame.dispose();
 				
-				if(Options.is("beta_frame")) {
-					if(cookies.has("ACCESS_INFO"))
-						Manager.addProfile(name, cookies.get("ACCESS_INFO").getAsString());
-					else
-						Debug.print("Browser -> add: err=no access_info, got="+cookies.keySet().toString(), Debug.runerr, Debug.error, null, null, true);
-				} else {
-					Configs.add(name, cookies);
-					Configs.saveb();
-					bot.MainFrame.refresh(false);
-				}
+				
+				ready = true;
 			}
 		});
+		
+		while(!ready) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e1) {}
+		}
+		
+		return ai;
 	}
 	
 	public static void dispose() {
-		CefApp.getInstance().dispose();
+		cefApp.dispose();
 	}
 }
