@@ -420,11 +420,8 @@ public class ConfigsV2GUI {
 			return;
 		}
 		
-		if(!c.has("version")) {
-			if(parent.showConfirmationBox("Convert Config?"))
-				importFromOldClient(c);
+		if(!c.has("version"))
 			return;
-		}
 		
 		global = c.has("Global");
 		profiles = new ArrayList<>();
@@ -716,50 +713,6 @@ public class ConfigsV2GUI {
 		}
 		
 		
-		
-		ConfigsV2.importConfig(imp);
-		ConfigsV2.saveb();
-		Manager.loadAllNewProfiles();
-	}
-	
-	private void importFromOldClient(JsonObject c) {
-		Importable imp = new Importable();
-		for(String name : c.keySet()) {
-			JsonObject raw = c.getAsJsonObject(name);
-			if(!raw.has("cookies"))
-				continue;
-			if(ConfigsV2.isPNameTaken(name))
-				name += "_"+Maths.ranString(3);
-			JsonObject pro = new JsonObject();
-			pro.add("cookies", raw.get("cookies"));
-			pro.addProperty("name", name);
-			
-			JsonObject defLay = new JsonObject();
-			
-			
-			for(String key : raw.keySet()) {
-				String[] args = key.split("_");
-				switch(args[0]) {
-				case "unit":
-					Json.set(defLay, new String[]{"units", args[1], args[2].replace("1", "")}, raw.get(key));
-					break;
-				case "chests":
-					Json.set(defLay, new String[] {"chests", args[1], args[2] + (args[2].equals("enabled") ? "" : "Loy")}, raw.get(key));
-					break;
-				case "favs":
-					JsonObject rfavs = Json.parseObj(raw.get(key).getAsString());
-					for(String k : rfavs.keySet()) {
-						Json.set(defLay, new String[] {"caps", "campaign", k, "ic"}, rfavs.get(k));
-						Json.set(defLay, new String[] {"caps", "dungeon", k, "ic"}, rfavs.get(k));
-					}
-					break;
-				}
-			}
-			
-			Json.set(pro, "layers (default)", defLay);
-			
-			imp.addProfile(pro);
-		}
 		
 		ConfigsV2.importConfig(imp);
 		ConfigsV2.saveb();

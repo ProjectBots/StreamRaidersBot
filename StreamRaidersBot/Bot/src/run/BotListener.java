@@ -89,9 +89,9 @@ public interface BotListener {
 	 * will be called if a slot updates
 	 * @param cid profile id
 	 * @param slot
-	 * @param raid the current raid in this slot, null if empty
-	 * @param locked if the slot is marked as locked
-	 * @param change if the slot is marked to change raid ASAP
+	 * @param raid the current raid in this slot, null if empty or non raid slot
+	 * @param locked if the slot is marked as locked, false if non raid slot
+	 * @param change if the slot is marked to change raid ASAP, false if non raid slot
 	 */
 	public default void onProfileUpdateSlot(String cid, int slot, Raid raid, boolean locked, boolean change) {}
 	

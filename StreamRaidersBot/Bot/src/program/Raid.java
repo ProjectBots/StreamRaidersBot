@@ -89,7 +89,7 @@ public class Raid {
 	public boolean isReward() {
 		JsonElement pbc = raid.get("postBattleComplete");
 		JsonElement hrr = raid.get("hasRecievedRewards");
-		if(!pbc.isJsonPrimitive() || !hrr.isJsonPrimitive()) return false;
+		if(pbc == null || !pbc.isJsonPrimitive() || hrr == null || !hrr.isJsonPrimitive()) return false;
 		
 		if(!pbc.getAsString().contains("1")) return false;
 		if(!hrr.getAsString().contains("0")) return false;

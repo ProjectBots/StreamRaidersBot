@@ -109,8 +109,6 @@ public class StreamRaiders {
 	
 	public static void main(String[] args) {
 		
-		
-		
 		/*	TODO make better / test if bug has been resolved over time
 		if(!System.getProperty("java.version").startsWith("16")) {
 			System.err.println("Incompatible java Version\nRestarting with new Version\n");
@@ -165,17 +163,6 @@ public class StreamRaiders {
 		
 		Debug.print("started", Debug.general, Debug.info, null, null);
 		
-		if(!Options.is("no_browser")) {
-			WaitScreen.setText("Initialize Browser");
-			try {
-				Browser.create();
-			} catch (IOException | UnsupportedPlatformException | InterruptedException | CefInitializationException e) {
-				Debug.printException("err=Couldnt initialize embeded Browser", e, Debug.runerr, Debug.error, null, null, true);
-				WaitScreen.close();
-				return;
-			}
-		}
-		
 		WaitScreen.setText("Initialize Bot"); 
 		try {
 			Manager.ini(new BotListener() {
@@ -229,6 +216,18 @@ public class StreamRaiders {
 			//	exit bot
 			return;
 		}
+		
+		if(!Options.is("no_browser")) {
+			WaitScreen.setText("Initialize Browser");
+			try {
+				Browser.create();
+			} catch (IOException | UnsupportedPlatformException | InterruptedException | CefInitializationException e) {
+				Debug.printException("err=Couldnt initialize embeded Browser", e, Debug.runerr, Debug.error, null, null, true);
+				WaitScreen.close();
+				return;
+			}
+		}
+		
 		WaitScreen.setText("Initialize MainFrame"); 
 		userInterface.MainFrame.open();
 		Manager.loadAllNewProfiles();

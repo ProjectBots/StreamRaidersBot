@@ -167,7 +167,7 @@ public class MainFrame {
 		bot.setAL(m++, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				NewProfile.open(gui, null);
+				AddProfile.open(gui, null);
 			}
 		});
 		bot.setSep(m);
@@ -349,7 +349,7 @@ public class MainFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					gui.remove(pre+cid+"::profile");
-					NewProfile.open(gui, cid);
+					AddProfile.open(gui, cid);
 				}
 			});
 			c.addBut(reAdd);
@@ -382,9 +382,7 @@ public class MainFrame {
 	}
 	
 	public static void updateSlotRunning(String cid, int slot, boolean run) {
-		
-		if(!GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::run", Fonts.getGradient("main buttons " + (run?"on":"def"))))
-			System.out.println(ConfigsV2.getPStr(cid, ConfigsV2.pname) + " - " + slot);
+		GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::run", Fonts.getGradient("main buttons " + (run?"on":"def")));
 		GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::run", Fonts.getColor("main buttons " + (run?"on":"def")));
 	}
 	
@@ -393,6 +391,19 @@ public class MainFrame {
 	}
 	
 	public static void updateSlot(String cid, int slot, Raid raid, boolean change) {
+		Run r = Manager.getProfile(cid);
+		if(r != null)
+			if(ConfigsV2.getSleepInt(cid, r.getCurrentLayer(), ""+slot, ConfigsV2.sync) == -1) {
+				GUI.setEnabled(ProfileSection.pre+cid+"::"+slot+"::run", true);
+				GUI.setEnabled(ProfileSection.pre+cid+"::"+slot+"::skip", true);
+			} else {
+				GUI.setEnabled(ProfileSection.pre+cid+"::"+slot+"::run", false);
+				GUI.setEnabled(ProfileSection.pre+cid+"::"+slot+"::skip", false);
+			}
+		
+		if(slot == 4)
+			return;
+		
 		String pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
 		
 		GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::change", Fonts.getColor("main buttons " + (change ? "on" : "def")));

@@ -258,64 +258,6 @@ public class Store {
 		return null;
 	}
 	
-	//TODO remove
-	@Deprecated
-	public String buyStoreItem(Item item, SRR req, String serverTime) throws NoConnectionException {
-		if(item.isPurchased()) return "already purchased";
-		if(Time.isAfter(serverTime, item.getEndTime())) return "after end";
-		if(Time.isAfter(item.getStartTime(), serverTime)) return "before start";
-		
-		int price = item.getPrice();
-		C cur = item.getStr("Section").equals("Dungeon") ? keys : gold;
-		if(price > getCurrency(cur))
-			return "not enough " + cur.get();
-		
-		String itemId = item.getStr("itemId");
-		
-		if(itemId.equals("dailydrop")) {
-			JsonObject resp = Json.parseObj(req.grantDailyDrop());
-			JsonElement err = resp.get(SRC.errorMessage);
-			if(err.isJsonPrimitive())
-				return err.getAsString();
-		} else {
-			JsonObject resp = Json.parseObj(req.purchaseStoreItem(itemId));
-			
-			JsonElement err = resp.get(SRC.errorMessage);
-			if(err.isJsonPrimitive())
-				return err.getAsString();
-			
-			decreaseCurrency(cur, price);
-			shopItems = resp.getAsJsonArray("data");
-		}
-		
-		return null;
-	}
-	
-	//TODO remove
-	@Deprecated
-	public JsonObject buyChest(String serverTime, String chest, SRR req) throws NoConnectionException {
-		JsonObject ret = new JsonObject();
-		if(Time.isAfter(serverTime, Options.get(chest+"date"))) {
-			ret.addProperty(SRC.errorMessage, "after end");
-			return ret;
-		}
-		
-		int price = Integer.parseInt(Options.get(chest+"price"));
-		
-		if(getCurrency(keys) < price) {
-			ret.addProperty(SRC.errorMessage, "not enough "+keys.get());
-			return ret;
-		}
-		
-		ret = Json.parseObj(req.purchaseChestItem(chest));
-		
-		JsonElement err = ret.get(SRC.errorMessage);
-		
-		if(!err.isJsonPrimitive())
-			decreaseCurrency(keys, price);
-		
-		return ret;
-	}
 	
 	public static class Item {
 		@Override
@@ -392,7 +334,7 @@ public class Store {
 				JsonObject item = shopItems.get(i).getAsJsonObject().deepCopy();
 				JsonObject pack = packs.get(item.get("itemId").getAsString()).getAsJsonObject().deepCopy();
 				String let = pack.get("LiveEndTime").getAsString();
-				if(item.get("purchased").getAsInt() == 0 //TODO
+				if(item.get("purchased").getAsInt() == 0
 					&& item.get("section").getAsString().equals(section)
 					&& (let.equals("") || Time.isAfter(let, serverTime)))
 					ret.add(new Item(item, pack));
@@ -464,7 +406,7 @@ public class Store {
 		return ret;
 	}
 	
-	//TODO
+	
 	public JsonObject buyItem(Item item, SRR req, Skins skins) throws NoConnectionException {
 		JsonObject ret = new JsonObject();
 		C cur;

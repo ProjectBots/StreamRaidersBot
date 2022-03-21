@@ -1,6 +1,7 @@
 package run;
 
 import java.awt.Color;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.WeekFields;
@@ -21,6 +22,7 @@ import com.google.gson.JsonObject;
 import include.Heatmap;
 import include.Json;
 import include.Maths;
+import include.NEF;
 import include.Pathfinding;
 import include.Time;
 import program.Captain;
@@ -62,6 +64,7 @@ public class Run {
 	 * 	get Donators from github source
 	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
 	 * 	when creating chest rewards for guide: exclude chest which aren't obtainable, compare to chests in Store
+	 * 	option to disable loading images (saves ram)
 	 * 
 	 * 
 	 * 	???:
@@ -72,7 +75,92 @@ public class Run {
 	 */
 
 	private String cid;
-	private BackEndHandler beh;
+	private BackEndHandler beh_;
+	
+	private Object beh_lock = new Object();
+	
+	public static interface behRunnable {
+		public void run(BackEndHandler beh);
+	}
+	
+	public void useBackEndHandler(behRunnable behr) {
+		loadBeh();
+		behr.run(beh_);
+		unloadBeh();
+	}
+	
+	private int currentBehUses = 1;
+	
+	private void loadBeh() {
+		synchronized(beh_lock) {
+			currentBehUses++;
+			if(beh_ == null) {
+				try {
+					beh_ = Json.toObj(Json.parseObj(NEF.read("data/temp/"+cid+".srb.json")), BackEndHandler.class);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				beh_.setUpdateEventListener(uelis);
+				System.gc();
+			}
+		}
+	}
+	
+	private void unloadBeh() {
+		synchronized(beh_lock) {
+			currentBehUses--;
+			if(currentBehUses == 0 && ConfigsV2.getGBoo(ConfigsV2.freeUpMemoryByUsingDrive)) {
+				try {
+					NEF.save("data/temp/"+cid+".srb.json", Json.prettyJson(Json.fromObj(beh_)));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				beh_ = null;
+				System.gc();
+			}
+		}
+	}
+	
+	private UpdateEventListener uelis = new UpdateEventListener() {
+		@Override
+		public void afterUpdate(String obj) {
+			Debug.print("updated "+obj, Debug.general, Debug.info, pn, null);
+			if(obj.contains("caps::")) {
+				boolean dungeon = obj.contains("::true");
+				useBackEndHandler(beh -> {
+					Captain[] caps;
+					try {
+						caps = beh.getCaps(dungeon);
+						HashSet<String> got = new HashSet<>();
+						for(Captain c : caps)
+							got.add(c.get(SRC.Captain.twitchDisplayName));
+						
+						HashSet<String> favs = ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign);
+						for(String tdn : favs) {
+							if(got.contains(tdn) || !ConfigsV2.getCapBoo(cid, currentLayer, tdn, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign, ConfigsV2.il))
+								continue;
+							
+							JsonArray results = beh.searchCap(1, null, false, false, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, true, tdn);
+							if(results.size() == 0)
+								continue;
+							
+							Captain n = new Captain(results.get(0).getAsJsonObject());
+							
+							if(n.get(SRC.Captain.isPlaying).equals("1"))
+								caps = add(caps, n);
+						}
+						beh.setCaps(caps, dungeon);
+						
+					} catch (NoConnectionException | NotAuthorizedException e) {
+						Debug.printException(pn+": Run -> constr.: err=unable to retrieve caps", e, Debug.runerr, Debug.error, pn, null, true);
+						return;
+					}
+				});
+			}
+		}
+	};
+	
+	
 	
 	private String currentLayer = "(default)";
 	private String currentLayerId = null;
@@ -114,7 +202,7 @@ public class Run {
 		}
 	}
 	
-	synchronized public void addRew(String con, String type, int amount) {
+	synchronized public void addRew(BackEndHandler beh, String con, String type, int amount) {
 		type = Remaper.map(type).replace(Options.get("currentEventCurrency"), Store.eventcurrency.get());
 		try {
 			JsonObject r = rews.getAsJsonObject(con);
@@ -174,48 +262,12 @@ public class Run {
 	public Run(String cid) throws NotAuthorizedException, NoConnectionException, OutdatedDataException {
 		this.cid = cid;
 		pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
-		beh = new BackEndHandler(pn, ConfigsV2.getPStr(cid, ConfigsV2.cookies));
-		beh.setUpdateEventListener(new UpdateEventListener() {
-			@Override
-			public void afterUpdate(String obj) {
-				Debug.print("updated "+obj, Debug.general, Debug.info, pn, null);
-				if(obj.contains("caps::")) {
-					boolean dungeon = obj.contains("::true");
-					Captain[] caps;
-					try {
-						caps = beh.getCaps(dungeon);
-						HashSet<String> got = new HashSet<>();
-						for(Captain c : caps)
-							got.add(c.get(SRC.Captain.twitchDisplayName));
-						
-						HashSet<String> favs = ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign);
-						for(String tdn : favs) {
-							if(got.contains(tdn) || !ConfigsV2.getCapBoo(cid, currentLayer, tdn, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign, ConfigsV2.il))
-								continue;
-							
-							JsonArray results = beh.searchCap(1, null, false, false, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, true, tdn);
-							if(results.size() == 0)
-								continue;
-							
-							Captain n = new Captain(results.get(0).getAsJsonObject());
-							
-							if(n.get(SRC.Captain.isPlaying).equals("1"))
-								caps = add(caps, n);
-						}
-						beh.setCaps(caps, dungeon);
-						
-					} catch (NoConnectionException | NotAuthorizedException e) {
-						Debug.printException(pn+": Run -> constr.: err=unable to retrieve caps", e, Debug.runerr, Debug.error, pn, null, true);
-						return;
-					}
-				}
-			}
-		});
+		beh_ = new BackEndHandler(pn, ConfigsV2.getPStr(cid, ConfigsV2.cookies));
+		beh_.setUpdateEventListener(uelis);
+		raids = beh_.getRaids(SRC.BackEndHandler.all);
+		curs = beh_.getCurrencies(pn);
 		iniRews();
-	}
-	
-	public BackEndHandler getBackEndHandler() {
-		return beh;
+		unloadBeh();
 	}
 	
 	
@@ -232,6 +284,8 @@ public class Run {
 	
 	private boolean[] setRun = new boolean[5];
 	public void setRunning(boolean b, int slot) {
+		if(ConfigsV2.getSleepInt(cid, currentLayer, ""+slot, ConfigsV2.sync) != -1)
+			return;
 		Thread th = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -279,7 +333,7 @@ public class Run {
 	public void change(int slot) {
 		change[slot] = !change[slot];
 		try {
-			updateFrame();
+			updateFrame(null);
 		} catch (NoConnectionException | NotAuthorizedException e) {
 			Debug.printException(pn+": Run -> change: slot="+slot+", err=failed to update Frame", e, Debug.runerr, Debug.error, pn, slot, true);
 		}
@@ -307,6 +361,7 @@ public class Run {
 	}
 	
 	synchronized private void slotSequence(int slot) {
+		
 		Debug.print("requesting action", Debug.general, Debug.info, pn, slot);
 		try {
 			Manager.requestAction();
@@ -315,52 +370,25 @@ public class Run {
 			return;
 		}
 		pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
-		try {
-			if_clause:
-			if(slot == 4) {
-				Debug.print("event", Debug.general, Debug.info, pn, slot);
-				event();
-
-				Debug.print("quest", Debug.general, Debug.info, pn, slot);
-				quest();
-
-				Debug.print("store", Debug.general, Debug.info, pn, slot);
-				store();
-
-				Debug.print("unlock", Debug.general, Debug.info, pn, slot);
-				unlock();
-
-				Debug.print("upgrade", Debug.general, Debug.info, pn, slot);
-				upgrade();
+		useBackEndHandler(beh -> {
+			updateLayer(beh);
+			try {
+				doSlot(beh, slot);
 				
-				Debug.print("grantExtraRewards", Debug.general, Debug.info, pn, slot);
-				beh.grantTeamReward();
-				beh.grantEventQuestMilestoneReward();
-				
-			} else {
-				
-				if(!canUseSlot(slot))
-					break if_clause;
+				for(int i=0; i<5; i++)
+					if(ConfigsV2.getSleepInt(cid, currentLayer, ""+slot, ConfigsV2.sync) == slot)
+						doSlot(beh, i);
 
-				Debug.print("chest", Debug.general, Debug.info, pn, slot);
-				chest(slot);
-
-				Debug.print("captain", Debug.general, Debug.info, pn, slot);
-				captain(slot);
-
-				Debug.print("place", Debug.general, Debug.info, pn, slot);
-				place(slot);
-				
+				Debug.print("updateFrame", Debug.general, Debug.info, pn, slot);
+				updateFrame(beh);
+			} catch (NoConnectionException | NotAuthorizedException e) {
+				Debug.printException("Run -> slotSequence: slot=" + slot + " err=No stable Internet Connection", e, Debug.runerr, Debug.fatal, pn, slot, true);
+			} catch (StreamRaidersException | NoCapMatchesException e) {
+			} catch (Exception e) {
+				Debug.printException("Run -> slotSequence: slot=" + slot + " err=unknown", e, Debug.runerr, Debug.fatal, pn, slot, true);
 			}
-
-			Debug.print("updateFrame", Debug.general, Debug.info, pn, slot);
-			updateFrame();
-		} catch (NoConnectionException | NotAuthorizedException e) {
-			Debug.printException("Run -> slotSequence: slot=" + slot + " err=No stable Internet Connection", e, Debug.runerr, Debug.fatal, pn, slot, true);
-		} catch (StreamRaidersException | NoCapMatchesException e) {
-		} catch (Exception e) {
-			Debug.printException("Run -> slotSequence: slot=" + slot + " err=unknown", e, Debug.runerr, Debug.fatal, pn, slot, true);
-		}
+		});
+		
 		
 		Debug.print("releasing action", Debug.general, Debug.info, pn, slot);
 		Manager.releaseAction();
@@ -377,8 +405,8 @@ public class Run {
 		JsonObject ptimes = ConfigsV2.getPObj(cid, ConfigsV2.ptimes);
 		int e = Integer.parseInt(currentLayerId.split("-")[1]);
 		
-		int min = ConfigsV2.getSleep(cid, currentLayer, ""+slot, ConfigsV2.min);
-		int max = ConfigsV2.getSleep(cid, currentLayer, ""+slot, ConfigsV2.max);
+		int min = ConfigsV2.getSleepInt(cid, currentLayer, ""+slot, ConfigsV2.min);
+		int max = ConfigsV2.getSleepInt(cid, currentLayer, ""+slot, ConfigsV2.max);
 		
 		int w = -1;
 		
@@ -395,8 +423,8 @@ public class Run {
 					if(s != (e == 2015 ? 0 : e+1))
 						continue;
 					
-					if(ConfigsV2.getSleep(cid, ptimes.get(t).getAsString(), ""+slot, ConfigsV2.min) < 0 ||
-							ConfigsV2.getSleep(cid, ptimes.get(t).getAsString(), ""+slot, ConfigsV2.max) < 0) {
+					if(ConfigsV2.getSleepInt(cid, ptimes.get(t).getAsString(), ""+slot, ConfigsV2.min) < 0 ||
+							ConfigsV2.getSleepInt(cid, ptimes.get(t).getAsString(), ""+slot, ConfigsV2.max) < 0) {
 						e = Integer.parseInt(t.split("-")[1]);
 						continue;
 					}
@@ -439,11 +467,50 @@ public class Run {
 		
 	}
 	
+	private void doSlot(BackEndHandler beh, int slot) throws Exception {
+		if_clause:
+		if(slot == 4) {
+			Debug.print("event", Debug.general, Debug.info, pn, slot);
+			event(beh);
+
+			Debug.print("quest", Debug.general, Debug.info, pn, slot);
+			quest(beh);
+
+			Debug.print("store", Debug.general, Debug.info, pn, slot);
+			store(beh);
+
+			Debug.print("unlock", Debug.general, Debug.info, pn, slot);
+			unlock(beh);
+
+			Debug.print("upgrade", Debug.general, Debug.info, pn, slot);
+			upgrade(beh);
+			
+			Debug.print("grantExtraRewards", Debug.general, Debug.info, pn, slot);
+			beh.grantTeamReward();
+			beh.grantEventQuestMilestoneReward();
+			
+		} else {
+			
+			if(!canUseSlot(beh, slot))
+				break if_clause;
+
+			Debug.print("chest", Debug.general, Debug.info, pn, slot);
+			chest(beh, slot);
+
+			Debug.print("captain", Debug.general, Debug.info, pn, slot);
+			captain(beh, slot);
+
+			Debug.print("place", Debug.general, Debug.info, pn, slot);
+			place(beh, slot);
+			
+		}
+	}
+	
 	private static LocalDateTime gcwait = LocalDateTime.now();
 	private static final Object gclock = new Object();
 	
 	
-	public boolean canUseSlot(int slot) throws NoConnectionException, NotAuthorizedException {
+	public boolean canUseSlot(BackEndHandler beh, int slot) throws NoConnectionException, NotAuthorizedException {
 		int uCount = beh.getUnits(pn, SRC.BackEndHandler.all, false).length;
 		return (slot == 0)
 				|| (slot == 1 && uCount > 4)
@@ -476,6 +543,9 @@ public class Run {
 				ms += ss;
 				
 				Manager.blis.onProfileTimerUpdate(cid, slot, ms);
+				for(int i=0; i<5; i++)
+					if(ConfigsV2.getSleepInt(cid, currentLayer, ""+i, ConfigsV2.sync) == slot)
+						Manager.blis.onProfileTimerUpdate(cid, i, ms);
 				
 				sleep[slot]--;
 				
@@ -491,7 +561,7 @@ public class Run {
 	private boolean goMultiPlace;
 	private LocalDateTime placeTime = LocalDateTime.now();
 	
-	private void place(int slot) throws NoConnectionException, NotAuthorizedException {
+	private void place(BackEndHandler beh, int slot) throws NoConnectionException, NotAuthorizedException {
 		//	Unit place delay
 		long tdif = ChronoUnit.MILLIS.between(LocalDateTime.now(), placeTime);
 		if(tdif > 0) {
@@ -848,11 +918,11 @@ public class Run {
 		return null;
 	}
 	
-	private void captain(int slot) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
-		captain(slot, true, false);
+	private void captain(BackEndHandler beh, int slot) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+		captain(beh, slot, true, false);
 	}
 
-	private void captain(int slot, boolean first, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void captain(BackEndHandler beh, int slot, boolean first, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 		
 		boolean dungeon = ConfigsV2.getStr(cid, currentLayer, ConfigsV2.dungeonSlot).equals(""+slot);
 		
@@ -882,7 +952,7 @@ public class Run {
 			return;
 		
 		if(r == null) {
-			switchCap(slot, dungeon, null, null, noCap, first, null);
+			switchCap(beh, slot, dungeon, null, null, noCap, first, null);
 			return;
 		}
 		
@@ -891,7 +961,7 @@ public class Run {
 
 		String tdn = r.get(SRC.Raid.twitchDisplayName);
 		if(r.isVersus()) {
-			switchCap(slot, dungeon, r, tdn, noCap, first, null);
+			switchCap(beh, slot, dungeon, r, tdn, noCap, first, null);
 			return;
 		}
 
@@ -906,7 +976,7 @@ public class Run {
 		String ct = r.getFromNode(SRC.MapNode.chestType);
 
 		if(ct == null) {
-			switchCap(slot, dungeon, r, tdn, noCap, first, null);
+			switchCap(beh, slot, dungeon, r, tdn, noCap, first, null);
 			return;
 		}
 		
@@ -937,7 +1007,7 @@ public class Run {
 		if(!ic && Time.isAfter(Time.parse(r.get(SRC.Raid.creationDate))
 									.plusSeconds(maxTimeLeft),
 								beh.getServerTime())) {
-			switchCap(slot, dungeon, r, tdn, noCap, first, maxTimeLeft);
+			switchCap(beh, slot, dungeon, r, tdn, noCap, first, maxTimeLeft);
 			return;
 		}
 		
@@ -959,13 +1029,13 @@ public class Run {
 			|| (!ic && (loy < minLoy || loy > maxLoy))
 			|| fav < 0
 			) {
-			switchCap(slot, dungeon, r, tdn, noCap, first, null);
+			switchCap(beh, slot, dungeon, r, tdn, noCap, first, null);
 			return;
 		}
 		
 		if(change[slot]) {
 			if(first)
-				switchCap(slot, dungeon, r, tdn, noCap, first, null);
+				switchCap(beh, slot, dungeon, r, tdn, noCap, first, null);
 			else
 				change[slot] = false;
 		}
@@ -979,13 +1049,13 @@ public class Run {
 	}
 	
 	
-	private void switchCap(int slot, boolean dungeon, Raid r, String disname, boolean noCap, boolean first, Integer overrideBanTime) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void switchCap(BackEndHandler beh, int slot, boolean dungeon, Raid r, String disname, boolean noCap, boolean first, Integer overrideBanTime) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 		try {
-			switchCap(slot, dungeon, r, disname, noCap, overrideBanTime);
+			switchCap(beh, slot, dungeon, r, disname, noCap, overrideBanTime);
 		} catch (NoCapMatchesException e) {
 			if(!noCap) {
 				beh.updateCaps(true, dungeon);
-				captain(slot, first, true);
+				captain(beh, slot, first, true);
 			} else {
 				Debug.print("Run -> switchCap: slot="+slot+", err=No Captain Matches Config", Debug.runerr, Debug.error, pn, slot, true);
 				throw e;
@@ -993,7 +1063,7 @@ public class Run {
 		}
 	}
 	
-	private void switchCap(int slot, boolean dungeon, Raid r, String disname, boolean noCap, Integer overrideBanTime) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void switchCap(BackEndHandler beh, int slot, boolean dungeon, Raid r, String disname, boolean noCap, Integer overrideBanTime) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 
 		LocalDateTime now = Time.parse(beh.getServerTime());
 		
@@ -1073,13 +1143,13 @@ public class Run {
 		
 		Debug.print("switched to " + best.get(SRC.Captain.twitchDisplayName), Debug.caps, Debug.info, pn, slot);
 		
-		captain(slot, false, noCap);
+		captain(beh, slot, false, noCap);
 	}
 
 	
 	private boolean goMultiChestClaim;
 	
-	private void chest(int slot) throws NoConnectionException, NotAuthorizedException {
+	private void chest(BackEndHandler beh, int slot) throws NoConnectionException, NotAuthorizedException {
 		if(!beh.isReward(slot))
 			return;
 		if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiChestExploit)) {
@@ -1098,7 +1168,7 @@ public class Run {
 							if(rews == null)
 								return;
 							for(String rew : rews.keySet())
-								addRew(SRC.Run.chests, rew, rews.get(rew).getAsInt());
+								addRew(beh, SRC.Run.chests, rew, rews.get(rew).getAsInt());
 						} catch (NoConnectionException | NotAuthorizedException e) {}
 					}
 				});
@@ -1113,12 +1183,12 @@ public class Run {
 			if(rews == null)
 				return;
 			for(String rew : rews.keySet())
-				addRew(SRC.Run.chests, rew, rews.get(rew).getAsInt());
+				addRew(beh, SRC.Run.chests, rew, rews.get(rew).getAsInt());
 		}
 		
 	}
 
-	private void upgrade() throws NoConnectionException, NotAuthorizedException {
+	private void upgrade(BackEndHandler beh) throws NoConnectionException, NotAuthorizedException {
 		
 		if(beh.getCurrency(pn, Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.upgradeMinGold))
 			return;
@@ -1152,7 +1222,7 @@ public class Run {
 
 	private boolean goMultiUnit;
 	
-	private void unlock() throws NoConnectionException, NotAuthorizedException {
+	private void unlock(BackEndHandler beh) throws NoConnectionException, NotAuthorizedException {
 		
 		if(beh.getCurrency(pn, Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unlockMinGold))
 			return;
@@ -1213,8 +1283,8 @@ public class Run {
 		}
 	}
 
-	private void store() throws NoConnectionException, NotAuthorizedException {
-		//TODO better store
+	private void store(BackEndHandler beh) throws NoConnectionException, NotAuthorizedException {
+		
 		beh.updateStore(pn, false);
 		
 		//	collecting daily reward if any
@@ -1224,7 +1294,7 @@ public class Run {
 			if(err.isJsonPrimitive())
 				Debug.print("Run -> store -> daily: err="+err.getAsString(), Debug.runerr, Debug.error, pn, 4, true);
 			else
-				addRew(SRC.Run.bought, Store.eventcurrency.get(), item.getQuantity());
+				addRew(beh, SRC.Run.bought, Store.eventcurrency.get(), item.getQuantity());
 		}
 		
 		//	buying from dungeon store if available
@@ -1267,19 +1337,19 @@ public class Run {
 			if(err == null || !err.isJsonPrimitive()) {
 				switch(resp.get("buyType").getAsString()) {
 				case "item":
-					addRew(SRC.Run.bought, best.getItem(), best.getQuantity());
+					addRew(beh, SRC.Run.bought, best.getItem(), best.getQuantity());
 					break;
 				case "chest":
-					addRew(SRC.Run.bought, "dungeonchest", 1);
+					addRew(beh, SRC.Run.bought, "dungeonchest", 1);
 					JsonArray data = resp.getAsJsonObject("data").getAsJsonArray("rewards");
 					Raid.updateChestRews();
 					for(int i=0; i<data.size(); i++) {
 						Reward rew = new Reward(data.get(i).getAsString());
-						addRew(SRC.Run.bought, rew.name, rew.quantity);
+						addRew(beh, SRC.Run.bought, rew.name, rew.quantity);
 					}
 					break;
 				case "skin":
-					addRew(SRC.Run.bought, "skin", 1);
+					addRew(beh, SRC.Run.bought, "skin", 1);
 					break;
 				default:
 					Debug.print("Run -> store -> buyItem: err=unknown buyType, buyType="+resp.get("buyType").getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
@@ -1328,14 +1398,12 @@ public class Run {
 					
 					Item item = items.get(ind);
 					
-					//TODO make better
-					JsonObject ret = beh.buyItem(item);
-					JsonElement err = ret.get(SRC.errorMessage);
+					JsonElement err = beh.buyItem(item).get(SRC.errorMessage);
 					if(err != null && err.isJsonPrimitive()) {
 						if(!err.getAsString().startsWith("not enough"))
 							Debug.print("Run -> store: err=" + err.getAsString() + ", item=" + item.toString(), Debug.lowerr, Debug.error, pn, 4, true);
 					} else
-						addRew(SRC.Run.bought, item.getItem(), item.getQuantity());
+						addRew(beh, SRC.Run.bought, item.getItem(), item.getQuantity());
 					
 					ps[ind] = -1;
 				}
@@ -1349,7 +1417,7 @@ public class Run {
 					String err = beh.refreshStore();
 					if(err != null)
 						Debug.print("Run -> Store: err="+err, Debug.runerr, Debug.error, pn, 4, true);
-					store();
+					store(beh);
 				}
 			}
 			
@@ -1358,7 +1426,7 @@ public class Run {
 
 	private boolean goMultiQuestClaim;
 	
-	private void quest() throws NoConnectionException, NotAuthorizedException {
+	private void quest(BackEndHandler beh) throws NoConnectionException, NotAuthorizedException {
 		Quest[] quests = beh.getClaimableQuests();
 		
 		for(int i=0; i<quests.length; i++) {
@@ -1402,7 +1470,7 @@ public class Run {
 						return;
 					}
 					int a = dat.get("Amount").getAsInt();
-					addRew(SRC.Run.event, item, a);
+					addRew(beh, SRC.Run.event, item, a);
 				}
 			}
 		}
@@ -1410,7 +1478,7 @@ public class Run {
 
 	private static final HashSet<Integer> potionsTiers = new HashSet<>(Arrays.asList(5, 11, 14, 22, 29));
 	
-	private void event() throws NoConnectionException, NotAuthorizedException {
+	private void event(BackEndHandler beh) throws NoConnectionException, NotAuthorizedException {
 		if(!beh.isEvent())
 			return;
 		
@@ -1418,18 +1486,18 @@ public class Run {
 		int tier = beh.getEventTier();
 		for(int i=1; i<=tier; i++) {
 			if(bp)
-				collectEvent(i, true);
+				collectEvent(beh, i, true);
 			
 			if(potionsTiers.contains(i) && beh.getCurrency(pn, Store.potions, false) > 10)
 				continue;
 			
-			collectEvent(i, false);
+			collectEvent(beh, i, false);
 		}
 	}
 	
 	private boolean goMultiEventClaim;
 	
-	private void collectEvent(int tier, boolean bp) throws NoConnectionException, NotAuthorizedException {
+	private void collectEvent(BackEndHandler beh, int tier, boolean bp) throws NoConnectionException, NotAuthorizedException {
 		if(!beh.canCollectEvent(tier, bp))
 			return;
 		
@@ -1450,7 +1518,7 @@ public class Run {
 							if(err == null || !err.isJsonPrimitive()) {
 								String rew = ce.get("reward").getAsString();
 								if(!rew.equals("badges"))
-									addRew(SRC.Run.event, rew, ce.get("quantity").getAsInt());
+									addRew(beh, SRC.Run.event, rew, ce.get("quantity").getAsInt());
 							}
 						} catch (NoConnectionException e) {
 						} catch (NullPointerException e) {
@@ -1473,7 +1541,7 @@ public class Run {
 			} else {
 				String rew = ce.get("reward").getAsString();
 				if(!rew.equals("badges"))
-					addRew(SRC.Run.event, rew, ce.get("quantity").getAsInt());
+					addRew(beh, SRC.Run.event, rew, ce.get("quantity").getAsInt());
 			}
 		}
 		
@@ -1488,36 +1556,45 @@ public class Run {
 	private static final C[] sc = new C[] {Store.gold, Store.potions, Store.meat, Store.eventcurrency, Store.keys, Store.bones};
 	public static final String[] pveloy = "noloy bronze silver gold".split(" ");
 	
-	synchronized public void updateFrame() throws NoConnectionException, NotAuthorizedException {
+	private Raid[] raids = null;
+	private Hashtable<String, Integer> curs = null;
+	
+	synchronized public void updateFrame(BackEndHandler beh) throws NoConnectionException, NotAuthorizedException {
 		if(!ready)
 			return;
 		
-		updateLayer();
+		if(beh != null)
+			raids = beh.getRaids(SRC.BackEndHandler.all);
 		
-		Raid[] raids = beh.getRaids(SRC.BackEndHandler.all);
-		
-		for(int i=0; i<raids.length; i++) {
-			
-			if(raids[i] == null) {
-				cnames[i] = null;
-				cnames[i+4] = null;
-				cnames[i+8] = null;
+		for(int i=0; i<5; i++) {
+			if(i == 4) {
+				Manager.blis.onProfileUpdateSlot(cid, i, null, false, false);
 			} else {
-				cnames[i] = raids[i].get(SRC.Raid.twitchUserName);
-				cnames[i+4] = raids[i].get(SRC.Raid.twitchDisplayName);
-				cnames[i+8] = raids[i].isDungeon() ? "d" : "c";
+				if(raids[i] == null) {
+					cnames[i] = null;
+					cnames[i+4] = null;
+					cnames[i+8] = null;
+				} else {
+					cnames[i] = raids[i].get(SRC.Raid.twitchUserName);
+					cnames[i+4] = raids[i].get(SRC.Raid.twitchDisplayName);
+					cnames[i+8] = raids[i].isDungeon() ? "d" : "c";
+				}
+				Manager.blis.onProfileUpdateSlot(cid, i, raids[i], ConfigsV2.isSlotLocked(cid, currentLayer, ""+i), change[i]);
 			}
-
-			Manager.blis.onProfileUpdateSlot(cid, i, raids[i], ConfigsV2.isSlotLocked(cid, currentLayer, ""+i), change[i]);
-			
 		}
 		
-		for(C key : sc)
-			Manager.blis.onProfileUpdateCurrency(cid, key.get(), beh.getCurrency(pn, key, false));
+		if(beh != null)
+			curs = beh.getCurrencies(pn);
+			
+		for(C key : sc) {
+			String k = key.get();
+			Manager.blis.onProfileUpdateCurrency(cid, k, curs.containsKey(k) ? curs.get(k) : 0);
+		}
 		
+			
 	}
 	
-	public synchronized void updateLayer() {
+	public synchronized void updateLayer(BackEndHandler beh) {
 		LocalDateTime now = LocalDateTime.now();
 		// current time in layer-units (1 = 5 min)
 		int n = ((now.get(WeekFields.ISO.dayOfWeek()) - 1) * 288) 
@@ -1533,12 +1610,13 @@ public class Run {
 					break;
 				currentLayer = ptimes.get(key).getAsString();
 				currentLayerId = key;
-				updateProxySettings();
 				break;
 			}
 		}
 		
 		Manager.blis.onProfileUpdateGeneral(cid, pn, ConfigsV2.getStr(cid, currentLayer, ConfigsV2.lname), new Color(ConfigsV2.getInt(cid, currentLayer, ConfigsV2.color)));
+		
+		updateProxySettings(beh);
 		
 		beh.setUpdateTimes( ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unitUpdate),
 							ConfigsV2.getInt(cid, currentLayer, ConfigsV2.raidUpdate),
@@ -1556,11 +1634,11 @@ public class Run {
 		return "https://twitch.tv/"+cnames[slot];
 	}
 	
-	public Map getMap(int slot) throws NoConnectionException, NotAuthorizedException {
+	public Map getMap(BackEndHandler beh, int slot) throws NoConnectionException, NotAuthorizedException {
 		return beh.getMap(pn, slot, false);
 	}
 	
-	public void updateProxySettings() {
+	public void updateProxySettings(BackEndHandler beh) {
 		String proxy = ConfigsV2.getStr(cid, currentLayer, ConfigsV2.proxyDomain);
 		String user = ConfigsV2.getStr(cid, currentLayer, ConfigsV2.proxyUser);
 		beh.setOptions(proxy.equals("") ? null : proxy, 

@@ -13,7 +13,7 @@ import program.ConfigsV2;
 import program.Debug;
 import run.Manager;
 
-public class NewProfile {
+public class AddProfile {
 	
 	private static GUI np = null;
 	
@@ -21,7 +21,7 @@ public class NewProfile {
 		
 		final String uid = LocalDateTime.now().toString().hashCode()+"::";
 		
-		np = new GUI("New Profile", 300, 400, parent, null);
+		np = new GUI(cid == null ? "New Profile" : "Update Cookies", 300, 400, parent, null);
 		np.setBackgroundGradient(Fonts.getGradient("add background"));
 		
 		int y = 0;
@@ -93,14 +93,14 @@ public class NewProfile {
 				
 				String ai = GUI.getInputText(uid+"ai");
 				if(ai.equals("")) {
-					np.msg("ACCESS_INFO needed", "Without your ACCESS_INFO this bot can't work", GUI.MsgConst.WARNING);
+					np.msg("ACCESS_INFO needed", "Without your ACCESS_INFO cookie this bot can't work", GUI.MsgConst.WARNING);
 					return;
 				}
 				np.close();
 				if(cid == null)
 					Manager.addProfile(name, ai);
 				else {
-					ConfigsV2.setPStr(cid, ConfigsV2.cookies, ai);
+					ConfigsV2.setPStr(cid, ConfigsV2.cookies, "ACCESS_INFO="+ai);
 					Manager.loadProfile(cid);
 				}
 			}

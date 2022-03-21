@@ -38,19 +38,22 @@ public class Stats {
 	}
 	
 	private String pn;
-	private Run run = null;
-	private BackEndHandler beh = null;
 	
 	private static final AffineTransform affinetransform = new AffineTransform();     
 	private static final FontRenderContext frc = new FontRenderContext(affinetransform,true,true);     
 	private static final Font font = new Font("Arial", Font.PLAIN, 12);
 	
 	public void open() {
+		Run run = Manager.getProfile(cid);
+		run.useBackEndHandler(beh -> {
+			open(run, beh);
+		});
+	}
+	
+	
+	public void open(Run run, BackEndHandler beh) {
 		
-		run = Manager.getProfile(cid);
 		pn = run.getPN();
-		
-		beh = run.getBackEndHandler();
 		
 		int[] pos = new int[5];
 		

@@ -85,6 +85,7 @@ public class ConfigsV2 {
 
 	public static final GBoo useMemoryReleaser = new GBoo("useMemoryReleaser");
 	public static final GBoo needCloseConfirm = new GBoo("needCloseConfirm");
+	public static final GBoo freeUpMemoryByUsingDrive = new GBoo("freeUpMemoryByUsingDrive");
 	
 	public static boolean getGBoo(GBoo con) {
 		return configs.getAsJsonObject("Global").get(con.get()).getAsBoolean();
@@ -508,13 +509,14 @@ public class ConfigsV2 {
 	
 	public static final SleInt max = new SleInt("max");
 	public static final SleInt min = new SleInt("min");
+	public static final SleInt sync = new SleInt("sync");
 	
-	public static Integer getSleep(String cid, String lay, String slot, SleInt con) {
+	public static Integer getSleepInt(String cid, String lay, String slot, SleInt con) {
 		if(lay.equals("(all)")) {
 			String[] lays = getLayerIds(cid);
-			int sel = getSleep(cid, lays[0], slot, con);
+			int sel = getSleepInt(cid, lays[0], slot, con);
 			for(int i=1; i<lays.length; i++)
-				if(!(sel == getSleep(cid, lays[i], slot, con)))
+				if(!(sel == getSleepInt(cid, lays[i], slot, con)))
 					return null;
 			
 			return sel;
@@ -525,11 +527,11 @@ public class ConfigsV2 {
 				.get(con.get()).getAsInt();
 	}
 	
-	public static void setSleep(String cid, String lay, String slot, SleInt con, int val) {
+	public static void setSleepInt(String cid, String lay, String slot, SleInt con, int val) {
 		if(lay.equals("(all)")) {
 			String[] lays = getLayerIds(cid);
 			for(String l : lays)
-				setSleep(cid, l, slot, con, val);
+				setSleepInt(cid, l, slot, con, val);
 			return;
 		}
 		getLayer(cid, lay)
@@ -537,7 +539,6 @@ public class ConfigsV2 {
 				.getAsJsonObject(slot)
 				.addProperty(con.get(), val);
 	}
-	
 	
 	
 	private static class UPDInt extends All {

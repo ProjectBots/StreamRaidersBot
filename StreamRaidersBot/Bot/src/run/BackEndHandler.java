@@ -35,7 +35,7 @@ import program.Unit;
 import program.QuestEventRewards.Quest;
 
 public class BackEndHandler {
-	
+
 	private SRR req;
 	
 	private long secoff;
@@ -48,8 +48,8 @@ public class BackEndHandler {
 	private Captain[] caps;
 	private Captain[] dunCaps;
 	private QuestEventRewards qer = new QuestEventRewards();
-	private Hashtable<String, LocalDateTime> rts = new Hashtable<>();
-	
+	private Hashtable<String, String> rts = new Hashtable<>();
+	private int[] updateTimes = new int[] {10, 1, 5, 30, 15, 10, 60};
 	
 	
 	public BackEndHandler(String pn, String cookies) throws NoConnectionException, NotAuthorizedException, OutdatedDataException {
@@ -74,8 +74,6 @@ public class BackEndHandler {
 		req.setProxy(proxyDomain, proxyPort, username, password, mandatory);
 		req.setUserAgent(userAgent);
 	}
-	
-	private int[] updateTimes = new int[] {10, 1, 5, 30, 15, 10, 60};
 	
 	public void setUpdateTimes(int units, int raids, int maps, int store, int qer, int caps, int skins) {
 		updateTimes[0] = units;
@@ -163,9 +161,9 @@ public class BackEndHandler {
 	}
 	
 	synchronized public void updateUnits(boolean force) throws NoConnectionException, NotAuthorizedException {
-		LocalDateTime rt = rts.get("units");
+		String rt = rts.get("units");
 		LocalDateTime now = LocalDateTime.now();
-		if(!(rt == null || now.isAfter(rt.plusMinutes(updateTimes[0]))) && !force)
+		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[0]))) && !force)
 			return;
 		
 		JsonObject jo = Json.parseObj(req.getUserUnits());
@@ -177,14 +175,14 @@ public class BackEndHandler {
 		for(int i=0; i<u.size(); i++)
 			units[i] = new Unit(u.get(i).getAsJsonObject());
 		
-		rts.put("units", now);
+		rts.put("units", Time.parse(now));
 		uelis.afterUpdate("units");
 	}
 	
 	synchronized public void updateRaids(boolean force) throws NoConnectionException, NotAuthorizedException {
-		LocalDateTime rt = rts.get("raids");
+		String rt = rts.get("raids");
 		LocalDateTime now = LocalDateTime.now();
-		if(!(rt == null || now.isAfter(rt.plusMinutes(updateTimes[1]))) && !force)
+		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[1]))) && !force)
 			return;
 		
 		JsonObject jo = Json.parseObj(req.getActiveRaidsByUser());
@@ -205,14 +203,14 @@ public class BackEndHandler {
 			if(!got[i])
 				raids[i] = null;
 		
-		rts.put("raids", now);
+		rts.put("raids", Time.parse(now));
 		uelis.afterUpdate("raids");
 	}
 	
 	synchronized public void updateMap(String pn, int slot, boolean force) throws NoConnectionException, NotAuthorizedException {
-		LocalDateTime rt = rts.get("map::"+slot);
+		String rt = rts.get("map::"+slot);
 		LocalDateTime now = LocalDateTime.now();
-		if(!(rt == null || now.isAfter(rt.plusMinutes(updateTimes[2]))) && !force)
+		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[2]))) && !force)
 			return;
 		
 		updateRaids(true);
@@ -234,14 +232,14 @@ public class BackEndHandler {
 				userIds,
 				pn, slot);
 		
-		rts.put("map::"+slot, now);
+		rts.put("map::"+slot, Time.parse(now));
 		uelis.afterUpdate("map::"+slot);
 	}
 	
 	synchronized public void updateStore(String pn, boolean force) throws NoConnectionException, NotAuthorizedException {
-		LocalDateTime rt = rts.get("store");
+		String rt = rts.get("store");
 		LocalDateTime now = LocalDateTime.now();
-		if(!(rt == null || now.isAfter(rt.plusMinutes(updateTimes[3]))) && !force)
+		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[3]))) && !force)
 			return;
 		
 		JsonObject user = Json.parseObj(req.getUser());
@@ -271,14 +269,14 @@ public class BackEndHandler {
 
 		this.skins = new Skins(skins.get("data").isJsonArray() ? skins.getAsJsonArray("data") : null);
 		
-		rts.put("store", now);
+		rts.put("store", Time.parse(now));
 		uelis.afterUpdate("store");
 	}
 	
 	synchronized public void updateSkins(boolean force) throws NoConnectionException, NotAuthorizedException {
-		LocalDateTime rt = rts.get("skins");
+		String rt = rts.get("skins");
 		LocalDateTime now = LocalDateTime.now();
-		if(!(rt == null || now.isAfter(rt.plusMinutes(updateTimes[6]))) && !force)
+		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[6]))) && !force)
 			return;
 		
 		JsonObject skins = Json.parseObj(req.getUserItems());
@@ -287,14 +285,14 @@ public class BackEndHandler {
 		
 		this.skins = new Skins(skins.get("data").isJsonArray() ? skins.getAsJsonArray("data") : null);
 		
-		rts.put("skins", now);
+		rts.put("skins", Time.parse(now));
 		uelis.afterUpdate("skins");
 	}
 	
 	synchronized public void updateQuestEventRewards(boolean force) throws NoConnectionException, NotAuthorizedException {
-		LocalDateTime rt = rts.get("qer");
+		String rt = rts.get("qer");
 		LocalDateTime now = LocalDateTime.now();
-		if(!(rt == null || now.isAfter(rt.plusMinutes(updateTimes[4]))) && !force)
+		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[4]))) && !force)
 			return;
 		
 		JsonObject userEventProgression = Json.parseObj(req.getUserEventProgression());
@@ -307,14 +305,14 @@ public class BackEndHandler {
 			userQuests = Json.parseObj(req.getUserQuests());
 		qer.updateQuests(userQuests.getAsJsonArray("data"));
 		
-		rts.put("qer", now);
+		rts.put("qer", Time.parse(now));
 		uelis.afterUpdate("qer");
 	}
 	
 	synchronized public void updateCaps(boolean force, boolean dungeon) throws NoConnectionException, NotAuthorizedException {
-		LocalDateTime rt = rts.get("caps::"+dungeon);
+		String rt = rts.get("caps::"+dungeon);
 		LocalDateTime now = LocalDateTime.now();
-		if(!(rt == null || now.isAfter(rt.plusMinutes(updateTimes[5]))) && !force)
+		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[5]))) && !force)
 			return;
 		
 		JsonArray rawCaps = new JsonArray();
@@ -329,7 +327,7 @@ public class BackEndHandler {
 		
 		setCaps(caps, dungeon);
 		
-		rts.put("caps::"+dungeon, now);
+		rts.put("caps::"+dungeon, Time.parse(now));
 		uelis.afterUpdate("caps::"+dungeon);
 	}
 	
@@ -615,10 +613,6 @@ public class BackEndHandler {
 		return store.getCurrencies();
 	}
 	
-	@Deprecated
-	public String buyStoreItem(Item item) throws NoConnectionException {
-		return store.buyStoreItem(item, req, getServerTime());
-	}
 	
 	public JsonObject buyItem(Item item) throws NoConnectionException {
 		return store.buyItem(item, req, skins);
@@ -666,11 +660,6 @@ public class BackEndHandler {
 			return null;
 		} else
 			return err.getAsString();
-	}
-	
-	@Deprecated
-	public JsonObject buyChest(String chest) throws NoConnectionException {
-		return store.buyChest(getServerTime(), chest, req);
 	}
 	
 	public boolean isEvent() throws NoConnectionException, NotAuthorizedException {

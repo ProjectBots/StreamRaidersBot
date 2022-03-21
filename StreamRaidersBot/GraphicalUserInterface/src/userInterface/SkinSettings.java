@@ -1,6 +1,7 @@
 package userInterface;
 
 import java.awt.event.ItemEvent;
+import java.awt.event.WindowEvent;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -14,6 +15,7 @@ import include.GUI.CombListener;
 import include.GUI.ComboBox;
 import include.GUI.Container;
 import include.GUI.Label;
+import include.GUI.WinLis;
 import include.Http.NoConnectionException;
 import program.ConfigsV2;
 import program.Debug;
@@ -37,15 +39,44 @@ public static final String pre = "SkinSettings::";
 		uid = pre + cid + "::" + LocalDateTime.now().toString().hashCode() + "::";
 	}
 	
-	
 	public void open(GUI parent) {
+		//	own thread bcs window is blocking until closed
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				Manager.getProfile(cid).useBackEndHandler(beh -> {
+					open(parent, beh);
+				});
+			}
+		});
+		t.start();
+	}
+	
+	private boolean closed = false;
+	
+	private void open(GUI parent, BackEndHandler beh) {
+		closed = false;
 		
 		int p = 0;
 		
 		GUI gui = new GUI("Skin Settings for " + ConfigsV2.getPStr(cid, ConfigsV2.pname), 500, 500, parent, null);
 		gui.setBackgroundGradient(Fonts.getGradient("stngs skins background"));
 		
-		BackEndHandler beh = Manager.getProfile(cid).getBackEndHandler();
+		gui.addWinLis(new WinLis() {
+			@Override
+			public void onIconfied(WindowEvent e) {}
+			@Override
+			public void onFocusLost(WindowEvent e) {}
+			@Override
+			public void onFocusGained(WindowEvent e) {}
+			@Override
+			public void onDeIconfied(WindowEvent e) {}
+			@Override
+			public void onClose(WindowEvent e) {
+				closed = true;
+			}
+		});
+		
 		Unit[] units_;
 		Skins skins_;
 		try {
@@ -159,6 +190,14 @@ public static final String pre = "SkinSettings::";
 		}
 		
 		gui.refresh();
+		
+		//	block until window closed
+		//	that way beh won't be unloaded until finished
+		while(!closed) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e1) {}
+		}
 		
 	}
 	

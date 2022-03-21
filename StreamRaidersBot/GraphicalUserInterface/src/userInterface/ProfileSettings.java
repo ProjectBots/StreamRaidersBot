@@ -34,7 +34,9 @@ import program.SRC;
 import program.Store;
 import program.SRR.NotAuthorizedException;
 import program.Store.Item;
+import run.BackEndHandler;
 import run.Manager;
+import run.Run;
 import program.ConfigsV2.Boo;
 import program.ConfigsV2.Int;
 import program.ConfigsV2.SleInt;
@@ -54,6 +56,13 @@ public class ProfileSettings {
 	}
 	
 	public void open(GUI parent) {
+		Run run = Manager.getProfile(cid);
+		run.useBackEndHandler(beh -> {
+			open(parent, run, beh);
+		});
+	}
+	
+	private void open(GUI parent, Run run, BackEndHandler beh) {
 		
 		int p = 0;
 		
@@ -71,7 +80,7 @@ public class ProfileSettings {
 			public void onDeIconfied(WindowEvent e) {}
 			@Override
 			public void onClose(WindowEvent e) {
-				Manager.getProfile(cid).updateProxySettings();
+				run.updateProxySettings(beh);
 			}
 		});
 		
@@ -294,7 +303,7 @@ public class ProfileSettings {
 				
 				for(String m : "min max".split(" ")) {
 					
-					Integer val = ConfigsV2.getSleep(cid, lay, ""+i, new SleInt(m));
+					Integer val = ConfigsV2.getSleepInt(cid, lay, ""+i, new SleInt(m));
 					
 					TextField tsleep = new TextField();
 					tsleep.setText(val == null ? "" : ""+val);
@@ -319,8 +328,8 @@ public class ProfileSettings {
 								int max = Integer.parseInt(GUI.getInputText(uid+"sleep::max::"+ii));
 								if(min > max)
 									throw new NumberFormatException();
-								ConfigsV2.setSleep(cid, lay, ""+ii, ConfigsV2.max, max);
-								ConfigsV2.setSleep(cid, lay, ""+ii, ConfigsV2.min, min);
+								ConfigsV2.setSleepInt(cid, lay, ""+ii, ConfigsV2.max, max);
+								ConfigsV2.setSleepInt(cid, lay, ""+ii, ConfigsV2.min, min);
 								GUI.setBackground(uid+"sleep::min::"+ii, Color.white);
 								GUI.setBackground(uid+"sleep::max::"+ii, Color.white);
 							} catch (NumberFormatException e) {
@@ -332,7 +341,54 @@ public class ProfileSettings {
 					csleep.addTextField(tsleep, uid+"sleep::"+m+"::"+i);
 				}
 				
+				Integer iss = ConfigsV2.getSleepInt(cid, lay, ""+i, ConfigsV2.sync);
+				String sss = iss == null
+								? "(---)"
+								: iss == -1
+									? "(none)"
+									: iss == 4
+										? "s"
+										: ""+(iss+1);
 				
+				ComboBox cbss = new ComboBox(uid+"sleep::sync::"+i);
+				cbss.setPos(4, i+1);
+				cbss.setList(putFirst("(none) 1 2 3 4 s".split(" "), sss));
+				cbss.setCL(new CombListener() {
+					@Override
+					public void unselected(String id, ItemEvent e) {}
+					@Override
+					public void selected(String id, ItemEvent e) {
+						String in = GUI.getSelected(id);
+						int s;
+						switch(in) {
+						case "(none)":
+							ConfigsV2.setSleepInt(cid, lay, ""+ii, ConfigsV2.sync, -1);
+							return;
+						case "s":
+							s = 4;
+							break;
+						default:
+							s = Integer.parseInt(in) - 1;
+							break;
+						}
+						ConfigsV2.setSleepInt(cid, lay, ""+ii, ConfigsV2.sync, s);
+						ConfigsV2.setSleepInt(cid, lay, ""+s, ConfigsV2.sync, -1);
+						String syncTo = ConfigsV2.getPStr(cid, ConfigsV2.synced);
+						if(syncTo.equals("(none)")) {
+							for(String cid_ : Manager.getLoadedProfiles())
+								if(ConfigsV2.getPStr(cid_, ConfigsV2.synced).equals(cid) || cid_.equals(cid))
+									Manager.getProfile(cid_).setRunning(false, ii);
+						} else {
+							for(String cid_ : Manager.getLoadedProfiles())
+								if(ConfigsV2.getPStr(cid_, ConfigsV2.synced).equals(syncTo) || cid_.equals(syncTo))
+									Manager.getProfile(cid_).setRunning(false, ii);
+						}
+						
+						new ProfileSettings(cid, lay).open(gui);
+						gui.close();
+					}
+				});
+				csleep.addComboBox(cbss);
 			}
 			
 		gui.addContainer(csleep);
@@ -472,8 +528,8 @@ public class ProfileSettings {
 				List<Item> items;
 				List<Item> items_;
 				try {
-					items = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(section, true);
-					items_ = Manager.getProfile(cid).getBackEndHandler().getAvailableEventStoreItems(section, false);
+					items = beh.getAvailableEventStoreItems(section, true);
+					items_ = beh.getAvailableEventStoreItems(section, false);
 				} catch (NoConnectionException | NotAuthorizedException e3) {
 					Debug.printException("ProfileSettings -> open -> specialShop: err=unable to get items", e3, Debug.runerr, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
 					gui.close();

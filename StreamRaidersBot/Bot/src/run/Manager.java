@@ -1,5 +1,6 @@
 package run;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -220,6 +221,7 @@ public class Manager {
 		profiles.remove(cid);
 		blis.onProfileUnloaded(cid);
 		loadedProfiles.remove(cid);
+		new File("data/temp/"+cid+".srb.json").delete();
 	}
 	
 	/**
@@ -377,7 +379,7 @@ public class Manager {
 			@Override
 			public void run() {
 				try {
-					profiles.get(cid).updateFrame();
+					profiles.get(cid).updateFrame(null);
 				} catch (NoConnectionException | NotAuthorizedException e1) {
 					Debug.printException("Manager -> updateProfile: err=failed to update frame", e1, Debug.general, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
 				}
@@ -419,7 +421,11 @@ public class Manager {
 	public static String getServerTime() {
 		if(profiles.size() == 0)
 			return null;
-		return profiles.elements().nextElement().getBackEndHandler().getServerTime();
+		StringBuilder st = new StringBuilder();
+		profiles.elements().nextElement().useBackEndHandler(beh -> {
+			st.append(beh.getServerTime());
+		});
+		return st.toString();
 	}
 	
 	
@@ -428,8 +434,12 @@ public class Manager {
 	 */
 	public static List<String> getUserIds() {
 		List<String> ret = new ArrayList<>(profiles.size());
-		for(String key : profiles.keySet())
-			ret.add(profiles.get(key).getBackEndHandler().getUserId());
+		for(String key : profiles.keySet()) {
+			profiles.get(key).useBackEndHandler(beh -> {
+				ret.add(beh.getUserId());
+			});
+			
+		}
 		return ret;
 	}
 	

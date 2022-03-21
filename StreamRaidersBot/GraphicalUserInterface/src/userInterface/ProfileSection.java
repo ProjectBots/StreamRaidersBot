@@ -92,7 +92,7 @@ public class ProfileSection {
 						Manager.skipSleep(cid, 4);
 					}
 				});
-				head.addBut(skiph);
+				head.addBut(skiph, pre+cid+"::4::skip");
 				
 				Label s1 = new Label();
 				s1.setPos(p++, 0);
@@ -159,7 +159,7 @@ public class ProfileSection {
 								Manager.skipSleep(cid, ii);
 							}
 						});
-						tsr.addBut(skip);
+						tsr.addBut(skip, pre+cid+"::"+i+"::skip");
 				
 					raid.addContainer(tsr);
 					
@@ -379,11 +379,9 @@ public class ProfileSection {
 						if(ConfigsV2.getPStr(s, ConfigsV2.synced).equals(cid) || s.equals(cid))
 							Manager.updateProfile(s);
 				} else {
-					ProfileSection section = MainFrame.getSections().get(syncTo);
-					if(section != null)
-						section.update();
-					else
-						Manager.updateProfile(cid);
+					for(String s : Manager.getLoadedProfiles())
+						if(ConfigsV2.getPStr(s, ConfigsV2.synced).equals(syncTo) || s.equals(syncTo))
+							Manager.updateProfile(s);
 				}
 				
 			}

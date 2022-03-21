@@ -71,6 +71,24 @@ public class GlobalOptions {
 		});
 		gui.addBut(bncc, uid+"ncc");
 		
+		
+		Button bfumbud = new Button();
+		bfumbud.setPos(0, p++);
+		bfumbud.setText("free up memory by using drive");
+		boolean fumbud = ConfigsV2.getGBoo(ConfigsV2.freeUpMemoryByUsingDrive);
+		bfumbud.setGradient(Fonts.getGradient("stngs global buttons "+(fumbud?"on":"def")));
+		bfumbud.setForeground(Fonts.getColor("stngs global buttons "+(fumbud?"on":"def")));
+		bfumbud.setAL(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				boolean fumbud = ConfigsV2.getGBoo(ConfigsV2.freeUpMemoryByUsingDrive);
+				ConfigsV2.setGBoo(ConfigsV2.freeUpMemoryByUsingDrive, !fumbud);
+				GUI.setGradient(uid+"ncc", Fonts.getGradient("stngs global buttons "+(fumbud?"def":"on")));
+				GUI.setForeground(uid+"ncc", Fonts.getColor("stngs global buttons "+(fumbud?"def":"on")));
+			}
+		});
+		gui.addBut(bfumbud, uid+"ncc");
+		
 		Container cmca = new Container();
 		cmca.setPos(0, p++);
 		
