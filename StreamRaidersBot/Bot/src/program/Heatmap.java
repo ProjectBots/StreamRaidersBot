@@ -1,8 +1,6 @@
-package include;
+package program;
 
 import include.Maths.PointN;
-import program.Map;
-import program.SRC;
 
 public class Heatmap {
 	
@@ -13,7 +11,7 @@ public class Heatmap {
 	}
 	
 	public int[] getMaxHeat(Map map) {
-		hmap = new double[map.width()][map.length()];
+		hmap = new double[map.width][map.length];
 		int pc = 0;
 		for(int k=0; k<2; k++) {
 			for(int x=0; x<hmap.length; x++) {

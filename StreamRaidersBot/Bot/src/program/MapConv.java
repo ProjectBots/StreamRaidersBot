@@ -15,8 +15,8 @@ public class MapConv {
 	
 	public Field[][] asField(Map map, boolean canFly, HashSet<String> pts, int[] h, HashSet<String> banned) throws NoFinException {
 		
-		int length = map.length();
-		int width = map.width();
+		int length = map.length;
+		int width = map.width;
 		
 		Field[][] ret = new Field[width][length];
 		

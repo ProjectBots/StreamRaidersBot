@@ -60,7 +60,7 @@ public class Fonts {
 				try {
 					obj = obj.getAsJsonObject(p);
 				} catch (NullPointerException e1) {
-					throw new run.Run.StreamRaidersException("Fonts -> getObj: err=couldn't get obj, id="+id + ", stuck="+p, e1);
+					throw new run.Run.StreamRaidersException("Fonts -> getObj: err=couldn't get obj, id="+id + ", stuck="+p, e1, null, null);
 				}
 			}
 		}

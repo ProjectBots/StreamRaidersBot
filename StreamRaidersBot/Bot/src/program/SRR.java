@@ -22,6 +22,8 @@ public class SRR {
 	private String proxyUser;
 	private String proxyPass;
 	
+	private final String cid;
+	
 	private String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/0.0";
 	
 	public void setProxy(String domain, int port, String username, String password, boolean mandatory) {
@@ -95,8 +97,9 @@ public class SRR {
 	}
 	
 	
-	public SRR(String cookies, String clientVersion) throws NoConnectionException, OutdatedDataException, NotAuthorizedException {
-		this.cookies = cookies;
+	public SRR(String cid, String clientVersion) throws NoConnectionException, OutdatedDataException, NotAuthorizedException {
+		this.cid = cid;
+		this.cookies = ConfigsV2.getPStr(cid, ConfigsV2.cookies);
 		this.clientVersion = clientVersion;
 		reload();
 		addUserId(userId);
@@ -140,7 +143,7 @@ public class SRR {
 			if(err.isJsonPrimitive() && err.getAsString().equals("User is not authorized.")) {
 				throw new NotAuthorizedException();
 			} else {
-				Debug.print("SRR -> constructor: err=failed to get User, getUser=" + getUser, Debug.runerr, Debug.fatal, null, null, true);
+				Debug.print("SRR -> constructor: err=failed to get User, getUser=" + getUser, Debug.runerr, Debug.fatal, cid, null, true);
 			}
 		}
 	}
@@ -195,9 +198,9 @@ public class SRR {
 		}
 		
 		if(p.contains("\"errorMessage\":\""))
-			Debug.print(post.getUrlArg("cn") + "\n" + post.getPayloadAsString().replace("&", ", ") + "\n" + p, Debug.srerr, Debug.warn, null, null);
+			Debug.print(post.getUrlArg("cn") + "\n" + post.getPayloadAsString().replace("&", ", ") + "\n" + p, Debug.srerr, Debug.warn, cid, null);
 		else
-			Debug.print(post.getUrlArg("cn") + "\n" + post.getPayloadAsString().replace("&", ", ") + "\n" + p, Debug.srlog, Debug.info, null, null);
+			Debug.print(post.getUrlArg("cn") + "\n" + post.getPayloadAsString().replace("&", ", ") + "\n" + p, Debug.srlog, Debug.info, cid, null);
 		
 		return p;
 	}

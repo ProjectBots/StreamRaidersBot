@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 
 public class Captain {
 
-	private JsonObject cap;
+	private final JsonObject cap;
 	
 	public Captain(JsonObject cap) {
 		this.cap = cap;

@@ -4,9 +4,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.List;
-
-import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -18,8 +17,18 @@ import include.Http.NoConnectionException;
 
 public class Store {
 
-	public static final String[] nLevelCost = Options.get("nlevelcost").split("\\|");
-	public static final String[] lLevelCost = Options.get("llevelcost").split("\\|");
+	private static final String[] nLevelCost = Options.get("nlevelcost").split("\\|");
+	private static final String[] lLevelCost = Options.get("llevelcost").split("\\|");
+	
+	public static int[] getCost(String type, int lvl, boolean dupe) {
+		if(dupe) 
+			return new int[] {1000, Unit.isLegendary(type) ? 30 : 300};
+		
+		String[] cost = (Unit.isLegendary(type) ? lLevelCost[lvl] : nLevelCost[lvl]).split(",");
+		return new int[] {Integer.parseInt(cost[0]), Integer.parseInt(cost[1])};
+	}
+	
+	
 	
 	private JsonArray shopItems = new JsonArray();
 	private Hashtable<String, Integer> currencies = new Hashtable<>();
@@ -28,6 +37,20 @@ public class Store {
 	
 	public int getStoreRefreshCount() {
 		return storeRefreshCount;
+	}
+	
+	
+	public Store(JsonObject user, JsonArray availableCurrencies, JsonArray currentStoreItems) {
+		
+		currencies = new Hashtable<>();
+		for(int i=0; i<availableCurrencies.size(); i++) {
+			JsonObject c = availableCurrencies.get(i).getAsJsonObject();
+			currencies.put(c.get("currencyId").getAsString().replace("cooldown", meat.get()).replace(Options.get("currentEventCurrency"), eventcurrency.get()), Integer.parseInt(c.get("quantity").getAsString()));
+		}
+		int potion = user.get("epicProgression").getAsInt();
+		currencies.put(potions.get(), potion > 60 ? 60 : potion);
+		storeRefreshCount = user.get("storeRefreshCount").getAsInt();
+		shopItems = currentStoreItems;
 	}
 	
 	public static class C {
@@ -113,35 +136,11 @@ public class Store {
 		return currencies;
 	}
 	
-	
-	public Store(JsonObject user, JsonArray availableCurrencies, JsonArray currentStoreItems) {
-		
-		currencies = new Hashtable<>();
-		for(int i=0; i<availableCurrencies.size(); i++) {
-			JsonObject c = availableCurrencies.get(i).getAsJsonObject();
-			currencies.put(c.get("currencyId").getAsString().replace("cooldown", meat.get()).replace(Options.get("currentEventCurrency"), eventcurrency.get()), Integer.parseInt(c.get("quantity").getAsString()));
-		}
-		int potion = user.get("epicProgression").getAsInt();
-		currencies.put(potions.get(), potion > 60 ? 60 : potion);
-		storeRefreshCount = user.get("storeRefreshCount").getAsInt();
-		shopItems = currentStoreItems;
-	}
-	
-	
 	public void refreshStore(JsonArray shopItems) throws NoConnectionException {
 		this.shopItems = shopItems;
 		storeRefreshCount++;
 		currencies.put(gold.get(), currencies.get(gold.get()) 
 				- (storeRefreshCount > 3 ? 400 : storeRefreshCount * 100));
-	}
-	
-	
-	private static int[] getCost(String type, int lvl, boolean dupe) {
-		if(dupe) 
-			return new int[] {1000, Unit.isLegendary(type) ? 30 : 300};
-		
-		String[] cost = (Unit.isLegendary(type) ? lLevelCost[lvl] : nLevelCost[lvl]).split(",");
-		return new int[] {Integer.parseInt(cost[0]), Integer.parseInt(cost[1])};
 	}
 	
 	public boolean canUpgradeUnit(Unit unit) {
@@ -157,7 +156,7 @@ public class Store {
 	
 
 	public Unit[] getUpgradeableUnits(Unit[] units) {
-		Unit[] ret = new Unit[0];
+		LinkedList<Unit> ret = new LinkedList<>();
 		for(int i=0; i<units.length; i++) {
 			int lvl = Integer.parseInt(units[i].get(SRC.Unit.level));
 			String type = units[i].get(SRC.Unit.unitType);
@@ -165,9 +164,9 @@ public class Store {
 				continue;
 			
 			if(getCost(type, lvl, false)[1] <= getCurrency(type))
-				ret = add(ret, units[i]);
+				ret.add(units[i]);
 		}
-		return ret;
+		return ret.toArray(new Unit[ret.size()]);
 	}
 	
 	public String upgradeUnit(Unit unit, SRR req, String specUID) throws NoConnectionException {
@@ -219,7 +218,7 @@ public class Store {
 				gotTypes.put(type, lvl == 30);
 		}
 		
-		Unit[] ret = new Unit[0];
+		LinkedList<Unit> ret = new LinkedList<>();
 		
 		//	normal unlock
 		for(String type : allTypes.keySet()) {
@@ -227,7 +226,7 @@ public class Store {
 				continue;
 			
 			if(getCost(type, 0, false)[1] <= getCurrency(type))
-				ret = add(ret, Unit.createTypeOnly(type, false));
+				ret.add(Unit.createTypeOnly(type, false));
 		}
 		
 		//	dupe unlock
@@ -237,9 +236,9 @@ public class Store {
 				continue;
 			
 			if(getCost(type, 0, true)[1] <= getCurrency(type))
-				ret = add(ret, Unit.createTypeOnly(type, true));
+				ret.add(Unit.createTypeOnly(type, true));
 		}
-		return ret;
+		return ret.toArray(new Unit[ret.size()]);
 	}
 	
 	//	TODO handle request in BackEndHandler.java
@@ -473,11 +472,6 @@ public class Store {
 		decreaseCurrency(cur, price);
 		
 		return ret;
-	}
-	
-	
-	private <T>T[] add(T[] arr, T item) {
-		return ArrayUtils.add(arr, item);
 	}
 	
 	

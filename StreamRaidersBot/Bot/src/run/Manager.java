@@ -256,7 +256,30 @@ public class Manager {
 		r.setRunning(!r.isRunning(slot), slot);
 	}
 	
+	
 	/**
+	 * syncs a slot to another slot.
+	 * a synced slot will be managed by the slot it's synced to
+	 * @param cid profile id
+	 * @param lay layer id
+	 * @param slot the slot that relinquishes control of itself
+	 * @param syncTo the slot that rules from now on, use -1 to unsync
+	 */
+	public static void syncSlots(String cid, String lay, int slot, int syncTo) {
+		ConfigsV2.setSleepInt(cid, lay, ""+slot, ConfigsV2.sync, syncTo);
+		if(syncTo != -1)
+			ConfigsV2.setSleepInt(cid, lay, ""+syncTo, ConfigsV2.sync, -1);
+		String configSyncTo = ConfigsV2.getPStr(cid, ConfigsV2.synced);
+		if(!configSyncTo.equals("(none)"))
+			cid = configSyncTo;
+		
+		for(String cid_ : getLoadedProfiles())
+			if(ConfigsV2.getPStr(cid_, ConfigsV2.synced).equals(cid) || cid_.equals(cid)) 
+				getProfile(cid_).updateSlotSync();
+	}
+	
+	/**
+	 * return the current layer of the profile
 	 * @param cid profile id
 	 * @return the id of the profile's current layer
 	 */
@@ -381,7 +404,7 @@ public class Manager {
 				try {
 					profiles.get(cid).updateFrame(null);
 				} catch (NoConnectionException | NotAuthorizedException e1) {
-					Debug.printException("Manager -> updateProfile: err=failed to update frame", e1, Debug.general, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
+					Debug.printException("Manager -> updateProfile: err=failed to update frame", e1, Debug.general, Debug.error, cid, null, true);
 				}
 			}
 		});

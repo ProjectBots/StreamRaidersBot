@@ -16,25 +16,28 @@ public class Raid {
 		return get(SRC.Raid.twitchDisplayName);
 	}
 
-	private JsonObject raid = null;
-	private JsonObject node = null;
+	private final JsonObject raid;
+	private final JsonObject node;
+	
+	private final String cid;
+	private final int slot;
+	
 	
 	public JsonObject getRaidJsonObject() {
 		return raid;
 	}
 	
-	public void addNode(String node) {
-		this.node = Json.parseObj(Options.get("mapNodes")).getAsJsonObject(node);
-	}
-	
 	public String getFromNode(String con) {
 		if(node == null) return null;
-		return node.getAsJsonPrimitive(con).getAsString();
+		return node.get(con).getAsString();
 	}
 	
 	
-	public Raid(JsonObject raid) {
+	public Raid(JsonObject raid, String cid, int slot) {
 		this.raid = raid;
+		this.slot = slot;
+		this.node = Json.parseObj(Options.get("mapNodes")).getAsJsonObject(get(SRC.Raid.nodeId));
+		this.cid = cid;
 	}
 	
 	public boolean isDungeon() {
@@ -146,7 +149,7 @@ public class Raid {
 					rews.add(bonus);
 				
 				for(int i=0; i<rews.size(); i++) {
-					Reward r = new Reward(rews.get(i).getAsString());
+					Reward r = new Reward(rews.get(i).getAsString(), cid, slot);
 					
 					if(ret.has(r.name))
 						ret.addProperty(r.name, ret.get(r.name).getAsInt() + r.quantity);
@@ -156,11 +159,11 @@ public class Raid {
 				}
 			}
 		} catch (UnsupportedOperationException e) {
-			Debug.printException("Raid -> getChest: err=failed to get chest, rawData="+raidStats.toString(), e, Debug.runerr, Debug.error, null, null, true);
+			Debug.printException("Raid -> getChest: err=failed to get chest, rawData="+raidStats.toString(), e, Debug.runerr, Debug.error, cid, slot, true);
 		}
 		return ret;
 	}
-	
+
 	private static JsonObject chest_rews = null;
 	
 	public static void updateChestRews() {
@@ -170,7 +173,7 @@ public class Raid {
 	public static class Reward {
 		public final String name;
 		public final int quantity;
-		public Reward(String reward) {
+		public Reward(String reward, String cid, int slot) {
 			String[] rew = reward.split("\\|");
 			quantity = chest_rews.getAsJsonObject(rew[0]).get("Quantity").getAsInt();
 			
@@ -182,7 +185,7 @@ public class Raid {
 			} else if(rew[0].contains("skin")) {
 				name = "skin";
 			} else {
-				Debug.print("Raid -> Reward -> const.: err=failed to determine reward, reward=" + reward, Debug.runerr, Debug.error, null, null, true);
+				Debug.print("Raid -> Reward -> const.: err=failed to determine reward, reward=" + reward, Debug.runerr, Debug.error, cid, slot, true);
 				name = "unknown";
 			}
 		}

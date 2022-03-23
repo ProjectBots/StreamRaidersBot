@@ -1,41 +1,33 @@
 package program;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
-
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import include.Json;
 import include.Time;
-import program.QuestEventRewards.Quest.NoQuestException;
-import include.Http.NoConnectionException;
 
-public class QuestEventRewards {
+public class Event {
+
+	private static String currentEvent = null;
+	
+	public static String getCurrentEvent() {
+		return currentEvent;
+	}
+	
+	public static boolean isEvent() {
+		return currentEvent == null;
+	}
+	
 	
 	private boolean hasBattlePass = false;
 	private JsonObject collected = new JsonObject();
 	private int tier = 0;
-	private static String currentEvent = null;
-	private static boolean isEvent = false;
 	
-	public boolean isEvent() {
-		return isEvent;
-	}
-	
-	private JsonObject questTypes = null;
-	private Quest[] quests = null;
 	
 	public int getEventTier() {
 		return tier;
-	}
-	
-	public static String getCurrentEvent() {
-		return currentEvent;
 	}
 	
 	synchronized public static void updateCurrentEvent(String serverTime) {
@@ -47,98 +39,13 @@ public class QuestEventRewards {
 				continue;
 
 			currentEvent = key;
-			isEvent = true;
 			return;
 		}
 		currentEvent = null;
-		isEvent = false;
 	}
 	
 	public boolean hasBattlePass() {
 		return hasBattlePass;
-	}
-	
-	
-	public class Quest {
-		
-		public class NoQuestException extends Exception {
-			private static final long serialVersionUID = 1L;
-		}
-		
-		private JsonObject quest = null;
-		private int progress = 0;
-		private String slot = null;
-		
-		public Quest(JsonObject rQuest) throws NoQuestException {
-			JsonElement id = rQuest.get("currentQuestId");
-			if(!id.isJsonPrimitive())
-				throw new NoQuestException();
-			
-			quest = questTypes.getAsJsonObject(id.getAsString());
-			progress = rQuest.getAsJsonPrimitive("currentProgress").getAsInt();
-			slot = rQuest.getAsJsonPrimitive("questSlotId").getAsString();
-		}
-		
-		public boolean canClaim() {
-			return progress >= quest.getAsJsonPrimitive("GoalAmount").getAsInt();
-		}
-		
-		public String getSlot() {
-			return slot;
-		}
-		
-		public String claim(SRR req) throws NoConnectionException {
-			JsonElement err = Json.parseObj(req.collectQuestReward(slot)).get(SRC.errorMessage);
-			if(err.isJsonPrimitive()) return err.getAsString();
-			return null;
-		}
-		
-		public String neededUnit() {
-			String type = quest.getAsJsonPrimitive("Type").getAsString();
-			if(type.equals("PlaceUnitOfType")) 
-				return quest.getAsJsonPrimitive("Objective").getAsString();
-			return null;
-		}
-	}
-	
-	public String[] getNeededUnitTypesForQuests_old() {
-		String[] ret = new String[0];
-		for(int i=0; i<quests.length; i++) {
-			String type = quests[i].neededUnit();
-			if(type != null) ret = add(ret, type);
-		}
-		return ret;
-	}
-	
-	public List<String> getNeededUnitTypesForQuests() {
-		List<String> ret = new ArrayList<>();
-		for(int i=0; i<quests.length; i++) {
-			String type = quests[i].neededUnit();
-			if(type != null) 
-				ret.add(type);
-		}
-		return ret;
-	}
-	
-	
-	public void updateQuests(JsonArray userQuests) {
-		questTypes = Json.parseObj(Options.get("quests"));
-		
-		quests = new Quest[0];
-		
-		for(int i=0; i<userQuests.size(); i++) {
-			try {
-				quests = add(quests, new Quest(userQuests.get(i).getAsJsonObject()));
-			} catch (NoQuestException e) {}
-		}
-	}
-	
-	public Quest[] getClaimableQuests() {
-		Quest[] ret = new Quest[0];
-		for(int i=0; i<quests.length; i++) 
-			if(quests[i].canClaim()) 
-				ret = add(ret, quests[i]);
-		return ret;
 	}
 	
 	
@@ -147,11 +54,11 @@ public class QuestEventRewards {
 		for(int i=0; i<userEventProgression.size(); i++) {
 			JsonObject raw = userEventProgression.get(i).getAsJsonObject();
 			
-			if(!raw.getAsJsonPrimitive("eventUid").getAsString().equals(currentEvent)) 
+			if(!raw.get("eventUid").getAsString().equals(currentEvent)) 
 				continue;
 
-			hasBattlePass = raw.getAsJsonPrimitive("hasBattlePass").getAsInt() == 1;
-			tier = raw.getAsJsonPrimitive("currentTier").getAsInt();
+			hasBattlePass = raw.get("hasBattlePass").getAsInt() == 1;
+			tier = raw.get("currentTier").getAsInt();
 			
 			JsonElement rbc = raw.get("basicRewardsCollected");
 			if(rbc.isJsonPrimitive()) {
@@ -271,8 +178,5 @@ public class QuestEventRewards {
 	}
 	
 	
-	private <T> T[] add(T[] arr, T item) {
-		return ArrayUtils.add(arr, item);
-	}
 	
 }

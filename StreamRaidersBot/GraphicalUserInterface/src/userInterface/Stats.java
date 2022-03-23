@@ -37,8 +37,6 @@ public class Stats {
 		uid = pre + cid + "::" + LocalDateTime.now().toString().hashCode() + "::";
 	}
 	
-	private String pn;
-	
 	private static final AffineTransform affinetransform = new AffineTransform();     
 	private static final FontRenderContext frc = new FontRenderContext(affinetransform,true,true);     
 	private static final Font font = new Font("Arial", Font.PLAIN, 12);
@@ -53,17 +51,15 @@ public class Stats {
 	
 	public void open(Run run, BackEndHandler beh) {
 		
-		pn = run.getPN();
-		
 		int[] pos = new int[5];
 		
 		Unit[] units;
 		Hashtable<String, Integer> curs;
 		try {
-			units = beh.getUnits(pn, SRC.BackEndHandler.all, false);
-			curs = beh.getCurrencies(pn);
+			units = beh.getUnits(SRC.BackEndHandler.all, false);
+			curs = beh.getCurrencies();
 		} catch (NoConnectionException | NotAuthorizedException e) {
-			Debug.printException("Stats -> open: err=failed to get infos", e, Debug.general, Debug.error, pn, null, true);
+			Debug.printException("Stats -> open: err=failed to get infos", e, Debug.general, Debug.error, run.cid, null, true);
 			return;
 		}
 		JsonObject rews = run.getRews();
@@ -179,10 +175,8 @@ public class Stats {
 					val = 0;
 				
 				if(level != 30) {
-					int need = Integer.parseInt((Unit.isLegendary(type) 
-									? Store.lLevelCost[level]
-									: Store.nLevelCost[level]
-								).split(",")[1]);
+					int need = Store.getCost(type, level, false)[1];
+					
 					
 					Label nums = new Label();
 					nums.setPos(0, 2);

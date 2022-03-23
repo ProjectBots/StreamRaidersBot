@@ -371,18 +371,7 @@ public class ProfileSettings {
 							s = Integer.parseInt(in) - 1;
 							break;
 						}
-						ConfigsV2.setSleepInt(cid, lay, ""+ii, ConfigsV2.sync, s);
-						ConfigsV2.setSleepInt(cid, lay, ""+s, ConfigsV2.sync, -1);
-						String syncTo = ConfigsV2.getPStr(cid, ConfigsV2.synced);
-						if(syncTo.equals("(none)")) {
-							for(String cid_ : Manager.getLoadedProfiles())
-								if(ConfigsV2.getPStr(cid_, ConfigsV2.synced).equals(cid) || cid_.equals(cid))
-									Manager.getProfile(cid_).setRunning(false, ii);
-						} else {
-							for(String cid_ : Manager.getLoadedProfiles())
-								if(ConfigsV2.getPStr(cid_, ConfigsV2.synced).equals(syncTo) || cid_.equals(syncTo))
-									Manager.getProfile(cid_).setRunning(false, ii);
-						}
+						Manager.syncSlots(cid, lay, ii, s);
 						
 						new ProfileSettings(cid, lay).open(gui);
 						gui.close();

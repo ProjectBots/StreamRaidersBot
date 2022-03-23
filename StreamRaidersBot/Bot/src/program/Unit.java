@@ -16,19 +16,16 @@ public class Unit {
 		return get(SRC.Unit.unitType);
 	}
 	
-	private JsonObject unit = null;
+	private final JsonObject unit;
 	private String cool = null;
-	private int rank = 0;
-	private JsonArray ptagsJArr = null;
-	private HashSet<String> ptags = new HashSet<>();
+	private final HashSet<String> ptags = new HashSet<>();
+	
+	public final boolean dupe;
+	public final int rank;
 	
 	
 	private static final JsonObject uTypes = Json.parseObj(Options.get("unitTypes"));
 	private static final JsonObject specs = Json.parseObj(Options.get("specUIDs"));
-	
-	public static JsonArray getAllPlanTypes() {
-		return uTypes.getAsJsonArray("allTypes").deepCopy();
-	}
 	
 	public static JsonObject getTypes() {
 		JsonObject ret = uTypes.deepCopy();
@@ -37,25 +34,27 @@ public class Unit {
 	}
 	
 	public boolean canFly() {
-		return uTypes.getAsJsonObject(this.get(SRC.Unit.unitType)).getAsJsonPrimitive("canFly").getAsBoolean();
+		return uTypes.getAsJsonObject(get(SRC.Unit.unitType)).get("canFly").getAsBoolean();
 	}
 	
 	
 	public static boolean isLegendary(String type) {
-		return uTypes.getAsJsonObject(type).getAsJsonPrimitive("rank").getAsInt() == 4;
+		return uTypes.getAsJsonObject(type).get("rank").getAsInt() == 4;
 	}
 	
 	public Unit(JsonObject unit) throws ClassCastException {
 		this.unit = unit;
-		JsonElement jcool = unit.get("cooldownTime");
-		if(jcool.isJsonPrimitive()) {
-			setCooldown(unit.getAsJsonPrimitive("cooldownTime").getAsString());
-		}
+		JsonElement jcool = unit.get(SRC.Unit.cooldownTime);
+		if(jcool.isJsonPrimitive())
+			setCooldown(unit.get(SRC.Unit.cooldownTime).getAsString());
 		
-		JsonObject uType = uTypes.getAsJsonObject(unit.getAsJsonPrimitive(SRC.Unit.unitType).getAsString());
 		
-		rank = uType.getAsJsonPrimitive("rank").getAsInt();
-		ptagsJArr = uType.getAsJsonArray("role");
+		JsonObject uType = uTypes.getAsJsonObject(unit.get(SRC.Unit.unitType).getAsString());
+		
+		rank = uType.get("rank").getAsInt();
+		dupe = false;
+		
+		JsonArray ptagsJArr = uType.getAsJsonArray("role");
 		for(int i=0; i<ptagsJArr.size(); i++)
 			ptags.add(ptagsJArr.get(i).getAsString());
 	}
@@ -65,13 +64,9 @@ public class Unit {
 		unit.addProperty(SRC.Unit.unitType, unitType);
 		this.dupe = dupe;
 		this.unit = unit;
+		this.rank = 0;
 	}
 	
-	private boolean dupe = false;
-	
-	public boolean isDupe() {
-		return dupe;
-	}
 	
 	public static Unit createTypeOnly(String unitType, boolean dupe) {
 		return new Unit(unitType, dupe);
@@ -120,15 +115,11 @@ public class Unit {
 		return ptags.contains(tag);
 	}
 	
-	public JsonArray getPlanTypesJArr() {
-		return ptagsJArr.deepCopy();
-	}
-	
 	public HashSet<String> getPlanTypes() {
 		return new HashSet<>(ptags);
 	}
 	
-	public void setCooldown(String date) {
+	private void setCooldown(String date) {
 		cool = date;
 	}
 	

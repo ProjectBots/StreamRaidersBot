@@ -129,34 +129,34 @@ public class StreamRaiders {
 		
 		Debug.setDebugEventHandler(new DebugEventHandler() {
 			@Override
-			public void onPrintLine(String pre, String msg, Scope scope, Type type, String pn, Integer slot, boolean forced) {
+			public void onPrintLine(String pre, String msg, Scope scope, Type type, String cid, Integer slot, boolean forced) {
 				if(scope.equals(Debug.runerr))
-					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
-				DebugEventHandler.super.onPrintLine(pre, msg, scope, type, pn, slot, forced);
+					log((cid == null ? "" : "["+ConfigsV2.getPStr(cid, ConfigsV2.pname)+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
+				DebugEventHandler.super.onPrintLine(pre, msg, scope, type, cid, slot, forced);
 			}
 			@Override
-			public void onWriteLine(String path, String pre, String msg, Scope scope, Type type, String pn, Integer slot, boolean forced) {
+			public void onWriteLine(String path, String pre, String msg, Scope scope, Type type, String cid, Integer slot, boolean forced) {
 				if(scope.equals(Debug.runerr))
-					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
+					log((cid == null ? "" : "["+ConfigsV2.getPStr(cid, ConfigsV2.pname)+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
 				if(Debug.getSevertyOf(type) > 1 && !msg.contains("couldnt set image"))
 					System.err.println(pre+msg);
-				DebugEventHandler.super.onWriteLine(path, pre, msg, scope, type, pn, slot, forced);
+				DebugEventHandler.super.onWriteLine(path, pre, msg, scope, type, cid, slot, forced);
 			}
 			@Override
-			public void onPrintException(String pre, String msg, Exception e, Scope scope, Type type, String pn, Integer slot, boolean forced) {
+			public void onPrintException(String pre, String msg, Exception e, Scope scope, Type type, String cid, Integer slot, boolean forced) {
 				if(scope.equals(Debug.runerr))
-					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
-				DebugEventHandler.super.onPrintException(pre, msg, e, scope, type, pn, slot, forced);
+					log((cid == null ? "" : "["+ConfigsV2.getPStr(cid, ConfigsV2.pname)+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
+				DebugEventHandler.super.onPrintException(pre, msg, e, scope, type, cid, slot, forced);
 			}
 			@Override
-			public void onWriteException(String path, String pre, String msg, Exception e, Scope scope, Type type, String pn, Integer slot, boolean forced) {
+			public void onWriteException(String path, String pre, String msg, Exception e, Scope scope, Type type, String cid, Integer slot, boolean forced) {
 				if(scope.equals(Debug.runerr))
-					log((pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
+					log((cid == null ? "" : "["+ConfigsV2.getPStr(cid, ConfigsV2.pname)+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
 				if(Debug.getSevertyOf(type) > 1) {
 					System.err.println(pre+msg);
 					e.printStackTrace();
 				}
-				DebugEventHandler.super.onWriteException(path, pre, msg, e, scope, type, pn, slot, forced);
+				DebugEventHandler.super.onWriteException(path, pre, msg, e, scope, type, cid, slot, forced);
 			}
 		});
 		
@@ -177,39 +177,43 @@ public class StreamRaiders {
 				}
 				@Override
 				public void onConfigLoadStatusUpdate(int loaded, int failed, int total) {
-					userInterface.MainFrame.updateLoadStatus(loaded, failed, total);
+					MainFrame.updateLoadStatus(loaded, failed, total);
 				}
 				@Override
 				public void onProfileLoadComplete(String cid, int pos) {
-					userInterface.MainFrame.addLoadedProfile(cid, pos);
+					MainFrame.addLoadedProfile(cid, pos);
 				}
 				@Override
 				public void onProfileLoadError(String cid, int pos, Exception e) {
-					userInterface.MainFrame.addFailedProfile(cid, pos, e);
+					MainFrame.addFailedProfile(cid, pos, e);
 				}
 				@Override
 				public void onProfileUnloaded(String cid) {
-					userInterface.MainFrame.remProfile(cid);
+					MainFrame.remProfile(cid);
 				}
 				@Override
 				public void onProfileChangedRunning(String cid, int slot, boolean run) {
-					userInterface.MainFrame.updateSlotRunning(cid, slot, run);
+					MainFrame.updateSlotRunning(cid, slot, run);
 				}
 				@Override
 				public void onProfileTimerUpdate(String cid, int slot, String time) {
-					userInterface.MainFrame.updateTimer(cid, slot, time);
+					MainFrame.updateTimer(cid, slot, time);
 				}
 				@Override
 				public void onProfileUpdateCurrency(String cid, String type, int amount) {
-					userInterface.MainFrame.updateCurrency(cid, type, amount);
+					MainFrame.updateCurrency(cid, type, amount);
 				}
 				@Override
 				public void onProfileUpdateGeneral(String cid, String pn, String ln, Color lc) {
-					userInterface.MainFrame.updateGeneral(cid, pn, ln, lc);
+					MainFrame.updateGeneral(cid, pn, ln, lc);
 				}
 				@Override
 				public void onProfileUpdateSlot(String cid, int slot, Raid raid, boolean locked, boolean change) {
-					userInterface.MainFrame.updateSlot(cid, slot, raid, change);
+					MainFrame.updateSlot(cid, slot, raid, change);
+				}
+				@Override
+				public void onProfileUpdateSlotSync(String cid, int slot, int slotSyncedTo) {
+					MainFrame.updateSlotSync(cid, slot, slotSyncedTo != -1);
 				}
 			});
 		} catch (IniCanceledException e1) {
@@ -229,7 +233,7 @@ public class StreamRaiders {
 		}
 		
 		WaitScreen.setText("Initialize MainFrame"); 
-		userInterface.MainFrame.open();
+		MainFrame.open();
 		Manager.loadAllNewProfiles();
 	}
 	

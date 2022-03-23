@@ -19,7 +19,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import include.Heatmap;
 import include.Json;
 import include.Maths;
 import include.NEF;
@@ -43,11 +42,12 @@ import run.BackEndHandler.UpdateEventListener;
 import program.ConfigsV2.ListType;
 import program.ConfigsV2.StorePrioType;
 import program.MapConv.NoFinException;
-import program.QuestEventRewards.Quest;
 import program.Debug;
+import program.Heatmap;
 import program.Map;
 import program.MapConv;
 import program.Options;
+import program.Quests.Quest;
 
 public class Run {
 	
@@ -74,7 +74,7 @@ public class Run {
 	 * 
 	 */
 
-	private String cid;
+	public final String cid;
 	private BackEndHandler beh_;
 	
 	private Object beh_lock = new Object();
@@ -111,7 +111,7 @@ public class Run {
 			currentBehUses--;
 			if(currentBehUses == 0 && ConfigsV2.getGBoo(ConfigsV2.freeUpMemoryByUsingDrive)) {
 				try {
-					NEF.save("data/temp/"+cid+".srb.json", Json.prettyJson(Json.fromObj(beh_)));
+					NEF.save("data/temp/"+cid+".srb.json", Json.fromObj(beh_).toString());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -124,7 +124,7 @@ public class Run {
 	private UpdateEventListener uelis = new UpdateEventListener() {
 		@Override
 		public void afterUpdate(String obj) {
-			Debug.print("updated "+obj, Debug.general, Debug.info, pn, null);
+			Debug.print("updated "+obj, Debug.general, Debug.info, cid, null);
 			if(obj.contains("caps::")) {
 				boolean dungeon = obj.contains("::true");
 				useBackEndHandler(beh -> {
@@ -152,7 +152,7 @@ public class Run {
 						beh.setCaps(caps, dungeon);
 						
 					} catch (NoConnectionException | NotAuthorizedException e) {
-						Debug.printException(pn+": Run -> constr.: err=unable to retrieve caps", e, Debug.runerr, Debug.error, pn, null, true);
+						Debug.printException(cid+": Run -> constr.: err=unable to retrieve caps", e, Debug.runerr, Debug.error, cid, null, true);
 						return;
 					}
 				});
@@ -209,7 +209,7 @@ public class Run {
 			r.addProperty(type, r.get(type).getAsInt() + amount);
 			beh.addCurrency(type, amount);
 		} catch (NullPointerException e) {
-			Debug.printException("Run -> addRew: err=failed to add reward, con=" + con + ", type=" + type + ", amount=" + amount, e, Debug.runerr, Debug.error, pn, null, true);
+			Debug.printException("Run -> addRew: err=failed to add reward, con=" + con + ", type=" + type + ", amount=" + amount, e, Debug.runerr, Debug.error, cid, null, true);
 		}
 	}
 	
@@ -235,20 +235,20 @@ public class Run {
 		private static final long serialVersionUID = 1L;
 		private Exception cause;
 		private String text;
-		public StreamRaidersException(String text, Exception cause, boolean silent) {
+		public StreamRaidersException(String text, Exception cause, boolean silent, String cid, Integer slot) {
 			this.cause = cause;
 			this.text = text;
-			Debug.printException(text, cause, Debug.runerr, Debug.fatal, null, null, !silent);
+			Debug.printException(text, cause, Debug.runerr, Debug.fatal, cid, slot, !silent);
 		}
-		public StreamRaidersException(String text, Exception cause) {
+		public StreamRaidersException(String text, Exception cause, String cid, Integer slot) {
 			this.cause = cause;
 			this.text = text;
-			Debug.printException(text, cause, Debug.runerr, Debug.fatal, null, null, true);
+			Debug.printException(text, cause, Debug.runerr, Debug.fatal, cid, slot, true);
 		}
-		public StreamRaidersException(String text) {
+		public StreamRaidersException(String text, String cid, Integer slot) {
 			cause = null;
 			this.text = text;
-			Debug.print(text, Debug.runerr, Debug.fatal, null, null, true);
+			Debug.print(text, Debug.runerr, Debug.fatal, cid, slot, true);
 		}
 		public String getText() {
 			return text;
@@ -261,11 +261,10 @@ public class Run {
 	
 	public Run(String cid) throws NotAuthorizedException, NoConnectionException, OutdatedDataException {
 		this.cid = cid;
-		pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
-		beh_ = new BackEndHandler(pn, ConfigsV2.getPStr(cid, ConfigsV2.cookies));
+		beh_ = new BackEndHandler(cid);
 		beh_.setUpdateEventListener(uelis);
 		raids = beh_.getRaids(SRC.BackEndHandler.all);
-		curs = beh_.getCurrencies(pn);
+		curs = beh_.getCurrencies();
 		iniRews();
 		unloadBeh();
 	}
@@ -283,14 +282,15 @@ public class Run {
 	});
 	
 	private boolean[] setRun = new boolean[5];
-	public void setRunning(boolean b, int slot) {
+	public void setRunning(boolean bb, int slot) {
 		if(ConfigsV2.getSleepInt(cid, currentLayer, ""+slot, ConfigsV2.sync) != -1)
-			return;
+			bb = false;
+		final boolean b_ = bb;
 		Thread th = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				List<Boolean> q = queue.get(slot);
-				q.add(b);
+				q.add(b_);
 				if(setRun[slot])
 					return;
 				setRun[slot] = true;
@@ -335,7 +335,7 @@ public class Run {
 		try {
 			updateFrame(null);
 		} catch (NoConnectionException | NotAuthorizedException e) {
-			Debug.printException(pn+": Run -> change: slot="+slot+", err=failed to update Frame", e, Debug.runerr, Debug.error, pn, slot, true);
+			Debug.printException(cid+": Run -> change: slot="+slot+", err=failed to update Frame", e, Debug.runerr, Debug.error, cid, slot, true);
 		}
 	}
 	
@@ -354,43 +354,43 @@ public class Run {
 			ConfigsV2.favCap(cid, "(all)", cap, ConfigsV2.all, null);
 	}
 	
-	private String pn = null;
-	
-	public String getPN() {
-		return pn;
-	}
 	
 	synchronized private void slotSequence(int slot) {
+
+		updateLayer();
+		updateSlotSync();
+		if(!isRunning(slot))
+			return;
 		
-		Debug.print("requesting action", Debug.general, Debug.info, pn, slot);
+		Debug.print("requesting action", Debug.general, Debug.info, cid, slot);
 		try {
 			Manager.requestAction();
 		} catch (InterruptedException e1) {
-			Debug.print("action rejected", Debug.general, Debug.info, pn, slot);
+			Debug.print("action rejected", Debug.general, Debug.info, cid, slot);
 			return;
 		}
-		pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
+		//TODO
 		useBackEndHandler(beh -> {
-			updateLayer(beh);
+			updateBeh(beh);
 			try {
 				doSlot(beh, slot);
 				
 				for(int i=0; i<5; i++)
-					if(ConfigsV2.getSleepInt(cid, currentLayer, ""+slot, ConfigsV2.sync) == slot)
+					if(ConfigsV2.getSleepInt(cid, currentLayer, ""+i, ConfigsV2.sync) == slot)
 						doSlot(beh, i);
 
-				Debug.print("updateFrame", Debug.general, Debug.info, pn, slot);
+				Debug.print("updateFrame", Debug.general, Debug.info, cid, slot);
 				updateFrame(beh);
 			} catch (NoConnectionException | NotAuthorizedException e) {
-				Debug.printException("Run -> slotSequence: slot=" + slot + " err=No stable Internet Connection", e, Debug.runerr, Debug.fatal, pn, slot, true);
+				Debug.printException("Run -> slotSequence: slot=" + slot + " err=No stable Internet Connection", e, Debug.runerr, Debug.fatal, cid, slot, true);
 			} catch (StreamRaidersException | NoCapMatchesException e) {
 			} catch (Exception e) {
-				Debug.printException("Run -> slotSequence: slot=" + slot + " err=unknown", e, Debug.runerr, Debug.fatal, pn, slot, true);
+				Debug.printException("Run -> slotSequence: slot=" + slot + " err=unknown", e, Debug.runerr, Debug.fatal, cid, slot, true);
 			}
 		});
 		
 		
-		Debug.print("releasing action", Debug.general, Debug.info, pn, slot);
+		Debug.print("releasing action", Debug.general, Debug.info, cid, slot);
 		Manager.releaseAction();
 		
 		LocalDateTime now = LocalDateTime.now();
@@ -447,45 +447,45 @@ public class Run {
 		}
 		
 		if(w > -1) {
-			Debug.print("sleeping "+w+" sec", Debug.general, Debug.info, pn, slot);
+			Debug.print("sleeping "+w+" sec", Debug.general, Debug.info, cid, slot);
 			sleep(w, slot);
 		} else {
-			Debug.print("Run -> slotSequence: err=couldn't find wait time", Debug.runerr, Debug.fatal, pn, slot, true);
+			Debug.print("Run -> slotSequence: err=couldn't find wait time", Debug.runerr, Debug.fatal, cid, slot, true);
 			Manager.blis.onProfileChangedRunning(cid, slot, false);
 			isActiveRunning[slot] = false;
 			isRunning[slot] = false;
 		}
 		
-		Debug.print("before MemoryReleaser", Debug.general, Debug.info, pn, slot);
+		Debug.print("before MemoryReleaser", Debug.general, Debug.info, cid, slot);
 		synchronized (gclock) {
 			if(ConfigsV2.getGBoo(ConfigsV2.useMemoryReleaser) && now.isAfter(gcwait)) {
 				System.gc();
 				gcwait = now.plusSeconds(30);
 			}
 		}
-		Debug.print("after MemoryReleaser", Debug.general, Debug.info, pn, slot);
+		Debug.print("after MemoryReleaser", Debug.general, Debug.info, cid, slot);
 		
 	}
 	
 	private void doSlot(BackEndHandler beh, int slot) throws Exception {
 		if_clause:
 		if(slot == 4) {
-			Debug.print("event", Debug.general, Debug.info, pn, slot);
+			Debug.print("event", Debug.general, Debug.info, cid, slot);
 			event(beh);
 
-			Debug.print("quest", Debug.general, Debug.info, pn, slot);
+			Debug.print("quest", Debug.general, Debug.info, cid, slot);
 			quest(beh);
 
-			Debug.print("store", Debug.general, Debug.info, pn, slot);
+			Debug.print("store", Debug.general, Debug.info, cid, slot);
 			store(beh);
 
-			Debug.print("unlock", Debug.general, Debug.info, pn, slot);
+			Debug.print("unlock", Debug.general, Debug.info, cid, slot);
 			unlock(beh);
 
-			Debug.print("upgrade", Debug.general, Debug.info, pn, slot);
+			Debug.print("upgrade", Debug.general, Debug.info, cid, slot);
 			upgrade(beh);
 			
-			Debug.print("grantExtraRewards", Debug.general, Debug.info, pn, slot);
+			Debug.print("grantExtraRewards", Debug.general, Debug.info, cid, slot);
 			beh.grantTeamReward();
 			beh.grantEventQuestMilestoneReward();
 			
@@ -494,13 +494,13 @@ public class Run {
 			if(!canUseSlot(beh, slot))
 				break if_clause;
 
-			Debug.print("chest", Debug.general, Debug.info, pn, slot);
+			Debug.print("chest", Debug.general, Debug.info, cid, slot);
 			chest(beh, slot);
 
-			Debug.print("captain", Debug.general, Debug.info, pn, slot);
+			Debug.print("captain", Debug.general, Debug.info, cid, slot);
 			captain(beh, slot);
 
-			Debug.print("place", Debug.general, Debug.info, pn, slot);
+			Debug.print("place", Debug.general, Debug.info, cid, slot);
 			place(beh, slot);
 			
 		}
@@ -511,7 +511,7 @@ public class Run {
 	
 	
 	public boolean canUseSlot(BackEndHandler beh, int slot) throws NoConnectionException, NotAuthorizedException {
-		int uCount = beh.getUnits(pn, SRC.BackEndHandler.all, false).length;
+		int uCount = beh.getUnits(SRC.BackEndHandler.all, false).length;
 		return (slot == 0)
 				|| (slot == 1 && uCount > 4)
 				|| (slot == 2 && uCount > 7)
@@ -557,7 +557,6 @@ public class Run {
 		}, 0, 1000);
 	}
 
-	private HashSet<String> bannedPos = new HashSet<>();
 	private boolean goMultiPlace;
 	private LocalDateTime placeTime = LocalDateTime.now();
 	
@@ -633,18 +632,13 @@ public class Run {
 		
 		
 		//	check if epic is available
-		Integer potionsc = beh.getCurrency(pn, Store.potions, true);
+		Integer potionsc = beh.getCurrency(Store.potions, true);
 		boolean epic = potionsc == null ? false : (potionsc >= 45);
 		
 		final Unit[] units = beh.getPlaceableUnits(slot);
-		Debug.print("units="+Arrays.toString(units), Debug.units, Debug.info, pn, slot);
+		Debug.print("units="+Arrays.toString(units), Debug.units, Debug.info, cid, slot);
 		
-		Map map = beh.getMap(pn, slot, true);
-		
-		HashSet<String> upts = map.getUsablePlanTypes();
-		upts.remove("noPlacement");
-		
-		Debug.print("upts="+upts, Debug.units, Debug.info, pn, slot);
+		Map map = beh.getMap(slot, true);
 		
 		if(!ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.allowPlaceFirst) 
 			&& (placeSer == null ? true : Json.parseArr(placeSer).size() == 0))
@@ -656,7 +650,7 @@ public class Run {
 		int re = 0;
 		int retries = ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unitPlaceRetries);
 		int reload = ConfigsV2.getInt(cid, currentLayer, ConfigsV2.mapReloadAfterXRetries);
-		bannedPos = new HashSet<>();
+		HashSet<String> bannedPos = new HashSet<>();
 		
 		List<String> neededUnits = beh.getNeededUnitTypesForQuests();
 		boolean preferRogues = ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.preferRoguesOnTreasureMaps) 
@@ -667,15 +661,15 @@ public class Run {
 			neededUnits.add("flyingarcher");
 		}
 		
-		Debug.print("neededUnits="+neededUnits, Debug.units, Debug.info, pn, slot);
+		Debug.print("neededUnits="+neededUnits, Debug.units, Debug.info, cid, slot);
 		
 		while(true) {
-			Debug.print("place "+re, Debug.loop, Debug.info, pn, slot);
+			Debug.print("place "+re, Debug.loop, Debug.info, cid, slot);
 			
 			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiPlaceExploit)) {
 				goMultiPlace = false;
 				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
-					final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, dungeon, r.getFromNode(SRC.MapNode.chestType),
+					final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, r.getFromNode(SRC.MapNode.chestType),
 							ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign).contains(r.get(SRC.Raid.twitchDisplayName)), slot);
 					if(pla == null)
 						continue;
@@ -689,7 +683,7 @@ public class Run {
 								} catch (InterruptedException e) {}
 							}
 							try {
-								beh.placeUnit(pn, slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
+								beh.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
 							} catch (NoConnectionException e) {}
 						}
 					});
@@ -703,13 +697,13 @@ public class Run {
 			} else {
 				String node = Remaper.map(r.getFromNode(SRC.MapNode.chestType));
 				boolean fav = ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign).contains(r.get(SRC.Raid.twitchDisplayName));
-				final Place pla = findPlace(map, mh, upts, neededUnits, units, epic, dungeon, node, fav, slot);
+				final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, node, fav, slot);
 				if(pla == null) {
-					Debug.print("Place=null", Debug.units, Debug.info, pn, slot);
+					Debug.print("Place=null", Debug.units, Debug.info, cid, slot);
 					break;
 				}
-				Debug.print("Place="+pla.toString(), Debug.units, Debug.info, pn, slot);
-				String err = beh.placeUnit(pn, slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
+				Debug.print("Place="+pla.toString(), Debug.units, Debug.info, cid, slot);
+				String err = beh.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
 				bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
 				
 				if(err == null) {
@@ -736,12 +730,12 @@ public class Run {
 				
 				if(re++ < retries) {
 					if(re % reload == 0) {
-						map = beh.getMap(pn, slot, true);
+						map = beh.getMap(slot, true);
 					}
 					continue;
 				}
 				
-				Debug.print("Run -> place: tdn="+r.toString()+" err="+err, Debug.lowerr, Debug.error, pn, slot, true);
+				Debug.print("Run -> place: tdn="+r.toString()+" err="+err, Debug.lowerr, Debug.error, cid, slot, true);
 				break;
 			}
 			
@@ -787,27 +781,9 @@ public class Run {
 		}
 	}
 	
-	private Place findPlace(Map map, int[] mh, HashSet<String> upts, List<String> neededUnits, final Unit[] units, boolean epic, boolean dungeon, String chest, boolean fav, int slot) {
-		HashSet<String> epts = new HashSet<>();
-		if(epic) {
-			String[][] mpts = new String[map.width()][map.length()];
-			for(int x=0; x<map.width(); x++) 
-				for(int y=0; y<map.length(); y++) 
-					if(map.is(x, y, SRC.Map.isEmpty))
-						mpts[x][y] = map.getPlanType(x, y);
-				
-			for(int x=0; x<mpts.length-1; x++) {
-				for(int y=0; y<mpts[x].length-1; y++) {
-					String pt = mpts[x][y];
-					if(pt == null)
-						continue;
-					if(pt.equals(mpts[x+1][y])
-							&& pt.equals(mpts[x][y+1])
-							&& pt.equals(mpts[x+1][y+1]))
-						epts.add(pt);
-				}
-			}
-		}
+	private Place findPlace(Map map, int[] mh, HashSet<String> bannedPos, List<String> neededUnits, final Unit[] units, boolean epic, boolean dungeon, String chest, boolean fav, int slot) {
+		HashSet<String> nupts = map.getUsablePlanTypes(false);
+		HashSet<String> eupts = map.getUsablePlanTypes(true);
 		
 		Prio[] prios = new Prio[units.length];
 		for(int i=0; i<units.length; i++) {
@@ -845,9 +821,9 @@ public class Run {
 			HashSet<String> pts = units[i].getPlanTypes();
 			pts.remove("vibe");
 			for(String pt : pts) {
-				if(epts.contains(pt))
+				if(eupts.contains(pt))
 					ep = e;
-				if(upts.contains(pt))
+				if(nupts.contains(pt))
 					np = n;
 			}
 			
@@ -856,12 +832,12 @@ public class Run {
 			boolean ve = false;
 			
 
-			if(np < 0 && upts.contains("vibe") && canVibe.contains(nx)) {
+			if(np < 0 && nupts.contains("vibe") && canVibe.contains(nx)) {
 				np = n;
 				vn = true;
 			}
 			
-			if(ep < 0 && epts.contains("vibe") && canVibe.contains(ex)) {
+			if(ep < 0 && eupts.contains("vibe") && canVibe.contains(ex)) {
 				ep = e;
 				ve = true;
 			}
@@ -876,7 +852,7 @@ public class Run {
 			prios[i] = new Prio(units[i], np, ep, n, e, vn, ve);
 		}
 		
-		Debug.print("prios=" + Arrays.toString(prios), Debug.units, Debug.info, pn, slot);
+		Debug.print("prios=" + Arrays.toString(prios), Debug.units, Debug.info, cid, slot);
 		
 		for(int i=0; i<4; i++) {
 			if(!epic && i%2 == 0)
@@ -907,7 +883,7 @@ public class Run {
 				
 				int[] pos = null;
 				try {
-					pos = new Pathfinding().search(new MapConv().asField(map, u.canFly(), pts, mh, bannedPos), pn, slot, i%2==0);
+					pos = new Pathfinding().search(new MapConv().asField(map, u.canFly(), pts, mh, bannedPos), cid, slot, i%2==0);
 				} catch (NoFinException e) {}
 				if(pos == null)
 					continue;
@@ -990,7 +966,7 @@ public class Run {
 		Integer maxTimeLeft = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.maxTime);
 		Integer minTimeLeft = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.minTime);
 		if(maxLoy == null || minLoy == null || enabled == null || maxTimeLeft == null || minTimeLeft == null) {
-			Debug.print("Run -> captain: ct="+ct+", err=failed to get chest config", Debug.runerr, Debug.error, pn, slot, true);
+			Debug.print("Run -> captain: ct="+ct+", err=failed to get chest config", Debug.runerr, Debug.error, cid, slot, true);
 			//	prevents picking the chest
 			maxLoy = 5;
 			minLoy = 8;
@@ -1057,7 +1033,7 @@ public class Run {
 				beh.updateCaps(true, dungeon);
 				captain(beh, slot, first, true);
 			} else {
-				Debug.print("Run -> switchCap: slot="+slot+", err=No Captain Matches Config", Debug.runerr, Debug.error, pn, slot, true);
+				Debug.print("Run -> switchCap: slot="+slot+", err=No Captain Matches Config", Debug.runerr, Debug.error, cid, slot, true);
 				throw e;
 			}
 		}
@@ -1082,7 +1058,7 @@ public class Run {
 				banned.put(disname, now.plusSeconds(120));
 			else
 				banned.put(disname, start.plusSeconds(plus));
-			Debug.print("blocked " + disname, Debug.caps, Debug.info, pn, slot);
+			Debug.print("blocked " + disname, Debug.caps, Debug.info, cid, slot);
 		}
 		
 		
@@ -1093,10 +1069,10 @@ public class Run {
 				banned.remove(key);
 			}
 		}
-		Debug.print("unblocked " + removed.toString(), Debug.caps, Debug.info, pn, slot);
+		Debug.print("unblocked " + removed.toString(), Debug.caps, Debug.info, cid, slot);
 
 		Captain[] caps = beh.getCaps(dungeon);
-		Debug.print("got caps " + Arrays.toString(caps), Debug.caps, Debug.info, pn, slot);
+		Debug.print("got caps " + Arrays.toString(caps), Debug.caps, Debug.info, cid, slot);
 		
 		ListType list = dungeon
 				? ConfigsV2.dungeon 
@@ -1134,14 +1110,14 @@ public class Run {
 			}
 		}
 		
-		Debug.print("skipped " + skipped.toString(), Debug.caps, Debug.info, pn, slot);
+		Debug.print("skipped " + skipped.toString(), Debug.caps, Debug.info, cid, slot);
 		
 		if(best == null) 
 			throw new NoCapMatchesException();
 		
 		beh.switchRaid(best, slot);
 		
-		Debug.print("switched to " + best.get(SRC.Captain.twitchDisplayName), Debug.caps, Debug.info, pn, slot);
+		Debug.print("switched to " + best.get(SRC.Captain.twitchDisplayName), Debug.caps, Debug.info, cid, slot);
 		
 		captain(beh, slot, false, noCap);
 	}
@@ -1190,10 +1166,10 @@ public class Run {
 
 	private void upgrade(BackEndHandler beh) throws NoConnectionException, NotAuthorizedException {
 		
-		if(beh.getCurrency(pn, Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.upgradeMinGold))
+		if(beh.getCurrency(Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.upgradeMinGold))
 			return;
 		
-		Unit[] us = beh.getUnits(pn, SRC.BackEndHandler.isUnitUpgradeable, false);
+		Unit[] us = beh.getUnits(SRC.BackEndHandler.isUnitUpgradeable, false);
 		if(us.length == 0)
 			return;
 		
@@ -1212,7 +1188,7 @@ public class Run {
 			
 			String err = beh.upgradeUnit(us[ind], ConfigsV2.getUnitString(cid, currentLayer, us[ind].get(SRC.Unit.unitType), ConfigsV2.spec));
 			if(err != null && (!(err.equals("no specUID") || err.equals("cant upgrade unit")))) {
-				Debug.print("Run -> upgradeUnits: type=" + us[ind].get(SRC.Unit.unitType) + " err=" + err, Debug.lowerr, Debug.error, pn, 4, true);
+				Debug.print("Run -> upgradeUnits: type=" + us[ind].get(SRC.Unit.unitType) + " err=" + err, Debug.lowerr, Debug.error, cid, 4, true);
 				break;
 			}
 			
@@ -1224,16 +1200,16 @@ public class Run {
 	
 	private void unlock(BackEndHandler beh) throws NoConnectionException, NotAuthorizedException {
 		
-		if(beh.getCurrency(pn, Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unlockMinGold))
+		if(beh.getCurrency(Store.gold, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unlockMinGold))
 			return;
 		
-		Unit[] unlockable = beh.getUnits(pn, SRC.BackEndHandler.isUnitUnlockable, true);
+		Unit[] unlockable = beh.getUnits(SRC.BackEndHandler.isUnitUnlockable, true);
 		if(unlockable.length == 0)
 			return;
 		
 		int[] ps = new int[unlockable.length];
 		for(int i=0; i<unlockable.length; i++)
-			ps[i] = ConfigsV2.getUnitInt(cid, currentLayer, unlockable[i].get(SRC.Unit.unitType), unlockable[i].isDupe() ? ConfigsV2.dupe : ConfigsV2.unlock);
+			ps[i] = ConfigsV2.getUnitInt(cid, currentLayer, unlockable[i].get(SRC.Unit.unitType), unlockable[i].dupe ? ConfigsV2.dupe : ConfigsV2.unlock);
 		
 		while(true) {
 			int ind = 0;
@@ -1272,11 +1248,11 @@ public class Run {
 				try {
 					Thread.sleep(3000);
 				} catch (InterruptedException e) {}
-				beh.updateStore(pn, true);
+				beh.updateStore(true);
 			} else {
 				String err = beh.unlockUnit(unlockable[ind]);
 				if(err != null && !err.equals("not enough gold")) 
-					Debug.print("Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, Debug.lowerr, Debug.error, pn, 4, true);
+					Debug.print("Run -> unlock: type=" + unlockable[ind].get(SRC.Unit.unitType) + ", err=" + err, Debug.lowerr, Debug.error, cid, 4, true);
 			}
 			
 			ps[ind] = -1;
@@ -1285,14 +1261,14 @@ public class Run {
 
 	private void store(BackEndHandler beh) throws NoConnectionException, NotAuthorizedException {
 		
-		beh.updateStore(pn, false);
+		beh.updateStore(false);
 		
 		//	collecting daily reward if any
 		List<Item> daily = beh.getStoreItems(SRC.Store.purchasable, SRC.Store.daily);
 		for(Item item : daily) {
 			JsonElement err = beh.buyItem(item).get(SRC.errorMessage);
 			if(err.isJsonPrimitive())
-				Debug.print("Run -> store -> daily: err="+err.getAsString(), Debug.runerr, Debug.error, pn, 4, true);
+				Debug.print("Run -> store -> daily: err="+err.getAsString(), Debug.runerr, Debug.error, cid, 4, true);
 			else
 				addRew(beh, SRC.Run.bought, Store.eventcurrency.get(), item.getQuantity());
 		}
@@ -1303,7 +1279,7 @@ public class Run {
 			final StorePrioType spt;
 			switch(sec) {
 			case 0:
-				if(beh.getCurrency(pn, Store.keys, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.storeMinKeys))
+				if(beh.getCurrency(Store.keys, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.storeMinKeys))
 					continue;
 				section = SRC.Store.dungeon;
 				spt = ConfigsV2.keys;
@@ -1344,7 +1320,7 @@ public class Run {
 					JsonArray data = resp.getAsJsonObject("data").getAsJsonArray("rewards");
 					Raid.updateChestRews();
 					for(int i=0; i<data.size(); i++) {
-						Reward rew = new Reward(data.get(i).getAsString());
+						Reward rew = new Reward(data.get(i).getAsString(), cid, 4);
 						addRew(beh, SRC.Run.bought, rew.name, rew.quantity);
 					}
 					break;
@@ -1352,15 +1328,15 @@ public class Run {
 					addRew(beh, SRC.Run.bought, "skin", 1);
 					break;
 				default:
-					Debug.print("Run -> store -> buyItem: err=unknown buyType, buyType="+resp.get("buyType").getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
+					Debug.print("Run -> store -> buyItem: err=unknown buyType, buyType="+resp.get("buyType").getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, cid, 4, true);
 				}
 			} else if(!err.getAsString().startsWith("not enough "))
-				Debug.print("Run -> store -> buyItem: err="+err.getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, pn, 4, true);
+				Debug.print("Run -> store -> buyItem: err="+err.getAsString()+", item="+best.toString(), Debug.runerr, Debug.error, cid, 4, true);
 		}
 		
 		
 		
-		if(beh.getCurrency(pn, Store.gold, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.scrollsMinGold)) {
+		if(beh.getCurrency(Store.gold, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.scrollsMinGold)) {
 			List<Item> items = beh.getStoreItems(SRC.Store.purchasable, SRC.Store.scrolls);
 			if(items.size() != 0) {
 				int[] ps = new int[items.size()];
@@ -1380,7 +1356,7 @@ public class Run {
 						try {
 							ps[i] = ConfigsV2.getUnitInt(cid, currentLayer, type, ConfigsV2.buy);
 						} catch (NullPointerException e) {
-							Debug.printException("Run -> store: err=item is not correct, item=" + item.toStringOneLine(), e, Debug.runerr, Debug.error, pn, 4, true);
+							Debug.printException("Run -> store: err=item is not correct, item=" + item.toStringOneLine(), e, Debug.runerr, Debug.error, cid, 4, true);
 							ps[i] = -1;
 						}
 					}
@@ -1401,7 +1377,7 @@ public class Run {
 					JsonElement err = beh.buyItem(item).get(SRC.errorMessage);
 					if(err != null && err.isJsonPrimitive()) {
 						if(!err.getAsString().startsWith("not enough"))
-							Debug.print("Run -> store: err=" + err.getAsString() + ", item=" + item.toString(), Debug.lowerr, Debug.error, pn, 4, true);
+							Debug.print("Run -> store: err=" + err.getAsString() + ", item=" + item.toString(), Debug.lowerr, Debug.error, cid, 4, true);
 					} else
 						addRew(beh, SRC.Run.bought, item.getItem(), item.getQuantity());
 					
@@ -1409,14 +1385,14 @@ public class Run {
 				}
 			}
 			
-			Integer gold = beh.getCurrency(pn, Store.gold, false);
+			Integer gold = beh.getCurrency(Store.gold, false);
 			if(gold != null) {
 				int src = beh.getStoreRefreshCount();
 				int min = ConfigsV2.getStoreRefreshInt(cid, currentLayer, src > 3 ? 3 : src);
 				if(min > -1 && min < gold) {
 					String err = beh.refreshStore();
 					if(err != null)
-						Debug.print("Run -> Store: err="+err, Debug.runerr, Debug.error, pn, 4, true);
+						Debug.print("Run -> Store: err="+err, Debug.runerr, Debug.error, cid, 4, true);
 					store(beh);
 				}
 			}
@@ -1427,12 +1403,12 @@ public class Run {
 	private boolean goMultiQuestClaim;
 	
 	private void quest(BackEndHandler beh) throws NoConnectionException, NotAuthorizedException {
-		Quest[] quests = beh.getClaimableQuests();
+		ArrayList<Quest> quests = beh.getClaimableQuests();
 		
-		for(int i=0; i<quests.length; i++) {
+		for(Quest q : quests) {
 			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiQuestExploit)) {
 				goMultiQuestClaim = false;
-				final Quest picked = quests[i];
+				final Quest picked = q;
 				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
 					Thread t = new Thread(new Runnable() {
 						@Override
@@ -1454,10 +1430,10 @@ public class Run {
 					Thread.sleep(3000);
 				} catch (InterruptedException e) {}
 			} else {
-				JsonObject dat = beh.claimQuest(quests[i]);
+				JsonObject dat = beh.claimQuest(q);
 				JsonElement err = dat.get(SRC.errorMessage);
 				if(err.isJsonPrimitive())
-					Debug.print("Run -> claimQuests: err=" + err.getAsString(), Debug.runerr, Debug.error, pn, 4, true);
+					Debug.print("Run -> claimQuests: err=" + err.getAsString(), Debug.runerr, Debug.error, cid, 4, true);
 				else {
 					dat = dat.getAsJsonObject("data").getAsJsonObject("rewardData");
 					String item = dat.get("ItemId").getAsString();
@@ -1466,7 +1442,7 @@ public class Run {
 					else if(item.startsWith("skin"))
 						item = "skin";
 					else if(!item.startsWith("scroll") && !item.equals("eventcurrency")) {
-						Debug.print("Run -> claimQuests: err=unknown reward, item="+item, Debug.lowerr, Debug.error, pn, null, true);
+						Debug.print("Run -> claimQuests: err=unknown reward, item="+item, Debug.lowerr, Debug.error, cid, 4, true);
 						return;
 					}
 					int a = dat.get("Amount").getAsInt();
@@ -1488,7 +1464,7 @@ public class Run {
 			if(bp)
 				collectEvent(beh, i, true);
 			
-			if(potionsTiers.contains(i) && beh.getCurrency(pn, Store.potions, false) > 10)
+			if(potionsTiers.contains(i) && beh.getCurrency(Store.potions, false) > 10)
 				continue;
 			
 			collectEvent(beh, i, false);
@@ -1522,7 +1498,7 @@ public class Run {
 							}
 						} catch (NoConnectionException e) {
 						} catch (NullPointerException e) {
-							Debug.print("Run -> event -> collectEvent(exploit): err=failed to collectEvent(exploit), tier="+tier+", bp="+bp, Debug.runerr, Debug.error, pn, 4, true);
+							Debug.print("Run -> event -> collectEvent(exploit): err=failed to collectEvent(exploit), tier="+tier+", bp="+bp, Debug.runerr, Debug.error, cid, 4, true);
 						}
 						
 					}
@@ -1537,15 +1513,13 @@ public class Run {
 			JsonObject ce = beh.collectEvent(tier, bp);
 			JsonElement err = ce.get(SRC.errorMessage);
 			if(err != null && err.isJsonPrimitive()) {
-				Debug.print("Run -> event -> collectEvent: tier="+tier+", bp="+bp+", err=" + err.getAsString(), Debug.runerr, Debug.error, pn, 4, true);
+				Debug.print("Run -> event -> collectEvent: tier="+tier+", bp="+bp+", err=" + err.getAsString(), Debug.runerr, Debug.error, cid, 4, true);
 			} else {
 				String rew = ce.get("reward").getAsString();
 				if(!rew.equals("badges"))
 					addRew(beh, SRC.Run.event, rew, ce.get("quantity").getAsInt());
 			}
 		}
-		
-		
 		
 	}
 
@@ -1559,32 +1533,44 @@ public class Run {
 	private Raid[] raids = null;
 	private Hashtable<String, Integer> curs = null;
 	
+	synchronized public void updateSlotSync() {
+		for(int slot=0; slot<5; slot++) {
+			int sync = ConfigsV2.getSleepInt(cid, currentLayer, ""+slot, ConfigsV2.sync);
+			Manager.blis.onProfileUpdateSlotSync(cid, slot, sync);
+			if(sync == -1)
+				continue;
+			if(isRunning(slot)) {
+				setRunning(false, slot);
+				setRunning(true, sync);
+			}
+		}
+	}
+	
 	synchronized public void updateFrame(BackEndHandler beh) throws NoConnectionException, NotAuthorizedException {
 		if(!ready)
 			return;
 		
+
+		updateSlotSync();
+		
 		if(beh != null)
 			raids = beh.getRaids(SRC.BackEndHandler.all);
 		
-		for(int i=0; i<5; i++) {
-			if(i == 4) {
-				Manager.blis.onProfileUpdateSlot(cid, i, null, false, false);
+		for(int i=0; i<4; i++) {
+			if(raids[i] == null) {
+				cnames[i] = null;
+				cnames[i+4] = null;
+				cnames[i+8] = null;
 			} else {
-				if(raids[i] == null) {
-					cnames[i] = null;
-					cnames[i+4] = null;
-					cnames[i+8] = null;
-				} else {
-					cnames[i] = raids[i].get(SRC.Raid.twitchUserName);
-					cnames[i+4] = raids[i].get(SRC.Raid.twitchDisplayName);
-					cnames[i+8] = raids[i].isDungeon() ? "d" : "c";
-				}
-				Manager.blis.onProfileUpdateSlot(cid, i, raids[i], ConfigsV2.isSlotLocked(cid, currentLayer, ""+i), change[i]);
+				cnames[i] = raids[i].get(SRC.Raid.twitchUserName);
+				cnames[i+4] = raids[i].get(SRC.Raid.twitchDisplayName);
+				cnames[i+8] = raids[i].isDungeon() ? "d" : "c";
 			}
+			Manager.blis.onProfileUpdateSlot(cid, i, raids[i], ConfigsV2.isSlotLocked(cid, currentLayer, ""+i), change[i]);
 		}
 		
 		if(beh != null)
-			curs = beh.getCurrencies(pn);
+			curs = beh.getCurrencies();
 			
 		for(C key : sc) {
 			String k = key.get();
@@ -1594,7 +1580,7 @@ public class Run {
 			
 	}
 	
-	public synchronized void updateLayer(BackEndHandler beh) {
+	public synchronized void updateLayer() {
 		LocalDateTime now = LocalDateTime.now();
 		// current time in layer-units (1 = 5 min)
 		int n = ((now.get(WeekFields.ISO.dayOfWeek()) - 1) * 288) 
@@ -1614,8 +1600,10 @@ public class Run {
 			}
 		}
 		
-		Manager.blis.onProfileUpdateGeneral(cid, pn, ConfigsV2.getStr(cid, currentLayer, ConfigsV2.lname), new Color(ConfigsV2.getInt(cid, currentLayer, ConfigsV2.color)));
-		
+		Manager.blis.onProfileUpdateGeneral(cid, ConfigsV2.getPStr(cid, ConfigsV2.pname), ConfigsV2.getStr(cid, currentLayer, ConfigsV2.lname), new Color(ConfigsV2.getInt(cid, currentLayer, ConfigsV2.color)));
+	}
+	
+	public void updateBeh(BackEndHandler beh) {
 		updateProxySettings(beh);
 		
 		beh.setUpdateTimes( ConfigsV2.getInt(cid, currentLayer, ConfigsV2.unitUpdate),
@@ -1627,7 +1615,6 @@ public class Run {
 							ConfigsV2.getInt(cid, currentLayer, ConfigsV2.skinUpdate));
 	}
 	
-	
 	private String[] cnames = new String[12];
 	
 	public String getTwitchLink(int slot) {
@@ -1635,7 +1622,7 @@ public class Run {
 	}
 	
 	public Map getMap(BackEndHandler beh, int slot) throws NoConnectionException, NotAuthorizedException {
-		return beh.getMap(pn, slot, false);
+		return beh.getMap(slot, false);
 	}
 	
 	public void updateProxySettings(BackEndHandler beh) {

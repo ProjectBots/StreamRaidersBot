@@ -2,6 +2,7 @@ package run;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -18,7 +19,9 @@ import include.Time;
 import program.Captain;
 import program.Debug;
 import program.Map;
-import program.QuestEventRewards;
+import program.Event;
+import program.Quests;
+import program.Quests.Quest;
 import program.Raid;
 import program.SRC;
 import program.SRR;
@@ -32,11 +35,11 @@ import program.Store.C;
 import program.Store.Item;
 import program.Options;
 import program.Unit;
-import program.QuestEventRewards.Quest;
 
 public class BackEndHandler {
 
 	private SRR req;
+	private final String cid;
 	
 	private long secoff;
 	
@@ -47,25 +50,27 @@ public class BackEndHandler {
 	private Skins skins;
 	private Captain[] caps;
 	private Captain[] dunCaps;
-	private QuestEventRewards qer = new QuestEventRewards();
+	private Quests quests = new Quests();
+	private Event event = new Event();
 	private Hashtable<String, String> rts = new Hashtable<>();
 	private int[] updateTimes = new int[] {10, 1, 5, 30, 15, 10, 60};
 	
 	
-	public BackEndHandler(String pn, String cookies) throws NoConnectionException, NotAuthorizedException, OutdatedDataException {
+	public BackEndHandler(String cid) throws NoConnectionException, NotAuthorizedException, OutdatedDataException {
+		this.cid = cid;
 		try {
-			req = new SRR(cookies, Options.get("clientVersion"));
+			req = new SRR(cid, Options.get("clientVersion"));
 		} catch (OutdatedDataException e) {
 			updateDataPath(e.getDataPath(), e.getServerTime(), req);
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e1) {}
-			req = new SRR(cookies, Options.get("clientVersion"));
+			req = new SRR(cid, Options.get("clientVersion"));
 		}
 		secoff = ChronoUnit.SECONDS.between(Time.parse(Json.parseObj(req.getCurrentTime()).get("data").getAsString()), LocalDateTime.now());
 		updateRaids(true);
 		updateUnits(true);
-		updateStore(pn, true);
+		updateStore(true);
 		updateSkins(true);
 		updateQuestEventRewards(true);
 	}
@@ -84,7 +89,6 @@ public class BackEndHandler {
 		updateTimes[5] = caps;
 		updateTimes[6] = skins;
 	}
-	
 	
 	public static interface DataPathEventListener {
 		public default void onUpdate(String dataPath, String serverTime, JsonObject data) {}
@@ -114,8 +118,8 @@ public class BackEndHandler {
 				String[] ss = s.split(" ");
 				Options.set(ss[0], data.getAsJsonObject(ss[1]).toString());
 			}
-			QuestEventRewards.updateCurrentEvent(serverTime);
-			String currentEventUid = QuestEventRewards.getCurrentEvent();
+			Event.updateCurrentEvent(serverTime);
+			String currentEventUid = Event.getCurrentEvent();
 			if(currentEventUid != null) {
 				currentEventUid = currentEventUid.split("_")[0];
 				JsonObject tiers = data.getAsJsonObject("EventTiers");
@@ -156,7 +160,7 @@ public class BackEndHandler {
 			updateDataPath(jo.getAsJsonObject("info").getAsJsonPrimitive("dataPath").getAsString(), getServerTime(), req);
 			return true;
 		default:
-			throw new Run.StreamRaidersException("BackEndHandler -> testUpdate: err="+je.getAsString()+", jo="+jo.toString());
+			throw new Run.StreamRaidersException("BackEndHandler -> testUpdate: err="+je.getAsString()+", jo="+jo.toString(), cid, null);
 		}
 	}
 	
@@ -193,9 +197,8 @@ public class BackEndHandler {
 		boolean[] got = new boolean[4];
 		JsonArray rs = jo.getAsJsonArray("data");
 		for(int i=0; i<rs.size(); i++) {
-			int index = rs.get(i).getAsJsonObject().get(SRC.Raid.userSortIndex).getAsInt();
-			raids[index] = new Raid(rs.get(i).getAsJsonObject());
-			raids[index].addNode(raids[index].get(SRC.Raid.nodeId));
+			final int index = rs.get(i).getAsJsonObject().get(SRC.Raid.userSortIndex).getAsInt();
+			raids[index] = new Raid(rs.get(i).getAsJsonObject(), cid, index);
 			got[index] = true;
 		}
 		
@@ -207,7 +210,7 @@ public class BackEndHandler {
 		uelis.afterUpdate("raids");
 	}
 	
-	synchronized public void updateMap(String pn, int slot, boolean force) throws NoConnectionException, NotAuthorizedException {
+	synchronized public void updateMap(int slot, boolean force) throws NoConnectionException, NotAuthorizedException {
 		String rt = rts.get("map::"+slot);
 		LocalDateTime now = LocalDateTime.now();
 		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[2]))) && !force)
@@ -230,13 +233,13 @@ public class BackEndHandler {
 				(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null),
 				mapName,
 				userIds,
-				pn, slot);
+				cid, slot);
 		
 		rts.put("map::"+slot, Time.parse(now));
 		uelis.afterUpdate("map::"+slot);
 	}
 	
-	synchronized public void updateStore(String pn, boolean force) throws NoConnectionException, NotAuthorizedException {
+	synchronized public void updateStore(boolean force) throws NoConnectionException, NotAuthorizedException {
 		String rt = rts.get("store");
 		LocalDateTime now = LocalDateTime.now();
 		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[3]))) && !force)
@@ -249,17 +252,17 @@ public class BackEndHandler {
 		JsonObject cur = Json.parseObj(req.getAvailableCurrencies());
 		JsonElement err = cur.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
-			Debug.print("BackEndHandler -> updateStore: cur, err="+err.getAsString(), Debug.runerr, Debug.error, pn, 4, true);
+			Debug.print("BackEndHandler -> updateStore: cur, err="+err.getAsString(), Debug.runerr, Debug.error, cid, 4, true);
 
 		JsonObject items = Json.parseObj(req.getCurrentStoreItems());
 		err = items.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
-			Debug.print("BackEndHandler -> updateStore: items, err="+err.getAsString(), Debug.runerr, Debug.error, pn, 4, true);
+			Debug.print("BackEndHandler -> updateStore: items, err="+err.getAsString(), Debug.runerr, Debug.error, cid, 4, true);
 		
 		JsonObject skins = Json.parseObj(req.getUserItems());
 		err = skins.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
-			Debug.print("BackEndHandler -> updateStore: skins, err="+err.getAsString(), Debug.runerr, Debug.error, pn, 4, true);
+			Debug.print("BackEndHandler -> updateStore: skins, err="+err.getAsString(), Debug.runerr, Debug.error, cid, 4, true);
 		
 		
 		store = new Store(user.getAsJsonObject("data"),
@@ -298,12 +301,14 @@ public class BackEndHandler {
 		JsonObject userEventProgression = Json.parseObj(req.getUserEventProgression());
 		if(testUpdate(userEventProgression))
 			userEventProgression = Json.parseObj(req.getUserEventProgression());
-		qer.updateEvent(Time.parse(LocalDateTime.now().minusSeconds(secoff)), userEventProgression.getAsJsonArray("data"));
+		event.updateEvent(Time.parse(LocalDateTime.now().minusSeconds(secoff)), userEventProgression.getAsJsonArray("data"));
 		
 		JsonObject userQuests = Json.parseObj(req.getUserQuests());
 		if(testUpdate(userQuests))
 			userQuests = Json.parseObj(req.getUserQuests());
-		qer.updateQuests(userQuests.getAsJsonArray("data"));
+		
+		//TODO split
+		quests.updateQuests(userQuests.getAsJsonArray("data"));
 		
 		rts.put("qer", Time.parse(now));
 		uelis.afterUpdate("qer");
@@ -445,7 +450,7 @@ public class BackEndHandler {
 			
 	}
 	
-	public Unit[] getUnits(String pn, int con, boolean force) throws NoConnectionException, NotAuthorizedException {
+	public Unit[] getUnits(int con, boolean force) throws NoConnectionException, NotAuthorizedException {
 		updateUnits(force);
 		Unit[] ret = new Unit[0];
 		for(int i=0; i<units.length; i++) {
@@ -458,10 +463,10 @@ public class BackEndHandler {
 					ret = add(ret, units[i]);
 				break;
 			case SRC.BackEndHandler.isUnitUnlockable:
-				updateStore(pn, true);
+				updateStore(true);
 				return store.getUnlockableUnits(units);
 			case SRC.BackEndHandler.isUnitUpgradeable:
-				updateStore(pn, true);
+				updateStore(true);
 				return store.getUpgradeableUnits(units);
 			}
 		}
@@ -473,11 +478,11 @@ public class BackEndHandler {
 	}
 	
 	public boolean canUnlockUnit(Unit unit) {
-		return store.canUnlockUnit(unit.get(SRC.Unit.unitType), unit.isDupe());
+		return store.canUnlockUnit(unit.get(SRC.Unit.unitType), unit.dupe);
 	}
 	
 	public String unlockUnit(Unit unit) throws NoConnectionException {
-		return store.unlockUnit(unit.get(SRC.Unit.unitType), unit.isDupe(), req);
+		return store.unlockUnit(unit.get(SRC.Unit.unitType), unit.dupe, req);
 	}
 	
 	
@@ -526,7 +531,7 @@ public class BackEndHandler {
 		return ret;
 	}
 	
-	public String placeUnit(String pn, int slot, Unit unit, boolean epic, int[] pos, boolean onPlanIcon) throws NoConnectionException {
+	public String placeUnit(int slot, Unit unit, boolean epic, int[] pos, boolean onPlanIcon) throws NoConnectionException {
 		String atr = req.addToRaid(raids[slot].get(SRC.Raid.raidId),
 				createPlacementData(unit, epic, maps[slot].getAsSRCoords(epic, pos), onPlanIcon));
 		
@@ -535,7 +540,7 @@ public class BackEndHandler {
 			if(je.isJsonPrimitive()) 
 				return je.getAsString();
 		} catch (NullPointerException e) {
-			Debug.printException("BackEndHandler -> placeUnit: err=failed to place Unit, atr=" + atr == null ? "null" : atr, e, Debug.runerr, Debug.error, pn, slot, true);
+			Debug.printException("BackEndHandler -> placeUnit: err=failed to place Unit, atr=" + atr == null ? "null" : atr, e, Debug.runerr, Debug.error, cid, slot, true);
 		}
 		
 		return null;
@@ -576,8 +581,8 @@ public class BackEndHandler {
 		return ret.toString();
 	}
 	
-	public Map getMap(String pn, int slot, boolean force) throws NoConnectionException, NotAuthorizedException {
-		updateMap(pn, slot, force);
+	public Map getMap(int slot, boolean force) throws NoConnectionException, NotAuthorizedException {
+		updateMap(slot, force);
 		return maps[slot];
 	}
 	
@@ -587,8 +592,8 @@ public class BackEndHandler {
 	}
 	
 	
-	public int getCurrency(String pn, C con, boolean force) throws NotAuthorizedException, NoConnectionException {
-		updateStore(pn, false);
+	public int getCurrency(C con, boolean force) throws NotAuthorizedException, NoConnectionException {
+		updateStore(false);
 		return store.getCurrency(con);
 	}
 	
@@ -608,8 +613,8 @@ public class BackEndHandler {
 		store.setCurrency(con, amount);
 	}
 	
-	public Hashtable<String, Integer> getCurrencies(String pn) throws NotAuthorizedException, NoConnectionException {
-		updateStore(pn, false);
+	public Hashtable<String, Integer> getCurrencies() throws NotAuthorizedException, NoConnectionException {
+		updateStore(false);
 		return store.getCurrencies();
 	}
 	
@@ -664,39 +669,39 @@ public class BackEndHandler {
 	
 	public boolean isEvent() throws NoConnectionException, NotAuthorizedException {
 		updateQuestEventRewards(false);
-		return qer.isEvent();
+		return Event.isEvent();
 	}
 	
 	public int getEventTier() throws NoConnectionException, NotAuthorizedException {
 		updateQuestEventRewards(false);
-		return qer.getEventTier();
+		return event.getEventTier();
 	}
 	
 	public boolean canCollectEvent(int p, boolean battlePass) throws NoConnectionException, NotAuthorizedException {
 		updateQuestEventRewards(false);
-		return qer.canCollectEvent(p, battlePass);
+		return event.canCollectEvent(p, battlePass);
 	}
 	
 	public JsonObject collectEvent(int p, boolean battlePass) throws NoConnectionException {
-		return qer.collectEvent(p, battlePass, Json.parseObj(req.grantEventReward(QuestEventRewards.getCurrentEvent(), ""+p, battlePass)));
+		return event.collectEvent(p, battlePass, Json.parseObj(req.grantEventReward(Event.getCurrentEvent(), ""+p, battlePass)));
 	}
 	
 	public boolean hasBattlePass() throws NoConnectionException, NotAuthorizedException {
 		updateQuestEventRewards(false);
-		return qer.hasBattlePass();
+		return event.hasBattlePass();
 	}
 	
-	public Quest[] getClaimableQuests() throws NoConnectionException, NotAuthorizedException {
+	public ArrayList<Quest> getClaimableQuests() throws NoConnectionException, NotAuthorizedException {
 		updateQuestEventRewards(true);
-		return qer.getClaimableQuests();
+		return quests.getClaimableQuests();
 	}
 	
 	public JsonObject claimQuest(Quest quest) throws NoConnectionException {
-		return Json.parseObj(req.collectQuestReward(quest.getSlot()));
+		return Json.parseObj(req.collectQuestReward(quest.slot));
 	}
 	
 	public List<String> getNeededUnitTypesForQuests() {
-		return qer.getNeededUnitTypesForQuests();
+		return quests.getNeededUnitTypesForQuests();
 	}
 	
 	public String grantTeamReward() throws NoConnectionException {

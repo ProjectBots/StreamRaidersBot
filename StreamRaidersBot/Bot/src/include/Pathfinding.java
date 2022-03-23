@@ -57,7 +57,7 @@ public class Pathfinding {
 	
 	private Field[][] map;
 	
-	public int[] search(Field[][] map, String name, int slot, boolean big) {
+	public int[] search(Field[][] map, String cid, int slot, boolean big) {
 		
 		this.map = map;
 		
@@ -70,7 +70,7 @@ public class Pathfinding {
 		while(true) {
 			
 			if(++c % 500 == 0)
-				Debug.print("Pathfinding search " + c, Debug.loop, Debug.info, name, slot);
+				Debug.print("Pathfinding search " + c, Debug.loop, Debug.info, cid, slot);
 			
 			
 			boolean stuck = true;

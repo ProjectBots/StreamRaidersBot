@@ -80,7 +80,7 @@ public static final String pre = "SkinSettings::";
 		Unit[] units_;
 		Skins skins_;
 		try {
-			units_ = beh.getUnits(ConfigsV2.getPStr(cid, ConfigsV2.pname), SRC.BackEndHandler.all, false);
+			units_ = beh.getUnits(SRC.BackEndHandler.all, false);
 			skins_ = beh.getSkins();
 		} catch (NoConnectionException | NotAuthorizedException e) {
 			Debug.printException("SkinSettings -> open: err=unable to get units/skins", e, Debug.runerr, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
@@ -170,7 +170,7 @@ public static final String pre = "SkinSettings::";
 								try {
 									String err = beh.equipSkin(u, s);
 									if(err != null)
-										Debug.print("SkinSettings -> open -> selected: err="+err, Debug.runerr, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
+										Debug.print("SkinSettings -> open -> selected: err="+err, Debug.runerr, Debug.error, cid, null, true);
 									else
 										GUI.setText(gid+"l", getExtendedUnitName(u));
 								} catch (NoConnectionException e1) {

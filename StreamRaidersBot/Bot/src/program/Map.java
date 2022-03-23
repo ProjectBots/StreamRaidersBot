@@ -12,35 +12,14 @@ import include.Json;
 
 public class Map {
 
-	private int width = 0;
-	private int length = 0;
+	public final int width;
+	public final int length;
 	
-	public int width() {
-		return width;
-	}
+	private final JsonArray map;
 	
-	public int length() {
-		return length;
-	}
-	
-	private int hw() {
-		return (int) Math.floor(width/2);
-	}
-	
-	private int hl() {
-		return (int) Math.floor(length/2);
-	}
-	
-	private JsonArray map = null;
-	private String node;
-	
-	public String getNode() {
-		return node;
-	}
-	
-	public JsonArray getMap() {
-		return map;
-	}
+	public final String name;
+	private final String cid;
+	private final int slot;
 	
 	public JsonObject get(int x, int y) {
 		if(isOutOfRange(x, y)) return null;
@@ -57,27 +36,30 @@ public class Map {
 		map.get(x).getAsJsonArray().get(y).getAsJsonObject().addProperty(key, value);
 	}
 	
-	private String name = "";
-	
-	public String getName() {
-		return name;
+	private int hw() {
+		return (int) Math.floor(width/2);
 	}
 	
-	public Map(JsonObject mapData, Raid raid, JsonObject plan, String name, List<String> userIds, String pn, int slot) {
+	private int hl() {
+		return (int) Math.floor(length/2);
+	}
+	
+	public Map(JsonObject mapData, Raid raid, JsonObject plan, String name, List<String> userIds, String cid, int slot) {
 		if(mapData == null)
-			new run.Run.StreamRaidersException("Map -> const: err=mapData is null, mapName="+name);
+			new run.Run.StreamRaidersException("Map -> const: err=mapData is null, mapName="+name, cid, slot);
+		this.cid = cid;
+		this.slot = slot;
 		this.name = name;
 		float mapScale = mapData.get("MapScale").getAsFloat();
 		if(mapScale < 0) {
-			width = (int) (mapData.getAsJsonPrimitive("GridWidth").getAsInt());
-			length = (int) (mapData.getAsJsonPrimitive("GridLength").getAsInt());
+			width = (int) (mapData.get("GridWidth").getAsInt());
+			length = (int) (mapData.get("GridLength").getAsInt());
 		} else {
 			width = (int) Math.round(41 * mapScale);
 			length = (int) Math.round(29 * mapScale);
 		}
 		
 		map = new JsonArray();
-		node = raid.get(SRC.Raid.nodeId);
 		
 		for(int i=0; i<width; i++) {
 			map.add(new JsonArray());
@@ -88,27 +70,7 @@ public class Map {
 			}
 		}
 		
-		updateMap(mapData, Json.parseArr(raid.get(SRC.Raid.placementsSerialized)), Json.parseArr(raid.get(SRC.Raid.users)), plan, userIds, pn, slot);
-	}
-	
-	public boolean testPos(boolean epic, int[] coords) {
-		if(!testField(coords[0], coords[1])) return false;
-		if(epic) {
-			if(!testField(coords[0]-1, coords[1])) return false;
-			if(!testField(coords[0]-1, coords[1]+1)) return false;
-			if(!testField(coords[0], coords[1]+1)) return false;
-		}
-		return true;
-	}
-	
-	private boolean testField(int x, int y)  {
-		JsonObject field = map.get(x).getAsJsonArray().get(y).getAsJsonObject();
-		if(!field.has(SRC.Map.isEmpty)) return false;
-		if(!field.get(SRC.Map.isEmpty).getAsBoolean()) return false;
-		if(!field.has(SRC.Map.isPlayerRect)) return false;
-		if(!field.get(SRC.Map.isPlayerRect).getAsBoolean()) return false;
-		
-		return true;
+		updateMap(mapData, Json.parseArr(raid.get(SRC.Raid.placementsSerialized)), Json.parseArr(raid.get(SRC.Raid.users)), plan, userIds);
 	}
 	
 	public double[] getAsSRCoords(boolean epic, int[] coords) {
@@ -123,28 +85,32 @@ public class Map {
 		return new double[] {x, y};
 	}
 	
-	public void updateMap(JsonObject mapData, JsonArray placements, JsonArray users, JsonObject plan, List<String> userIds, String pn, int slot) {
+	private void updateMap(JsonObject mapData, JsonArray placements, JsonArray users, JsonObject plan, List<String> userIds) {
 		addRects(mapData.getAsJsonArray("PlayerPlacementRects"), SRC.Map.isPlayerRect);
 		addRects(mapData.getAsJsonArray("EnemyPlacementRects"), SRC.Map.isEnemyRect);
 		addRects(mapData.getAsJsonArray("HoldingZoneRects"), SRC.Map.isHoldRect);
 		
-		addEntity(placements, users, userIds, pn, slot);
-		addEntity(mapData.getAsJsonArray("PlacementData"), null, userIds, pn, slot);
+		addEntity(placements, users, userIds);
+		addEntity(mapData.getAsJsonArray("PlacementData"), null, userIds);
 		addObstacle(mapData.getAsJsonArray("ObstaclePlacementData"));
 		
-		if(plan != null)
+		if(plan != null) {
 			addPlan(plan);
+			genUsablePlanTypesSets();
+		}
+		
+		
 	}
 	
-	private static JsonArray planTypes = new JsonArray();
+	private final static JsonArray seenPlanTypes = new JsonArray();
 	
 	synchronized private static void addPT(String pt) {
-		if(!planTypes.contains(new JsonPrimitive(pt)))
-			planTypes.add(pt);
+		if(!seenPlanTypes.contains(new JsonPrimitive(pt)))
+			seenPlanTypes.add(pt);
 	}
 	
 	public static JsonArray getSeenPlanTypes() {
-		return planTypes;
+		return seenPlanTypes.deepCopy();
 	}
 	
 	
@@ -180,7 +146,7 @@ public class Map {
 		}
 	}
 
-	private void addEntity(JsonArray places, JsonArray users, List<String> uids, String pn, int slot) {
+	private void addEntity(JsonArray places, JsonArray users, List<String> uids) {
 		if(places == null) 
 			return;
 		
@@ -248,7 +214,7 @@ public class Map {
 				set(x, y, SRC.Map.isNeutral, true);
 				break;
 			default:
-				Debug.print("Map -> addEntity: err=failed to determine team, team=" + place.getAsJsonPrimitive("team").getAsString(), Debug.runerr, Debug.error, pn, slot, true);
+				Debug.print("Map -> addEntity: err=failed to determine team, team=" + place.get("team").getAsString(), Debug.runerr, Debug.error, cid, slot, true);
 			}
 			set(x, y, "isEntity", true);
 			set(x, y, "isEmpty", false);
@@ -342,35 +308,41 @@ public class Map {
 				: je.getAsString();
 	}
 	
-	public JsonArray getUsablePlanTypesJArr() {
-		JsonArray ret = new JsonArray();
-		for(int x=0; x<width; x++) {
-			for(int y=0; y<length; y++) {
-				if(!is(x, y, SRC.Map.isEmpty))
+	
+	private static final HashSet<String> nupts = new HashSet<>();
+	private static final HashSet<String> eupts = new HashSet<>();
+	
+	private void genUsablePlanTypesSets() {
+		String[][] mpts = new String[width][length];
+		for(int x=0; x<width; x++) 
+			for(int y=0; y<length; y++) 
+				if(is(x, y, SRC.Map.isEmpty)) {
+					JsonElement je = get(x, y).get("plan");
+					if(je == null || !je.isJsonPrimitive())
+						continue;
+					String pt = je.getAsString();
+					if(pt.equals("noPlacement"))
+						continue;
+					mpts[x][y] = pt;
+					nupts.add(mpts[x][y]);
+				}
+					
+			
+		for(int x=0; x<mpts.length-1; x++) {
+			for(int y=0; y<mpts[x].length-1; y++) {
+				String pt = mpts[x][y];
+				if(pt == null)
 					continue;
-				JsonElement je = get(x, y).get("plan");
-				if(je != null && je.isJsonPrimitive() && !ret.contains(je))
-					ret.add(je.getAsString());
+				if(pt.equals(mpts[x+1][y])
+					&& pt.equals(mpts[x][y+1])
+					&& pt.equals(mpts[x+1][y+1]))
+					eupts.add(pt);
 			}
 		}
-		return ret;
 	}
 	
-	public HashSet<String> getUsablePlanTypes() {
-		HashSet<String> ret = new HashSet<>();
-		for(int x=0; x<width; x++) {
-			for(int y=0; y<length; y++) {
-				if(!is(x, y, SRC.Map.isEmpty))
-					continue;
-				JsonElement je = get(x, y).get("plan");
-				if(je == null || !je.isJsonPrimitive())
-					continue;
-				String pt = je.getAsString();
-				if(!ret.contains(pt))
-					ret.add(pt);
-			}
-		}
-		return ret;
+	public HashSet<String> getUsablePlanTypes(boolean epic) {
+		return new HashSet<>(epic ? eupts : nupts);
 	}
 	
 	public String getUserName(int x, int y) {

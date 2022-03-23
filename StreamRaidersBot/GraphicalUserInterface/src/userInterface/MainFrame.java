@@ -391,20 +391,6 @@ public class MainFrame {
 	}
 	
 	public static void updateSlot(String cid, int slot, Raid raid, boolean change) {
-		Run r = Manager.getProfile(cid);
-		if(r != null)
-			if(ConfigsV2.getSleepInt(cid, r.getCurrentLayer(), ""+slot, ConfigsV2.sync) == -1) {
-				GUI.setEnabled(ProfileSection.pre+cid+"::"+slot+"::run", true);
-				GUI.setEnabled(ProfileSection.pre+cid+"::"+slot+"::skip", true);
-			} else {
-				GUI.setEnabled(ProfileSection.pre+cid+"::"+slot+"::run", false);
-				GUI.setEnabled(ProfileSection.pre+cid+"::"+slot+"::skip", false);
-			}
-		
-		if(slot == 4)
-			return;
-		
-		String pn = ConfigsV2.getPStr(cid, ConfigsV2.pname);
 		
 		GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::change", Fonts.getColor("main buttons " + (change ? "on" : "def")));
 		GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::change", Fonts.getGradient("main buttons " + (change ? "on" : "def")));
@@ -425,7 +411,7 @@ public class MainFrame {
 			try {
 				GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::img", img);
 			} catch (IOException e) {
-				Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, pn, slot, true);
+				Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, cid, slot, true);
 			}
 			GUI.setText(ProfileSection.pre+cid+"::"+slot+"::wins", "??");
 			img = new Image("data/LoyaltyPics/noloy.png");
@@ -433,7 +419,7 @@ public class MainFrame {
 			try {
 				GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::loy", img);
 			} catch (IOException e) {
-				Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, pn, slot, true);
+				Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, cid, slot, true);
 			}
 			GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons def"));
 			GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons def"));
@@ -444,7 +430,7 @@ public class MainFrame {
 			try {
 				GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::chest", img);
 			} catch (IOException e) {
-				Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, pn, slot, true);
+				Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, cid, slot, true);
 			}
 		} else {
 			GUI.setText(ProfileSection.pre+cid+"::"+slot+"::capname", raid.get(SRC.Raid.twitchDisplayName));
@@ -454,12 +440,12 @@ public class MainFrame {
 			try {
 				GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::img", img);
 			} catch (IOException e) {
-				Debug.print("MainFrame -> onUpdateSlot: err=couldnt set image, url="+raid.get(SRC.Raid.twitchUserImage), Debug.general, Debug.error, pn, slot, true);
+				Debug.print("MainFrame -> onUpdateSlot: err=couldnt set image, url="+raid.get(SRC.Raid.twitchUserImage), Debug.general, Debug.error, cid, slot, true);
 				try {
 					img = new Image("data/Other/icon.png");
 					GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::img", img);
 				} catch (IOException e1) {
-					Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set default image", e, Debug.general, Debug.error, pn, slot, true);
+					Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set default image", e, Debug.general, Debug.error, cid, slot, true);
 				}
 			}
 			GUI.setText(ProfileSection.pre+cid+"::"+slot+"::wins", raid.get(SRC.Raid.pveWins));
@@ -469,7 +455,7 @@ public class MainFrame {
 			try {
 				GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::loy", img);
 			} catch (IOException e) {
-				Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Debug.general, Debug.error, pn, slot, true);
+				Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Debug.general, Debug.error, cid, slot, true);
 			}
 			String cap = raid.get(SRC.Raid.twitchDisplayName);
 			Integer val = ConfigsV2.getCapInt(cid, "(all)", cap, raid.isDungeon() ? ConfigsV2.dungeon : ConfigsV2.campaign, ConfigsV2.fav);
@@ -509,7 +495,7 @@ public class MainFrame {
 			cts.add("dungeonchest");
 			String ct = Remaper.map(raid.getFromNode(SRC.MapNode.chestType));
 			if(ct == null || !cts.contains(new JsonPrimitive(ct))) {
-				Debug.print("MainFrame -> updateSlot -> chest_img: err=nochest, ct="+ct, Debug.lowerr, Debug.error, pn, slot, true);
+				Debug.print("MainFrame -> updateSlot -> chest_img: err=nochest, ct="+ct, Debug.lowerr, Debug.error, cid, slot, true);
 				ct = "nochest";
 			}
 			img = new Image("data/ChestPics/"+ct+".png");
@@ -517,9 +503,15 @@ public class MainFrame {
 			try {
 				GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::chest", img);
 			} catch (IOException e) {
-				Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Debug.general, Debug.error, pn, slot, true);
+				Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Debug.general, Debug.error, cid, slot, true);
 			}
 		}
+	}
+	
+	
+	public static void updateSlotSync(String cid, int slot, boolean synced) {
+		GUI.setEnabled(ProfileSection.pre+cid+"::"+slot+"::run", !synced);
+		GUI.setEnabled(ProfileSection.pre+cid+"::"+slot+"::skip", !synced);
 	}
 	
 	public static void updateCurrency(String cid, String type, int amount) {

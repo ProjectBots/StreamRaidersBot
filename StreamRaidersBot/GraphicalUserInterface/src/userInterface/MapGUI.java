@@ -1,12 +1,12 @@
 package userInterface;
 
 import include.GUI;
-import include.Heatmap;
 import include.GUI.Label;
 import include.GUI.TextArea;
 import include.Maths.Scaler;
 import include.Http.NoConnectionException;
 import program.Debug;
+import program.Heatmap;
 import program.Map;
 import program.SRC;
 import program.SRR.NotAuthorizedException;
@@ -111,20 +111,20 @@ public class MapGUI {
 						if(!run.canUseSlot(beh, slot))
 							return;
 					} catch (NoConnectionException | NotAuthorizedException e2) {
-						Debug.printException("MapGUI -> asGui: err=failed to get canUseSlot", e2, Debug.runerr, Debug.error, run.getPN(), slot, true);
+						Debug.printException("MapGUI -> asGui: err=failed to get canUseSlot", e2, Debug.runerr, Debug.error, run.cid, slot, true);
 						return;
 					}
 					Map map;
 					try {
 						map = run.getMap(beh, slot);
 					} catch (NoConnectionException | NotAuthorizedException e1) {
-						Debug.printException("MapGUI -> asGui: err=failed to get Map", e1, Debug.runerr, Debug.error, run.getPN(), slot, true);
+						Debug.printException("MapGUI -> asGui: err=failed to get Map", e1, Debug.runerr, Debug.error, run.cid, slot, true);
 						return;
 					}
 					if(map == null)
 						return;
 					
-					GUI gui = new GUI("Map " + map.getName(), 1000, 800, parrent, null);
+					GUI gui = new GUI("Map " + map.name, 1000, 800, parrent, null);
 					gui.setFullScreen(true);
 					
 					gui.setGlobalKeyLis(new KeyListener() {
@@ -136,7 +136,7 @@ public class MapGUI {
 						public void keyPressed(KeyEvent e) {
 							if((e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0 && (e.getModifiersEx() & KeyEvent.ALT_DOWN_MASK) > 0) {
 								Heatmap hm = new Heatmap();
-								showLastHeatMap(gui, hm, map.getName(), hm.getMaxHeat(map));
+								showLastHeatMap(gui, hm, map.name, hm.getMaxHeat(map));
 							} else if((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) > 0 && (e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0) {
 								switch(e.getKeyCode()) {
 								}
@@ -146,9 +146,9 @@ public class MapGUI {
 									gui.close();
 									run.useBackEndHandler(beh -> {
 										try {
-											beh.updateMap(run.getPN(), slot, true);
+											beh.updateMap(slot, true);
 										} catch (NoConnectionException | NotAuthorizedException e1) {
-											Debug.printException("MapGUI -> asGUI -> reload: err=failed to update Map", e1, Debug.runerr, Debug.error, run.getPN(), slot, true);
+											Debug.printException("MapGUI -> asGUI -> reload: err=failed to update Map", e1, Debug.runerr, Debug.error, run.cid, slot, true);
 											return;
 										}
 										asGui(gui, run, slot);
@@ -163,8 +163,8 @@ public class MapGUI {
 					});
 					
 					
-					for(int x=0; x<map.width(); x++) {
-						for(int y=0; y<map.length(); y++) {
+					for(int x=0; x<map.width; x++) {
+						for(int y=0; y<map.length; y++) {
 
 							if(map.is(x, y, SRC.Map.isOccupied)) continue;
 							

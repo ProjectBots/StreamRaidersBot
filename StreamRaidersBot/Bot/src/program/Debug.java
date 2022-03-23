@@ -135,20 +135,20 @@ public class Debug {
 	}
 	
 	public static interface DebugEventHandler {
-		public default void onPrintLine(String pre, String msg, Scope scope, Type type, String pn, Integer slot, boolean forced) {
+		public default void onPrintLine(String pre, String msg, Scope scope, Type type, String cid, Integer slot, boolean forced) {
 			System.out.println(pre+msg);
 		};
-		public default void onPrintException(String pre, String msg, Exception e, Scope scope, Type type, String pn, Integer slot, boolean forced) {
+		public default void onPrintException(String pre, String msg, Exception e, Scope scope, Type type, String cid, Integer slot, boolean forced) {
 			System.err.println(pre+msg+"\n"+except2Str(e));
 		};
-		public default void onWriteLine(String path, String pre, String msg, Scope scope, Type type, String pn, Integer slot, boolean forced) {
+		public default void onWriteLine(String path, String pre, String msg, Scope scope, Type type, String cid, Integer slot, boolean forced) {
 			try {
 				NEF.save(path, "\n\n" + pre+msg, true);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		};
-		public default void onWriteException(String path, String pre, String msg, Exception e, Scope scope, Type type, String pn, Integer slot, boolean forced) {
+		public default void onWriteException(String path, String pre, String msg, Exception e, Scope scope, Type type, String cid, Integer slot, boolean forced) {
 			try {
 				NEF.save(path, "\n\n" + pre+msg+"\n"+except2Str(e), true);
 			} catch (IOException e1) {
@@ -163,36 +163,38 @@ public class Debug {
 		Debug.deh = deh;
 	}
 	
-	public static String print(String in, Scope scope, Type type, String pn, Integer slot) {
-		return print(in, scope, type, pn, slot, false);
+	private static String getPre(Scope scope, Type type, String cid, Integer slot) {
+		LocalDateTime now = LocalDateTime.now();
+		return "[" + type.con + "] [" + now.getHour() + ":" + now.getMinute() + ":" + now.getSecond() + "] [" + scope.getScopes()[0] + "] "
+				+ (cid == null ? "[none]" : "["+cid+"@"+ConfigsV2.getPStr(cid, ConfigsV2.pname)+"] ") + (slot == null ? "[n]" : "["+slot+"] ");
 	}
 	
-	synchronized public static String print(String msg, Scope scope, Type type, String pn, Integer slot, boolean force) {
-		LocalDateTime now = LocalDateTime.now();
-		String pre = "[" + type.con + "] [" + now.getHour() + ":" + now.getMinute() + ":" + now.getSecond() + "] [" + scope.getScopes()[0] + "] "
-						+ (pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ");
+	public static String print(String in, Scope scope, Type type, String cid, Integer slot) {
+		return print(in, scope, type, cid, slot, false);
+	}
+	
+	synchronized public static String print(String msg, Scope scope, Type type, String cid, Integer slot, boolean force) {
 		if(should(scope, type) || force) {
+			String pre = getPre(scope, type, cid, slot);
 			if(path == null)
-				deh.onPrintLine(pre, msg.replace("\n", "\n\u0009"), scope, type, pn, slot, force);
+				deh.onPrintLine(pre, msg.replace("\n", "\n\u0009"), scope, type, cid, slot, force);
 			else
-				deh.onWriteLine(path, pre, msg, scope, type, pn, slot, force);
+				deh.onWriteLine(path, pre, msg, scope, type, cid, slot, force);
 		}
 		return msg;
 	}
 	
-	public static void printException(String msg, Exception e, Scope scope, Type type, String pn, Integer slot) {
-		printException(msg, e, scope, type, pn, slot, false);
+	public static void printException(String msg, Exception e, Scope scope, Type type, String cid, Integer slot) {
+		printException(msg, e, scope, type, cid, slot, false);
 	}
 	
-	synchronized public static void printException(String msg, Exception e, Scope scope, Type type, String pn, Integer slot, boolean force) {
-		LocalDateTime now = LocalDateTime.now();
-		String pre = "[" + type.con + "] [" + now.getHour() + ":" + now.getMinute() + ":" + now.getSecond() + "] [" + scope.getScopes()[0] + "] "
-				+ (pn == null ? "" : "["+pn+"] ") + (slot == null ? "" : "["+slot+"] ");
+	synchronized public static void printException(String msg, Exception e, Scope scope, Type type, String cid, Integer slot, boolean force) {
 		if(should(scope, type) || force) {
+			String pre = getPre(scope, type, cid, slot);
 			if(path == null)
-				deh.onPrintException(pre, msg, e, scope, type, pn, slot, force);
+				deh.onPrintException(pre, msg, e, scope, type, cid, slot, force);
 			else
-				deh.onWriteException(path, pre, msg, e, scope, type, pn, slot, force);
+				deh.onWriteException(path, pre, msg, e, scope, type, cid, slot, force);
 		}
 	}
 	
