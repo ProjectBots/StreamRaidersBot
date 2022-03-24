@@ -32,11 +32,11 @@ import program.ConfigsV2;
 import program.Debug;
 import include.Guide;
 import program.Options;
-import program.Raid;
 import program.Remaper;
 import program.SRC;
+import program.viewer.Raid;
 import run.Manager;
-import run.Run;
+import run.Viewer;
 
 public class MainFrame {
 	
@@ -450,7 +450,7 @@ public class MainFrame {
 			}
 			GUI.setText(ProfileSection.pre+cid+"::"+slot+"::wins", raid.get(SRC.Raid.pveWins));
 			int loy = Integer.parseInt(raid.get(SRC.Raid.pveLoyaltyLevel));
-			img = new Image("data/LoyaltyPics/" + Run.pveloy[loy] + ".png");
+			img = new Image("data/LoyaltyPics/" + Viewer.pveloy[loy] + ".png");
 			img.setSquare(20);
 			try {
 				GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::loy", img);
@@ -556,7 +556,7 @@ public class MainFrame {
 						if(loaded.contains(cid)) {
 							addLoadedProfile(cid, Manager.getProfilePos(cid));
 							for(int i=0; i<5; i++)
-								updateSlotRunning(cid, i, Manager.getProfile(cid).isRunning(i));
+								updateSlotRunning(cid, i, Manager.getViewer(cid).isRunning(i));
 						} else {
 							addFailedProfile(cid, Manager.getProfilePos(cid), null);
 						}

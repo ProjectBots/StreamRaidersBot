@@ -290,7 +290,7 @@ public class ProfileSection {
 						map.setAL(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								MapGUI.asGui(MainFrame.getGUI(), Manager.getProfile(cid), ii);
+								MapGUI.asGui(MainFrame.getGUI(), Manager.getViewer(cid), ii);
 							}
 						});
 						mapchest.addBut(map);

@@ -22,9 +22,9 @@ import include.Http.NoConnectionException;
 import program.SRR.NotAuthorizedException;
 import program.Store;
 import program.Unit;
-import run.BackEndHandler;
+import run.ViewerBackEnd;
 import run.Manager;
-import run.Run;
+import run.Viewer;
 
 public class Stats {
 
@@ -42,14 +42,14 @@ public class Stats {
 	private static final Font font = new Font("Arial", Font.PLAIN, 12);
 	
 	public void open() {
-		Run run = Manager.getProfile(cid);
-		run.useBackEndHandler(beh -> {
+		Viewer run = Manager.getViewer(cid);
+		run.useViewerBackEnd(beh -> {
 			open(run, beh);
 		});
 	}
 	
 	
-	public void open(Run run, BackEndHandler beh) {
+	public void open(Viewer run, ViewerBackEnd beh) {
 		
 		int[] pos = new int[5];
 		

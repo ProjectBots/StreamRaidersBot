@@ -24,7 +24,7 @@ import program.SRR.NotAuthorizedException;
 import program.Skins;
 import program.Skins.Skin;
 import program.Unit;
-import run.BackEndHandler;
+import run.ViewerBackEnd;
 import run.Manager;
 
 public class SkinSettings {
@@ -44,7 +44,7 @@ public static final String pre = "SkinSettings::";
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				Manager.getProfile(cid).useBackEndHandler(beh -> {
+				Manager.getViewer(cid).useViewerBackEnd(beh -> {
 					open(parent, beh);
 				});
 			}
@@ -54,7 +54,7 @@ public static final String pre = "SkinSettings::";
 	
 	private boolean closed = false;
 	
-	private void open(GUI parent, BackEndHandler beh) {
+	private void open(GUI parent, ViewerBackEnd beh) {
 		closed = false;
 		
 		int p = 0;

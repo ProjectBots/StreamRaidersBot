@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import include.Json;
+import program.viewer.Raid;
 
 public class Map {
 
@@ -46,7 +47,7 @@ public class Map {
 	
 	public Map(JsonObject mapData, Raid raid, JsonObject plan, String name, List<String> userIds, String cid, int slot) {
 		if(mapData == null)
-			new run.Run.StreamRaidersException("Map -> const: err=mapData is null, mapName="+name, cid, slot);
+			new run.StreamRaidersException("Map -> const: err=mapData is null, mapName="+name, cid, slot);
 		this.cid = cid;
 		this.slot = slot;
 		this.name = name;

@@ -38,24 +38,38 @@ public class SRR {
 		userAgent = ua;
 	}
 	
-	private String cookies = "";
-	private String userId = null;
-	private String isCaptain = "";
+	private final String cookies;
+	private String viewerUserId = null;
+	private String captainUserId = null;
+	private boolean playsAsCaptain;
+	private boolean canPlayAsCaptain;
 	private String gameDataVersion = "";
 	private String clientVersion = "";
-	private String clientPlatform = "WebGL";
+	private static final String clientPlatform = "WebGL";
 	
-	public String getUserId() {
-		return userId;
+	public String getViewerUserId() {
+		return viewerUserId;
+	}
+	
+	public String getCaptainUserId() {
+		return captainUserId;
+	}
+	
+	public boolean canPlayCaptain() {
+		return canPlayAsCaptain;
+	}
+	
+	public boolean playsAsCaptain() {
+		return playsAsCaptain;
 	}
 	
 	private static List<String> userIds = new ArrayList<String>();
 	
-	public static List<String> getUserIds() {
+	public static List<String> getViewerUserIds() {
 		return userIds;
 	}
 	
-	synchronized public static void addUserId(String uid) {
+	synchronized public static void addViewerUserId(String uid) {
 		if(!userIds.contains(uid))
 			userIds.add(uid);
 	}
@@ -102,13 +116,12 @@ public class SRR {
 		this.cookies = ConfigsV2.getPStr(cid, ConfigsV2.cookies);
 		this.clientVersion = clientVersion;
 		reload();
-		addUserId(userId);
+		addViewerUserId(viewerUserId);
 	}
 	
 	public String reload() throws NoConnectionException, OutdatedDataException, NotAuthorizedException {
-		userId = null;
+		viewerUserId = null;
 		gameDataVersion = "";
-		isCaptain = "";
 		JsonObject raw = Json.parseObj(getUser());
 		JsonObject info = raw.getAsJsonObject("info");
 		String datapath = info.get("dataPath").getAsString();
@@ -134,10 +147,23 @@ public class SRR {
 		this.gameDataVersion = getUser.getAsJsonObject("info").get("dataVersion").getAsString();
 		try {
 			JsonObject data = getUser.getAsJsonObject("data");
-			this.isCaptain = "0";
-			this.userId = data.get("userId").getAsString();
-			if(userId.endsWith("c"))
-				userId = data.get("otherUserId").getAsString();
+			canPlayAsCaptain = data.get("hasCaptainPrivileges").getAsBoolean();
+			if(!canPlayAsCaptain) {
+				this.viewerUserId = data.get("userId").getAsString();
+				playsAsCaptain = false;
+			} else {
+				String uid = data.get("userId").getAsString();
+				String oid = data.get("otherUserId").getAsString();
+				if(data.get("isCaptain").getAsInt() == 0) {
+					playsAsCaptain = false;
+					captainUserId = oid;
+					viewerUserId = uid;
+				} else {
+					playsAsCaptain = true;
+					captainUserId = uid;
+					viewerUserId = oid;
+				}
+			}
 		} catch (ClassCastException e) {
 			JsonElement err = getUser.get(SRC.errorMessage);
 			if(err.isJsonPrimitive() && err.getAsString().equals("User is not authorized.")) {
@@ -149,13 +175,26 @@ public class SRR {
 	}
 	
 	
-	
 	public Http getPost(String cn) {
 		return getPost(cn, true);
 	}
 
 	
 	private Http getPost(String cn, boolean addUser) {
+		Http post = getPurePost(cn);
+		
+		if(viewerUserId != null && addUser) {
+			post.addEncArg("userId", playsAsCaptain ? viewerUserId : captainUserId);
+			post.addEncArg("isCaptain", playsAsCaptain ? "1" : "0");
+		}
+		post.addEncArg("gameDataVersion", gameDataVersion);
+		post.addEncArg("clientVersion", clientVersion);
+		post.addEncArg("clientPlatform", clientPlatform);
+		
+		return post;
+	}
+	
+	private Http getPurePost(String cn) {
 		Http post = new Http();
 		if(proxyDomain != null)
 			post.setProxy(proxyDomain, proxyPort, proxyUser, proxyPass);
@@ -166,17 +205,11 @@ public class SRR {
 		post.setUrl("https://www.streamraiders.com/api/game/");
 		post.addUrlArg("cn", cn);
 		
-		if(userId != null && addUser) {
-			post.addEncArg("userId", userId);
-			post.addEncArg("isCaptain", isCaptain);
-		}
-		post.addEncArg("gameDataVersion", gameDataVersion);
 		post.addEncArg("command", cn);
-		post.addEncArg("clientVersion", clientVersion);
-		post.addEncArg("clientPlatform", clientPlatform);
 		
 		return post;
 	}
+	
 	
 	private String sendPost(Http post) throws NoConnectionException {
 		String p;
@@ -209,6 +242,10 @@ public class SRR {
 		Http post = getPost("getUser", false);
 		post.addEncArg("skipDateCheck", "true");
 		return sendPost(post);
+	}
+	
+	public String switchUserAccountType() throws NoConnectionException {
+		return sendPost(getPurePost("switchUserAccountType"));
 	}
 	
 	
@@ -286,7 +323,7 @@ public class SRR {
 	public String getUserEventProgression() throws NoConnectionException {
 		Http post = getPost("getUserEventProgression", false);
 		post.addEncArg("userId", "");
-		post.addEncArg("isCaptain", isCaptain);
+		post.addEncArg("isCaptain", playsAsCaptain ? "1" : "0");
 		return sendPost(post);
 	}
 	
@@ -315,7 +352,7 @@ public class SRR {
 	
 	
 	
-	public String getCaptainsForSearch(int page, String seed, boolean fav, boolean live, String mode, boolean searchForCaptain, String name) throws NoConnectionException {
+	public String getCaptainsForSearch(String page, String resultsPerPage, String seed, boolean fav, boolean live, String mode, boolean searchForCaptain, String name) throws NoConnectionException {
 		JsonObject filter = new JsonObject();
 		filter.addProperty("ambassadors", "false");
 		filter.addProperty("favorite", (fav ? "true" : "false"));
@@ -325,8 +362,8 @@ public class SRR {
 			filter.addProperty("mode", mode);
 		
 		Http post = getPost("getCaptainsForSearch");
-		post.addEncArg("page", ""+page);
-		post.addEncArg("resultsPerPage", "30");
+		post.addEncArg("page", page);
+		post.addEncArg("resultsPerPage", resultsPerPage);
 		post.addEncArg("filters", filter.toString());
 		post.addEncArg("seed", seed==null?"0":seed);
 		

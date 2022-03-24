@@ -205,20 +205,20 @@
     },
     "viewerboostedskinalternate1": {
       "goldbag_100": 15,
-      "goldbag_75": 20,
-      "rarescrolls_6": 30,
-      "rarescrolls_7": 20,
-      "skinfullglitchedmusketeerretrolandia": 8,
-      "skinfullbarbarianretrolandia": 7,
-      "skinfullmageretrolandia": 7
+      "goldbag_75": 18,
+      "rarescrolls_6": 28,
+      "rarescrolls_7": 18,
+      "skinfullrogueshogunate": 7,
+      "skinfullsaintshogunate": 7,
+      "skinfullmageshogunate": 7
     },
     "viewerboostedskinalternate2": {
       "goldbag_100": 10,
       "rarescrolls_6": 10,
       "rarescrolls_7": 15,
-      "skinfullglitchedmusketeerretrolandia": 20,
-      "skinfullbarbarianretrolandia": 15,
-      "skinfullmageretrolandia": 15
+      "skinfullrogueshogunate": 25,
+      "skinfullsaintshogunate": 20,
+      "skinfullmageshogunate": 20
     }
   },
   "chestboostedtoken": {
@@ -310,34 +310,28 @@
   },
   "chestbosssuper": {
     "viewersuperboss": {
-      "rarescrolls_20": 60,
-      "rarescrolls_30": 30,
-      "rarescrolls_50": 10
+      "rarescrolls_30": 80,
+      "rarescrolls_50": 20
     },
     "viewersuperboss_": {
-      "rarescrolls_20": 60,
-      "rarescrolls_30": 30,
-      "rarescrolls_50": 10
+      "rarescrolls_30": 80,
+      "rarescrolls_50": 20
     },
     "viewersuperboss__": {
-      "rarescrolls_20": 60,
-      "rarescrolls_30": 30,
-      "rarescrolls_50": 10
+      "rarescrolls_30": 80,
+      "rarescrolls_50": 20
     },
     "viewersuperboss___": {
-      "rarescrolls_20": 60,
-      "rarescrolls_30": 30,
-      "rarescrolls_50": 10
+      "rarescrolls_30": 80,
+      "rarescrolls_50": 20
     },
     "viewersuperboss____": {
-      "rarescrolls_20": 60,
-      "rarescrolls_30": 30,
-      "rarescrolls_50": 10
+      "rarescrolls_30": 80,
+      "rarescrolls_50": 20
     },
     "viewersuperboss_____": {
-      "rarescrolls_20": 60,
-      "rarescrolls_30": 30,
-      "rarescrolls_50": 10
+      "rarescrolls_30": 80,
+      "rarescrolls_50": 20
     }
   },
   "chestbronze": {
@@ -1442,6 +1436,146 @@
       "rarescrolls_7": 15,
       "skinfullpaladinshadowflameplayer": 15,
       "skinfullmonkhalloweenplayer": 20
+    }
+  },
+  "shogunateteambluechest": {
+    "bonusshogunate": {
+      "goldbag_5": 50,
+      "goldbag_7": 30,
+      "goldbag_10": 20
+    },
+    "shogunateteamblueviewerslot1": {
+      "commonscrolls_2": 40,
+      "commonscrolls_7": 20,
+      "uncommonscrolls_3": 15,
+      "uncommonscrolls_5": 10,
+      "rarescrolls_3": 10,
+      "rarescrolls_4": 5
+    },
+    "shogunateteamblueviewerslot2": {
+      "goldbag_10": 51,
+      "goldbag_25": 28,
+      "goldbag_50": 9,
+      "goldbag_75real": 6,
+      "goldbag_100real": 4,
+      "goldbag_150": 2
+    },
+    "shogunateteamblueviewerslot3": {
+      "eventtoken_1": 80,
+      "eventtoken_2": 16,
+      "eventtoken_4": 4
+    }
+  },
+  "shogunateteamgreenchest": {
+    "bonusshogunate": {
+      "goldbag_5": 50,
+      "goldbag_7": 30,
+      "goldbag_10": 20
+    },
+    "shogunateteamgreenviewerslot1": {
+      "commonscrolls_2": 40,
+      "commonscrolls_7": 20,
+      "uncommonscrolls_3": 15,
+      "uncommonscrolls_5": 10,
+      "rarescrolls_3": 10,
+      "rarescrolls_4": 5
+    },
+    "shogunateteamgreenviewerslot2": {
+      "goldbag_10": 51,
+      "goldbag_25": 28,
+      "goldbag_50": 9,
+      "goldbag_75real": 6,
+      "goldbag_100real": 4,
+      "goldbag_150": 2
+    },
+    "shogunateteamgreenviewerslot3": {
+      "eventtoken_1": 80,
+      "eventtoken_2": 16,
+      "eventtoken_4": 4
+    }
+  },
+  "shogunateteampinkchest": {
+    "bonusshogunate": {
+      "goldbag_5": 50,
+      "goldbag_7": 30,
+      "goldbag_10": 20
+    },
+    "shogunateteampinkviewerslot1": {
+      "commonscrolls_2": 40,
+      "commonscrolls_7": 20,
+      "uncommonscrolls_3": 15,
+      "uncommonscrolls_5": 10,
+      "rarescrolls_3": 10,
+      "rarescrolls_4": 5
+    },
+    "shogunateteampinkviewerslot2": {
+      "goldbag_10": 51,
+      "goldbag_25": 28,
+      "goldbag_50": 9,
+      "goldbag_75real": 6,
+      "goldbag_100real": 4,
+      "goldbag_150": 2
+    },
+    "shogunateteampinkviewerslot3": {
+      "eventtoken_1": 80,
+      "eventtoken_2": 16,
+      "eventtoken_4": 4
+    }
+  },
+  "shogunateteamredchest": {
+    "bonusshogunate": {
+      "goldbag_5": 50,
+      "goldbag_7": 30,
+      "goldbag_10": 20
+    },
+    "shogunateteamredviewerslot1": {
+      "commonscrolls_2": 40,
+      "commonscrolls_7": 20,
+      "uncommonscrolls_3": 15,
+      "uncommonscrolls_5": 10,
+      "rarescrolls_3": 10,
+      "rarescrolls_4": 5
+    },
+    "shogunateteamredviewerslot2": {
+      "goldbag_10": 51,
+      "goldbag_25": 28,
+      "goldbag_50": 9,
+      "goldbag_75real": 6,
+      "goldbag_100real": 4,
+      "goldbag_150": 2
+    },
+    "shogunateteamredviewerslot3": {
+      "eventtoken_1": 80,
+      "eventtoken_2": 16,
+      "eventtoken_4": 4
+    }
+  },
+  "shogunateteamyellowchest": {
+    "bonusshogunate": {
+      "goldbag_5": 50,
+      "goldbag_7": 30,
+      "goldbag_10": 20
+    },
+    "shogunateteamyellowviewerslot1": {
+      "commonscrolls_2": 40,
+      "commonscrolls_7": 20,
+      "uncommonscrolls_3": 15,
+      "uncommonscrolls_5": 10,
+      "rarescrolls_3": 10,
+      "rarescrolls_4": 5
+    },
+    "shogunateteamyellowviewerslot2": {
+      "goldbag_10": 51,
+      "goldbag_25": 28,
+      "goldbag_50": 9,
+      "goldbag_75real": 6,
+      "goldbag_100real": 4,
+      "goldbag_150": 2
+    },
+    "shogunateteamyellowviewerslot3": {
+      "eventtoken_1": 80,
+      "eventtoken_2": 16,
+      "eventtoken_4": 4
     }
   },
   "snowfallcharitychest1": {

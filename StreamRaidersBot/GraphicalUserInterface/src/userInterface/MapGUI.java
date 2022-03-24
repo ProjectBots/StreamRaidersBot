@@ -10,7 +10,7 @@ import program.Heatmap;
 import program.Map;
 import program.SRC;
 import program.SRR.NotAuthorizedException;
-import run.Run;
+import run.Viewer;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -100,13 +100,13 @@ public class MapGUI {
 	}
 	
 	
-	public static void asGui(GUI parrent, Run run, int slot) {
+	public static void asGui(GUI parrent, Viewer run, int slot) {
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				if(run == null)
 					return;
-				run.useBackEndHandler(beh -> {
+				run.useViewerBackEnd(beh -> {
 					try {
 						if(!run.canUseSlot(beh, slot))
 							return;
@@ -144,7 +144,7 @@ public class MapGUI {
 								switch(e.getKeyCode()) {
 								case KeyEvent.VK_R:
 									gui.close();
-									run.useBackEndHandler(beh -> {
+									run.useViewerBackEnd(beh -> {
 										try {
 											beh.updateMap(slot, true);
 										} catch (NoConnectionException | NotAuthorizedException e1) {

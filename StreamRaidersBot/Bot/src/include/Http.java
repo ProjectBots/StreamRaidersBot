@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -87,7 +86,7 @@ public class Http {
 	private String url = "";
 	private BasicHeader[] headers = new BasicHeader[0];
 	private String[][] urlArgs = new String[0][0];
-	private List<NameValuePair> encArgs = new ArrayList<NameValuePair>();
+	private ArrayList<NameValuePair> encArgs = new ArrayList<NameValuePair>();
 	
 	public void setUrl(String url) {
 		this.url = url;
@@ -110,6 +109,12 @@ public class Http {
 	
 	public void addEncArg(String name, String value) {
 		encArgs.add(new BasicNameValuePair(name, value));
+	}
+	
+	public void remEncArg(String name) {
+		encArgs.removeIf(nvp -> {
+			return nvp.getName().equals(name);
+		});
 	}
 	
 	public String getEncArg(String name) {

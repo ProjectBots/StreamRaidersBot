@@ -26,7 +26,7 @@ import include.GUI.TextField;
 import include.Json;
 import program.ConfigsV2;
 import program.Options;
-import run.Run;
+import run.Viewer;
 import program.Debug;
 
 public class ChestSettings {
@@ -177,7 +177,7 @@ public class ChestSettings {
 							else 
 								w = 3;
 							
-							Image img = new Image("data/LoyaltyPics/" + Run.pveloy[w] +".png");
+							Image img = new Image("data/LoyaltyPics/" + Viewer.pveloy[w] +".png");
 							img.setSquare(18);
 							try {
 								GUI.setImage(uid+chest+"::loyImg::"+s, img);
@@ -213,7 +213,7 @@ public class ChestSettings {
 				}
 				
 				Container cimg = new Container();
-				Image img = new Image("data/LoyaltyPics/" + Run.pveloy[w] +".png");
+				Image img = new Image("data/LoyaltyPics/" + Viewer.pveloy[w] +".png");
 				img.setSquare(18);
 				cimg.addImage(img, uid+chest+"::loyImg::"+s);
 				

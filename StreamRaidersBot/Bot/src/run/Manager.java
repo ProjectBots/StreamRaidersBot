@@ -21,15 +21,24 @@ import program.SRR.NotAuthorizedException;
 
 public class Manager {
 	
-	private static Hashtable<String, Run> profiles = new Hashtable<>();
+	private static Hashtable<String, Viewer> viewers = new Hashtable<>();
+	private static Hashtable<String, Captain> captains = new Hashtable<>();
 	private static Hashtable<String, Integer> poss = new Hashtable<>();
 	
 	/**
 	 * @param cid profile id
-	 * @return the Run Object of the profile or null if not loaded
+	 * @return the Viwer Object of the profile or null if not loaded
 	 */
-	public static Run getProfile(String cid) {
-		return profiles.get(cid);
+	public static Viewer getViewer(String cid) {
+		return viewers.get(cid);
+	}
+	
+	/**
+	 * @param cid profile id
+	 * @return the Captain Object of the profile or null if not loaded
+	 */
+	public static Captain getCaptain(String cid) {
+		return captains.get(cid);
 	}
 	
 	/**
@@ -40,7 +49,7 @@ public class Manager {
 		return poss.get(cid);
 	}
 	
-	static BotListener blis;
+	protected static BotListener blis;
 	
 	/**
 	 * changes the current BotListener
@@ -86,10 +95,10 @@ public class Manager {
 		
 		Remaper.load();
 		
-		BackEndHandler.setDataPathEventListener(new run.BackEndHandler.DataPathEventListener() {
+		ViewerBackEnd.setDataPathEventListener(new run.ViewerBackEnd.DataPathEventListener() {
 			@Override
 			public void onUpdate(String dataPath, String serverTime, JsonObject data) {
-				run.BackEndHandler.DataPathEventListener.super.onUpdate(dataPath, serverTime, data);
+				run.ViewerBackEnd.DataPathEventListener.super.onUpdate(dataPath, serverTime, data);
 				Manager.blis.onDataPathUpdate(dataPath, serverTime, data);
 			}
 		});
@@ -137,7 +146,7 @@ public class Manager {
 	 * @param cid profile id
 	 */
 	public static void remProfile(String cid) {
-		if(profiles.containsKey(cid))
+		if(viewers.containsKey(cid))
 			unloadProfile(cid);
 		ConfigsV2.remProfile(cid);
 		ConfigsV2.saveb();
@@ -155,7 +164,7 @@ public class Manager {
 	 */
 	public static void loadAllNewProfiles() {
 		List<String> cids = ConfigsV2.getCids();
-		cids.removeAll(profiles.keySet());
+		cids.removeAll(viewers.keySet());
 		for(final String cid : cids)
 			loadProfile(cid);
 		synchronized(config_load_status_update_sync_lock) {
@@ -168,7 +177,7 @@ public class Manager {
 	 * @param cid profile id
 	 */
 	public static void loadProfile(String cid) {
-		if(profiles.containsKey(cid))
+		if(viewers.containsKey(cid))
 			return;
 		if(!poss.containsKey(cid))
 			poss.put(cid, poss.put("(next)", poss.get("(next)")+1));
@@ -182,10 +191,10 @@ public class Manager {
 				}
 				failedProfiles.remove(cid);
 				blis.onProfileStartedLoading(cid);
-				Run r = null;
+				Viewer r = null;
 				try {
-					r = new Run(cid);
-					profiles.put(cid, r);
+					r = new Viewer(cid);
+					viewers.put(cid, r);
 					blis.onProfileLoadComplete(cid, poss.get(cid));
 					r.setReady(true);
 				} catch (Exception e) {
@@ -218,7 +227,7 @@ public class Manager {
 	public static void unloadProfile(String cid) {
 		for(int i=0; i<5; i++)
 			setRunning(cid, i, false);
-		profiles.remove(cid);
+		viewers.remove(cid);
 		blis.onProfileUnloaded(cid);
 		loadedProfiles.remove(cid);
 		new File("data/temp/"+cid+".srb.json").delete();
@@ -229,8 +238,8 @@ public class Manager {
 	 */
 	public static void stop() {
 		setClockRunning(false);
-		for(String key : profiles.keySet())
-			profiles.get(key).saveStats();
+		for(String key : viewers.keySet())
+			viewers.get(key).saveStats();
 		for(String cid : getLoadedProfiles())
 			unloadProfile(cid);
 		ConfigsV2.save();
@@ -243,7 +252,7 @@ public class Manager {
 	 * @param b true => start, false => stop
 	 */
 	public static void setRunning(String cid, int slot, boolean b) {
-		profiles.get(cid).setRunning(b, slot);
+		viewers.get(cid).setRunning(b, slot);
 	}
 	
 	/**
@@ -252,7 +261,7 @@ public class Manager {
 	 * @param slot
 	 */
 	public static void switchRunning(String cid, int slot) {
-		Run r = profiles.get(cid);
+		Viewer r = viewers.get(cid);
 		r.setRunning(!r.isRunning(slot), slot);
 	}
 	
@@ -275,7 +284,7 @@ public class Manager {
 		
 		for(String cid_ : getLoadedProfiles())
 			if(ConfigsV2.getPStr(cid_, ConfigsV2.synced).equals(cid) || cid_.equals(cid)) 
-				getProfile(cid_).updateSlotSync();
+				getViewer(cid_).updateSlotSync();
 	}
 	
 	/**
@@ -284,7 +293,7 @@ public class Manager {
 	 * @return the id of the profile's current layer
 	 */
 	public static String getCurrentLayer(String cid) {
-		return profiles.get(cid).getCurrentLayer();
+		return viewers.get(cid).getCurrentLayer();
 	}
 	
 	/**
@@ -293,7 +302,7 @@ public class Manager {
 	 * @param slot
 	 */
 	public static void skipSleep(String cid, int slot) {
-		profiles.get(cid).skip(slot);
+		viewers.get(cid).skip(slot);
 	}
 	
 	/**
@@ -302,7 +311,7 @@ public class Manager {
 	 * @param slot
 	 */
 	public static void switchSlotChangeMarker(String cid, int slot) {
-		profiles.get(cid).change(slot);
+		viewers.get(cid).change(slot);
 	}
 	
 	/**
@@ -312,7 +321,7 @@ public class Manager {
 	 * @param val value
 	 */
 	public static void favCaptain(String cid, int slot, int val) {
-		profiles.get(cid).fav(slot, val);
+		viewers.get(cid).fav(slot, val);
 	}
 	
 	/**
@@ -321,7 +330,7 @@ public class Manager {
 	 * @return the url to the captains stream or null if slot empty
 	 */
 	public static String getTwitchCaptainLink(String cid, int slot) {
-		return profiles.get(cid).getTwitchLink(slot);
+		return viewers.get(cid).getTwitchLink(slot);
 	}
 	
 	private static int currentActions = 0;
@@ -389,7 +398,7 @@ public class Manager {
 	 * forces to update every Profile
 	 */
 	public static void updateAllProfiles() {
-		for(final String key : profiles.keySet())
+		for(final String key : viewers.keySet())
 			updateProfile(key);
 	}
 	
@@ -402,7 +411,7 @@ public class Manager {
 			@Override
 			public void run() {
 				try {
-					profiles.get(cid).updateFrame(null);
+					viewers.get(cid).updateFrame(null);
 				} catch (NoConnectionException | NotAuthorizedException e1) {
 					Debug.printException("Manager -> updateProfile: err=failed to update frame", e1, Debug.general, Debug.error, cid, null, true);
 				}
@@ -417,9 +426,9 @@ public class Manager {
 	 * @param delay time between starting each action
 	 */
 	public static void doAll(int con, int delay) {
-		for(String key : profiles.keySet()) {
+		for(String key : viewers.keySet()) {
 			for(int i=0; i<5; i++) {
-				Run r = profiles.get(key);
+				Viewer r = viewers.get(key);
 				switch(con) {
 				case SRC.Manager.start:
 					r.setRunning(true, i);
@@ -442,10 +451,10 @@ public class Manager {
 	 * @return the current server time or null if no profile is loaded
 	 */
 	public static String getServerTime() {
-		if(profiles.size() == 0)
+		if(viewers.size() == 0)
 			return null;
 		StringBuilder st = new StringBuilder();
-		profiles.elements().nextElement().useBackEndHandler(beh -> {
+		viewers.elements().nextElement().useViewerBackEnd(beh -> {
 			st.append(beh.getServerTime());
 		});
 		return st.toString();
@@ -456,9 +465,9 @@ public class Manager {
 	 * @return a list with all (SR) user ids
 	 */
 	public static List<String> getUserIds() {
-		List<String> ret = new ArrayList<>(profiles.size());
-		for(String key : profiles.keySet()) {
-			profiles.get(key).useBackEndHandler(beh -> {
+		List<String> ret = new ArrayList<>(viewers.size());
+		for(String key : viewers.keySet()) {
+			viewers.get(key).useViewerBackEnd(beh -> {
 				ret.add(beh.getUserId());
 			});
 			

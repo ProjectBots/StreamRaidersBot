@@ -49,7 +49,7 @@ public class CapSearch {
 			@Override
 			public void run() {
 				JsonArray caps = new JsonArray();
-				Manager.getProfile(cid).useBackEndHandler(beh -> {
+				Manager.getViewer(cid).useViewerBackEnd(beh -> {
 					try {
 						caps.addAll(beh.searchCap(1, null, false, false, SRC.Search.all, true, search));
 					} catch (NoConnectionException | NotAuthorizedException e) {

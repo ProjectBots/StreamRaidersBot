@@ -192,12 +192,11 @@ public class ConfigsV2 {
 	
 	public static final Str dungeonSlot = new Str("dungeonSlot");
 	public static final Str lname = new Str("name");
-	//public static final Str canBuyChest = new Str("canBuyChest");
-	//public static final Str canBuyEventChest = new Str("canBuyEventChest");
 	public static final Str userAgent = new Str("userAgent");
 	public static final Str proxyDomain = new Str("proxyDomain");
 	public static final Str proxyUser = new Str("proxyUser");
 	public static final Str proxyPass = new Str("proxyPass");
+	public static final Str captainTeam = new Str("captainTeam");	//TODO rem after event
 	
 	public static String getStr(String cid, String lay, Str con) {
 		if(lay.equals("(all)")) {

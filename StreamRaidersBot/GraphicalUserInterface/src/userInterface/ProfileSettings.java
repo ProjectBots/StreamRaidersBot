@@ -34,9 +34,9 @@ import program.SRC;
 import program.Store;
 import program.SRR.NotAuthorizedException;
 import program.Store.Item;
-import run.BackEndHandler;
+import run.ViewerBackEnd;
 import run.Manager;
-import run.Run;
+import run.Viewer;
 import program.ConfigsV2.Boo;
 import program.ConfigsV2.Int;
 import program.ConfigsV2.SleInt;
@@ -56,13 +56,13 @@ public class ProfileSettings {
 	}
 	
 	public void open(GUI parent) {
-		Run run = Manager.getProfile(cid);
-		run.useBackEndHandler(beh -> {
+		Viewer run = Manager.getViewer(cid);
+		run.useViewerBackEnd(beh -> {
 			open(parent, run, beh);
 		});
 	}
 	
-	private void open(GUI parent, Run run, BackEndHandler beh) {
+	private void open(GUI parent, Viewer run, ViewerBackEnd beh) {
 		
 		int p = 0;
 		
@@ -382,6 +382,41 @@ public class ProfileSettings {
 			
 		gui.addContainer(csleep);
 		
+		//TODO after event remove from here
+		Container cct = new Container();
+		cct.setPos(0, p++);
+		cct.setInsets(10, 2, 2, 2);
+		
+			Label lsct = new Label();
+			lsct.setPos(0, 0);
+			lsct.setText("use team: ");
+			lsct.setForeground(Fonts.getColor("stngs profile labels"));
+			cct.addLabel(lsct);
+			
+			String ct = ConfigsV2.getStr(cid, lay, ConfigsV2.captainTeam);
+			if(ct == null)
+				ct = "(---)";
+			else if(!ct.equals("(none)"))
+				ct = ct.split("_")[1];
+		
+			ComboBox cbct = new ComboBox(uid+"dslot");
+			cbct.setPos(1, 0);
+			cbct.setList(putFirst("(none) green blue yellow red pink".split(" "), ct));
+			cbct.setCL(new CombListener() {
+				@Override
+				public void unselected(String id, ItemEvent e) {}
+				@Override
+				public void selected(String id, ItemEvent e) {
+					String in = GUI.getSelected(id);
+					if(!in.equals("(none)"))
+						in = "team_"+in+"_02";
+					ConfigsV2.setStr(cid, lay, ConfigsV2.captainTeam, in);
+				}
+			});
+			cct.addComboBox(cbct);
+		
+		gui.addContainer(cct);
+		//TODO after event remove to here
 		
 		Container clock = new Container();
 		clock.setPos(0, p++);
