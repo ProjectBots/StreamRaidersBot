@@ -17,7 +17,7 @@ public class Event {
 	}
 	
 	public static boolean isEvent() {
-		return currentEvent == null;
+		return currentEvent != null;
 	}
 	
 	

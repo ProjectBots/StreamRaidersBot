@@ -16,18 +16,26 @@ import include.Time;
 import include.Http.NoConnectionException;
 
 public class Store {
-
-	private static final String[] nLevelCost = Options.get("nlevelcost").split("\\|");
-	private static final String[] lLevelCost = Options.get("llevelcost").split("\\|");
 	
-	public static int[] getCost(String type, int lvl, boolean dupe) {
-		if(dupe) 
-			return new int[] {1000, Unit.isLegendary(type) ? 30 : 300};
-		
-		String[] cost = (Unit.isLegendary(type) ? lLevelCost[lvl] : nLevelCost[lvl]).split(",");
-		return new int[] {Integer.parseInt(cost[0]), Integer.parseInt(cost[1])};
+	private static JsonObject unitCosts = Json.parseObj(Options.get("unitCosts"));
+	
+	public static void setUnitCosts(JsonObject unitCosts) {
+		Store.unitCosts = unitCosts;
 	}
-	
+
+	public static int[] getCost(String type, int lvl, boolean dupe) {
+		lvl++;
+		String id = Unit.getRarity(type)+"_";
+		if(dupe) 
+			id += "dupe1";
+		else if(lvl == 1)
+			id += "unlock1";
+		else
+			id += "upgrade"+lvl;
+		
+		JsonObject cost = unitCosts.getAsJsonObject(id);
+		return new int[] {cost.get("GoldCostViewer").getAsInt(), cost.get("CurrencyCostViewer").getAsInt()};
+	}
 	
 	
 	private JsonArray shopItems = new JsonArray();

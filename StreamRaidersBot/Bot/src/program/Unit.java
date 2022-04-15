@@ -37,9 +37,23 @@ public class Unit {
 		return uTypes.getAsJsonObject(get(SRC.Unit.unitType)).get("canFly").getAsBoolean();
 	}
 	
-	
 	public static boolean isLegendary(String type) {
 		return uTypes.getAsJsonObject(type).get("rank").getAsInt() == 4;
+	}
+	
+	public static String getRarity(String type) {
+		switch(uTypes.getAsJsonObject(type).get("rank").getAsInt()) {
+		case 1:
+			return "common";
+		case 2:
+			return "uncommon";
+		case 3:
+			return "rare";
+		case 4:
+			return "legendary";
+		default:
+			return "undefined";
+		}
 	}
 	
 	public Unit(JsonObject unit) throws ClassCastException {

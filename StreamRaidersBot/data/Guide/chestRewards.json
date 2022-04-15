@@ -781,6 +781,39 @@
       "skinfullnecromancerclockwork": 2
     }
   },
+  "dungeons7chest": {
+    "bonusdungeonsepic": {
+      "goldbag_10": 50,
+      "goldbag_15": 30,
+      "goldbag_20": 20
+    },
+    "viewerdungeonsepic1": {
+      "eventtoken_2": 100
+    },
+    "viewerdungeonsepic2": {
+      "epicpotion_1": 50,
+      "epicpotion_2": 10,
+      "epicpotion_3": 5,
+      "uncommonscrolls_5": 20,
+      "rarescrolls_2": 10,
+      "rarescrolls_5": 5
+    },
+    "viewerdungeonsepic3": {
+      "cooldown_1": 3,
+      "cooldown_3": 1,
+      "commonscrolls_5": 80,
+      "commonscrolls_7": 13,
+      "uncommonscrolls_3": 3
+    },
+    "viewerdungeonsepic4": {
+      "eventtoken_1": 51,
+      "goldbag_25": 26,
+      "goldbag_50": 16,
+      "goldbag_75real": 5,
+      "skinfullbusterolympiad": 1,
+      "skinfullpaladinolympiad": 1
+    }
+  },
   "icefallchest": {
     "bonusboostedgold": {
       "goldbag_1000": 75,
@@ -1051,10 +1084,10 @@
       "goldbag_75": 26,
       "rarescrolls_4": 84,
       "rarescrolls_6": 50,
-      "skinfullwarriorbattletech": 4,
-      "skinfullbusterbattletech": 3,
-      "skinfullmonkbattletech": 2,
-      "skinfullorcslayerbattletech": 1
+      "skinfullarcherbattletech": 4,
+      "skinfullsaintbattletech": 3,
+      "skinfullcenturionbattletech": 2,
+      "skinfullwarbeastbattletech": 1
     },
     "viewerplasma2": {
       "cooldown_20": 1,
@@ -1095,10 +1128,10 @@
       "goldbag_75": 26,
       "rarescrolls_4": 84,
       "rarescrolls_6": 50,
-      "skinfullroguebattletech": 4,
-      "skinfullhealerbattletech": 3,
-      "skinfullberserkerbattletech": 2,
-      "skinfullartillerybattletech": 1
+      "skinfulltankbattletech": 4,
+      "skinfullbarbarianbattletech": 3,
+      "skinfullflyingroguebattletech": 2,
+      "skinfulltemplarbattletech": 1
     },
     "viewerplasma2": {
       "cooldown_20": 1,
@@ -1139,9 +1172,9 @@
       "goldbag_75": 26,
       "rarescrolls_4": 84,
       "rarescrolls_6": 50,
-      "skinfullflagbearerbattletech": 4,
-      "skinfullpaladinbattletech": 3,
-      "skinfullmusketeerbattletech": 2,
+      "skinfullwarriorbattletech": 4,
+      "skinfullvampirebattletech": 3,
+      "skinfullmonkbattletech": 2,
       "skinfullballoonbusterbattletech": 1
     },
     "viewerplasma2": {
@@ -1445,12 +1478,16 @@
       "goldbag_10": 20
     },
     "shogunateteamblueviewerslot1": {
-      "commonscrolls_2": 40,
+      "commonscrolls_2": 30,
       "commonscrolls_7": 20,
-      "uncommonscrolls_3": 15,
+      "uncommonscrolls_3": 14,
       "uncommonscrolls_5": 10,
       "rarescrolls_3": 10,
-      "rarescrolls_4": 5
+      "rarescrolls_4": 5,
+      "skinfullflyingroguetengu": 3,
+      "skinfullmusketeercyberdoll": 3,
+      "skinfullwarriorshogunate_blue": 5,
+      "skinfullflagbearershogunate_blue": 3
     },
     "shogunateteamblueviewerslot2": {
       "goldbag_10": 51,
@@ -1473,12 +1510,16 @@
       "goldbag_10": 20
     },
     "shogunateteamgreenviewerslot1": {
-      "commonscrolls_2": 40,
+      "commonscrolls_2": 30,
       "commonscrolls_7": 20,
-      "uncommonscrolls_3": 15,
+      "uncommonscrolls_3": 14,
       "uncommonscrolls_5": 10,
       "rarescrolls_3": 10,
-      "rarescrolls_4": 5
+      "rarescrolls_4": 5,
+      "skinfullflyingroguetengu": 3,
+      "skinfullmusketeercyberdoll": 3,
+      "skinfullwarriorshogunate_green": 5,
+      "skinfullflagbearershogunate_green": 3
     },
     "shogunateteamgreenviewerslot2": {
       "goldbag_10": 51,
@@ -1501,12 +1542,16 @@
       "goldbag_10": 20
     },
     "shogunateteampinkviewerslot1": {
-      "commonscrolls_2": 40,
+      "commonscrolls_2": 30,
       "commonscrolls_7": 20,
-      "uncommonscrolls_3": 15,
+      "uncommonscrolls_3": 14,
       "uncommonscrolls_5": 10,
       "rarescrolls_3": 10,
-      "rarescrolls_4": 5
+      "rarescrolls_4": 5,
+      "skinfullflyingroguetengu": 3,
+      "skinfullmusketeercyberdoll": 3,
+      "skinfullwarriorshogunate_pink": 5,
+      "skinfullflagbearershogunate_pink": 3
     },
     "shogunateteampinkviewerslot2": {
       "goldbag_10": 51,
@@ -1529,12 +1574,16 @@
       "goldbag_10": 20
     },
     "shogunateteamredviewerslot1": {
-      "commonscrolls_2": 40,
+      "commonscrolls_2": 30,
       "commonscrolls_7": 20,
-      "uncommonscrolls_3": 15,
+      "uncommonscrolls_3": 14,
       "uncommonscrolls_5": 10,
       "rarescrolls_3": 10,
-      "rarescrolls_4": 5
+      "rarescrolls_4": 5,
+      "skinfullflyingroguetengu": 3,
+      "skinfullmusketeercyberdoll": 3,
+      "skinfullwarriorshogunate_red": 5,
+      "skinfullflagbearershogunate_red": 3
     },
     "shogunateteamredviewerslot2": {
       "goldbag_10": 51,
@@ -1557,12 +1606,16 @@
       "goldbag_10": 20
     },
     "shogunateteamyellowviewerslot1": {
-      "commonscrolls_2": 40,
+      "commonscrolls_2": 30,
       "commonscrolls_7": 20,
-      "uncommonscrolls_3": 15,
+      "uncommonscrolls_3": 14,
       "uncommonscrolls_5": 10,
       "rarescrolls_3": 10,
-      "rarescrolls_4": 5
+      "rarescrolls_4": 5,
+      "skinfullflyingroguetengu": 3,
+      "skinfullmusketeercyberdoll": 3,
+      "skinfullwarriorshogunate_yellow": 5,
+      "skinfullflagbearershogunate_yellow": 3
     },
     "shogunateteamyellowviewerslot2": {
       "goldbag_10": 51,

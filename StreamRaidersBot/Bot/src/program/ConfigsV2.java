@@ -238,6 +238,7 @@ public class ConfigsV2 {
 	public static final Int capInactiveTreshold = new Int("capInactiveTreshold");
 	public static final Int storeMinKeys = new Int("storeMinKeys");
 	public static final Int storeMinBones = new Int("storeMinBones");
+	public static final Int storeMinEventcurrency = new Int("storeMinEventcurrency");
 	public static final Int scrollsMinGold = new Int("scrollsMinGold");
 	public static final Int upgradeMinGold = new Int("upgradeMinGold");
 	public static final Int unlockMinGold = new Int("unlockMinGold");

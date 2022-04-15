@@ -132,6 +132,9 @@ public class ViewerBackEnd {
 				Options.set("eventTiers", "{}");
 			}
 			Options.set("currentEventCurrency", data.getAsJsonObject("Items").getAsJsonObject("eventcurrency").get("CurrencyTypeAwarded").getAsString());
+			JsonObject unitCosts = data.getAsJsonObject("UnitCosts");
+			Options.set("unitCosts", unitCosts.toString());
+			Store.setUnitCosts(unitCosts);
 			Options.set("data", dataPath);
 			Options.save();
 			dpelis.onUpdate(dataPath, serverTime, data);
@@ -301,7 +304,8 @@ public class ViewerBackEnd {
 		JsonObject userEventProgression = Json.parseObj(req.getUserEventProgression());
 		if(testUpdate(userEventProgression))
 			userEventProgression = Json.parseObj(req.getUserEventProgression());
-		event.updateEvent(Time.parse(LocalDateTime.now().minusSeconds(secoff)), userEventProgression.getAsJsonArray("data"));
+		
+		event.updateEvent(getServerTime(), userEventProgression.getAsJsonArray("data"));
 		
 		JsonObject userQuests = Json.parseObj(req.getUserQuests());
 		if(testUpdate(userQuests))

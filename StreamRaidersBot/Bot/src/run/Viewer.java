@@ -178,7 +178,7 @@ public class Viewer {
 	
 	private static final String[] rew_sources = "chests bought event".split(" ");
 	private static final String[] rew_chests_chests = "chestboostedgold chestbosssuper chestboostedskin chestboss chestboostedtoken chestgold chestsilver chestbronze chestsalvage".split(" ");
-	private static final String[] rew_bought_chests = "snowfallcharitychest dungeonchest vampirechest saintchest".split(" ");
+	private static final String[] rew_bought_chests = "dungeonchests eventchests".split(" ");
 	private static final String[] rew_types = "gold potions token eventcurrency keys meat bones skin scrollnecromancer scrollmage scrollwarbeast scrolltemplar scrollorcslayer scrollballoonbuster scrollartillery scrollflyingarcher scrollberserker scrollcenturion scrollmusketeer scrollmonk scrollbuster scrollbomber scrollbarbarian scrollpaladin scrollhealer scrollvampire scrollsaint scrollflagbearer scrollrogue scrollwarrior scrolltank scrollarcher".split(" ");
 	
 	
@@ -1111,8 +1111,8 @@ public class Viewer {
 	
 	private boolean goMultiChestClaim;
 	
-	private void chest(ViewerBackEnd beh, int slot) throws NoConnectionException, NotAuthorizedException {
-		if(!beh.isReward(slot))
+	private void chest(ViewerBackEnd vbe, int slot) throws NoConnectionException, NotAuthorizedException {
+		if(!vbe.isReward(slot))
 			return;
 		if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiChestExploit)) {
 			goMultiChestClaim = false;
@@ -1126,11 +1126,11 @@ public class Viewer {
 							} catch (InterruptedException e) {}
 						}
 						try {
-							JsonObject rews = beh.getChest(slot);
+							JsonObject rews = vbe.getChest(slot);
 							if(rews == null)
 								return;
 							for(String rew : rews.keySet())
-								addRew(beh, SRC.Run.chests, rew, rews.get(rew).getAsInt());
+								addRew(vbe, SRC.Run.chests, rew, rews.get(rew).getAsInt());
 						} catch (NoConnectionException | NotAuthorizedException e) {}
 					}
 				});
@@ -1141,11 +1141,11 @@ public class Viewer {
 				Thread.sleep(3000);
 			} catch (InterruptedException e) {}
 		} else {
-			JsonObject rews = beh.getChest(slot);
+			JsonObject rews = vbe.getChest(slot);
 			if(rews == null)
 				return;
 			for(String rew : rews.keySet())
-				addRew(beh, SRC.Run.chests, rew, rews.get(rew).getAsInt());
+				addRew(vbe, SRC.Run.chests, rew, rews.get(rew).getAsInt());
 		}
 		
 	}
@@ -1259,8 +1259,8 @@ public class Viewer {
 				addRew(beh, SRC.Run.bought, Store.eventcurrency.get(), item.getQuantity());
 		}
 		
-		//	buying from dungeon store if available
-		for(int sec : new int[] {0,1}) {
+		//	buying from dungeon(0) and event(1) store if available
+		for(final int sec : new int[] {0,1}) {
 			final String section;
 			final StorePrioType spt;
 			switch(sec) {
@@ -1271,6 +1271,8 @@ public class Viewer {
 				spt = ConfigsV2.keys;
 				break;
 			case 1:
+				if(beh.getCurrency(Store.eventcurrency, false) < ConfigsV2.getInt(cid, currentLayer, ConfigsV2.storeMinEventcurrency))
+					continue;
 				section = SRC.Store.Event;
 				spt = ConfigsV2.event;
 				break;
@@ -1302,7 +1304,7 @@ public class Viewer {
 					addRew(beh, SRC.Run.bought, best.getItem(), best.getQuantity());
 					break;
 				case "chest":
-					addRew(beh, SRC.Run.bought, "dungeonchest", 1);
+					addRew(beh, SRC.Run.bought, sec==0?"dungeonchests":"eventchests", 1);
 					JsonArray data = resp.getAsJsonObject("data").getAsJsonArray("rewards");
 					Raid.updateChestRews();
 					for(int i=0; i<data.size(); i++) {
@@ -1321,7 +1323,7 @@ public class Viewer {
 		}
 		
 		
-		
+		//	buying scrolls
 		if(beh.getCurrency(Store.gold, false) >= ConfigsV2.getInt(cid, currentLayer, ConfigsV2.scrollsMinGold)) {
 			List<Item> items = beh.getStoreItems(SRC.Store.purchasable, SRC.Store.scrolls);
 			if(items.size() != 0) {
@@ -1446,7 +1448,7 @@ public class Viewer {
 		
 		boolean bp = beh.hasBattlePass();
 		int tier = beh.getEventTier();
-		for(int i=1; i<=tier; i++) {
+		for(int i=1; i<tier; i++) {
 			if(bp)
 				collectEvent(beh, i, true);
 			

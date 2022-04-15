@@ -399,7 +399,7 @@ public class ProfileSettings {
 			else if(!ct.equals("(none)"))
 				ct = ct.split("_")[1];
 		
-			ComboBox cbct = new ComboBox(uid+"dslot");
+			ComboBox cbct = new ComboBox(uid+"useTeam");
 			cbct.setPos(1, 0);
 			cbct.setList(putFirst("(none) green blue yellow red pink".split(" "), ct));
 			cbct.setCL(new CombListener() {
@@ -749,7 +749,7 @@ public class ProfileSettings {
 		cstorem.setPos(0, p++);
 		cstorem.setInsets(10, 0, 0, 0);
 			
-			String[] smgs = "Scrolls Min Gold  Store Min Keys  Upgrade Min Gold  Unlock Min Gold  Unit Place Retries  Map Reload After X Retries  Max Unit Per Raid  Cap Inactive Treshold  Unit Update  Raid Update  Map Update  Store Update  Skin Update  Quest Event Rewards Update  Caps Update".split("  ");
+			String[] smgs = "Scrolls Min Gold  Store Min Keys  Store Min Eventcurrency  Upgrade Min Gold  Unlock Min Gold  Unit Place Retries  Map Reload After X Retries  Max Unit Per Raid  Cap Inactive Treshold  Unit Update  Raid Update  Map Update  Store Update  Skin Update  Quest Event Rewards Update  Caps Update".split("  ");
 			int l = 0;
 			for(String key : smgs) {
 				final Int con = new Int(key.substring(0, 1).toLowerCase() + key.substring(1).replace(" ", ""));

@@ -2,6 +2,8 @@ package userInterface;
 
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.time.LocalDateTime;
@@ -17,6 +19,7 @@ import include.GUI.ProgressBar;
 import include.GUI.TextArea;
 import program.ConfigsV2;
 import program.Debug;
+import program.Heatmap;
 import program.SRC;
 import include.Http.NoConnectionException;
 import program.SRR.NotAuthorizedException;
@@ -69,6 +72,42 @@ public class Stats {
 		GUI gui = new GUI("Stats for " + ConfigsV2.getPStr(cid, ConfigsV2.pname), 1400, 900, MainFrame.getGUI(), null);
 		gui.setBackgroundGradient(Fonts.getGradient("stats background"));
 		gui.setFullScreen(true);
+		
+		gui.setGlobalKeyLis(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {}
+			@Override
+			public void keyReleased(KeyEvent e) {}
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if((e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0 && (e.getModifiersEx() & KeyEvent.ALT_DOWN_MASK) > 0) {
+					switch(e.getKeyCode()) {
+					}
+				} else if((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) > 0 && (e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0) {
+					switch(e.getKeyCode()) {
+					}
+				} else if((e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0) {
+					switch(e.getKeyCode()) {
+					case KeyEvent.VK_R:
+						gui.close();
+						run.useViewerBackEnd(beh -> {
+							try {
+								beh.updateUnits(true);
+								beh.updateStore(true);
+							} catch (NoConnectionException | NotAuthorizedException e1) {
+								Debug.printException("Stats -> open -> reload: err=failed to update Units/Store", e1, Debug.runerr, Debug.error, run.cid, null, true);
+								return;
+							}
+							open(run, beh);
+						});
+						break;
+					}
+				} else if((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) > 0) {
+					switch(e.getKeyCode()) {
+					}
+				}
+			}
+		});
 		
 		Container crews = new Container();
 		crews.setPos(0, 0);
