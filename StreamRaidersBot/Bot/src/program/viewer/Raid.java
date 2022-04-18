@@ -26,6 +26,20 @@ public class Raid {
 	private final String cid;
 	private final int slot;
 	
+	private JsonObject userDungeonInfo = null;
+	
+	public boolean hasUserDungeonInfo() {
+		return userDungeonInfo == null;
+	}
+	
+	public void addUserDungeonInfo(JsonObject data) {
+		userDungeonInfo = data;
+	}
+	
+	public JsonObject getUserDungeonInfo() {
+		return userDungeonInfo.deepCopy();
+	}
+	
 	
 	public JsonObject getRaidJsonObject() {
 		return raid;

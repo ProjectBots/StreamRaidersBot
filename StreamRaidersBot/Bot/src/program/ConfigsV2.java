@@ -375,6 +375,7 @@ public class ConfigsV2 {
 	public static final UniStr favOnly = new UniStr("favOnly");
 	public static final UniStr markerOnly = new UniStr("markerOnly");
 	public static final UniStr canVibe = new UniStr("canVibe");
+	public static final UniStr dunEpicMode = new UniStr("dunEpicMode");
 	
 	public static String getUnitString(String cid, String lay, String uType, UniStr con) {
 		if(lay.equals("(all)")) {

@@ -1478,7 +1478,7 @@
       "goldbag_10": 20
     },
     "shogunateteamblueviewerslot1": {
-      "commonscrolls_2": 30,
+      "commonscrolls_2": 25,
       "commonscrolls_7": 20,
       "uncommonscrolls_3": 14,
       "uncommonscrolls_5": 10,
@@ -1487,7 +1487,8 @@
       "skinfullflyingroguetengu": 3,
       "skinfullmusketeercyberdoll": 3,
       "skinfullwarriorshogunate_blue": 5,
-      "skinfullflagbearershogunate_blue": 3
+      "skinfullflagbearershogunate_blue": 4,
+      "skinfullvampireshogunate_blue": 4
     },
     "shogunateteamblueviewerslot2": {
       "goldbag_10": 51,
@@ -1510,7 +1511,7 @@
       "goldbag_10": 20
     },
     "shogunateteamgreenviewerslot1": {
-      "commonscrolls_2": 30,
+      "commonscrolls_2": 25,
       "commonscrolls_7": 20,
       "uncommonscrolls_3": 14,
       "uncommonscrolls_5": 10,
@@ -1519,7 +1520,8 @@
       "skinfullflyingroguetengu": 3,
       "skinfullmusketeercyberdoll": 3,
       "skinfullwarriorshogunate_green": 5,
-      "skinfullflagbearershogunate_green": 3
+      "skinfullflagbearershogunate_green": 4,
+      "skinfullvampireshogunate_green": 4
     },
     "shogunateteamgreenviewerslot2": {
       "goldbag_10": 51,
@@ -1542,7 +1544,7 @@
       "goldbag_10": 20
     },
     "shogunateteampinkviewerslot1": {
-      "commonscrolls_2": 30,
+      "commonscrolls_2": 25,
       "commonscrolls_7": 20,
       "uncommonscrolls_3": 14,
       "uncommonscrolls_5": 10,
@@ -1551,7 +1553,8 @@
       "skinfullflyingroguetengu": 3,
       "skinfullmusketeercyberdoll": 3,
       "skinfullwarriorshogunate_pink": 5,
-      "skinfullflagbearershogunate_pink": 3
+      "skinfullflagbearershogunate_pink": 4,
+      "skinfullvampireshogunate_pink": 4
     },
     "shogunateteampinkviewerslot2": {
       "goldbag_10": 51,
@@ -1574,7 +1577,7 @@
       "goldbag_10": 20
     },
     "shogunateteamredviewerslot1": {
-      "commonscrolls_2": 30,
+      "commonscrolls_2": 25,
       "commonscrolls_7": 20,
       "uncommonscrolls_3": 14,
       "uncommonscrolls_5": 10,
@@ -1583,7 +1586,8 @@
       "skinfullflyingroguetengu": 3,
       "skinfullmusketeercyberdoll": 3,
       "skinfullwarriorshogunate_red": 5,
-      "skinfullflagbearershogunate_red": 3
+      "skinfullflagbearershogunate_red": 4,
+      "skinfullvampireshogunate_red": 4
     },
     "shogunateteamredviewerslot2": {
       "goldbag_10": 51,
@@ -1606,7 +1610,7 @@
       "goldbag_10": 20
     },
     "shogunateteamyellowviewerslot1": {
-      "commonscrolls_2": 30,
+      "commonscrolls_2": 25,
       "commonscrolls_7": 20,
       "uncommonscrolls_3": 14,
       "uncommonscrolls_5": 10,
@@ -1615,7 +1619,8 @@
       "skinfullflyingroguetengu": 3,
       "skinfullmusketeercyberdoll": 3,
       "skinfullwarriorshogunate_yellow": 5,
-      "skinfullflagbearershogunate_yellow": 3
+      "skinfullflagbearershogunate_yellow": 4,
+      "skinfullvampireshogunate_yellow": 4
     },
     "shogunateteamyellowviewerslot2": {
       "goldbag_10": 51,

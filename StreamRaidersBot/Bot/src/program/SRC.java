@@ -109,8 +109,11 @@ public class SRC {
 		public static final String unitId = "unitId";
 		public static final String specializationUid = "specializationUid";
 		public static final String specializationDisName = "specializationDisName";
-		public static final String rank = "rank";
 		public static final String disName = "disName";
+	}
+	
+	public static enum UnitRarity {
+		common, uncommon, rare, legendary
 	}
 	
 	public static class BackEndHandler {

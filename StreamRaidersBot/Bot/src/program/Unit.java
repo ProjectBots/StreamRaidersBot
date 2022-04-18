@@ -11,6 +11,102 @@ import program.Skins.Skin;
 
 public class Unit {
 	
+	private static JsonObject uTypes = Json.parseObj(Options.get("unitTypes"));
+	
+	public static void setUnitTypes(JsonObject data) {
+		uTypes = new JsonObject();
+		JsonObject us = data.getAsJsonObject("Units");
+		for(String key : us.keySet()) {
+			JsonObject u = us.getAsJsonObject(key);
+			
+			if(!u.get("PlacementType").getAsString().equals("viewer"))
+				continue;
+			
+			String type = u.get("UnitType").getAsString();
+			
+			if(uTypes.has(type))
+				continue;
+			
+			JsonObject ut = new JsonObject();
+			for(String s : "canFly IsFlying  name DisplayName".split("  ")) {
+				String[] ss = s.split(" ");
+				ut.add(ss[0], u.get(ss[1]));
+			}
+			
+			ut.addProperty("rarity", u.get("Rarity").getAsString().toLowerCase());
+			
+			JsonArray roles = new JsonArray();
+			roles.add(u.get("Role").getAsString().toLowerCase());
+			//	i really hate to do this, but there is no other reliable way for it
+			//	add specific roles (that are not declared in the data)
+			switch(type) {
+			case "flagbearer":
+				roles.add("supportFlag");
+				break;
+			case "rogue":
+				roles.add("assassinDagger");
+				break;
+			case "buster":
+				roles.add("assassinExplosive");
+				break;
+			case "healer":
+				roles.add("supportHealer");
+				break;
+			case "flyingarcher":
+				roles.add("assassinFlyingDagger");
+				break;
+			case "alliesballoonbuster":
+				roles.add("assassinFlyingExplosive");
+				break;
+			}
+			roles.add("vibe");
+			
+			ut.add("roles", roles);
+			
+			ut.add("specs", new JsonArray());
+			
+			uTypes.add(type, ut);
+		}
+		
+		JsonObject sps = data.getAsJsonObject("Specialization");
+		for(String key : sps.keySet()) {										//	 ¯\_(ツ)_/¯
+			if(key.startsWith("epic") || key.startsWith("captain") || key.startsWith("cpatain"))
+				continue;
+			
+			JsonObject sp = sps.getAsJsonObject(key);
+			
+			JsonObject spec = new JsonObject();
+			spec.add("name", sp.get("DisplayName"));
+			spec.addProperty("uid", key);
+			
+			uTypes.getAsJsonObject(sp.get("UnitType").getAsString())
+				.getAsJsonArray("specs")
+				.add(spec);
+			
+		}
+	}
+	
+	public static JsonObject getTypes() {
+		return uTypes.deepCopy();
+	}
+	
+	public static JsonArray getSpecs(String type) {
+		return uTypes.getAsJsonObject(type).getAsJsonArray("specs");
+	}
+	
+	public static boolean isLegendary(String type) {
+		return uTypes.getAsJsonObject(type).get("rarity").getAsString().equals("legendary");
+	}
+	
+	public static SRC.UnitRarity getRarity(String type) {
+		return SRC.UnitRarity.valueOf(uTypes.getAsJsonObject(type).get("rarity").getAsString());
+	}
+	
+	public boolean canFly() {
+		return uTypes.getAsJsonObject(get(SRC.Unit.unitType)).get("canFly").getAsBoolean();
+	}
+	
+	
 	@Override
 	public String toString() {
 		return get(SRC.Unit.unitType);
@@ -21,40 +117,6 @@ public class Unit {
 	private final HashSet<String> ptags = new HashSet<>();
 	
 	public final boolean dupe;
-	public final int rank;
-	
-	
-	private static final JsonObject uTypes = Json.parseObj(Options.get("unitTypes"));
-	private static final JsonObject specs = Json.parseObj(Options.get("specUIDs"));
-	
-	public static JsonObject getTypes() {
-		JsonObject ret = uTypes.deepCopy();
-		ret.remove("allTypes");
-		return ret;
-	}
-	
-	public boolean canFly() {
-		return uTypes.getAsJsonObject(get(SRC.Unit.unitType)).get("canFly").getAsBoolean();
-	}
-	
-	public static boolean isLegendary(String type) {
-		return uTypes.getAsJsonObject(type).get("rank").getAsInt() == 4;
-	}
-	
-	public static String getRarity(String type) {
-		switch(uTypes.getAsJsonObject(type).get("rank").getAsInt()) {
-		case 1:
-			return "common";
-		case 2:
-			return "uncommon";
-		case 3:
-			return "rare";
-		case 4:
-			return "legendary";
-		default:
-			return "undefined";
-		}
-	}
 	
 	public Unit(JsonObject unit) throws ClassCastException {
 		this.unit = unit;
@@ -65,10 +127,9 @@ public class Unit {
 		
 		JsonObject uType = uTypes.getAsJsonObject(unit.get(SRC.Unit.unitType).getAsString());
 		
-		rank = uType.get("rank").getAsInt();
 		dupe = false;
 		
-		JsonArray ptagsJArr = uType.getAsJsonArray("role");
+		JsonArray ptagsJArr = uType.getAsJsonArray("roles");
 		for(int i=0; i<ptagsJArr.size(); i++)
 			ptags.add(ptagsJArr.get(i).getAsString());
 	}
@@ -78,7 +139,6 @@ public class Unit {
 		unit.addProperty(SRC.Unit.unitType, unitType);
 		this.dupe = dupe;
 		this.unit = unit;
-		this.rank = 0;
 	}
 	
 	
@@ -88,12 +148,10 @@ public class Unit {
 
 	public String get(String con) {
 		switch(con) {
-		case SRC.Unit.rank:
-			return ""+rank;
 		case SRC.Unit.specializationDisName:
 			String spec = get(SRC.Unit.specializationUid);
 			if(spec != null) {
-				JsonArray spc = specs.getAsJsonArray(get(SRC.Unit.unitType));
+				JsonArray spc = uTypes.getAsJsonObject(get(SRC.Unit.unitType)).getAsJsonArray("specs");	// specs.getAsJsonArray(get(SRC.Unit.unitType));
 				for(int i=0; i<spc.size(); i++) {
 					JsonObject sp = spc.get(i).getAsJsonObject();
 					if(spec.equals(sp.get("uid").getAsString()))

@@ -114,7 +114,7 @@ public class ViewerBackEnd {
 	synchronized private static void updateDataPath(String dataPath, String serverTime, SRR req) throws NoConnectionException, NotAuthorizedException {
 		if(!Options.get("data").equals(dataPath)) {
 			JsonObject data = Json.parseObj(SRR.getData(dataPath)).getAsJsonObject("sheets");
-			for(String s : "obstacles Obstacles  quests Quests  mapNodes MapNodes  specsRaw Specialization  store Store  rewards ChestRewards  events Events  skins Skins  mapDifficulty MapNodeDifficulty".split("  ")) {
+			for(String s : "obstacles Obstacles  quests Quests  mapNodes MapNodes  specsRaw Specialization  store Store  rewards ChestRewards  events Events  skins Skins".split("  ")) {
 				String[] ss = s.split(" ");
 				Options.set(ss[0], data.getAsJsonObject(ss[1]).toString());
 			}
@@ -135,6 +135,18 @@ public class ViewerBackEnd {
 			JsonObject unitCosts = data.getAsJsonObject("UnitCosts");
 			Options.set("unitCosts", unitCosts.toString());
 			Store.setUnitCosts(unitCosts);
+			Unit.setUnitTypes(data);
+			Options.set("unitTypes", Unit.getTypes().toString());
+			
+			JsonObject units_raw = data.getAsJsonObject("Units");
+			JsonObject units = new JsonObject();
+			for(String key : units_raw.keySet()) {
+				JsonObject u = units_raw.getAsJsonObject(key);
+				if(u.get("CanBePlaced").getAsBoolean())
+					units.add(key, u);
+			}
+			Options.set("units", units.toString());
+			
 			Options.set("data", dataPath);
 			Options.save();
 			dpelis.onUpdate(dataPath, serverTime, data);
@@ -426,6 +438,17 @@ public class ViewerBackEnd {
 		return ret;
 	}
 	
+	public void addUserDungeonInfo(Raid r) throws NoConnectionException, NotAuthorizedException {
+		if(!r.isDungeon())
+			return;
+		
+		JsonObject rdata = Json.parseObj(req.getUserDungeonInfoForRaid(r.get(SRC.Raid.raidId)));
+		if(testUpdate(rdata))
+			rdata = Json.parseObj(req.getUserDungeonInfoForRaid(r.get(SRC.Raid.raidId)));
+		
+		r.addUserDungeonInfo(rdata.getAsJsonObject("data"));
+	}
+	
 	public void remRaid(String captainId) throws NoConnectionException {
 		req.leaveCaptain(captainId);
 	}
@@ -492,16 +515,13 @@ public class ViewerBackEnd {
 	
 	private static final String[] dungeons_units_dis = "knockedUnits deadUnits exhaustedUnits".split(" ");
 	
-	public Unit[] getPlaceableUnits(int slot) throws NoConnectionException, NotAuthorizedException {
+	public Unit[] getPlaceableUnits(Raid r) throws NoConnectionException, NotAuthorizedException {
 		updateUnits(true);
 		Unit[] ret = new Unit[0];
 		
-		if(raids[slot].isDungeon()) {
-			JsonObject rdata = Json.parseObj(req.getUserDungeonInfoForRaid(raids[slot].get(SRC.Raid.raidId)));
-			if(testUpdate(rdata))
-				rdata = Json.parseObj(req.getUserDungeonInfoForRaid(raids[slot].get(SRC.Raid.raidId)));
+		if(r.isDungeon()) {
 			
-			JsonObject data = rdata.getAsJsonObject("data");
+			JsonObject data = r.getUserDungeonInfo();
 			
 			HashSet<String> bnd = new HashSet<>();
 			
@@ -514,10 +534,10 @@ public class ViewerBackEnd {
 				}
 			}
 			
-			JsonArray pmnt = Json.parseArr(raids[slot].get(SRC.Raid.placementsSerialized));
+			JsonArray pmnt = Json.parseArr(r.get(SRC.Raid.placementsSerialized));
 			if(pmnt != null) 
 				for(int i=0; i<pmnt.size(); i++) 
-					bnd.add(pmnt.get(i).getAsJsonObject().getAsJsonPrimitive(SRC.Unit.unitId).getAsString());
+					bnd.add(pmnt.get(i).getAsJsonObject().get(SRC.Unit.unitId).getAsString());
 				
 			
 			for(int i=0; i<units.length; i++) {

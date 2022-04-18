@@ -310,7 +310,7 @@ public class MainFrame {
 	
 	public static void addFailedProfile(String cid, int pos, Exception e) {
 		if(e != null)
-			Debug.printException("Profile failed to load: err=" + e.getClass().getSimpleName(), e, Debug.runerr, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
+			Debug.printException("Profile failed to load: err=" + e.getClass().getSimpleName(), e, Debug.runerr, Debug.error, cid, null, true);
 		createFailedContainer(cid, pos);
 	}
 	

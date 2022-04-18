@@ -532,7 +532,7 @@ public class Viewer {
 	private boolean goMultiPlace;
 	private LocalDateTime placeTime = LocalDateTime.now();
 	
-	private void place(ViewerBackEnd beh, int slot) throws NoConnectionException, NotAuthorizedException {
+	private void place(final ViewerBackEnd vbe, final int slot) throws NoConnectionException, NotAuthorizedException {
 		//	Unit place delay
 		long tdif = ChronoUnit.MILLIS.between(LocalDateTime.now(), placeTime);
 		if(tdif > 0) {
@@ -541,7 +541,7 @@ public class Viewer {
 			} catch (InterruptedException e) {}
 		}
 		
-		Raid r = beh.getRaid(slot, true);
+		Raid r = vbe.getRaid(slot, true);
 		if(r == null)
 			return;
 
@@ -549,14 +549,14 @@ public class Viewer {
 			return;
 		
 		String placeSer = r.get(SRC.Raid.placementsSerialized);
-		if(!r.canPlaceUnit(beh.getServerTime())
+		if(!r.canPlaceUnit(vbe.getServerTime())
 			|| ConfigsV2.getInt(cid, currentLayer, ConfigsV2.maxUnitPerRaid) < (placeSer == null 
 																					? 0 
-																					: placeSer.split(beh.getUserId()).length-1))
+																					: placeSer.split(vbe.getUserId()).length-1))
 			return;
 		
 		
-		boolean dungeon = r.isDungeon();
+		final boolean dungeon = r.isDungeon();
 		
 		//	check place settings (eg.: min loy/room) before placement (bcs of locked slots)
 		
@@ -569,53 +569,77 @@ public class Viewer {
 		if(ct == null)
 			return;
 		ct = Remaper.map(ct);
+		
+		//	check if epic is available
+		boolean epic;
+		int dunLvl = -1;
+		int loy;
+		int length;
+		if(dungeon) {
+			vbe.addUserDungeonInfo(r);
+			JsonObject udi = r.getUserDungeonInfo();
+			epic = udi.get("epicChargesUsed").getAsInt() == 0;
+			loy = udi.get("completedLevels").getAsInt() + 1;
+			if(epic)
+				dunLvl = loy % 3;
+			
+			length = 360;
+		} else {
+			Integer potionsc = vbe.getCurrency(Store.potions, true);
+			epic = potionsc == null ? false : (potionsc >= 45);
+			
+			loy = Integer.parseInt(r.get(SRC.Raid.pveWins));
+			
+			length = 1800;
+		}
 
-		int loy = dungeon ? (r.get(SRC.Raid.allyBoons)+",").split(",").length : Integer.parseInt(r.get(SRC.Raid.pveWins));
+		boolean enabled = ConfigsV2.getChestBoolean(cid, currentLayer, ct, ConfigsV2.enabled);
 		
 		int maxLoy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.maxLoy);
 		int minLoy = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.minLoy);
-		boolean enabled = ConfigsV2.getChestBoolean(cid, currentLayer, ct, ConfigsV2.enabled);
-		int maxTimeLeft = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.maxTime);
-		int minTimeLeft = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.minTime);
-		
 		if(maxLoy < 0)
 			maxLoy = Integer.MAX_VALUE;
 		
-		
-		int length = dungeon ? 360 : 1800;
-		
+		int maxTimeLeft = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.maxTime);
+		int minTimeLeft = ConfigsV2.getChestInt(cid, currentLayer, ct, ConfigsV2.minTime);
 		maxTimeLeft = length - maxTimeLeft;
 		
-		if(!ic && Time.isAfter(Time.parse(r.get(SRC.Raid.creationDate))
-									.plusSeconds(maxTimeLeft),
-								beh.getServerTime())) {
+		if((dungeon ^ ConfigsV2.getStr(cid, currentLayer, ConfigsV2.dungeonSlot).equals(""+slot))
+				|| (!ic && Time.isAfter(Time.parse(r.get(SRC.Raid.creationDate))
+									.plusSeconds(maxTimeLeft), vbe.getServerTime()))
+				||(!ic && Time.isAfter(vbe.getServerTime(),
+						Time.parse(r.get(SRC.Raid.creationDate))
+						.plusSeconds(length - minTimeLeft)))
+				|| (!ic && !enabled)
+				|| (!ic && (loy < minLoy || loy > maxLoy))
+				) {
 			return;
 		}
 		
-		if((dungeon ^ r.isDungeon())
-			|| (!ic && Time.isAfter(beh.getServerTime(),
-							Time.parse(r.get(SRC.Raid.creationDate))
-								.plusSeconds(length - minTimeLeft)))
-			|| (!ic && !enabled)
-			|| (!ic && (loy < minLoy || loy > maxLoy))
-			) {
-			return;
-		}
-		
-		
-		//	check if epic is available
-		Integer potionsc = beh.getCurrency(Store.potions, true);
-		boolean epic = potionsc == null ? false : (potionsc >= 45);
-		
-		final Unit[] units = beh.getPlaceableUnits(slot);
-		Debug.print("units="+Arrays.toString(units), Debug.units, Debug.info, cid, slot);
-		
-		Map map = beh.getMap(slot, true);
+		Map map = vbe.getMap(slot, true);
 		
 		if(!ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.allowPlaceFirst) 
 			&& (placeSer == null ? true : Json.parseArr(placeSer).size() == 0))
 			return;
 		
+		boolean dunNeeded = false;
+		if(dungeon) {
+			LocalDateTime start = Time.parse(r.get(SRC.Raid.creationDate)).plusMinutes(1);
+			LocalDateTime now = Time.parse(vbe.getServerTime());
+			long t = ChronoUnit.SECONDS.between(start, now);
+			double tp = (100 * t) / 300.0;
+			
+			double mp = map.mapPower;
+			int pp = map.getPlayerPower();
+			
+			double pd = (100 * pp) / mp;
+			
+			dunNeeded = tp > pd + 10;
+			Debug.print("t="+t+" tp="+tp+" mp="+mp+" pp="+pp+" pd="+pd, Debug.place, Debug.info, cid, slot);
+		}
+		
+		final Unit[] units = vbe.getPlaceableUnits(r);
+		Debug.print("units="+Arrays.toString(units), Debug.units, Debug.info, cid, slot);
 		
 		int[] mh = new Heatmap().getMaxHeat(map);
 		
@@ -624,7 +648,7 @@ public class Viewer {
 		int reload = ConfigsV2.getInt(cid, currentLayer, ConfigsV2.mapReloadAfterXRetries);
 		HashSet<String> bannedPos = new HashSet<>();
 		
-		List<String> neededUnits = beh.getNeededUnitTypesForQuests();
+		List<String> neededUnits = vbe.getNeededUnitTypesForQuests();
 		boolean preferRogues = ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.preferRoguesOnTreasureMaps) 
 				&& r.getFromNode(SRC.MapNode.nodeType).contains("treasure");
 		
@@ -641,7 +665,7 @@ public class Viewer {
 			if(Options.is("exploits") && ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.useMultiPlaceExploit)) {
 				goMultiPlace = false;
 				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
-					final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, r.getFromNode(SRC.MapNode.chestType),
+					final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, r.getFromNode(SRC.MapNode.chestType),
 							ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign).contains(r.get(SRC.Raid.twitchDisplayName)), slot);
 					if(pla == null)
 						continue;
@@ -655,7 +679,7 @@ public class Viewer {
 								} catch (InterruptedException e) {}
 							}
 							try {
-								beh.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
+								vbe.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
 							} catch (NoConnectionException e) {}
 						}
 					});
@@ -669,23 +693,23 @@ public class Viewer {
 			} else {
 				String node = Remaper.map(r.getFromNode(SRC.MapNode.chestType));
 				boolean fav = ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign).contains(r.get(SRC.Raid.twitchDisplayName));
-				final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, node, fav, slot);
+				final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, node, fav, slot);
 				if(pla == null) {
 					Debug.print("Place=null", Debug.units, Debug.info, cid, slot);
 					break;
 				}
 				Debug.print("Place="+pla.toString(), Debug.units, Debug.info, cid, slot);
-				String err = beh.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
+				String err = vbe.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
 				bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
 				
 				if(err == null) {
-					if(pla.epic)
-						beh.decreaseCurrency(Store.potions, 45);
+					if(pla.epic && !dungeon)
+						vbe.decreaseCurrency(Store.potions, 45);
 					
-					beh.addCurrency(Store.potions, 1);
+					vbe.addCurrency(Store.potions, 1);
 					String ut = pla.unit.get(SRC.Unit.unitType);
 					if(!Unit.isLegendary(ut))
-						beh.addCurrency(pla.unit.get(SRC.Unit.unitType), 1);
+						vbe.addCurrency(pla.unit.get(SRC.Unit.unitType), 1);
 					placeTime = LocalDateTime.now().plus(Maths.ranInt(ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.minu),
 																	ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.maxu)), 
 														ChronoUnit.MILLIS);
@@ -693,7 +717,7 @@ public class Viewer {
 				}
 				
 				if(err.equals("NOT_ENOUGH_POTIONS")) {
-					beh.setCurrency(Store.potions, 0);
+					vbe.setCurrency(Store.potions, 0);
 					epic = false;
 				}
 				
@@ -702,7 +726,7 @@ public class Viewer {
 				
 				if(re++ < retries) {
 					if(re % reload == 0) {
-						map = beh.getMap(slot, true);
+						map = vbe.getMap(slot, true);
 					}
 					continue;
 				}
@@ -753,7 +777,7 @@ public class Viewer {
 		}
 	}
 	
-	private Place findPlace(Map map, int[] mh, HashSet<String> bannedPos, List<String> neededUnits, final Unit[] units, boolean epic, boolean dungeon, String chest, boolean fav, int slot) {
+	private Place findPlace(Map map, int[] mh, HashSet<String> bannedPos, List<String> neededUnits, final Unit[] units, boolean epic, boolean dungeon, int dunLvl, boolean dunNeeded, String chest, boolean fav, int slot) {
 		HashSet<String> nupts = map.getUsablePlanTypes(false);
 		HashSet<String> eupts = map.getUsablePlanTypes(true);
 		
@@ -820,6 +844,36 @@ public class Viewer {
 			if(markerOnly.contains(ex))
 				e = -1;
 			
+			// boss ifNeeded first second
+			
+			if(dungeon) {
+				String dem = ConfigsV2.getUnitString(cid, currentLayer, utype, ConfigsV2.dunEpicMode);
+				boolean ce = true;
+				inner: {
+					int nl;
+					switch(dem) {
+					case "ifNeeded":
+						ce = dunNeeded;
+						break inner;
+					case "boss":
+						nl = 0;
+						break;
+					case "first":
+						nl = 1;
+						break;
+					case "second":
+						nl = 2;
+						break;
+					default:
+						nl = -1;
+					}
+					ce = nl == dunLvl;
+				}
+				if(!ce) {
+					ep = -1;
+					e = -1;
+				}
+			}
 			
 			prios[i] = new Prio(units[i], np, ep, n, e, vn, ve);
 		}

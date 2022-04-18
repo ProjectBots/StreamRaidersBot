@@ -22,6 +22,7 @@ import include.GUI;
 import program.Debug;
 import program.Options;
 import program.Remaper;
+import program.Unit;
 import include.Json;
 import include.NEF;
 
@@ -169,8 +170,6 @@ public class GuideContent {
 	private static boolean epic = false;
 	
 	
-	private static JsonObject specs = Json.parseObj(Options.get("specUIDs"));
-	
 	private static void resetUnits() {
 		uid = "archer";
 		lvl = 0;
@@ -244,8 +243,7 @@ public class GuideContent {
 		});
 		c.addComboBox(level);
 		
-		
-		JsonArray ss = specs.getAsJsonArray("archer");
+		JsonArray ss = Unit.getSpecs("archer");
 		String[] list = new String[3];
 		for(int j=0; j<3; j++) 
 			list[j] = ss.get(j).getAsJsonObject().getAsJsonPrimitive("name").getAsString();
@@ -322,7 +320,7 @@ public class GuideContent {
 		
 		if(lvl >= 19) {
 			GUI.setEnabled("guide::spec", true);
-			JsonArray ss = specs.getAsJsonArray(uid);
+			JsonArray ss = Unit.getSpecs(uid);
 			String[] list = new String[3];
 			for(int i=0; i<3; i++) 
 				list[i] = ss.get(i).getAsJsonObject().getAsJsonPrimitive("name").getAsString();
@@ -367,8 +365,9 @@ public class GuideContent {
 
 
 	private static String getSpec(String unitUID, String name) {
+		JsonArray specs = Unit.getSpecs(unitUID);
 		for(int i=0; i<3; i++) {
-			JsonObject jo = specs.getAsJsonArray(unitUID).get(i).getAsJsonObject();
+			JsonObject jo = specs.get(i).getAsJsonObject();
 			if(jo.getAsJsonPrimitive("name").getAsString().equals(name)) {
 				return jo.getAsJsonPrimitive("uid").getAsString();
 			}
@@ -391,7 +390,6 @@ public class GuideContent {
 		
 		JsonArray types = new JsonArray();
 		for(String key : typesraw.keySet()) {
-			if(key.equals("allTypes")) continue;
 			types.add(key);
 			types.add("epic"+key);
 		}

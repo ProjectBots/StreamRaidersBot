@@ -124,7 +124,7 @@ public class MapGUI {
 					if(map == null)
 						return;
 					
-					GUI gui = new GUI("Map " + map.name, 1000, 800, parrent, null);
+					GUI gui = new GUI("MapName: " + map.name + ", Power: "+map.getPlayerPower()+"::"+map.mapPower, 1000, 800, parrent, null);
 					gui.setFullScreen(true);
 					
 					gui.setGlobalKeyLis(new KeyListener() {

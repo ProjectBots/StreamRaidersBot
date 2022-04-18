@@ -15,6 +15,13 @@ public class Map {
 
 	public final int width;
 	public final int length;
+	public final int mapPower;
+	
+	private int playerPower;
+	
+	public int getPlayerPower() {
+		return playerPower;
+	}
 	
 	private final JsonArray map;
 	
@@ -60,6 +67,7 @@ public class Map {
 			length = (int) Math.round(29 * mapScale);
 		}
 		
+		this.mapPower = mapData.get("MapPower").getAsInt();
 		map = new JsonArray();
 		
 		for(int i=0; i<width; i++) {
@@ -91,9 +99,9 @@ public class Map {
 		addRects(mapData.getAsJsonArray("EnemyPlacementRects"), SRC.Map.isEnemyRect);
 		addRects(mapData.getAsJsonArray("HoldingZoneRects"), SRC.Map.isHoldRect);
 		
-		addEntity(placements, users, userIds);
-		addEntity(mapData.getAsJsonArray("PlacementData"), null, userIds);
-		addObstacle(mapData.getAsJsonArray("ObstaclePlacementData"));
+		addEntities(placements, users, userIds, Json.parseObj(Options.get("units")));
+		addEntities(mapData.getAsJsonArray("PlacementData"), null, userIds, null);
+		addObstacles(mapData.getAsJsonArray("ObstaclePlacementData"));
 		
 		if(plan != null) {
 			addPlan(plan);
@@ -125,7 +133,7 @@ public class Map {
 		}
 	}
 
-	private void addObstacle(JsonArray places) {
+	private void addObstacles(JsonArray places) {
 		for(int i=0; i<places.size(); i++) {
 			JsonObject place = places.get(i).getAsJsonObject();
 			
@@ -147,21 +155,23 @@ public class Map {
 		}
 	}
 
-	private void addEntity(JsonArray places, JsonArray users, List<String> uids) {
+	private void addEntities(JsonArray places, JsonArray users, List<String> uids, JsonObject unitsData) {
 		if(places == null) 
 			return;
 		
 		for(int i=0; i<places.size(); i++) {
 			JsonObject place = places.get(i).getAsJsonObject();
 			
-			double rx = place.getAsJsonPrimitive("X").getAsDouble();
-			double ry = place.getAsJsonPrimitive("Y").getAsDouble();
+			double rx = place.get("X").getAsDouble();
+			double ry = place.get("Y").getAsDouble();
 			
 			try {
-				if(place.getAsJsonPrimitive("CharacterType").getAsString().contains("epic") || place.getAsJsonPrimitive("CharacterType").getAsString().contains("captain")) {
+				String chaType = place.get("CharacterType").getAsString();
+				if(chaType.contains("epic") || place.getAsJsonPrimitive("CharacterType").getAsString().contains("captain")) {
 					rx += 0.4;
 					ry += 0.4;
 				}
+				playerPower += unitsData.getAsJsonObject(chaType).get("Power").getAsInt();
 			} catch (Exception e) {}
 			
 			int x = (int) Math.round(rx / 0.8 + hw());

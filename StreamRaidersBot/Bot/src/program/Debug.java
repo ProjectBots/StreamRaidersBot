@@ -66,6 +66,7 @@ public class Debug {
 	public static final Scope lowerr = new Scope("lowerr".split(" "));
 	public static final Scope caps = new Scope("caps".split(" "));
 	public static final Scope units = new Scope("units".split(" "));
+	public static final Scope place = new Scope("place".split(" "));
 	
 	
 	public static class Type {

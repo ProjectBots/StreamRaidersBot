@@ -19,8 +19,8 @@ import include.GUI.ProgressBar;
 import include.GUI.TextArea;
 import program.ConfigsV2;
 import program.Debug;
-import program.Heatmap;
 import program.SRC;
+import program.SRC.UnitRarity;
 import include.Http.NoConnectionException;
 import program.SRR.NotAuthorizedException;
 import program.Store;
@@ -185,7 +185,22 @@ public class Stats {
 		
 		
 		for(Unit u : units) {
-			int rank = Integer.parseInt(u.get(SRC.Unit.rank));
+			UnitRarity rarity = Unit.getRarity(u.get(SRC.Unit.unitType));
+			int rank = 0;
+			switch(rarity) {
+			case common:
+				rank = 1;
+				break;
+			case uncommon:
+				rank = 2;
+				break;
+			case rare:
+				rank = 3;
+				break;
+			case legendary:
+				rank = 4;
+				break;
+			}
 			int level = Integer.parseInt(u.get(SRC.Unit.level));
 			String type = u.get(SRC.Unit.unitType);
 			
