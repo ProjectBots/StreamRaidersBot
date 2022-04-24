@@ -15,12 +15,12 @@ public interface BotListener {
 	public boolean configNotReadable();
 	
 	/**
-	 * will be called if SR updates it's data path
-	 * @param dataPath the url of it
+	 * will be called if the bot updated StreamRaiders' data
+	 * @param dataPathUrl the url of it
 	 * @param serverTime the current time of the server
 	 * @param data the content
 	 */
-	public default void onDataPathUpdate(String dataPath, String serverTime, JsonObject data) {};
+	public default void onSRDataUpdate(String dataPathUrl, JsonObject data) {};
 
 	/**
 	 * will be called while loading profiles.
@@ -52,14 +52,15 @@ public interface BotListener {
 	 * will be called after a profile has been successfully loaded
 	 * @param cid profile id
 	 * @param pos a instance unique number assigned to the profile starting from 0 and counting up. Can change when restarted, but keeps the order in which the profiles where added.
+	 * @param type profile type
 	 */
-	public default void onProfileLoadComplete(String cid, int pos) {}
+	public default void onProfileLoadComplete(String cid, int pos, ProfileType type) {}
 	
 	/**
 	 * will be called if a profile failed to load
 	 * @param cid profile id
 	 * @param pos a instance unique number assigned to the profile starting from 0 and counting up. Can change when restarted, but keeps the order in which the profiles where added.
-	 * @param e Exception thrown [{@link run.Viewer.Run.SilentException}, {@link program.SRR.NotAuthorizedException}, {@link program.SRR.NotAuthorizedException}, {@link program.SRR.OutdatedDataException}, {@link java.lang.Exception}]
+	 * @param e Exception thrown [{@link run.Viewer.BackEndRunnable.SilentException}, {@link program.SRR.NotAuthorizedException}, {@link program.SRR.NotAuthorizedException}, {@link program.SRR.OutdatedDataException}, {@link java.lang.Exception}]
 	 */
 	public default void onProfileLoadError(String cid, int pos, Exception e) {}
 	
@@ -68,6 +69,13 @@ public interface BotListener {
 	 * @param cid profile id
 	 */
 	public default void onProfileUnloaded(String cid) {}
+	
+	/**
+	 * will be called if a profile successfully switches it's account type
+	 * @param cid profile id
+	 * @param type true if switched to captain, false if switched to viewer
+	 */
+	public default void onProfileSwitchedAccountType(String cid, ProfileType type) {}
 	
 	/**
 	 * will be called when a slot of a profile changes between running and stopping

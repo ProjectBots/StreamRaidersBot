@@ -2,7 +2,8 @@ package run;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -12,25 +13,60 @@ import java.util.List;
 import com.google.gson.JsonObject;
 
 import include.Http.NoConnectionException;
+import include.Json;
+import include.Time;
 import program.ConfigsV2;
 import program.Debug;
+import program.Event;
 import program.Options;
 import program.Remaper;
 import program.SRC;
+import program.SRR;
+import program.Store;
+import program.Unit;
 import program.SRR.NotAuthorizedException;
+import program.SRR.OutdatedDataException;
 
 public class Manager {
 	
-	private static Hashtable<String, Viewer> viewers = new Hashtable<>();
-	private static Hashtable<String, Captain> captains = new Hashtable<>();
+	/*	TODO
+	 * 	rename Fonts to CS (ColorScheme)
+	 * 	add tooltips (everywhere)
+	 * 	fonts manage error blocks (GlobalOptions)
+	 * 	config versioning
+	 * 	make epic slot dependent
+	 * 	get unlock/upgrade cost from datapath (sheets\UnitCosts\...)
+	 *	make epic slot dependent
+	 *	get unit types from datapath
+	 *	get unit costs (unlock/upgrade) from datapath
+	 * 	get Donators from github source
+	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
+	 * 	when creating chest rewards for guide: exclude chest which aren't obtainable, compare to chests in Store
+	 * 	option to disable loading images (saves ram)
+	 * 	ViewerBackEnd change arrays to lists
+	 * 
+	 * 
+	 * 	???:
+	 * 	kill (slot) round and restart if it takes more than x min
+	 * 	- may not be possible, didn't found a reliable way to "kill" a thread if it's hung up
+	 * 	
+	 * 
+	 */
+	
+	
+	private static Hashtable<String, Profile<?,?>> profiles = new Hashtable<>();
 	private static Hashtable<String, Integer> poss = new Hashtable<>();
+	
+	private static long secsoff = Long.MIN_VALUE;
+	protected static BotListener blis;
+	
 	
 	/**
 	 * @param cid profile id
-	 * @return the Viwer Object of the profile or null if not loaded
+	 * @return the Viewer Object of the Profile or null if not loaded or Captain
 	 */
 	public static Viewer getViewer(String cid) {
-		return viewers.get(cid);
+		return profiles.get(cid).getAsViewer();
 	}
 	
 	/**
@@ -38,7 +74,7 @@ public class Manager {
 	 * @return the Captain Object of the profile or null if not loaded
 	 */
 	public static Captain getCaptain(String cid) {
-		return captains.get(cid);
+		return profiles.get(cid).getAsCaptain();
 	}
 	
 	/**
@@ -49,7 +85,34 @@ public class Manager {
 		return poss.get(cid);
 	}
 	
-	protected static BotListener blis;
+	public static ProfileType getProfileType(String cid) {
+		return profiles.get(cid).getType();
+	}
+	
+	/**
+	 * updates the value that will be returned by {@link #getSecsOff()}
+	 * @param st StreamRaiders server time
+	 */
+	static void updateSecsOff(String st) {
+		secsoff = ChronoUnit.SECONDS.between(Time.parse(st), LocalDateTime.now());
+	}
+	
+	/**
+	 * @return the amount off seconds between StreamRaiders's server time and local time
+	 */
+	public static long getSecsOff() {
+		return secsoff;
+	}
+	
+	/**
+	 * @return the current StreamRaiders server time or null if not updated
+	 */
+	public static String getServerTime() {
+		if(secsoff == Long.MIN_VALUE)
+			return null;
+		return Time.parse(LocalDateTime.now().minusSeconds(secsoff));
+	}
+	
 	
 	/**
 	 * changes the current BotListener
@@ -68,7 +131,7 @@ public class Manager {
 	
 	/**
 	 * Initializes the BotManager
-	 * @param blis
+	 * @param blis BotListener
 	 * @throws IniCanceledException
 	 */
 	public static void ini(BotListener blis) throws IniCanceledException {
@@ -92,16 +155,8 @@ public class Manager {
 		System.out.println("by ProjectBots https://github.com/ProjectBots/StreamRaiderBot\r\n"
 				+ "Version: " + Options.get("botVersion") + "\r\n");
 		
-		
 		Remaper.load();
 		
-		ViewerBackEnd.setDataPathEventListener(new run.ViewerBackEnd.DataPathEventListener() {
-			@Override
-			public void onUpdate(String dataPath, String serverTime, JsonObject data) {
-				run.ViewerBackEnd.DataPathEventListener.super.onUpdate(dataPath, serverTime, data);
-				Manager.blis.onDataPathUpdate(dataPath, serverTime, data);
-			}
-		});
 		try {
 			ConfigsV2.load();
 		} catch (IOException e) {
@@ -146,7 +201,7 @@ public class Manager {
 	 * @param cid profile id
 	 */
 	public static void remProfile(String cid) {
-		if(viewers.containsKey(cid))
+		if(profiles.containsKey(cid))
 			unloadProfile(cid);
 		ConfigsV2.remProfile(cid);
 		ConfigsV2.saveb();
@@ -164,7 +219,7 @@ public class Manager {
 	 */
 	public static void loadAllNewProfiles() {
 		List<String> cids = ConfigsV2.getCids();
-		cids.removeAll(viewers.keySet());
+		cids.removeAll(profiles.keySet());
 		for(final String cid : cids)
 			loadProfile(cid);
 		synchronized(config_load_status_update_sync_lock) {
@@ -176,8 +231,8 @@ public class Manager {
 	 * loads a specific profile
 	 * @param cid profile id
 	 */
-	public static void loadProfile(String cid) {
-		if(viewers.containsKey(cid))
+	public static void loadProfile(final String cid) {
+		if(profiles.containsKey(cid))
 			return;
 		if(!poss.containsKey(cid))
 			poss.put(cid, poss.put("(next)", poss.get("(next)")+1));
@@ -191,17 +246,33 @@ public class Manager {
 				}
 				failedProfiles.remove(cid);
 				blis.onProfileStartedLoading(cid);
-				Viewer r = null;
+				Profile<?,?> p = null;
 				try {
-					r = new Viewer(cid);
-					viewers.put(cid, r);
-					blis.onProfileLoadComplete(cid, poss.get(cid));
-					r.setReady(true);
+					SRR req = null;
+					try {
+						req = new SRR(cid, Options.get("clientVersion"));
+					} catch (OutdatedDataException e) {
+						updateSecsOff(e.getServerTime());
+						updateSRData(e.getDataPath(), req);
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e1) {}
+						req = new SRR(cid, Options.get("clientVersion"));
+					}
+					if(req.playsAsCaptain()) {
+						p = new Captain(cid, req);
+						profiles.put(cid, p);
+					} else {
+						p = new Viewer(cid, req);
+						profiles.put(cid, p);
+					}
+					blis.onProfileLoadComplete(cid, poss.get(cid), p.getType());
+					p.setReady(true);
 				} catch (Exception e) {
 					blis.onProfileLoadError(cid, poss.get(cid), e);
 				}
 				synchronized(config_load_status_update_sync_lock) {
-					(r == null
+					(p == null
 						?failedProfiles
 						:loadedProfiles
 						).add(cid);
@@ -225,12 +296,21 @@ public class Manager {
 	 * @param cid profile id
 	 */
 	public static void unloadProfile(String cid) {
-		for(int i=0; i<5; i++)
-			setRunning(cid, i, false);
-		viewers.remove(cid);
+		if(!profiles.containsKey(cid))
+			throw new IllegalArgumentException("No Profile with cid="+cid+" loaded");
+		setRunningAll(cid, false);
+		Profile<?,?> p = profiles.remove(cid);
 		blis.onProfileUnloaded(cid);
 		loadedProfiles.remove(cid);
-		new File("data/temp/"+cid+".srb.json").delete();
+		
+		new Thread(() ->{
+			while(!p.hasStopped()) {
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {}
+			}
+			new File("data/temp/"+cid+".srb.json").delete();
+		}).start();
 	}
 	
 	/**
@@ -238,31 +318,40 @@ public class Manager {
 	 */
 	public static void stop() {
 		setClockRunning(false);
-		for(String key : viewers.keySet())
-			viewers.get(key).saveStats();
+		for(String key : profiles.keySet())
+			profiles.get(key).saveStats();
 		for(String cid : getLoadedProfiles())
 			unloadProfile(cid);
 		ConfigsV2.save();
 	}
 	
 	/**
-	 * starts or stops slots for the specified profile
+	 * starts or stops all slots for the specified profile
+	 * @param cid profile id
+	 * @param b true => start, false => stop
+	 */
+	public static void setRunningAll(String cid, boolean b) {
+		profiles.get(cid).setRunningAll(b);
+	}
+	
+	/**
+	 * starts or stops the slot for the specified profile
 	 * @param cid profile id
 	 * @param slot [0-4]
 	 * @param b true => start, false => stop
 	 */
 	public static void setRunning(String cid, int slot, boolean b) {
-		viewers.get(cid).setRunning(b, slot);
+		profiles.get(cid).setRunning(b, slot);
 	}
 	
 	/**
-	 * switches the running state of a slot
+	 * switches the running state of a slot in the specified profile
 	 * @param cid profile id
 	 * @param slot
 	 */
 	public static void switchRunning(String cid, int slot) {
-		Viewer r = viewers.get(cid);
-		r.setRunning(!r.isRunning(slot), slot);
+		Profile<?,?> p = profiles.get(cid);
+		p.setRunning(!p.isRunning(slot), slot);
 	}
 	
 	
@@ -293,7 +382,7 @@ public class Manager {
 	 * @return the id of the profile's current layer
 	 */
 	public static String getCurrentLayer(String cid) {
-		return viewers.get(cid).getCurrentLayer();
+		return profiles.get(cid).getCurrentLayer();
 	}
 	
 	/**
@@ -302,7 +391,7 @@ public class Manager {
 	 * @param slot
 	 */
 	public static void skipSleep(String cid, int slot) {
-		viewers.get(cid).skip(slot);
+		profiles.get(cid).skip(slot);
 	}
 	
 	/**
@@ -311,7 +400,9 @@ public class Manager {
 	 * @param slot
 	 */
 	public static void switchSlotChangeMarker(String cid, int slot) {
-		viewers.get(cid).change(slot);
+		Viewer v = profiles.get(cid).getAsViewer();
+		if(v != null)
+			v.change(slot);
 	}
 	
 	/**
@@ -321,7 +412,9 @@ public class Manager {
 	 * @param val value
 	 */
 	public static void favCaptain(String cid, int slot, int val) {
-		viewers.get(cid).fav(slot, val);
+		Viewer v = profiles.get(cid).getAsViewer();
+		if(v != null)
+			v.fav(slot, val);
 	}
 	
 	/**
@@ -330,7 +423,8 @@ public class Manager {
 	 * @return the url to the captains stream or null if slot empty
 	 */
 	public static String getTwitchCaptainLink(String cid, int slot) {
-		return viewers.get(cid).getTwitchLink(slot);
+		Viewer v = profiles.get(cid).getAsViewer();
+		return v != null ? v.getTwitchLink(slot) : null;
 	}
 	
 	private static int currentActions = 0;
@@ -395,15 +489,15 @@ public class Manager {
 	}
 	
 	/**
-	 * forces to update every Profile
+	 * updates every Profile
 	 */
 	public static void updateAllProfiles() {
-		for(final String key : viewers.keySet())
+		for(final String key : profiles.keySet())
 			updateProfile(key);
 	}
 	
 	/**
-	 * forces to update the Profile
+	 * updates the Profile
 	 * @param cid profile id
 	 */
 	public static void updateProfile(String cid) {
@@ -411,7 +505,7 @@ public class Manager {
 			@Override
 			public void run() {
 				try {
-					viewers.get(cid).updateFrame(null);
+					profiles.get(cid).updateFrame(null);
 				} catch (NoConnectionException | NotAuthorizedException e1) {
 					Debug.printException("Manager -> updateProfile: err=failed to update frame", e1, Debug.general, Debug.error, cid, null, true);
 				}
@@ -426,53 +520,79 @@ public class Manager {
 	 * @param delay time between starting each action
 	 */
 	public static void doAll(int con, int delay) {
-		for(String key : viewers.keySet()) {
-			for(int i=0; i<5; i++) {
-				Viewer r = viewers.get(key);
-				switch(con) {
-				case SRC.Manager.start:
-					r.setRunning(true, i);
-					break;
-				case SRC.Manager.skip:
-					r.skip(i);
-					break;
-				case SRC.Manager.stop:
-					r.setRunning(false, i);
-					break;
-				}
-				try {
-					Thread.sleep(delay);
-				} catch (InterruptedException e) {}
+		for(String key : profiles.keySet()) {
+			Profile<?,?> p = profiles.get(key);
+			switch(con) {
+			case SRC.Manager.start:
+				p.setRunningAll(true);
+				break;
+			case SRC.Manager.skip:
+				p.skipAll();
+				break;
+			case SRC.Manager.stop:
+				p.setRunningAll(false);
+				break;
 			}
+			try {
+				Thread.sleep(delay);
+			} catch (InterruptedException e) {}
 		}
 	}
 	
-	/**
-	 * @return the current server time or null if no profile is loaded
-	 */
-	public static String getServerTime() {
-		if(viewers.size() == 0)
-			return null;
-		StringBuilder st = new StringBuilder();
-		viewers.elements().nextElement().useViewerBackEnd(beh -> {
-			st.append(beh.getServerTime());
-		});
-		return st.toString();
-	}
-	
 	
 	/**
-	 * @return a list with all (SR) user ids
+	 * retrieves StreamRaiders data from the data path url
+	 * @param dataPathUrl
+	 * @param req
+	 * @throws NoConnectionException
+	 * @throws NotAuthorizedException
 	 */
-	public static List<String> getUserIds() {
-		List<String> ret = new ArrayList<>(viewers.size());
-		for(String key : viewers.keySet()) {
-			viewers.get(key).useViewerBackEnd(beh -> {
-				ret.add(beh.getUserId());
-			});
+	synchronized static void updateSRData(String dataPathUrl, SRR req) throws NoConnectionException, NotAuthorizedException {
+		if(!Options.get("data").equals(dataPathUrl)) {
+			JsonObject data = Json.parseObj(SRR.getData(dataPathUrl)).getAsJsonObject("sheets");
+			for(String s : "obstacles Obstacles  quests Quests  mapNodes MapNodes  specsRaw Specialization  store Store  rewards ChestRewards  events Events  skins Skins".split("  ")) {
+				String[] ss = s.split(" ");
+				Options.set(ss[0], data.getAsJsonObject(ss[1]).toString());
+			}
+			Event.updateCurrentEvent(getServerTime());
+			String currentEventUid = Event.getCurrentEvent();
+			if(currentEventUid != null) {
+				currentEventUid = currentEventUid.split("_")[0];
+				JsonObject tiers = data.getAsJsonObject("EventTiers");
+				JsonObject currentTiers = new JsonObject();
+				for(String key : tiers.keySet())
+					if(key.matches("^"+currentEventUid+"[0-9]+$"))
+						currentTiers.add(key, tiers.get(key));
+				Options.set("eventTiers", currentTiers.toString());
+			} else {
+				Options.set("eventTiers", "{}");
+			}
+			Options.set("currentEventCurrency", data.getAsJsonObject("Items").getAsJsonObject("eventcurrency").get("CurrencyTypeAwarded").getAsString());
+			JsonObject unitCosts = data.getAsJsonObject("UnitCosts");
+			Options.set("unitCosts", unitCosts.toString());
+			Store.setUnitCosts(unitCosts);
+			Unit.setUnitTypes(data);
+			Options.set("unitTypes", Unit.getTypes().toString());
 			
+			JsonObject units_raw = data.getAsJsonObject("Units");
+			JsonObject units = new JsonObject();
+			for(String key : units_raw.keySet()) {
+				JsonObject u = units_raw.getAsJsonObject(key);
+				if(u.get("CanBePlaced").getAsBoolean())
+					units.add(key, u);
+			}
+			Options.set("units", units.toString());
+			
+			Options.set("data", dataPathUrl);
+			Options.save();
+			Manager.blis.onSRDataUpdate(dataPathUrl, data);
 		}
-		return ret;
+		try {
+			if(req != null)
+				req.reload();
+		} catch (OutdatedDataException e) {
+			Debug.printException("BackEndHandler -> updateDataPath: err=failed to update data path",  e, Debug.runerr, Debug.fatal, null, null, true);
+		}
 	}
 	
 }

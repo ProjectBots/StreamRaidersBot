@@ -1,7 +1,6 @@
 package run;
 
 import java.awt.Color;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.WeekFields;
@@ -21,24 +20,23 @@ import com.google.gson.JsonObject;
 
 import include.Json;
 import include.Maths;
-import include.NEF;
 import include.Pathfinding;
 import include.Time;
 import program.ConfigsV2;
 import program.Remaper;
 import program.SRC;
+import program.SRR;
 import program.Store;
 import include.Http.NoConnectionException;
 import program.SRR.NotAuthorizedException;
-import program.SRR.OutdatedDataException;
 
 import program.Store.C;
 import program.Store.Item;
 import program.viewer.CaptainData;
 import program.viewer.Raid;
 import program.viewer.Raid.Reward;
+import run.BackEnd.UpdateEventListener;
 import program.Unit;
-import run.ViewerBackEnd.UpdateEventListener;
 import program.ConfigsV2.ListType;
 import program.ConfigsV2.StorePrioType;
 import program.MapConv.NoFinException;
@@ -49,130 +47,14 @@ import program.MapConv;
 import program.Options;
 import program.Quests.Quest;
 
-public class Viewer {
+public class Viewer extends Profile<Viewer.ViewerBackEndRunnable,ViewerBackEnd> {
 	
-	/*	TODO
-	 * 	rename Fonts to CS (ColorScheme)
-	 * 	add tooltips (everywhere)
-	 * 	fonts manage error blocks (GlobalOptions)
-	 * 	config versioning
-	 * 	make epic slot dependent
-	 * 	get unlock/upgrade cost from datapath (sheets\UnitCosts\...)
-	 *	make epic slot dependent
-	 *	get unit types from datapath
-	 *	get unit costs (unlock/upgrade) from datapath
-	 * 	get Donators from github source
-	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
-	 * 	when creating chest rewards for guide: exclude chest which aren't obtainable, compare to chests in Store
-	 * 	option to disable loading images (saves ram)
-	 * 
-	 * 
-	 * 	???:
-	 * 	kill (slot) round and restart if it takes more than x min
-	 * 	- may not be possible, didn't found a reliable way to "kill" a thread if it's hung up
-	 * 	
-	 * 
-	 */
-
-	public final String cid;
-	private ViewerBackEnd vbe_;
+	public static interface ViewerBackEndRunnable extends Profile.BackEndRunnable<ViewerBackEnd> {}
 	
-	private Object vbe_lock = new Object();
-	
-	public static interface behRunnable {
-		public void run(ViewerBackEnd beh);
-	}
-	
-	public void useViewerBackEnd(behRunnable behr) {
-		loadVbe();
-		behr.run(vbe_);
-		unloadVbe();
-	}
-	
-	private int currentVbeUses = 1;
-	
-	private void loadVbe() {
-		synchronized(vbe_lock) {
-			currentVbeUses++;
-			if(vbe_ == null) {
-				try {
-					vbe_ = Json.toObj(Json.parseObj(NEF.read("data/temp/"+cid+".srb.json")), ViewerBackEnd.class);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				vbe_.setUpdateEventListener(uelis);
-				System.gc();
-			}
-		}
-	}
-	
-	private void unloadVbe() {
-		synchronized(vbe_lock) {
-			currentVbeUses--;
-			if(currentVbeUses == 0 && ConfigsV2.getGBoo(ConfigsV2.freeUpMemoryByUsingDrive)) {
-				try {
-					NEF.save("data/temp/"+cid+".srb.json", Json.fromObj(vbe_).toString());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				vbe_ = null;
-				System.gc();
-			}
-		}
-	}
-	
-	private UpdateEventListener uelis = new UpdateEventListener() {
-		@Override
-		public void afterUpdate(String obj) {
-			Debug.print("updated "+obj, Debug.general, Debug.info, cid, null);
-			if(obj.contains("caps::")) {
-				boolean dungeon = obj.contains("::true");
-				useViewerBackEnd(vbe -> {
-					CaptainData[] caps;
-					try {
-						caps = vbe.getCaps(dungeon);
-						HashSet<String> got = new HashSet<>();
-						for(CaptainData c : caps)
-							got.add(c.get(SRC.Captain.twitchDisplayName));
-						
-						HashSet<String> favs = ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign);
-						for(String tdn : favs) {
-							if(got.contains(tdn) || !ConfigsV2.getCapBoo(cid, currentLayer, tdn, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign, ConfigsV2.il))
-								continue;
-							
-							JsonArray results = vbe.searchCap(1, null, false, false, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, true, tdn);
-							if(results.size() == 0)
-								continue;
-							
-							CaptainData n = new CaptainData(results.get(0).getAsJsonObject());
-							
-							if(n.get(SRC.Captain.isPlaying).equals("1"))
-								caps = add(caps, n);
-						}
-						vbe.setCaps(caps, dungeon);
-						
-					} catch (NoConnectionException | NotAuthorizedException e) {
-						Debug.printException(cid+": Run -> constr.: err=unable to retrieve caps", e, Debug.runerr, Debug.error, cid, null, true);
-						return;
-					}
-				});
-			}
-		}
-	};
-	
-	
-	
-	private String currentLayer = "(default)";
-	private String currentLayerId = null;
 	private boolean[] isRunning = new boolean[5];
 	private boolean[] isActiveRunning = new boolean[5];
 	private boolean[] change = new boolean[4];
 	private int[] sleep = new int[5];
-	
-	private boolean ready = false;
-	public void setReady(boolean b) {
-		ready = b;
-	}
 	
 	private JsonObject rews = null;
 	
@@ -217,7 +99,7 @@ public class Viewer {
 		return rews;
 	}
 	
-
+	@Override
 	public void saveStats() {
 		JsonObject astats = ConfigsV2.getPObj(cid, ConfigsV2.stats);
 		for(String s : rews.keySet()) {
@@ -231,14 +113,50 @@ public class Viewer {
 	}
 	
 	
-	public Viewer(String cid) throws NotAuthorizedException, NoConnectionException, OutdatedDataException {
-		this.cid = cid;
-		vbe_ = new ViewerBackEnd(cid);
-		vbe_.setUpdateEventListener(uelis);
-		raids = vbe_.getRaids(SRC.BackEndHandler.all);
-		curs = vbe_.getCurrencies();
+	public Viewer(String cid, SRR req) throws Exception {
+		super(cid, new ViewerBackEnd(cid, req), ProfileType.VIEWER);
+		uelis = new UpdateEventListener() {
+			@Override
+			public void afterUpdate(String obj) {
+				Debug.print("updated "+obj, Debug.general, Debug.info, cid, null);
+				if(obj.contains("caps::")) {
+					boolean dungeon = obj.contains("::true");
+					try {
+						useBackEnd(vber -> {
+							CaptainData[] caps;
+							caps = vber.getCaps(dungeon);
+							HashSet<String> got = new HashSet<>();
+							for(CaptainData c : caps)
+								got.add(c.get(SRC.Captain.twitchDisplayName));
+							
+							HashSet<String> favs = ConfigsV2.getFavCaps(cid, currentLayer, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign);
+							for(String tdn : favs) {
+								if(got.contains(tdn) || !ConfigsV2.getCapBoo(cid, currentLayer, tdn, dungeon ? ConfigsV2.dungeon : ConfigsV2.campaign, ConfigsV2.il))
+									continue;
+								
+								JsonArray results = vber.searchCap(1, null, false, false, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, true, tdn);
+								if(results.size() == 0)
+									continue;
+								
+								CaptainData n = new CaptainData(results.get(0).getAsJsonObject());
+								
+								if(n.get(SRC.Captain.isPlaying).equals("1"))
+									caps = add(caps, n);
+							}
+							vber.setCaps(caps, dungeon);
+						});
+					} catch (Exception e) {
+						Debug.printException(cid+": Run -> constr.: err=unable to retrieve caps", e, Debug.runerr, Debug.error, cid, null, true);
+					}
+				}
+			}
+		};
+		useBackEnd(vbe -> {
+			vbe.setUpdateEventListener(uelis);
+			raids = vbe.getRaids(SRC.BackEndHandler.all);
+			curs = vbe.getCurrencies();
+		});
 		iniRews();
-		unloadVbe();
 	}
 	
 	
@@ -254,6 +172,14 @@ public class Viewer {
 	});
 	
 	private boolean[] setRun = new boolean[5];
+	
+	@Override
+	public void setRunningAll(boolean b) {
+		for(int i=0; i<5; i++)
+			setRunning(b, i);
+	}
+	
+	@Override
 	public void setRunning(boolean bb, int slot) {
 		if(ConfigsV2.getSleepInt(cid, currentLayer, ""+slot, ConfigsV2.sync) != -1)
 			bb = false;
@@ -294,12 +220,27 @@ public class Viewer {
 		th.start();
 	}
 	
+	@Override
 	public boolean isRunning(int slot) {
 		return isRunning[slot];
 	}
+	
+	@Override
+	public boolean hasStopped() {
+		for(boolean b : isActiveRunning)
+			if(b) return false;
+		return true;
+	}
 
+	@Override
 	public void skip(int slot) {
 		sleep[slot] = 0;
+	}
+	
+	@Override
+	public void skipAll() {
+		for(int i=0; i<5; i++)
+			skip(i);
 	}
 	
 	public void change(int slot) {
@@ -342,24 +283,25 @@ public class Viewer {
 			return;
 		}
 		
-		useViewerBackEnd(beh -> {
-			updateBeh(beh);
-			try {
-				doSlot(beh, slot);
+		
+		try {
+			useBackEnd(vbe -> {
+				updateBeh(vbe);
+				doSlot(vbe, slot);
 				
 				for(int i=0; i<5; i++)
 					if(ConfigsV2.getSleepInt(cid, currentLayer, ""+i, ConfigsV2.sync) == slot)
-						doSlot(beh, i);
+						doSlot(vbe, i);
 
 				Debug.print("updateFrame", Debug.general, Debug.info, cid, slot);
-				updateFrame(beh);
-			} catch (NoConnectionException | NotAuthorizedException e) {
-				Debug.printException("Run -> slotSequence: slot=" + slot + " err=No stable Internet Connection", e, Debug.runerr, Debug.fatal, cid, slot, true);
-			} catch (StreamRaidersException | NoCapMatchesException e) {
-			} catch (Exception e) {
-				Debug.printException("Run -> slotSequence: slot=" + slot + " err=unknown", e, Debug.runerr, Debug.fatal, cid, slot, true);
-			}
-		});
+				updateFrame(vbe);
+			});
+		} catch (NoConnectionException | NotAuthorizedException e) {
+			Debug.printException("Run -> slotSequence: slot=" + slot + " err=No stable Internet Connection", e, Debug.runerr, Debug.fatal, cid, slot, true);
+		} catch (StreamRaidersException | NoCapMatchesException e) {
+		} catch (Exception e) {
+			Debug.printException("Run -> slotSequence: slot=" + slot + " err=unknown", e, Debug.runerr, Debug.fatal, cid, slot, true);
+		}
 		
 		
 		Debug.print("releasing action", Debug.general, Debug.info, cid, slot);
@@ -549,10 +491,10 @@ public class Viewer {
 			return;
 		
 		String placeSer = r.get(SRC.Raid.placementsSerialized);
-		if(!r.canPlaceUnit(vbe.getServerTime())
+		if(!r.canPlaceUnit(Manager.getServerTime())
 			|| ConfigsV2.getInt(cid, currentLayer, ConfigsV2.maxUnitPerRaid) < (placeSer == null 
 																					? 0 
-																					: placeSer.split(vbe.getUserId()).length-1))
+																					: placeSer.split(vbe.getViewerUserId()).length-1))
 			return;
 		
 		
@@ -606,8 +548,8 @@ public class Viewer {
 		
 		if((dungeon ^ ConfigsV2.getStr(cid, currentLayer, ConfigsV2.dungeonSlot).equals(""+slot))
 				|| (!ic && Time.isAfter(Time.parse(r.get(SRC.Raid.creationDate))
-									.plusSeconds(maxTimeLeft), vbe.getServerTime()))
-				||(!ic && Time.isAfter(vbe.getServerTime(),
+									.plusSeconds(maxTimeLeft), Manager.getServerTime()))
+				||(!ic && Time.isAfter(Manager.getServerTime(),
 						Time.parse(r.get(SRC.Raid.creationDate))
 						.plusSeconds(length - minTimeLeft)))
 				|| (!ic && !enabled)
@@ -625,7 +567,7 @@ public class Viewer {
 		boolean dunNeeded = false;
 		if(dungeon) {
 			LocalDateTime start = Time.parse(r.get(SRC.Raid.creationDate)).plusMinutes(1);
-			LocalDateTime now = Time.parse(vbe.getServerTime());
+			LocalDateTime now = Time.parse(Manager.getServerTime());
 			long t = ChronoUnit.SECONDS.between(start, now);
 			double tp = (100 * t) / 300.0;
 			
@@ -649,10 +591,10 @@ public class Viewer {
 		HashSet<String> bannedPos = new HashSet<>();
 		
 		List<String> neededUnits = vbe.getNeededUnitTypesForQuests();
-		boolean preferRogues = ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.preferRoguesOnTreasureMaps) 
-				&& r.getFromNode(SRC.MapNode.nodeType).contains("treasure");
 		
-		if(preferRogues) {
+		if(ConfigsV2.getBoolean(cid, currentLayer, ConfigsV2.preferRoguesOnTreasureMaps) 
+			&& r.getFromNode(SRC.MapNode.nodeType).contains("treasure")
+			) {
 			neededUnits.add("rogue");
 			neededUnits.add("flyingarcher");
 		}
@@ -696,9 +638,10 @@ public class Viewer {
 				final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, node, fav, slot);
 				if(pla == null) {
 					Debug.print("Place=null", Debug.units, Debug.info, cid, slot);
+					System.out.println("place=null, "+ConfigsV2.getPStr(cid, ConfigsV2.pname)+" - "+slot);
 					break;
 				}
-				Debug.print("Place="+pla.toString(), Debug.units, Debug.info, cid, slot);
+				Debug.print("Place="+pla.toString(), Debug.place, Debug.info, cid, slot);
 				String err = vbe.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
 				bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
 				
@@ -710,8 +653,9 @@ public class Viewer {
 					String ut = pla.unit.get(SRC.Unit.unitType);
 					if(!Unit.isLegendary(ut))
 						vbe.addCurrency(pla.unit.get(SRC.Unit.unitType), 1);
-					placeTime = LocalDateTime.now().plus(Maths.ranInt(ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.minu),
-																	ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.maxu)), 
+					placeTime = LocalDateTime.now().plus(Maths.ranInt(
+															ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.minu),
+															ConfigsV2.getUnitPlaceDelayInt(cid, currentLayer, ConfigsV2.maxu)), 
 														ChronoUnit.MILLIS);
 					break;
 				}
@@ -777,7 +721,7 @@ public class Viewer {
 		}
 	}
 	
-	private Place findPlace(Map map, int[] mh, HashSet<String> bannedPos, List<String> neededUnits, final Unit[] units, boolean epic, boolean dungeon, int dunLvl, boolean dunNeeded, String chest, boolean fav, int slot) {
+	private Place findPlace(Map map, int[] mh, HashSet<String> bannedPos, List<String> neededUnits, final Unit[] units, final boolean epic, final boolean dungeon, final int dunLvl, final boolean dunNeeded, final String chest, final boolean fav, final int slot) {
 		HashSet<String> nupts = map.getUsablePlanTypes(false);
 		HashSet<String> eupts = map.getUsablePlanTypes(true);
 		
@@ -787,10 +731,10 @@ public class Viewer {
 			
 			int n = ConfigsV2.getUnitInt(cid, currentLayer, utype, dungeon ? ConfigsV2.placedun : ConfigsV2.place);
 			int e = ConfigsV2.getUnitInt(cid, currentLayer, utype, dungeon ? ConfigsV2.epicdun : ConfigsV2.epic);
-			String chests = ConfigsV2.getUnitString(cid, currentLayer, utype, ConfigsV2.chests);
-			String favOnly = ConfigsV2.getUnitString(cid, currentLayer, utype, ConfigsV2.favOnly);
-			String markerOnly = ConfigsV2.getUnitString(cid, currentLayer, utype, ConfigsV2.markerOnly);
-			String canVibe = ConfigsV2.getUnitString(cid, currentLayer, utype, ConfigsV2.canVibe);
+			final String chests = ConfigsV2.getUnitString(cid, currentLayer, utype, ConfigsV2.chests);
+			final String favOnly = ConfigsV2.getUnitString(cid, currentLayer, utype, ConfigsV2.favOnly);
+			final String markerOnly = ConfigsV2.getUnitString(cid, currentLayer, utype, ConfigsV2.markerOnly);
+			final String canVibe = ConfigsV2.getUnitString(cid, currentLayer, utype, ConfigsV2.canVibe);
 			
 			final String nx = dungeon ? "nd" : "nc";
 			final String ex = dungeon ? "ed" : "ec";
@@ -843,8 +787,6 @@ public class Viewer {
 			
 			if(markerOnly.contains(ex))
 				e = -1;
-			
-			// boss ifNeeded first second
 			
 			if(dungeon) {
 				String dem = ConfigsV2.getUnitString(cid, currentLayer, utype, ConfigsV2.dunEpicMode);
@@ -924,15 +866,15 @@ public class Viewer {
 		captain(beh, slot, true, false);
 	}
 
-	private void captain(ViewerBackEnd beh, int slot, boolean first, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void captain(ViewerBackEnd vbe, int slot, boolean first, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 		
 		boolean dungeon = ConfigsV2.getStr(cid, currentLayer, ConfigsV2.dungeonSlot).equals(""+slot);
 		
-		Raid r = beh.getRaid(slot, true);
+		Raid r = vbe.getRaid(slot, true);
 		
 		if(r != null && ConfigsV2.isSlotLocked(cid, currentLayer, ""+slot)) {
 			if(r.isDungeon() && !dungeon) {
-				Raid[] all = beh.getRaids(SRC.BackEndHandler.all);
+				Raid[] all = vbe.getRaids(SRC.BackEndHandler.all);
 				boolean change = true;
 				for(int i=0; i<all.length; i++) {
 					if(i == slot || all[i] == null)
@@ -954,22 +896,22 @@ public class Viewer {
 			return;
 		
 		if(r == null) {
-			switchCap(beh, slot, dungeon, null, null, noCap, first, null);
+			switchCap(vbe, slot, dungeon, null, null, noCap, first, null);
 			return;
 		}
 		
-		if(!r.isSwitchable(beh.getServerTime(), ConfigsV2.getInt(cid, currentLayer, ConfigsV2.capInactiveTreshold)))
+		if(!r.isSwitchable(Manager.getServerTime(), ConfigsV2.getInt(cid, currentLayer, ConfigsV2.capInactiveTreshold)))
 			return;
 
 		String tdn = r.get(SRC.Raid.twitchDisplayName);
 		if(r.isVersus()) {
-			switchCap(beh, slot, dungeon, r, tdn, noCap, first, null);
+			switchCap(vbe, slot, dungeon, r, tdn, noCap, first, null);
 			return;
 		}
 		
 		String ct = r.getFromNode(SRC.MapNode.chestType);
 		if(ct == null) {
-			switchCap(beh, slot, dungeon, r, tdn, noCap, first, null);
+			switchCap(vbe, slot, dungeon, r, tdn, noCap, first, null);
 			return;
 		}
 		ct = Remaper.map(ct);
@@ -1007,15 +949,15 @@ public class Viewer {
 		
 		if(!ic && Time.isAfter(Time.parse(r.get(SRC.Raid.creationDate))
 									.plusSeconds(maxTimeLeft),
-								beh.getServerTime())) {
-			switchCap(beh, slot, dungeon, r, tdn, noCap, first, maxTimeLeft);
+								Manager.getServerTime())) {
+			switchCap(vbe, slot, dungeon, r, tdn, noCap, first, maxTimeLeft);
 			return;
 		}
 		
 		
 		JsonArray users = Json.parseArr(r.get(SRC.Raid.users));
 		if(users != null) {
-			String uid = beh.getUserId();
+			String uid = vbe.getViewerUserId();
 			for(int i=0; i<users.size(); i++)
 				if(users.get(i).getAsJsonObject().get("userId").getAsString().equals(uid))
 					minTimeLeft = Integer.MIN_VALUE;
@@ -1026,21 +968,21 @@ public class Viewer {
 		if((dungeon ^ r.isDungeon())
 			|| !(ic || capTeam.equals("(none)")			//TODO rem after event
 				|| capTeam.equals(r.get("teamUid")))	//TODO rem after event
-			|| r.isOffline(beh.getServerTime(), il, ConfigsV2.getInt(cid, currentLayer, ConfigsV2.capInactiveTreshold))
-			|| (!ic && Time.isAfter(beh.getServerTime(),
+			|| r.isOffline(Manager.getServerTime(), il, ConfigsV2.getInt(cid, currentLayer, ConfigsV2.capInactiveTreshold))
+			|| (!ic && Time.isAfter(Manager.getServerTime(),
 							Time.parse(r.get(SRC.Raid.creationDate))
 								.plusSeconds(length - minTimeLeft)))
 			|| (!ic && !enabled)
 			|| (!ic && (loy < minLoy || loy > maxLoy))
 			|| fav < 0
 			) {
-			switchCap(beh, slot, dungeon, r, tdn, noCap, first, null);
+			switchCap(vbe, slot, dungeon, r, tdn, noCap, first, null);
 			return;
 		}
 		
 		if(change[slot]) {
 			if(first)
-				switchCap(beh, slot, dungeon, r, tdn, noCap, first, null);
+				switchCap(vbe, slot, dungeon, r, tdn, noCap, first, null);
 			else
 				change[slot] = false;
 		}
@@ -1070,7 +1012,7 @@ public class Viewer {
 	
 	private void switchCap(ViewerBackEnd beh, int slot, boolean dungeon, Raid r, String disname, boolean noCap, Integer overrideBanTime) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 
-		LocalDateTime now = Time.parse(beh.getServerTime());
+		LocalDateTime now = Time.parse(Manager.getServerTime());
 		
 		if(!(r == null || disname == null)) {
 			LocalDateTime start = Time.parse(r.get(SRC.Raid.creationDate));
@@ -1565,10 +1507,6 @@ public class Viewer {
 		
 	}
 
-	public String getCurrentLayer() {
-		return currentLayer;
-	}
-	
 	private static final C[] sc = new C[] {Store.gold, Store.potions, Store.meat, Store.eventcurrency, Store.keys, Store.bones};
 	public static final String[] pveloy = "noloy bronze silver gold".split(" ");
 	
@@ -1588,15 +1526,15 @@ public class Viewer {
 		}
 	}
 	
-	synchronized public void updateFrame(ViewerBackEnd beh) throws NoConnectionException, NotAuthorizedException {
+	@Override
+	synchronized public void updateFrame(ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
 		if(!ready)
 			return;
 		
-
 		updateSlotSync();
 		
-		if(beh != null)
-			raids = beh.getRaids(SRC.BackEndHandler.all);
+		if(vbe != null)
+			raids = vbe.getRaids(SRC.BackEndHandler.all);
 		
 		for(int i=0; i<4; i++) {
 			if(raids[i] == null) {
@@ -1611,8 +1549,8 @@ public class Viewer {
 			Manager.blis.onProfileUpdateSlot(cid, i, raids[i], ConfigsV2.isSlotLocked(cid, currentLayer, ""+i), change[i]);
 		}
 		
-		if(beh != null)
-			curs = beh.getCurrencies();
+		if(vbe != null)
+			curs = vbe.getCurrencies();
 			
 		for(C key : sc) {
 			String k = key.get();
@@ -1622,6 +1560,7 @@ public class Viewer {
 			
 	}
 	
+	@Override
 	public synchronized void updateLayer() {
 		LocalDateTime now = LocalDateTime.now();
 		// current time in layer-units (1 = 5 min)

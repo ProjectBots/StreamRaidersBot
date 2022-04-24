@@ -46,9 +46,13 @@ public class Stats {
 	
 	public void open() {
 		Viewer run = Manager.getViewer(cid);
-		run.useViewerBackEnd(beh -> {
-			open(run, beh);
-		});
+		try {
+			run.useBackEnd(beh -> {
+				open(run, beh);
+			});
+		} catch (Exception e) {
+			Debug.printException("Stats -> open: err=unable to load stats", e, Debug.runerr, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
+		}
 	}
 	
 	
@@ -90,16 +94,15 @@ public class Stats {
 					switch(e.getKeyCode()) {
 					case KeyEvent.VK_R:
 						gui.close();
-						run.useViewerBackEnd(beh -> {
-							try {
+						try {
+							run.useBackEnd(beh -> {
 								beh.updateUnits(true);
 								beh.updateStore(true);
-							} catch (NoConnectionException | NotAuthorizedException e1) {
-								Debug.printException("Stats -> open -> reload: err=failed to update Units/Store", e1, Debug.runerr, Debug.error, run.cid, null, true);
-								return;
-							}
-							open(run, beh);
-						});
+								open(run, beh);
+							});
+						} catch (Exception e1) {
+							Debug.printException("Stats -> open -> reload: err=failed to update Units/Store", e1, Debug.runerr, Debug.error, run.cid, null, true);
+						}
 						break;
 					}
 				} else if((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) > 0) {

@@ -16,8 +16,6 @@ import program.ConfigsV2;
 import program.SRC;
 import program.ConfigsV2.ListType;
 import program.Debug;
-import include.Http.NoConnectionException;
-import program.SRR.NotAuthorizedException;
 import run.Manager;
 
 public class CapSearch {
@@ -49,13 +47,13 @@ public class CapSearch {
 			@Override
 			public void run() {
 				JsonArray caps = new JsonArray();
-				Manager.getViewer(cid).useViewerBackEnd(beh -> {
-					try {
+				try {
+					Manager.getViewer(cid).useBackEnd(beh -> {
 						caps.addAll(beh.searchCap(1, null, false, false, SRC.Search.all, true, search));
-					} catch (NoConnectionException | NotAuthorizedException e) {
-						Debug.printException("CapSearch -> open: err=failed to search captain", e, Debug.general, Debug.error, null, null, true);
-					}
-				});
+					});
+				} catch (Exception e) {
+					Debug.printException("CapSearch -> open: err=failed to search captain", e, Debug.general, Debug.error, null, null, true);
+				}
 				
 				gui.remove(uid+"load");
 				

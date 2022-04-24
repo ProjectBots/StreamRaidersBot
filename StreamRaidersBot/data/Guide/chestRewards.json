@@ -166,15 +166,15 @@
       "goldbag_75": 20,
       "rarescrolls_6": 30,
       "rarescrolls_7": 20,
-      "skinfulltemplarnikeolympiad": 7,
-      "skinfullvampirenyxolympiad": 7
+      "skinfulltankelemental": 7,
+      "skinfullsaintelemental": 7
     },
     "viewerboostedskin2": {
       "goldbag_100": 10,
       "rarescrolls_6": 10,
       "rarescrolls_7": 15,
-      "skinfulltemplarnikeolympiad": 20,
-      "skinfullvampirenyxolympiad": 15
+      "skinfulltankelemental": 20,
+      "skinfullsaintelemental": 15
     }
   },
   "chestboostedskinalternate": {
@@ -814,6 +814,126 @@
       "skinfullpaladinolympiad": 1
     }
   },
+  "elementalearthchest": {
+    "bonuselemental": {
+      "goldbag_5": 50,
+      "goldbag_7": 30,
+      "goldbag_10": 20
+    },
+    "elementalearthviewerslot1": {
+      "commonscrolls_2": 40,
+      "commonscrolls_7": 20,
+      "uncommonscrolls_3": 15,
+      "uncommonscrolls_5": 10,
+      "rarescrolls_3": 6,
+      "rarescrolls_4": 5,
+      "skinfullvampireelemental": 2,
+      "skinfullmusketeerelemental": 2
+    },
+    "elementalearthviewerslot2": {
+      "goldbag_10": 51,
+      "goldbag_25": 28,
+      "goldbag_50": 9,
+      "goldbag_75real": 6,
+      "goldbag_100real": 4,
+      "goldbag_150": 2
+    },
+    "elementalearthviewerslot3": {
+      "eventtoken_1": 80,
+      "eventtoken_2": 16,
+      "eventtoken_4": 4
+    }
+  },
+  "elementalfirechest": {
+    "bonuselemental": {
+      "goldbag_5": 50,
+      "goldbag_7": 30,
+      "goldbag_10": 20
+    },
+    "elementalfireviewerslot1": {
+      "commonscrolls_2": 40,
+      "commonscrolls_7": 20,
+      "uncommonscrolls_3": 15,
+      "uncommonscrolls_5": 10,
+      "rarescrolls_3": 6,
+      "rarescrolls_4": 5,
+      "skinfullballoonbusterelemental": 2,
+      "skinfullcenturionelemental": 2
+    },
+    "elementalfireviewerslot2": {
+      "goldbag_10": 51,
+      "goldbag_25": 28,
+      "goldbag_50": 9,
+      "goldbag_75real": 6,
+      "goldbag_100real": 4,
+      "goldbag_150": 2
+    },
+    "elementalfireviewerslot3": {
+      "eventtoken_1": 80,
+      "eventtoken_2": 16,
+      "eventtoken_4": 4
+    }
+  },
+  "elementalicechest": {
+    "bonuselemental": {
+      "goldbag_5": 50,
+      "goldbag_7": 30,
+      "goldbag_10": 20
+    },
+    "elementaliceviewerslot1": {
+      "commonscrolls_2": 40,
+      "commonscrolls_7": 20,
+      "uncommonscrolls_3": 15,
+      "uncommonscrolls_5": 10,
+      "rarescrolls_3": 6,
+      "rarescrolls_4": 5,
+      "skinfullrogueelemental": 2,
+      "skinfullmageelemental": 2
+    },
+    "elementaliceviewerslot2": {
+      "goldbag_10": 51,
+      "goldbag_25": 28,
+      "goldbag_50": 9,
+      "goldbag_75real": 6,
+      "goldbag_100real": 4,
+      "goldbag_150": 2
+    },
+    "elementaliceviewerslot3": {
+      "eventtoken_1": 80,
+      "eventtoken_2": 16,
+      "eventtoken_4": 4
+    }
+  },
+  "elementalwaterchest": {
+    "bonuselemental": {
+      "goldbag_5": 50,
+      "goldbag_7": 30,
+      "goldbag_10": 20
+    },
+    "elementalwaterviewerslot1": {
+      "commonscrolls_2": 40,
+      "commonscrolls_7": 20,
+      "uncommonscrolls_3": 15,
+      "uncommonscrolls_5": 10,
+      "rarescrolls_3": 6,
+      "rarescrolls_4": 5,
+      "skinfullhealerelemental": 2,
+      "skinfulltemplarelemental": 2
+    },
+    "elementalwaterviewerslot2": {
+      "goldbag_10": 51,
+      "goldbag_25": 28,
+      "goldbag_50": 9,
+      "goldbag_75real": 6,
+      "goldbag_100real": 4,
+      "goldbag_150": 2
+    },
+    "elementalwaterviewerslot3": {
+      "eventtoken_1": 80,
+      "eventtoken_2": 16,
+      "eventtoken_4": 4
+    }
+  },
   "icefallchest": {
     "bonusboostedgold": {
       "goldbag_1000": 75,
@@ -1282,15 +1402,15 @@
       "goldbag_75": 20,
       "rarescrolls_6": 30,
       "rarescrolls_7": 20,
-      "skinfulltemplarnikeolympiad": 7,
-      "skinfullvampirenyxolympiad": 7
+      "skinfulltankelemental": 7,
+      "skinfullsaintelemental": 7
     },
     "viewerboostedskin2": {
       "goldbag_100": 10,
       "rarescrolls_6": 10,
       "rarescrolls_7": 15,
-      "skinfulltemplarnikeolympiad": 20,
-      "skinfullvampirenyxolympiad": 15
+      "skinfulltankelemental": 20,
+      "skinfullsaintelemental": 15
     }
   },
   "pvpskincommonchest": {

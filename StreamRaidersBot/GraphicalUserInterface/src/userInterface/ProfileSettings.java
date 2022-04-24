@@ -57,12 +57,16 @@ public class ProfileSettings {
 	
 	public void open(GUI parent) {
 		Viewer run = Manager.getViewer(cid);
-		run.useViewerBackEnd(beh -> {
-			open(parent, run, beh);
-		});
+		try {
+			run.useBackEnd(beh -> {
+				open(parent, run, beh);
+			});
+		} catch (Exception e) {
+			Debug.printException("ProfileSettings -> open: err=failed to load", e, Debug.runerr, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
+		}
 	}
 	
-	private void open(GUI parent, Viewer run, ViewerBackEnd beh) {
+	private void open(GUI parent, Viewer run, ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
 		
 		int p = 0;
 		
@@ -80,7 +84,13 @@ public class ProfileSettings {
 			public void onDeIconfied(WindowEvent e) {}
 			@Override
 			public void onClose(WindowEvent e) {
-				run.updateProxySettings(beh);
+				try {
+					run.useBackEnd(vbe -> {
+						run.updateProxySettings(vbe);
+					});
+				} catch (Exception e1) {
+					Debug.printException("ProfileSettings -> open: err=failed to update proxy settings", e1, Debug.runerr, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
+				}
 			}
 		});
 		
@@ -552,8 +562,8 @@ public class ProfileSettings {
 				List<Item> items;
 				List<Item> items_;
 				try {
-					items = beh.getAvailableEventStoreItems(section, true);
-					items_ = beh.getAvailableEventStoreItems(section, false);
+					items = vbe.getAvailableEventStoreItems(section, true);
+					items_ = vbe.getAvailableEventStoreItems(section, false);
 				} catch (NoConnectionException | NotAuthorizedException e3) {
 					Debug.printException("ProfileSettings -> open -> specialShop: err=unable to get items", e3, Debug.runerr, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
 					gui.close();

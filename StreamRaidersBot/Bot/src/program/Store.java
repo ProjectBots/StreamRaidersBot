@@ -56,7 +56,7 @@ public class Store {
 			currencies.put(c.get("currencyId").getAsString().replace("cooldown", meat.get()).replace(Options.get("currentEventCurrency"), eventcurrency.get()), Integer.parseInt(c.get("quantity").getAsString()));
 		}
 		int potion = user.get("epicProgression").getAsInt();
-		currencies.put(potions.get(), potion > 60 ? 60 : potion);
+		currencies.put(potions.get(), potion > 100 ? 100 : potion);
 		storeRefreshCount = user.get("storeRefreshCount").getAsInt();
 		shopItems = currentStoreItems;
 	}
@@ -135,8 +135,8 @@ public class Store {
 	}
 	
 	public void setCurrency(String type, int amount) {
-		if(type.equals(potions.get()) && amount > 60)
-			amount = 60;
+		if(type.equals(potions.get()) && amount > 100)
+			amount = 100;
 		currencies.put(type, amount);
 	}
 	

@@ -371,20 +371,20 @@ public class UnitSettings {
 							int c = StringUtils.countMatches(val, "::") + 1;
 							int m = StringUtils.countMatches(val, s);
 							if(m == c) {
-								for(String lay : ConfigsV2.getLayerIds(cid))
-									ConfigsV2.setUnitString(cid, lay, type, us, ConfigsV2.getUnitString(cid, lay, type, us).replaceFirst(s+",?", ""));
+								for(String l : ConfigsV2.getLayerIds(cid))
+									ConfigsV2.setUnitString(cid, l, type, us, ConfigsV2.getUnitString(cid, l, type, us).replaceFirst(s+",?", ""));
 								GUI.setGradient(uid+type+"::opt::"+o+"::"+s, Fonts.getGradient("stngs units buttons def"));
 								GUI.setForeground(uid+type+"::opt::"+o+"::"+s, Fonts.getColor("stngs units buttons def"));
 							} else {
-								for(String lay : ConfigsV2.getLayerIds(cid)) {
-									String old = ConfigsV2.getUnitString(cid, lay, type, us);
+								for(String l : ConfigsV2.getLayerIds(cid)) {
+									String old = ConfigsV2.getUnitString(cid, l, type, us);
 									if(old.contains(s))
 										continue;
 									if(old.equals(""))
 										old = s;
 									else
 										old += ","+s;
-									ConfigsV2.setUnitString(cid, lay, type, us, old);
+									ConfigsV2.setUnitString(cid, l, type, us, old);
 								}
 								GUI.setGradient(uid+type+"::opt::"+o+"::"+s, Fonts.getGradient("stngs units buttons on"));
 								GUI.setForeground(uid+type+"::opt::"+o+"::"+s, Fonts.getColor("stngs units buttons on"));

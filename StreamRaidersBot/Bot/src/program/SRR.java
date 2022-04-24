@@ -4,7 +4,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import com.google.gson.JsonElement;
@@ -55,7 +54,7 @@ public class SRR {
 		return captainUserId;
 	}
 	
-	public boolean canPlayCaptain() {
+	public boolean canPlayAsCaptain() {
 		return canPlayAsCaptain;
 	}
 	
@@ -63,15 +62,15 @@ public class SRR {
 		return playsAsCaptain;
 	}
 	
-	private static List<String> userIds = new ArrayList<String>();
+	private static ArrayList<String> allUserIds = new ArrayList<String>();
 	
-	public static List<String> getViewerUserIds() {
-		return userIds;
+	public static ArrayList<String> getAllUserIds() {
+		return allUserIds;
 	}
 	
-	synchronized public static void addViewerUserId(String uid) {
-		if(!userIds.contains(uid))
-			userIds.add(uid);
+	synchronized public static void addUserId(String uid) {
+		if(!allUserIds.contains(uid))
+			allUserIds.add(uid);
 	}
 	
 	public static String getData(String dataPath) {
@@ -116,7 +115,9 @@ public class SRR {
 		this.cookies = ConfigsV2.getPStr(cid, ConfigsV2.cookies);
 		this.clientVersion = clientVersion;
 		reload();
-		addViewerUserId(viewerUserId);
+		addUserId(viewerUserId);
+		if(captainUserId != null);
+			addUserId(captainUserId);
 	}
 	
 	public String reload() throws NoConnectionException, OutdatedDataException, NotAuthorizedException {

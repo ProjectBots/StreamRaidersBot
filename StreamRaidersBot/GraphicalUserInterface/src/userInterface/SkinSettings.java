@@ -44,9 +44,13 @@ public static final String pre = "SkinSettings::";
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				Manager.getViewer(cid).useViewerBackEnd(beh -> {
-					open(parent, beh);
-				});
+				try {
+					Manager.getViewer(cid).useBackEnd(vbe -> {
+						open(parent, vbe);
+					});
+				} catch (Exception e) {
+					Debug.printException("SkinSettings -> open: err=unable to load skin settings", e, Debug.runerr, Debug.error, cid, null, true);
+				}
 			}
 		});
 		t.start();
@@ -54,7 +58,7 @@ public static final String pre = "SkinSettings::";
 	
 	private boolean closed = false;
 	
-	private void open(GUI parent, ViewerBackEnd beh) {
+	private void open(GUI parent, ViewerBackEnd vbe) {
 		closed = false;
 		
 		int p = 0;
@@ -80,8 +84,8 @@ public static final String pre = "SkinSettings::";
 		Unit[] units_;
 		Skins skins_;
 		try {
-			units_ = beh.getUnits(SRC.BackEndHandler.all, false);
-			skins_ = beh.getSkins();
+			units_ = vbe.getUnits(SRC.BackEndHandler.all, false);
+			skins_ = vbe.getSkins();
 		} catch (NoConnectionException | NotAuthorizedException e) {
 			Debug.printException("SkinSettings -> open: err=unable to get units/skins", e, Debug.runerr, Debug.error, ConfigsV2.getPStr(cid, ConfigsV2.pname), null, true);
 			gui.close();
@@ -168,7 +172,7 @@ public static final String pre = "SkinSettings::";
 									}
 								}
 								try {
-									String err = beh.equipSkin(u, s);
+									String err = vbe.equipSkin(u, s);
 									if(err != null)
 										Debug.print("SkinSettings -> open -> selected: err="+err, Debug.runerr, Debug.error, cid, null, true);
 									else

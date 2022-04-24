@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
-import java.util.Hashtable;
 import javax.swing.WindowConstants;
 
 import com.google.gson.JsonArray;
@@ -36,6 +35,7 @@ import program.Remaper;
 import program.SRC;
 import program.viewer.Raid;
 import run.Manager;
+import run.ProfileType;
 import run.Viewer;
 
 public class MainFrame {
@@ -46,12 +46,6 @@ public class MainFrame {
 	
 	public static GUI getGUI() {
 		return gui;
-	}
-	
-	private static Hashtable<String, ProfileSection> sections = new Hashtable<>();
-	
-	public static Hashtable<String, ProfileSection> getSections() {
-		return sections;
 	}
 	
 	
@@ -298,14 +292,18 @@ public class MainFrame {
 		WaitScreen.close();
 	}
 	
-	synchronized public static void addLoadedProfile(String cid, int pos) {
-		ProfileSection ps = new ProfileSection(cid);
-		
-		Container c = ps.create();
+	synchronized public static void addLoadedProfile(String cid, int pos, ProfileType type) {
+		Container c = null;
+		switch(type) {
+		case VIEWER:
+			c = new ViewerProfileSection(cid).create();
+			break;
+		case CAPTAIN:
+			c = new CaptainProfileSection(cid).create();
+			break;
+		}
 		c.setPos(0, pos);
 		gui.addContainer(c, pre+cid+"::profile");
-		
-		sections.put(cid, ps);
 	}
 	
 	public static void addFailedProfile(String cid, int pos, Exception e) {
@@ -374,26 +372,30 @@ public class MainFrame {
 	}
 	
 	public static void remProfile(String cid) {
-		sections.remove(cid);
 		if(gui != null) {
 			gui.remove(pre+cid+"::profile");
 			gui.refresh();
 		}
 	}
 	
+	public static void profileSwitchedAccountType(String cid, ProfileType type) {
+		remProfile(cid);
+		addLoadedProfile(cid, Manager.getProfilePos(cid), type);
+	}
+	
 	public static void updateSlotRunning(String cid, int slot, boolean run) {
-		GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::run", Fonts.getGradient("main buttons " + (run?"on":"def")));
-		GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::run", Fonts.getColor("main buttons " + (run?"on":"def")));
+		GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::run", Fonts.getGradient("main buttons " + (run?"on":"def")));
+		GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::run", Fonts.getColor("main buttons " + (run?"on":"def")));
 	}
 	
 	public static void updateTimer(String cid, int slot, String time) {
-		GUI.setText(ProfileSection.pre+cid+"::"+slot+"::time", time);
+		GUI.setText(ViewerProfileSection.pre+cid+"::"+slot+"::time", time);
 	}
 	
 	public static void updateSlot(String cid, int slot, Raid raid, boolean change) {
 		
-		GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::change", Fonts.getColor("main buttons " + (change ? "on" : "def")));
-		GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::change", Fonts.getGradient("main buttons " + (change ? "on" : "def")));
+		GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::change", Fonts.getColor("main buttons " + (change ? "on" : "def")));
+		GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::change", Fonts.getGradient("main buttons " + (change ? "on" : "def")));
 		
 		Boolean locked = ConfigsV2.isSlotLocked(cid, "(all)", ""+slot);
 		String fid = "main buttons " +(locked == null
@@ -401,94 +403,94 @@ public class MainFrame {
 										: locked
 											? "on"
 											: "def");
-		GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::lock", Fonts.getGradient(fid));
-		GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::lock", Fonts.getColor(fid));
+		GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::lock", Fonts.getGradient(fid));
+		GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::lock", Fonts.getColor(fid));
 
 		if(raid == null) {
-			GUI.setText(ProfileSection.pre+cid+"::"+slot+"::capname", "????????");
+			GUI.setText(ViewerProfileSection.pre+cid+"::"+slot+"::capname", "????????");
 			Image img = new Image("data/Other/icon.png");
 			img.setSquare(100);
 			try {
-				GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::img", img);
+				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::img", img);
 			} catch (IOException e) {
 				Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, cid, slot, true);
 			}
-			GUI.setText(ProfileSection.pre+cid+"::"+slot+"::wins", "??");
+			GUI.setText(ViewerProfileSection.pre+cid+"::"+slot+"::wins", "??");
 			img = new Image("data/LoyaltyPics/noloy.png");
 			img.setSquare(20);
 			try {
-				GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::loy", img);
+				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::loy", img);
 			} catch (IOException e) {
 				Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, cid, slot, true);
 			}
-			GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons def"));
-			GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons def"));
-			GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons def"));
-			GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons def"));
+			GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons def"));
+			GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons def"));
+			GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons def"));
+			GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons def"));
 			img = new Image("data/ChestPics/nochest.png");
 			img.setSquare(25);
 			try {
-				GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::chest", img);
+				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::chest", img);
 			} catch (IOException e) {
 				Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, cid, slot, true);
 			}
 		} else {
-			GUI.setText(ProfileSection.pre+cid+"::"+slot+"::capname", raid.get(SRC.Raid.twitchDisplayName));
+			GUI.setText(ViewerProfileSection.pre+cid+"::"+slot+"::capname", raid.get(SRC.Raid.twitchDisplayName));
 			Image img = new Image(raid.get(SRC.Raid.twitchUserImage));
 			img.setUrl(true);
 			img.setSquare(100);
 			try {
-				GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::img", img);
+				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::img", img);
 			} catch (IOException e) {
 				Debug.print("MainFrame -> onUpdateSlot: err=couldnt set image, url="+raid.get(SRC.Raid.twitchUserImage), Debug.general, Debug.error, cid, slot, true);
 				try {
 					img = new Image("data/Other/icon.png");
-					GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::img", img);
+					GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::img", img);
 				} catch (IOException e1) {
 					Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set default image", e, Debug.general, Debug.error, cid, slot, true);
 				}
 			}
-			GUI.setText(ProfileSection.pre+cid+"::"+slot+"::wins", raid.get(SRC.Raid.pveWins));
+			GUI.setText(ViewerProfileSection.pre+cid+"::"+slot+"::wins", raid.get(SRC.Raid.pveWins));
 			int loy = Integer.parseInt(raid.get(SRC.Raid.pveLoyaltyLevel));
 			img = new Image("data/LoyaltyPics/" + Viewer.pveloy[loy] + ".png");
 			img.setSquare(20);
 			try {
-				GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::loy", img);
+				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::loy", img);
 			} catch (IOException e) {
 				Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Debug.general, Debug.error, cid, slot, true);
 			}
 			String cap = raid.get(SRC.Raid.twitchDisplayName);
 			Integer val = ConfigsV2.getCapInt(cid, "(all)", cap, raid.isDungeon() ? ConfigsV2.dungeon : ConfigsV2.campaign, ConfigsV2.fav);
 			if(val == null) {
-				GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons def"));
-				GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons def"));
-				GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons def"));
-				GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons def"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons def"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons def"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons def"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons def"));
 			} else if(val == Integer.MAX_VALUE-1) {
-				GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons fav_cat"));
-				GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons fav_cat"));
-				GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons def"));
-				GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons def"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons fav_cat"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons fav_cat"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons def"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons def"));
 			} else if(val == Integer.MIN_VALUE+1) {
-				GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons def"));
-				GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons def"));
-				GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons cat"));
-				GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons cat"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons def"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons def"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons cat"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons cat"));
 			} else if(val == 0) {
-				GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons fav_cat"));
-				GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons fav_cat"));
-				GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons cat"));
-				GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons cat"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons fav_cat"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons fav_cat"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons cat"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons cat"));
 			} else if(val > 0) {
-				GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons fav_on"));
-				GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons fav_on"));
-				GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons def"));
-				GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons def"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons fav_on"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons fav_on"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons def"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons def"));
 			} else {
-				GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons def"));
-				GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons def"));
-				GUI.setGradient(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons on"));
-				GUI.setForeground(ProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons on"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons def"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons def"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons on"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons on"));
 			}
 			JsonArray cts = Json.parseArr(Options.get("chests"));
 			cts.add("bonechest");
@@ -501,7 +503,7 @@ public class MainFrame {
 			img = new Image("data/ChestPics/"+ct+".png");
 			img.setSquare(25);
 			try {
-				GUI.setImage(ProfileSection.pre+cid+"::"+slot+"::chest", img);
+				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::chest", img);
 			} catch (IOException e) {
 				Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Debug.general, Debug.error, cid, slot, true);
 			}
@@ -510,18 +512,18 @@ public class MainFrame {
 	
 	
 	public static void updateSlotSync(String cid, int slot, boolean synced) {
-		GUI.setEnabled(ProfileSection.pre+cid+"::"+slot+"::run", !synced);
-		GUI.setEnabled(ProfileSection.pre+cid+"::"+slot+"::skip", !synced);
+		GUI.setEnabled(ViewerProfileSection.pre+cid+"::"+slot+"::run", !synced);
+		GUI.setEnabled(ViewerProfileSection.pre+cid+"::"+slot+"::skip", !synced);
 	}
 	
 	public static void updateCurrency(String cid, String type, int amount) {
-		GUI.setText(ProfileSection.pre+cid+"::"+type, ""+amount);
+		GUI.setText(ViewerProfileSection.pre+cid+"::"+type, ""+amount);
 	}
 	
 	public static void updateGeneral(String cid, String pn, String ln, Color lc) {
-		GUI.setText(ProfileSection.pre+cid+"::pname", pn);
-		GUI.setText(ProfileSection.pre+cid+"::layer", ln);
-		GUI.setBackground(ProfileSection.pre+cid+"::laycol", lc);
+		GUI.setText(ViewerProfileSection.pre+cid+"::pname", pn);
+		GUI.setText(ViewerProfileSection.pre+cid+"::layer", ln);
+		GUI.setBackground(ViewerProfileSection.pre+cid+"::laycol", lc);
 	}
 	
 	
@@ -554,7 +556,6 @@ public class MainFrame {
 					HashSet<String> loaded = Manager.getLoadedProfiles();
 					for(String cid : ConfigsV2.getCids()) {
 						if(loaded.contains(cid)) {
-							addLoadedProfile(cid, Manager.getProfilePos(cid));
 							for(int i=0; i<5; i++)
 								updateSlotRunning(cid, i, Manager.getViewer(cid).isRunning(i));
 						} else {

@@ -28,6 +28,7 @@ import program.viewer.Raid;
 import run.Manager;
 import run.BotListener;
 import run.Manager.IniCanceledException;
+import run.ProfileType;
 
 public class StreamRaiders {
 	
@@ -171,7 +172,7 @@ public class StreamRaiders {
 					return GUI.showConfirmationBoxStatic("Loading Configs", "config file is corrupted\r\nreset?");
 				}
 				@Override
-				public void onDataPathUpdate(String dataPath, String serverTime, JsonObject data) {
+				public void onSRDataUpdate(String dataPathUrl, JsonObject data) {
 					GuideContent.saveChestRewards(data);
 					GuideContent.gainStats(data.getAsJsonObject("Units"));
 				}
@@ -180,8 +181,8 @@ public class StreamRaiders {
 					MainFrame.updateLoadStatus(loaded, failed, total);
 				}
 				@Override
-				public void onProfileLoadComplete(String cid, int pos) {
-					MainFrame.addLoadedProfile(cid, pos);
+				public void onProfileLoadComplete(String cid, int pos, ProfileType type) {
+					MainFrame.addLoadedProfile(cid, pos, type);
 				}
 				@Override
 				public void onProfileLoadError(String cid, int pos, Exception e) {
@@ -190,6 +191,10 @@ public class StreamRaiders {
 				@Override
 				public void onProfileUnloaded(String cid) {
 					MainFrame.remProfile(cid);
+				}
+				@Override
+				public void onProfileSwitchedAccountType(String cid, ProfileType type) {
+					MainFrame.profileSwitchedAccountType(cid, type);
 				}
 				@Override
 				public void onProfileChangedRunning(String cid, int slot, boolean run) {

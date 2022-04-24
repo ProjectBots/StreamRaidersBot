@@ -185,7 +185,7 @@ public class Map {
 			
 			switch(team) {
 			case "Ally":
-				if(place.getAsJsonPrimitive("CharacterType").getAsString().contains("epic") || place.getAsJsonPrimitive("CharacterType").getAsString().contains("captain")) {
+				if(place.get("CharacterType").getAsString().contains("epic") || place.get("CharacterType").getAsString().contains("captain")) {
 					set(x-1, y+1, SRC.Map.isOccupied, true);
 					set(x-1, y, SRC.Map.isOccupied, true);
 					set(x, y+1, SRC.Map.isOccupied, true);
@@ -195,15 +195,15 @@ public class Map {
 					set(x, y, SRC.Map.isEpic, true);
 				}
 				set(x, y, SRC.Map.isAllied, true);
-				set(x, y, "spec", place.getAsJsonPrimitive("specializationUid").getAsString());
-				if(place.getAsJsonPrimitive("CharacterType").getAsString().contains("captain")) {
+				set(x, y, "spec", place.get("specializationUid").getAsString());
+				if(place.get("CharacterType").getAsString().contains("captain")) {
 					set(x, y, SRC.Map.isCaptain, true);
 					set(x-1, y, SRC.Map.isCaptain, true);
 					set(x, y+1, SRC.Map.isCaptain, true);
 					set(x-1, y+1, SRC.Map.isCaptain, true);
 				}
 
-				String userId = place.getAsJsonPrimitive("userId").getAsString();
+				String userId = place.get("userId").getAsString();
 				if(!userId.equals("") && users != null) {
 					set(x, y, "userId", userId);
 					int index = uids.indexOf(userId);
@@ -212,8 +212,8 @@ public class Map {
 					else if(index > 0)
 						set(x, y, SRC.Map.isOther, true);
 					for(int u=0; u<users.size(); u++) {
-						if(userId.equals(users.get(u).getAsJsonObject().getAsJsonPrimitive("userId").getAsString())) {
-							set(x, y, "twitchUserName", users.get(u).getAsJsonObject().getAsJsonPrimitive("twitchUserName").getAsString());
+						if(userId.equals(users.get(u).getAsJsonObject().get("userId").getAsString())) {
+							set(x, y, "twitchUserName", users.get(u).getAsJsonObject().get("twitchUserName").getAsString());
 						}
 					}
 				}

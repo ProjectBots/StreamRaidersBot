@@ -1,7 +1,6 @@
 package run;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -27,22 +26,15 @@ import program.Skins;
 import program.Skins.Skin;
 import include.Http.NoConnectionException;
 import program.SRR.NotAuthorizedException;
-import program.SRR.OutdatedDataException;
 import program.Store;
 import program.Store.C;
 import program.Store.Item;
 import program.viewer.CaptainData;
 import program.viewer.Raid;
-import program.Options;
 import program.Unit;
 
-public class ViewerBackEnd {
+public class ViewerBackEnd extends BackEnd{
 
-	private SRR req;
-	private final String cid;
-	
-	private long secoff;
-	
 	private Raid[] raids = new Raid[4];
 	private Map[] maps = new Map[4];
 	private Unit[] units;
@@ -56,18 +48,8 @@ public class ViewerBackEnd {
 	private int[] updateTimes = new int[] {10, 1, 5, 30, 15, 10, 60};
 	
 	
-	public ViewerBackEnd(String cid) throws NoConnectionException, NotAuthorizedException, OutdatedDataException {
-		this.cid = cid;
-		try {
-			req = new SRR(cid, Options.get("clientVersion"));
-		} catch (OutdatedDataException e) {
-			updateDataPath(e.getDataPath(), e.getServerTime(), req);
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e1) {}
-			req = new SRR(cid, Options.get("clientVersion"));
-		}
-		secoff = ChronoUnit.SECONDS.between(Time.parse(Json.parseObj(req.getCurrentTime()).get("data").getAsString()), LocalDateTime.now());
+	public ViewerBackEnd(String cid, SRR req) throws NoConnectionException, NotAuthorizedException {
+		super(cid, req);
 		updateRaids(true);
 		updateUnits(true);
 		updateStore(true);
@@ -88,95 +70,6 @@ public class ViewerBackEnd {
 		updateTimes[4] = qer;
 		updateTimes[5] = caps;
 		updateTimes[6] = skins;
-	}
-	
-	public static interface DataPathEventListener {
-		public default void onUpdate(String dataPath, String serverTime, JsonObject data) {}
-	}
-	
-	private static DataPathEventListener dpelis = new DataPathEventListener() {};
-	
-	public static void setDataPathEventListener(DataPathEventListener dpelis) {
-		ViewerBackEnd.dpelis = dpelis;
-	}
-	
-	public static interface UpdateEventListener {
-		public default void afterUpdate(String obj) {};
-	}
-	
-	private UpdateEventListener uelis = new UpdateEventListener() {};
-	
-	public void setUpdateEventListener(UpdateEventListener uelis) {
-		this.uelis = uelis;
-	}
-	
-	
-	synchronized private static void updateDataPath(String dataPath, String serverTime, SRR req) throws NoConnectionException, NotAuthorizedException {
-		if(!Options.get("data").equals(dataPath)) {
-			JsonObject data = Json.parseObj(SRR.getData(dataPath)).getAsJsonObject("sheets");
-			for(String s : "obstacles Obstacles  quests Quests  mapNodes MapNodes  specsRaw Specialization  store Store  rewards ChestRewards  events Events  skins Skins".split("  ")) {
-				String[] ss = s.split(" ");
-				Options.set(ss[0], data.getAsJsonObject(ss[1]).toString());
-			}
-			Event.updateCurrentEvent(serverTime);
-			String currentEventUid = Event.getCurrentEvent();
-			if(currentEventUid != null) {
-				currentEventUid = currentEventUid.split("_")[0];
-				JsonObject tiers = data.getAsJsonObject("EventTiers");
-				JsonObject currentTiers = new JsonObject();
-				for(String key : tiers.keySet())
-					if(key.matches("^"+currentEventUid+"[0-9]+$"))
-						currentTiers.add(key, tiers.get(key));
-				Options.set("eventTiers", currentTiers.toString());
-			} else {
-				Options.set("eventTiers", "{}");
-			}
-			Options.set("currentEventCurrency", data.getAsJsonObject("Items").getAsJsonObject("eventcurrency").get("CurrencyTypeAwarded").getAsString());
-			JsonObject unitCosts = data.getAsJsonObject("UnitCosts");
-			Options.set("unitCosts", unitCosts.toString());
-			Store.setUnitCosts(unitCosts);
-			Unit.setUnitTypes(data);
-			Options.set("unitTypes", Unit.getTypes().toString());
-			
-			JsonObject units_raw = data.getAsJsonObject("Units");
-			JsonObject units = new JsonObject();
-			for(String key : units_raw.keySet()) {
-				JsonObject u = units_raw.getAsJsonObject(key);
-				if(u.get("CanBePlaced").getAsBoolean())
-					units.add(key, u);
-			}
-			Options.set("units", units.toString());
-			
-			Options.set("data", dataPath);
-			Options.save();
-			dpelis.onUpdate(dataPath, serverTime, data);
-		}
-		try {
-			if(req != null)
-				req.reload();
-		} catch (OutdatedDataException e) {
-			Debug.printException("BackEndHandler -> updateDataPath: err=failed to update data path",  e, Debug.runerr, Debug.fatal, null, null, true);
-		}
-	}
-	
-	public String getServerTime() {
-		return Time.parse(LocalDateTime.now().minusSeconds(secoff));
-	}
-	
-	private boolean testUpdate(JsonObject jo) throws NoConnectionException, NotAuthorizedException {
-		JsonElement je = jo.get(SRC.errorMessage);
-		if(!je.isJsonPrimitive()) 
-			return false;
-		String err = je.getAsString();
-		switch(err) {
-		case "Game data mismatch.":
-		case "Client lower.":
-		case "Account type mismatch.":
-			updateDataPath(jo.getAsJsonObject("info").getAsJsonPrimitive("dataPath").getAsString(), getServerTime(), req);
-			return true;
-		default:
-			throw new StreamRaidersException("BackEndHandler -> testUpdate: err="+je.getAsString()+", jo="+jo.toString(), cid, null);
-		}
 	}
 	
 	synchronized public void updateUnits(boolean force) throws NoConnectionException, NotAuthorizedException {
@@ -233,8 +126,8 @@ public class ViewerBackEnd {
 		
 		updateRaids(true);
 		
-		List<String> userIds = SRR.getViewerUserIds();
-		userIds.add(0, getUserId());
+		List<String> userIds = SRR.getAllUserIds();
+		userIds.add(0, req.getViewerUserId());
 		
 			
 		JsonObject raidplan = Json.parseObj(req.getRaidPlan(raids[slot].get(SRC.Raid.raidId)));
@@ -317,7 +210,7 @@ public class ViewerBackEnd {
 		if(testUpdate(userEventProgression))
 			userEventProgression = Json.parseObj(req.getUserEventProgression());
 		
-		event.updateEvent(getServerTime(), userEventProgression.getAsJsonArray("data"));
+		event.updateEvent(Manager.getServerTime(), userEventProgression.getAsJsonArray("data"));
 		
 		JsonObject userQuests = Json.parseObj(req.getUserQuests());
 		if(testUpdate(userQuests))
@@ -433,7 +326,7 @@ public class ViewerBackEnd {
 		updateRaids(false);
 		Raid[] ret = new Raid[0];
 		for(int i=0; i<raids.length; i++)
-			if(raids[i].isOffline(getServerTime(), il, treshold))
+			if(raids[i].isOffline(Manager.getServerTime(), il, treshold))
 				ret = add(ret, raids[i]);
 		return ret;
 	}
@@ -486,7 +379,7 @@ public class ViewerBackEnd {
 				ret = add(ret, units[i]);
 				break;
 			case SRC.BackEndHandler.isUnitPlaceable:
-				if(units[i].isAvailable(getServerTime()))
+				if(units[i].isAvailable(Manager.getServerTime()))
 					ret = add(ret, units[i]);
 				break;
 			case SRC.BackEndHandler.isUnitUnlockable:
@@ -548,7 +441,7 @@ public class ViewerBackEnd {
 			}
 		} else {
 			for(Unit u : units)
-				if(u.isAvailable(getServerTime()))
+				if(u.isAvailable(Manager.getServerTime()))
 					ret = add(ret, u);
 		}
 		
@@ -610,12 +503,6 @@ public class ViewerBackEnd {
 		return maps[slot];
 	}
 	
-	
-	public String getUserId() {
-		return req.getViewerUserId();
-	}
-	
-	
 	public int getCurrency(C con, boolean force) throws NotAuthorizedException, NoConnectionException {
 		updateStore(false);
 		return store.getCurrency(con);
@@ -648,12 +535,12 @@ public class ViewerBackEnd {
 	}
 	
 	public List<Item> getStoreItems(int con, String section) {
-		return store.getStoreItems(con, section, getServerTime());
+		return store.getStoreItems(con, section, Manager.getServerTime());
 	}
 	
 	public List<Item> getAvailableEventStoreItems(String section, boolean includePurchased) throws NoConnectionException, NotAuthorizedException {
 		updateSkins(false);
-		return store.getAvailableEventStoreItems(section, getServerTime(), includePurchased, skins);
+		return store.getAvailableEventStoreItems(section, Manager.getServerTime(), includePurchased, skins);
 	}
 	
 	public String refreshStore() throws NoConnectionException, NotAuthorizedException {
@@ -735,11 +622,10 @@ public class ViewerBackEnd {
 	public String grantEventQuestMilestoneReward() throws NoConnectionException {
 		return req.grantEventQuestMilestoneReward();
 	}
-	
+
 	private static <T>T[] add(T[] arr, T item) {
 		return ArrayUtils.add(arr, item);
 	}
-	
 	
 	
 }
