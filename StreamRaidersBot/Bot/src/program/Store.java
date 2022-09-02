@@ -1,11 +1,9 @@
 package program;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
-import java.util.List;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -19,13 +17,14 @@ public class Store {
 	
 	private static JsonObject unitCosts = Json.parseObj(Options.get("unitCosts"));
 	
-	public static void setUnitCosts(JsonObject unitCosts) {
-		Store.unitCosts = unitCosts;
+	public static JsonObject genUnitCostsFromData(JsonObject data) {
+		unitCosts = data.getAsJsonObject("UnitCosts");
+		return unitCosts;
 	}
 
 	public static int[] getCost(String type, int lvl, boolean dupe) {
 		lvl++;
-		String id = Unit.getRarity(type)+"_";
+		String id = UnitRarity.parseType(type).toString().toLowerCase()+"_";
 		if(dupe) 
 			id += "dupe1";
 		else if(lvl == 1)
@@ -40,6 +39,7 @@ public class Store {
 	
 	private JsonArray shopItems = new JsonArray();
 	private Hashtable<String, Integer> currencies = new Hashtable<>();
+	private HashSet<String> openedChests = new HashSet<>();
 	
 	private int storeRefreshCount = 0;
 	
@@ -48,7 +48,7 @@ public class Store {
 	}
 	
 	
-	public Store(JsonObject user, JsonArray availableCurrencies, JsonArray currentStoreItems) {
+	public Store(JsonObject user, JsonArray availableCurrencies, JsonArray currentStoreItems, JsonArray openedChests) {
 		
 		currencies = new Hashtable<>();
 		for(int i=0; i<availableCurrencies.size(); i++) {
@@ -59,6 +59,12 @@ public class Store {
 		currencies.put(potions.get(), potion > 100 ? 100 : potion);
 		storeRefreshCount = user.get("storeRefreshCount").getAsInt();
 		shopItems = currentStoreItems;
+		
+		for(int i=0; i<openedChests.size(); i++) {
+			JsonObject c = openedChests.get(i).getAsJsonObject();
+			if(c.get("purchasedQuantity").getAsString().equals("1"))
+				this.openedChests.add(c.get("chestId").getAsString());
+		}
 	}
 	
 	public static class C {
@@ -82,8 +88,7 @@ public class Store {
 	private static final HashSet<String> currencyTypes = new HashSet<String>() {
 		private static final long serialVersionUID = 1L;
 		{
-		JsonObject uts = Unit.getTypes();
-		for(String ut : uts.keySet())
+		for(String ut : Unit.getTypesList())
 			add(ut.replace("allies", ""));
 		add(potions.get());
 		add(gold.get());
@@ -153,7 +158,7 @@ public class Store {
 	
 	public boolean canUpgradeUnit(Unit unit) {
 		int lvl = Integer.parseInt(unit.get(SRC.Unit.level));
-		String type = unit.get(SRC.Unit.unitType);
+		String type = unit.unitType;
 		int[] cost = getCost(type, lvl, false);
 		
 		if(getCurrency(gold) < cost[0] || getCurrency(type) < cost[1])
@@ -167,7 +172,7 @@ public class Store {
 		LinkedList<Unit> ret = new LinkedList<>();
 		for(int i=0; i<units.length; i++) {
 			int lvl = Integer.parseInt(units[i].get(SRC.Unit.level));
-			String type = units[i].get(SRC.Unit.unitType);
+			String type = units[i].unitType;
 			if(lvl == 30) 
 				continue;
 			
@@ -186,16 +191,16 @@ public class Store {
 		if(lvl.equals("19")) {
 			if(specUID == null || specUID.equals("null"))
 				return "no specUID";
-			ret = Json.parseObj(req.specializeUnit(unit.get(SRC.Unit.unitType), lvl, unit.get(SRC.Unit.unitId), specUID));
+			ret = Json.parseObj(req.specializeUnit(unit.unitType, lvl, unit.get(SRC.Unit.unitId), specUID));
 		} else {
-			ret = Json.parseObj(req.upgradeUnit(unit.get(SRC.Unit.unitType), lvl, unit.get(SRC.Unit.unitId)));
+			ret = Json.parseObj(req.upgradeUnit(unit.unitType, lvl, unit.get(SRC.Unit.unitId)));
 		}
 		
 		JsonElement err = ret.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
 			return err.getAsString();
 		
-		String ut = unit.get(SRC.Unit.unitType);
+		String ut = unit.unitType;
 		int[] cost = getCost(ut, Integer.parseInt(lvl), false);
 		decreaseCurrency(gold, cost[0]);
 		decreaseCurrency(ut, cost[1]);
@@ -214,11 +219,11 @@ public class Store {
 	
 	public Unit[] getUnlockableUnits(Unit[] units) {
 		
-		JsonObject allTypes = Unit.getTypes();
+		ArrayList<String> allTypes = Unit.getTypesList();
 		
 		Hashtable<String, Boolean> gotTypes = new Hashtable<>();
 		for(int i=0; i<units.length; i++) {
-			String type = units[i].get(SRC.Unit.unitType);
+			String type = units[i].unitType;
 			int lvl = Integer.parseInt(units[i].get(SRC.Unit.level));
 			if(gotTypes.contains(type))
 				gotTypes.put(type, gotTypes.get(type) && lvl == 30);
@@ -229,7 +234,7 @@ public class Store {
 		LinkedList<Unit> ret = new LinkedList<>();
 		
 		//	normal unlock
-		for(String type : allTypes.keySet()) {
+		for(String type : allTypes) {
 			if(gotTypes.containsKey(type))
 				continue;
 			
@@ -269,159 +274,194 @@ public class Store {
 	public static class Item {
 		@Override
 		public String toString() {
-			return Json.prettyJson(item);
+			return new StringBuffer(uid)
+					.append(":{")
+					.append(name)
+					.append(" ")
+					.append(quantity)
+					.append("@")
+					.append(price)
+					.append("")
+					.append(purchased ? "purchased " : "")
+					.append(section)
+					.append("}")
+					.toString();
 		}
 		@Override
 		public boolean equals(Object obj) {
 			if(!(obj instanceof Item))
 				return false;
-			return ((Item) obj).item.equals(item);
-		}
-		public String toStringOneLine() {
-			return item.toString();
-		}
-		private final JsonObject item;
-		public Item(JsonObject item, JsonObject pack) {
-			this.item = pack;
-			if(item != null)
-				for(String key : item.keySet())
-					this.item.add(key, item.get(key));
-			
-			for(String se : "Start End".split(" ")) {
-				String lt = getStr("Live"+se+"Time");
-				if(lt.equals(""))
-					lt = getStr("Bones"+se+"Time");
-				this.item.addProperty(se+"Time_srb", lt.equals("")
-											? Time.parse(LocalDateTime.now().plusYears(se.equals("End") ? 100 : -100))
-											: lt);
-			}
-		}
-		//	commonly used
-		public String getItem() {
-			return getStr("Item");
-		}
-		public int getPrice() {
-			return getInt("BasePrice");
-		}
-		public int getQuantity() {
-			return getInt("Quantity");
-		}
-		public boolean isPurchased() {
-			return getInt("purchased") == 1;
-		}
-		public String getEndTime() {
-			return getStr("EndTime_srb");
-		}
-		public String getStartTime() {
-			return getStr("StartTime_srb");
+			return ((Item) obj).uid.equals(uid);
 		}
 		
-		//	for not common usecases
-		public String getStr(String key) {
-			return item.get(key).getAsString();
-		}
-		public int getInt(String key) {
-			return item.get(key).getAsInt();
+		public final String name;
+		public final int price;
+		public final int quantity;
+		public final boolean purchased;
+		public final String section;
+		public final String uid;
+		//public final String startTime;
+		//public final String endTime;
+		
+		
+		public Item(JsonObject pack, boolean purchased) {
+
+			name = pack.get("Item").getAsString();
+			price = pack.get("BasePrice").getAsInt();
+			quantity = pack.get("Quantity").getAsInt();
+			this.purchased = purchased;
+			section = pack.get("Section").getAsString();
+			uid = pack.get("Uid").getAsString();
+			
+			/*
+			String lt = pack.get("LiveStartTime").getAsString();
+			if(lt.equals(""))
+				lt = pack.get("BonesStartTime").getAsString();
+			startTime = lt.equals("")
+							? Time.parse(LocalDateTime.now().plusYears(-100))
+							: lt;
+			
+			lt = pack.get("LiveEndTime").getAsString();
+			if(lt.equals(""))
+				lt = pack.get("BonesEndTime").getAsString();
+			endTime = lt.equals("")
+							? Time.parse(LocalDateTime.now().plusYears(100))
+							: lt;
+			*/
 		}
 	}
 	
-	public List<Item> getStoreItems(int con, String section, String serverTime) {
+	public ArrayList<Item> getPurchasableScrolls(String serverTime) {
 		JsonObject packs = Json.parseObj(Options.get("store"));
-		List<Item> ret = new ArrayList<>();
-		switch(con) {
-		case SRC.Store.currentlyInShop:
-			for(int i=0; i<shopItems.size(); i++) {
-				JsonObject item = shopItems.get(i).getAsJsonObject().deepCopy();
-				if(item.get("purchased").getAsInt() == 0 && item.get("section").getAsString().equals(section))
-					ret.add(new Item(item, packs.get(item.get("itemId").getAsString()).getAsJsonObject().deepCopy()));
-			}
-			break;
-		case SRC.Store.purchasable:
-			for(int i=0; i<shopItems.size(); i++) {
-				JsonObject item = shopItems.get(i).getAsJsonObject().deepCopy();
-				JsonObject pack = packs.get(item.get("itemId").getAsString()).getAsJsonObject().deepCopy();
-				String let = pack.get("LiveEndTime").getAsString();
-				if(item.get("purchased").getAsInt() == 0
-					&& item.get("section").getAsString().equals(section)
-					&& (let.equals("") || Time.isAfter(let, serverTime)))
-					ret.add(new Item(item, pack));
-			}
-			break;
-		case SRC.Store.wholeSection:
-			for(int i=0; i<shopItems.size(); i++) {
-				JsonObject item = shopItems.get(i).getAsJsonObject().deepCopy();
-				if(item.get("section").getAsString().equals(section))
-					ret.add(new Item(item, packs.get(item.get("itemId").getAsString()).getAsJsonObject().deepCopy()));
-			}
-			break;
+		ArrayList<Item> ret = new ArrayList<>();
+		for(int i=0; i<shopItems.size(); i++) {
+			JsonObject item = shopItems.get(i).getAsJsonObject();
+			JsonObject pack = packs.get(item.get("itemId").getAsString()).getAsJsonObject();
+			String let = pack.get("LiveEndTime").getAsString();
+			if(item.get("purchased").getAsString().equals("0")
+				&& item.get("section").getAsString().equals("Scrolls")
+				&& (let.equals("") || Time.isAfter(let, serverTime)))
+				ret.add(new Item(pack, false));
 		}
 		return ret;
 	}
 	
-	public List<Item> getAvailableEventStoreItems(String section, String serverTime, boolean includePurchased, Skins skins) {
-		JsonObject store = Json.parseObj(Options.get("store"));
-		List<Item> ret = new ArrayList<>();
-		outer:
-		for(String key : store.keySet()) {
-			JsonObject pack = store.getAsJsonObject(key);
+	public Item getDaily(String serverTime) {
+		JsonObject daily = Json.parseObj(Options.get("store")).getAsJsonObject("dailydrop");
+		
+		String let = daily.get("LiveEndTime").getAsString();
+		if(Time.isAfter(serverTime, let))
+			return null;
+		
+		String lst = daily.get("LiveStartTime").getAsString();
+		if(Time.isAfter(lst, serverTime))
+			return null;
+		
+		for(int i=0; i<shopItems.size(); i++) {
+			JsonObject item = shopItems.get(i).getAsJsonObject();
+			if(!item.get("itemId").getAsString().equals("dailydrop"))
+				continue;
+			
+			return item.get("purchased").getAsString().equals("1") ? null : new Item(daily, false);
+		}
+		return null;
+	}
+	
+	public ArrayList<Item> getAvailableEventStoreItems(String section, String serverTime, boolean includePurchased, Skins skins) {
+		JsonObject packs = Json.parseObj(Options.get("store"));
+		
+		//	check for already purchased items
+		HashSet<String> purchasedItems = new HashSet<>();
+		for(int i=0; i<shopItems.size(); i++) {
+			JsonObject item = shopItems.get(i).getAsJsonObject();
+			if(item.get("purchased").getAsString().equals("1"))
+				purchasedItems.add(item.get("itemId").getAsString());
+		}
+		
+		ArrayList<Item> ret = new ArrayList<>();
+		for(String key : packs.keySet()) {
+			JsonObject pack = packs.getAsJsonObject(key);
 			
 			//filter out different sections
 			if(!pack.get("Section").getAsString().equals(section))
 				continue;
 			
-			//filtering out stuff for real money
-			if(pack.get("BasePrice").getAsInt() == -1)
+			//filter out other stuff
+			if(!filter(pack, serverTime))
 				continue;
 			
-			//filtering out stuff which is not available to account type
-			String at = pack.get("AvailableTo").getAsString();
-			if(!(at.equals("All") || at.equals("Viewer")))
-				continue;
+			//check if purchased
+			boolean purchased = openedChests.contains(key) || purchasedItems.contains(key) || skins.hasSkin(key);
 			
-			//filtering out stuff which isn't available atm 
-			String let = pack.get("LiveEndTime").getAsString();
-			if(let.equals(""))
-				let = pack.get("BonesEndTime").getAsString();
-			if(!let.equals("") && Time.isAfter(serverTime, let))
-				continue;
-			
-			String lst = pack.get("LiveStartTime").getAsString();
-			if(lst.equals(""))
-				lst = pack.get("BonesStartTime").getAsString();
-			if(!lst.equals("") && Time.isAfter(lst, serverTime))
-				continue;
-			
-			//check if sold out and assign (if available) a item
-			JsonObject item = null;
-			for(int i=0; i<shopItems.size(); i++) {
-				JsonObject item_ = shopItems.get(i).getAsJsonObject();
-				if(item_.get("itemId").getAsString().equals(key)) {
-					if(!includePurchased && item_.get("purchased").getAsInt() == 1)
-						continue outer;
-					item = item_.deepCopy();
-					break;
-				}
-			}
-			
-			if(!includePurchased && skins.hasSkin(pack.get("Uid").getAsString()))
+			if(!includePurchased && purchased)
 				continue;
 			
 			//item passed all filters
-			ret.add(new Item(item, pack));
+			ret.add(new Item(pack, purchased));
 		}
 		
 		return ret;
+	}
+	
+	public static ArrayList<String> getCurrentEventChests(String serverTime) {
+		ArrayList<String> ret = new ArrayList<>();
+		JsonObject store = Json.parseObj(Options.get("store"));
+		
+		for(String key : store.keySet()) {
+			if(!key.contains("chest"))
+				continue;
+			
+			JsonObject pack = store.getAsJsonObject(key);
+			
+			if(!filter(pack, serverTime))
+				continue;
+			
+			ret.add(key);
+		}
+		
+		return ret;
+	}
+	
+	private static boolean filter(JsonObject pack, String serverTime) {
+		
+		//filtering out stuff for real money
+		if(pack.get("BasePrice").getAsInt() == -1)
+			return false;
+		
+		//filtering out stuff which is not available to account type
+		String at = pack.get("AvailableTo").getAsString();
+		if(!(at.equals("All") || at.equals("Viewer")))
+			return false;
+		
+		//filtering out stuff which isn't available atm 
+		String let = pack.get("LiveEndTime").getAsString();
+		if(let.equals(""))
+			let = pack.get("BonesEndTime").getAsString();
+		if(!let.equals("") && Time.isAfter(serverTime, let))
+			return false;
+		
+		String lst = pack.get("LiveStartTime").getAsString();
+		if(lst.equals(""))
+			lst = pack.get("BonesStartTime").getAsString();
+		if(!lst.equals("") && Time.isAfter(lst, serverTime))
+			return false;
+		
+		return true;
+	}
+	
+	public static enum BuyType {
+		CHEST, SKIN, DAILY, ITEM
 	}
 	
 	
 	public JsonObject buyItem(Item item, SRR req, Skins skins) throws NoConnectionException {
 		JsonObject ret = new JsonObject();
 		C cur;
-		switch(item.getStr("Section")) {
+		switch(item.section) {
 		case SRC.Store.dungeon:
 			cur = keys;
 			break;
-		case SRC.Store.Event:
+		case SRC.Store.event:
 			cur = eventcurrency;
 			break;
 		case SRC.Store.bones:
@@ -432,18 +472,18 @@ public class Store {
 			break;
 		}
 		
-		int price = item.getPrice();
+		int price = item.price;
 		
 		if(price > getCurrency(cur)) {
 			ret.addProperty(SRC.errorMessage, "not enough "+cur.get());
 			return ret;
 		}
 		
-		String itype = item.getItem().replace("scroll", "").replace("cooldown", meat.get());
-		String itemId = item.getStr("Uid");
+		String itype = item.name.replace("scroll", "").replace("cooldown", meat.get());
+		String itemId = item.uid;
 		switch(itype) {
 		case "chest":
-			ret.addProperty("buyType", "chest");
+			ret.addProperty("buyType", BuyType.CHEST.toString());
 			
 			Json.override(ret, Json.parseObj(req.purchaseChestItem(itemId)));
 			
@@ -451,21 +491,21 @@ public class Store {
 				return ret;
 			break;
 		case "skin":
-			ret.addProperty("buyType", "skin");
+			ret.addProperty("buyType", BuyType.SKIN.toString());
 			
 			Json.override(ret, Json.parseObj(req.purchaseStoreSkin(itemId)));
 			
 			if(ret.get(SRC.errorMessage).isJsonPrimitive())
 				return ret;
 			
-			skins.addSkin(item.getStr("Uid"));
+			skins.addSkin(item.uid);
 			break;
 		default:
 			if(itemId.equals("dailydrop")) {
-				ret.addProperty("buyType", "daily");
+				ret.addProperty("buyType", BuyType.DAILY.toString());
 				Json.override(ret, Json.parseObj(req.grantDailyDrop()));
 			} else {
-				ret.addProperty("buyType", "item");
+				ret.addProperty("buyType", BuyType.ITEM.toString());
 				
 				Json.override(ret, Json.parseObj(req.purchaseStoreItem(itemId)));
 				

@@ -27,8 +27,8 @@ import include.GUI.Label;
 import include.GUI.Menu;
 import include.GUI.TrayMenu;
 import include.GUI.WinLis;
-import program.ConfigsV2;
-import program.Debug;
+import program.Configs;
+import program.Logger;
 import include.Guide;
 import program.Options;
 import program.Remaper;
@@ -37,6 +37,8 @@ import program.viewer.Raid;
 import run.Manager;
 import run.ProfileType;
 import run.Viewer;
+import userInterface.CAPTAIN.CaptainProfileSection;
+import userInterface.VIEWER.ViewerProfileSection;
 
 public class MainFrame {
 	
@@ -51,7 +53,7 @@ public class MainFrame {
 	
 	public static void open() {
 		
-		Fonts.ini();
+		Colors.ini();
 		
 		GUI.setDefIcon("data/Other/icon.png");
 		
@@ -61,7 +63,7 @@ public class MainFrame {
 		gui.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		gui.removeDefaultCloseListener();
 		
-		gui.setBackgroundGradient(Fonts.getGradient("main background"));
+		gui.setBackgroundGradient(Colors.getGradient("main background"));
 		
 		gui.addWinLis(new WinLis() {
 			@Override
@@ -76,9 +78,8 @@ public class MainFrame {
 			public void onDeIconfied(WindowEvent e) {}
 			@Override
 			public void onClose(WindowEvent e) {
-				if(ConfigsV2.getGBoo(ConfigsV2.needCloseConfirm) && !gui.showConfirmationBox("Exit?"))
+				if(Configs.getGBoo(Configs.needCloseConfirm) && !gui.showConfirmationBox("Exit?"))
 					return;
-				
 				close();
 			}
 		});
@@ -99,7 +100,7 @@ public class MainFrame {
 						new ActionsDelayed().open(gui, false);
 						break;
 					case KeyEvent.VK_R:
-						Fonts.ini();
+						Colors.ini();
 						close(false);
 						break;
 					}
@@ -145,17 +146,17 @@ public class MainFrame {
 			}
 		});
 		
-		gui.setMenuBarGradient(Fonts.getGradient("main menubar"));
+		gui.setMenuBarGradient(Colors.getGradient("main menubar"));
 
 		int m = 0;
 		Menu bot = new Menu("Bot", "Hide Window  Add a Profile  start all  start all delayed  stop all  skip time all  skip time all delayed".split("  "));
 		bot.setFont(new Font(null, Font.BOLD, 25));
-		bot.setForeground(Fonts.getColor("main menubar"));
+		bot.setForeground(Colors.getColor("main menubar"));
 		bot.setAL(m++, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(!gui.hide(tray))
-					Debug.print("MainFrame -> open: err=Couldn't add to tray", Debug.general, Debug.error, null, null, true);
+					Logger.print("MainFrame -> open: err=Couldn't add to tray", Logger.general, Logger.error, null, null, true);
 			}
 		});
 		bot.setAL(m++, new ActionListener() {
@@ -205,17 +206,17 @@ public class MainFrame {
 		m = 0;
 		Menu config = new Menu("Config", "export  import  Settings".split("  "));
 		config.setFont(new Font(null, Font.BOLD, 25));
-		config.setForeground(Fonts.getColor("main menubar"));
+		config.setForeground(Colors.getColor("main menubar"));
 		config.setAL(m++, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new ConfigsV2GUI().exportConfig(gui);
+				ConfigsExport.open(gui);
 			}
 		});
 		config.setAL(m++, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new ConfigsV2GUI().importConfig(gui);
+				ConfigsImport.open(gui);
 			}
 		});
 		config.setSep(m);
@@ -232,14 +233,14 @@ public class MainFrame {
 		m = 0;
 		Menu help = new Menu("Help", "Guide  About  Donators".split("  "));
 		help.setFont(new Font(null, Font.BOLD, 25));
-		help.setForeground(Fonts.getColor("main menubar"));
+		help.setForeground(Colors.getColor("main menubar"));
 		help.setAL(m++, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
 					new Guide("data\\Guide").show(gui, "Home");
 				} catch (Exception e1) {
-					Debug.printException("MainFrame -> openGuide: err=sth went wrong", e1, Debug.runerr, Debug.error, null, null, true);
+					Logger.printException("MainFrame -> openGuide: err=sth went wrong", e1, Logger.runerr, Logger.error, null, null, true);
 				}
 			}
 		});
@@ -293,6 +294,8 @@ public class MainFrame {
 	}
 	
 	synchronized public static void addLoadedProfile(String cid, int pos, ProfileType type) {
+		if(gui == null)
+			return;
 		Container c = null;
 		switch(type) {
 		case VIEWER:
@@ -308,11 +311,13 @@ public class MainFrame {
 	
 	public static void addFailedProfile(String cid, int pos, Exception e) {
 		if(e != null)
-			Debug.printException("Profile failed to load: err=" + e.getClass().getSimpleName(), e, Debug.runerr, Debug.error, cid, null, true);
+			Logger.printException("Profile failed to load: err=" + e.getClass().getSimpleName(), e, Logger.runerr, Logger.error, cid, null, true);
 		createFailedContainer(cid, pos);
 	}
 	
 	private static void createFailedContainer(String cid, int pos) {
+		if(gui == null)
+			return;
 		Container c = new Container();
 		c.setPos(0, pos);
 		c.setBorder(Color.gray, 2, 25);
@@ -320,15 +325,15 @@ public class MainFrame {
 		
 			Label name = new Label();
 			name.setPos(0, 0);
-			name.setText(ConfigsV2.getPStr(cid, ConfigsV2.pname));
-			name.setForeground(Fonts.getColor("main labels"));
+			name.setText(Configs.getPStr(cid, Configs.pname));
+			name.setForeground(Colors.getColor("main labels"));
 			c.addLabel(name);
 		
 			Button retry = new Button();
 			retry.setPos(1, 0);
 			retry.setText("\u27F2 retry");
-			retry.setForeground(Fonts.getColor("main buttons def"));
-			retry.setGradient(Fonts.getGradient("main buttons def"));
+			retry.setForeground(Colors.getColor("main buttons def"));
+			retry.setGradient(Colors.getGradient("main buttons def"));
 			retry.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -341,8 +346,8 @@ public class MainFrame {
 			Button reAdd = new Button();
 			reAdd.setPos(2, 0);
 			reAdd.setText("update cookies");
-			reAdd.setForeground(Fonts.getColor("main buttons def"));
-			reAdd.setGradient(Fonts.getGradient("main buttons def"));
+			reAdd.setForeground(Colors.getColor("main buttons def"));
+			reAdd.setGradient(Colors.getGradient("main buttons def"));
 			reAdd.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -355,8 +360,8 @@ public class MainFrame {
 			Button rem = new Button();
 			rem.setPos(3, 0);
 			rem.setText("X");
-			rem.setForeground(Fonts.getColor("main buttons def"));
-			rem.setGradient(Fonts.getGradient("main buttons def"));
+			rem.setForeground(Colors.getColor("main buttons def"));
+			rem.setGradient(Colors.getGradient("main buttons def"));
 			rem.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -372,39 +377,47 @@ public class MainFrame {
 	}
 	
 	public static void remProfile(String cid) {
-		if(gui != null) {
-			gui.remove(pre+cid+"::profile");
-			gui.refresh();
-		}
+		if(gui == null)
+			return;
+		gui.remove(pre+cid+"::profile");
+		gui.refresh();
 	}
 	
 	public static void profileSwitchedAccountType(String cid, ProfileType type) {
+		if(gui == null)
+			return;
 		remProfile(cid);
 		addLoadedProfile(cid, Manager.getProfilePos(cid), type);
 	}
 	
 	public static void updateSlotRunning(String cid, int slot, boolean run) {
-		GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::run", Fonts.getGradient("main buttons " + (run?"on":"def")));
-		GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::run", Fonts.getColor("main buttons " + (run?"on":"def")));
+		if(gui == null)
+			return;
+		GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::run", Colors.getGradient("main buttons " + (run?"on":"def")));
+		GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::run", Colors.getColor("main buttons " + (run?"on":"def")));
 	}
 	
 	public static void updateTimer(String cid, int slot, String time) {
+		if(gui == null)
+			return;
 		GUI.setText(ViewerProfileSection.pre+cid+"::"+slot+"::time", time);
 	}
 	
 	public static void updateSlot(String cid, int slot, Raid raid, boolean change) {
+		if(gui == null)
+			return;
 		
-		GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::change", Fonts.getColor("main buttons " + (change ? "on" : "def")));
-		GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::change", Fonts.getGradient("main buttons " + (change ? "on" : "def")));
+		GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::change", Colors.getColor("main buttons " + (change ? "on" : "def")));
+		GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::change", Colors.getGradient("main buttons " + (change ? "on" : "def")));
 		
-		Boolean locked = ConfigsV2.isSlotLocked(cid, "(all)", ""+slot);
+		Boolean locked = Configs.isSlotLocked(cid, "(all)", ""+slot);
 		String fid = "main buttons " +(locked == null
 										? "cat"
 										: locked
 											? "on"
 											: "def");
-		GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::lock", Fonts.getGradient(fid));
-		GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::lock", Fonts.getColor(fid));
+		GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::lock", Colors.getGradient(fid));
+		GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::lock", Colors.getColor(fid));
 
 		if(raid == null) {
 			GUI.setText(ViewerProfileSection.pre+cid+"::"+slot+"::capname", "????????");
@@ -413,7 +426,7 @@ public class MainFrame {
 			try {
 				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::img", img);
 			} catch (IOException e) {
-				Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, cid, slot, true);
+				Logger.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
 			GUI.setText(ViewerProfileSection.pre+cid+"::"+slot+"::wins", "??");
 			img = new Image("data/LoyaltyPics/noloy.png");
@@ -421,18 +434,18 @@ public class MainFrame {
 			try {
 				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::loy", img);
 			} catch (IOException e) {
-				Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, cid, slot, true);
+				Logger.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
-			GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons def"));
-			GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons def"));
-			GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons def"));
-			GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons def"));
+			GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient("main buttons def"));
+			GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor("main buttons def"));
+			GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons def"));
+			GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor("main buttons def"));
 			img = new Image("data/ChestPics/nochest.png");
 			img.setSquare(25);
 			try {
 				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::chest", img);
 			} catch (IOException e) {
-				Debug.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Debug.general, Debug.error, cid, slot, true);
+				Logger.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
 		} else {
 			GUI.setText(ViewerProfileSection.pre+cid+"::"+slot+"::capname", raid.get(SRC.Raid.twitchDisplayName));
@@ -442,12 +455,12 @@ public class MainFrame {
 			try {
 				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::img", img);
 			} catch (IOException e) {
-				Debug.print("MainFrame -> onUpdateSlot: err=couldnt set image, url="+raid.get(SRC.Raid.twitchUserImage), Debug.general, Debug.error, cid, slot, true);
+				Logger.print("MainFrame -> onUpdateSlot: err=couldnt set image, url="+raid.get(SRC.Raid.twitchUserImage), Logger.general, Logger.error, cid, slot, true);
 				try {
 					img = new Image("data/Other/icon.png");
 					GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::img", img);
 				} catch (IOException e1) {
-					Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set default image", e, Debug.general, Debug.error, cid, slot, true);
+					Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set default image", e, Logger.general, Logger.error, cid, slot, true);
 				}
 			}
 			GUI.setText(ViewerProfileSection.pre+cid+"::"+slot+"::wins", raid.get(SRC.Raid.pveWins));
@@ -457,47 +470,47 @@ public class MainFrame {
 			try {
 				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::loy", img);
 			} catch (IOException e) {
-				Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Debug.general, Debug.error, cid, slot, true);
+				Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
 			String cap = raid.get(SRC.Raid.twitchDisplayName);
-			Integer val = ConfigsV2.getCapInt(cid, "(all)", cap, raid.isDungeon() ? ConfigsV2.dungeon : ConfigsV2.campaign, ConfigsV2.fav);
+			Integer val = Configs.getCapInt(cid, "(all)", cap, raid.isDungeon() ? Configs.dungeon : Configs.campaign, Configs.fav);
 			if(val == null) {
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons def"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons def"));
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons def"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons def"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons def"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor("main buttons def"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient("main buttons def"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor("main buttons def"));
 			} else if(val == Integer.MAX_VALUE-1) {
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons fav_cat"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons fav_cat"));
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons def"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons def"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons fav_cat"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor("main buttons fav_cat"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient("main buttons def"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor("main buttons def"));
 			} else if(val == Integer.MIN_VALUE+1) {
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons def"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons def"));
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons cat"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons cat"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons def"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor("main buttons def"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient("main buttons cat"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor("main buttons cat"));
 			} else if(val == 0) {
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons fav_cat"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons fav_cat"));
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons cat"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons cat"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons fav_cat"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor("main buttons fav_cat"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient("main buttons cat"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor("main buttons cat"));
 			} else if(val > 0) {
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons fav_on"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons fav_on"));
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons def"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons def"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons fav_on"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor("main buttons fav_on"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient("main buttons def"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor("main buttons def"));
 			} else {
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getGradient("main buttons def"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Fonts.getColor("main buttons def"));
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getGradient("main buttons on"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Fonts.getColor("main buttons on"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons def"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor("main buttons def"));
+				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient("main buttons on"));
+				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor("main buttons on"));
 			}
 			JsonArray cts = Json.parseArr(Options.get("chests"));
 			cts.add("bonechest");
 			cts.add("dungeonchest");
 			String ct = Remaper.map(raid.getFromNode(SRC.MapNode.chestType));
 			if(ct == null || !cts.contains(new JsonPrimitive(ct))) {
-				Debug.print("MainFrame -> updateSlot -> chest_img: err=nochest, ct="+ct, Debug.lowerr, Debug.error, cid, slot, true);
+				Logger.print("MainFrame -> updateSlot -> chest_img: err=nochest, ct="+ct, Logger.lowerr, Logger.error, cid, slot, true);
 				ct = "nochest";
 			}
 			img = new Image("data/ChestPics/"+ct+".png");
@@ -505,22 +518,28 @@ public class MainFrame {
 			try {
 				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::chest", img);
 			} catch (IOException e) {
-				Debug.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Debug.general, Debug.error, cid, slot, true);
+				Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
 		}
 	}
 	
 	
 	public static void updateSlotSync(String cid, int slot, boolean synced) {
+		if(gui == null)
+			return;
 		GUI.setEnabled(ViewerProfileSection.pre+cid+"::"+slot+"::run", !synced);
 		GUI.setEnabled(ViewerProfileSection.pre+cid+"::"+slot+"::skip", !synced);
 	}
 	
 	public static void updateCurrency(String cid, String type, int amount) {
+		if(gui == null)
+			return;
 		GUI.setText(ViewerProfileSection.pre+cid+"::"+type, ""+amount);
 	}
 	
 	public static void updateGeneral(String cid, String pn, String ln, Color lc) {
+		if(gui == null)
+			return;
 		GUI.setText(ViewerProfileSection.pre+cid+"::pname", pn);
 		GUI.setText(ViewerProfileSection.pre+cid+"::layer", ln);
 		GUI.setBackground(ViewerProfileSection.pre+cid+"::laycol", lc);
@@ -532,29 +551,29 @@ public class MainFrame {
 	}
 	
 	private static void close(boolean dispose) {
-		GUI.showErrors(false);
-		
 		try {
-			gui.close();
+			gui.close(false);
 		} catch (Exception e) {}
 		
 		gui = null;
 		
 		if(dispose) {
-			Manager.stop();
-			
 			Browser.dispose();
 			
-			Debug.print("System exit", Debug.general, Debug.info, null, null);
+			Manager.stop();
+			
+			Logger.print("System exit", Logger.general, Logger.info, null, null);
 			System.exit(0);
 		} else {
+			GUI.showErrors(false);
+			
 			WaitScreen.setText("reloading...");
 			Thread t = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					open();
 					HashSet<String> loaded = Manager.getLoadedProfiles();
-					for(String cid : ConfigsV2.getCids()) {
+					for(String cid : Configs.getConfigIds()) {
 						if(loaded.contains(cid)) {
 							for(int i=0; i<5; i++)
 								updateSlotRunning(cid, i, Manager.getViewer(cid).isRunning(i));
@@ -576,10 +595,10 @@ public class MainFrame {
 			try {
 				Desktop.getDesktop().browse(new URI(link));
 			} catch (IOException | URISyntaxException e) {
-				Debug.printException("MainFrame -> openBrowser: err=can't open DesktopBrowser", e, Debug.runerr, Debug.error, null, null, true);
+				Logger.printException("MainFrame -> openBrowser: err=can't open DesktopBrowser", e, Logger.runerr, Logger.error, null, null, true);
 			}
 		} else {
-			Debug.print("MainFrame -> openBrowser: err=desktop not supported", Debug.runerr, Debug.error, null, null, true);
+			Logger.print("MainFrame -> openBrowser: err=desktop not supported", Logger.runerr, Logger.error, null, null, true);
 		}
 	}
 	

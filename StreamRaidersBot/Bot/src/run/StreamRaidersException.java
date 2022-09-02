@@ -1,6 +1,6 @@
 package run;
 
-import program.Debug;
+import program.Logger;
 
 public class StreamRaidersException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
@@ -9,17 +9,17 @@ public class StreamRaidersException extends RuntimeException {
 	public StreamRaidersException(String text, Exception cause, boolean silent, String cid, Integer slot) {
 		this.cause = cause;
 		this.text = text;
-		Debug.printException(text, cause, Debug.runerr, Debug.fatal, cid, slot, !silent);
+		Logger.printException(text, cause, Logger.runerr, Logger.fatal, cid, slot, !silent);
 	}
 	public StreamRaidersException(String text, Exception cause, String cid, Integer slot) {
 		this.cause = cause;
 		this.text = text;
-		Debug.printException(text, cause, Debug.runerr, Debug.fatal, cid, slot, true);
+		Logger.printException(text, cause, Logger.runerr, Logger.fatal, cid, slot, true);
 	}
 	public StreamRaidersException(String text, String cid, Integer slot) {
 		cause = null;
 		this.text = text;
-		Debug.print(text, Debug.runerr, Debug.fatal, cid, slot, true);
+		Logger.print(text, Logger.runerr, Logger.fatal, cid, slot, true);
 	}
 	public String getText() {
 		return text;

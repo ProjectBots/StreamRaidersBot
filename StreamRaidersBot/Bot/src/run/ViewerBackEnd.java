@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -15,7 +14,7 @@ import com.google.gson.JsonObject;
 
 import include.Json;
 import include.Time;
-import program.Debug;
+import program.Logger;
 import program.Map;
 import program.Event;
 import program.Quests;
@@ -33,7 +32,7 @@ import program.viewer.CaptainData;
 import program.viewer.Raid;
 import program.Unit;
 
-public class ViewerBackEnd extends BackEnd{
+public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd>{
 
 	private Raid[] raids = new Raid[4];
 	private Map[] maps = new Map[4];
@@ -48,8 +47,11 @@ public class ViewerBackEnd extends BackEnd{
 	private int[] updateTimes = new int[] {10, 1, 5, 30, 15, 10, 60};
 	
 	
-	public ViewerBackEnd(String cid, SRR req) throws NoConnectionException, NotAuthorizedException {
+	public ViewerBackEnd(String cid, SRR req) {
 		super(cid, req);
+	}
+	
+	void ini() throws NoConnectionException, NotAuthorizedException {
 		updateRaids(true);
 		updateUnits(true);
 		updateStore(true);
@@ -85,10 +87,10 @@ public class ViewerBackEnd extends BackEnd{
 		JsonArray u = jo.getAsJsonArray("data");
 		units = new Unit[u.size()];
 		for(int i=0; i<u.size(); i++)
-			units[i] = new Unit(u.get(i).getAsJsonObject());
+			units[i] = new Unit(u.get(i).getAsJsonObject(), cid);
 		
 		rts.put("units", Time.parse(now));
-		uelis.afterUpdate("units");
+		uelis.afterUpdate("units", this);
 	}
 	
 	synchronized public void updateRaids(boolean force) throws NoConnectionException, NotAuthorizedException {
@@ -115,7 +117,7 @@ public class ViewerBackEnd extends BackEnd{
 				raids[i] = null;
 		
 		rts.put("raids", Time.parse(now));
-		uelis.afterUpdate("raids");
+		uelis.afterUpdate("raids", this);
 	}
 	
 	synchronized public void updateMap(int slot, boolean force) throws NoConnectionException, NotAuthorizedException {
@@ -126,7 +128,7 @@ public class ViewerBackEnd extends BackEnd{
 		
 		updateRaids(true);
 		
-		List<String> userIds = SRR.getAllUserIds();
+		ArrayList<String> userIds = SRR.getAllUserIds();
 		userIds.add(0, req.getViewerUserId());
 		
 			
@@ -144,7 +146,7 @@ public class ViewerBackEnd extends BackEnd{
 				cid, slot);
 		
 		rts.put("map::"+slot, Time.parse(now));
-		uelis.afterUpdate("map::"+slot);
+		uelis.afterUpdate("map::"+slot, this);
 	}
 	
 	synchronized public void updateStore(boolean force) throws NoConnectionException, NotAuthorizedException {
@@ -160,28 +162,34 @@ public class ViewerBackEnd extends BackEnd{
 		JsonObject cur = Json.parseObj(req.getAvailableCurrencies());
 		JsonElement err = cur.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
-			Debug.print("BackEndHandler -> updateStore: cur, err="+err.getAsString(), Debug.runerr, Debug.error, cid, 4, true);
+			Logger.print("BackEndHandler -> updateStore: cur, err="+err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
 
 		JsonObject items = Json.parseObj(req.getCurrentStoreItems());
 		err = items.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
-			Debug.print("BackEndHandler -> updateStore: items, err="+err.getAsString(), Debug.runerr, Debug.error, cid, 4, true);
+			Logger.print("BackEndHandler -> updateStore: items, err="+err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
 		
 		JsonObject skins = Json.parseObj(req.getUserItems());
 		err = skins.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
-			Debug.print("BackEndHandler -> updateStore: skins, err="+err.getAsString(), Debug.runerr, Debug.error, cid, 4, true);
+			Logger.print("BackEndHandler -> updateStore: skins, err="+err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
+		
+		JsonObject openedChests = Json.parseObj(req.getOpenCountTrackedChests());
+		err = openedChests.get(SRC.errorMessage);
+		if(err.isJsonPrimitive())
+			Logger.print("BackEndHandler -> updateStore: openedChests, err="+err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
 		
 		
 		store = new Store(user.getAsJsonObject("data"),
 				cur.getAsJsonArray("data"),
-				items.getAsJsonArray("data"));
+				items.getAsJsonArray("data"),
+				openedChests.getAsJsonArray("data"));
 		
 
 		this.skins = new Skins(skins.get("data").isJsonArray() ? skins.getAsJsonArray("data") : null);
 		
 		rts.put("store", Time.parse(now));
-		uelis.afterUpdate("store");
+		uelis.afterUpdate("store", this);
 	}
 	
 	synchronized public void updateSkins(boolean force) throws NoConnectionException, NotAuthorizedException {
@@ -197,7 +205,7 @@ public class ViewerBackEnd extends BackEnd{
 		this.skins = new Skins(skins.get("data").isJsonArray() ? skins.getAsJsonArray("data") : null);
 		
 		rts.put("skins", Time.parse(now));
-		uelis.afterUpdate("skins");
+		uelis.afterUpdate("skins", this);
 	}
 	
 	synchronized public void updateQuestEventRewards(boolean force) throws NoConnectionException, NotAuthorizedException {
@@ -220,7 +228,7 @@ public class ViewerBackEnd extends BackEnd{
 		quests.updateQuests(userQuests.getAsJsonArray("data"));
 		
 		rts.put("qer", Time.parse(now));
-		uelis.afterUpdate("qer");
+		uelis.afterUpdate("qer", this);
 	}
 	
 	synchronized public void updateCaps(boolean force, boolean dungeon) throws NoConnectionException, NotAuthorizedException {
@@ -242,7 +250,7 @@ public class ViewerBackEnd extends BackEnd{
 		setCaps(caps, dungeon);
 		
 		rts.put("caps::"+dungeon, Time.parse(now));
-		uelis.afterUpdate("caps::"+dungeon);
+		uelis.afterUpdate("caps::"+dungeon, this);
 	}
 	
 	synchronized public void setCaps(CaptainData[] caps, boolean dungeon) {
@@ -398,11 +406,11 @@ public class ViewerBackEnd extends BackEnd{
 	}
 	
 	public boolean canUnlockUnit(Unit unit) {
-		return store.canUnlockUnit(unit.get(SRC.Unit.unitType), unit.dupe);
+		return store.canUnlockUnit(unit.unitType, unit.dupe);
 	}
 	
 	public String unlockUnit(Unit unit) throws NoConnectionException {
-		return store.unlockUnit(unit.get(SRC.Unit.unitType), unit.dupe, req);
+		return store.unlockUnit(unit.unitType, unit.dupe, req);
 	}
 	
 	
@@ -457,7 +465,7 @@ public class ViewerBackEnd extends BackEnd{
 			if(je.isJsonPrimitive()) 
 				return je.getAsString();
 		} catch (NullPointerException e) {
-			Debug.printException("BackEndHandler -> placeUnit: err=failed to place Unit, atr=" + atr == null ? "null" : atr, e, Debug.runerr, Debug.error, cid, slot, true);
+			Logger.printException("BackEndHandler -> placeUnit: err=failed to place Unit, atr=" + atr == null ? "null" : atr, e, Logger.runerr, Logger.error, cid, slot, true);
 		}
 		
 		return null;
@@ -468,9 +476,9 @@ public class ViewerBackEnd extends BackEnd{
 		ret.addProperty("raidPlacementsId", "");
 		ret.addProperty("userId", req.getViewerUserId());
 		if(epic) {
-			ret.addProperty("CharacterType", "epic"+unit.get(SRC.Unit.unitType)+unit.get(SRC.Unit.level));
+			ret.addProperty("CharacterType", "epic"+unit.unitType+unit.get(SRC.Unit.level));
 		} else {
-			ret.addProperty("CharacterType", unit.get(SRC.Unit.unitType)+unit.get(SRC.Unit.level));
+			ret.addProperty("CharacterType", unit.unitType+unit.get(SRC.Unit.level));
 		}
 		ret.addProperty("X", pos[0]);
 		ret.addProperty("Y", pos[1]);
@@ -530,17 +538,25 @@ public class ViewerBackEnd extends BackEnd{
 	}
 	
 	
-	public JsonObject buyItem(Item item) throws NoConnectionException {
+	public JsonObject buyItem(Item item) throws NoConnectionException, NotAuthorizedException {
+		updateStore(false);
 		return store.buyItem(item, req, skins);
 	}
 	
-	public List<Item> getStoreItems(int con, String section) {
-		return store.getStoreItems(con, section, Manager.getServerTime());
+	public ArrayList<Item> getPurchasableScrolls() throws NoConnectionException, NotAuthorizedException {
+		updateStore(false);
+		return store.getPurchasableScrolls(Manager.getServerTime());
 	}
 	
-	public List<Item> getAvailableEventStoreItems(String section, boolean includePurchased) throws NoConnectionException, NotAuthorizedException {
+	public ArrayList<Item> getAvailableEventStoreItems(String section, boolean includePurchased) throws NoConnectionException, NotAuthorizedException {
 		updateSkins(false);
+		updateStore(false);
 		return store.getAvailableEventStoreItems(section, Manager.getServerTime(), includePurchased, skins);
+	}
+	
+	public Item getDaily() throws NoConnectionException, NotAuthorizedException {
+		updateStore(false);
+		return store.getDaily(Manager.getServerTime());
 	}
 	
 	public String refreshStore() throws NoConnectionException, NotAuthorizedException {
@@ -611,7 +627,7 @@ public class ViewerBackEnd extends BackEnd{
 		return Json.parseObj(req.collectQuestReward(quest.slot));
 	}
 	
-	public List<String> getNeededUnitTypesForQuests() {
+	public ArrayList<String> getNeededUnitTypesForQuests() {
 		return quests.getNeededUnitTypesForQuests();
 	}
 	

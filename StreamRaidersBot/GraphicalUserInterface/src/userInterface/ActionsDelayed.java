@@ -2,7 +2,7 @@ package userInterface;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.time.LocalDateTime;
+import java.util.UUID;
 
 import include.GUI;
 import include.GUI.Button;
@@ -12,19 +12,13 @@ import run.Manager;
 
 public class ActionsDelayed {
 	
-	public static final String pre = "ActionsDelayed::";
+	private final String uid = UUID.randomUUID().toString()+"::";
 	
-	private final String uid;
-	
-	public ActionsDelayed() {
-		uid = pre + LocalDateTime.now().toString().hashCode() + "::";
-	}
-
 	public void open(GUI parent, boolean start) {
 
 		GUI t = new GUI("Time", 500, 200, parent, null);
 		
-		t.setBackgroundGradient(Fonts.getGradient("actdel background"));
+		t.setBackgroundGradient(Colors.getGradient("actdel background"));
 		
 		ActionListener al = new ActionListener() {
 			@Override
@@ -59,7 +53,7 @@ public class ActionsDelayed {
 		Button but = new Button();
 		but.setPos(0, 1);
 		but.setText("start all delayed");
-		but.setGradient(Fonts.getGradient("actdel button"));
+		but.setGradient(Colors.getGradient("actdel button"));
 		but.setAL(al);
 		t.addBut(but);
 	}

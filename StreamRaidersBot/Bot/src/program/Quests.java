@@ -1,7 +1,6 @@
 package program;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -46,8 +45,8 @@ public class Quests {
 	
 	private ArrayList<Quest> quests = null;
 	
-	public List<String> getNeededUnitTypesForQuests() {
-		List<String> ret = new ArrayList<>();
+	public ArrayList<String> getNeededUnitTypesForQuests() {
+		ArrayList<String> ret = new ArrayList<>();
 		for(Quest q : quests) {
 			String type = q.neededUnit();
 			if(type != null) 

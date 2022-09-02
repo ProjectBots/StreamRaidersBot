@@ -1,6 +1,6 @@
 package include;
 
-import program.Debug;
+import program.Logger;
 
 public class Pathfinding {
 
@@ -70,7 +70,7 @@ public class Pathfinding {
 		while(true) {
 			
 			if(++c % 500 == 0)
-				Debug.print("Pathfinding search " + c, Debug.loop, Debug.info, cid, slot);
+				Logger.print("Pathfinding search " + c, Logger.loop, Logger.info, cid, slot);
 			
 			
 			boolean stuck = true;
@@ -127,7 +127,7 @@ public class Pathfinding {
 					
 					if(check(x+i, y+j)) {
 						int ran;
-						if(i==0 || j==0) 
+						if(i==0 || j==0)
 							ran = Maths.ranInt(7, 12);
 						else 
 							ran = Maths.ranInt(10, 15);

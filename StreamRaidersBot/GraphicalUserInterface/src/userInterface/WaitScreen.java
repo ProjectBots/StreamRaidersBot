@@ -9,6 +9,10 @@ public class WaitScreen {
 
 	private static GUI ws = null;
 	
+	public static GUI getGUI() {
+		return ws;
+	}
+	
 	public static final String pre = "WaitScreen::";
 	
 	private static void open() {

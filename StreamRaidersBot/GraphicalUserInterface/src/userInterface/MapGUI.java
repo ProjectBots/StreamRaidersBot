@@ -4,7 +4,7 @@ import include.GUI;
 import include.GUI.Label;
 import include.GUI.TextArea;
 import include.Maths.Scaler;
-import program.Debug;
+import program.Logger;
 import program.Heatmap;
 import program.Map;
 import program.SRC;
@@ -14,8 +14,12 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Hashtable;
+
+import javax.swing.SwingConstants;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 
 public class MapGUI {
 
@@ -44,7 +48,7 @@ public class MapGUI {
 		
 	}
 	
-	public static void showLastHeatMap(GUI parrent, Heatmap heatMap, String name, int[] h) {
+	public static void showHeatMap(GUI parrent, Heatmap heatMap, String name, int[] h) {
 		
 		double[][] hmap = heatMap.getHMap();
 		
@@ -97,6 +101,58 @@ public class MapGUI {
 		map.refresh();
 	}
 	
+	private static final Hashtable<String, String> shortenedUnitAndPlanTypes = new Hashtable<String, String>() {
+		private static final long serialVersionUID = 1L; {
+			//	general
+			put("noplacement", "N");
+			put("vibe", "V");
+			put("assassin", "D");
+			put("support", "S");
+			put("armored", "A");
+			put("melee", "m");
+			put("ranged", "R");
+			
+			//	common
+			put("archer", "a");
+			put("rogue", "r");
+			put("warrior", "w");
+			put("tank", "t");
+			put("flagbearer", "f");
+			
+			//	uncommon
+			put("buster", "k");
+			put("barbarian", "B");
+			put("paladin", "p");
+			put("alliespaladin", "p");
+			put("healer", "h");
+			put("vampire", "v");
+			put("saint", "s");
+			put("bomber", "b");
+			
+			//	rare
+			put("centurion", "c");
+			put("flyingrogue", "F");
+			put("flyingarcher", "F");
+			put("monk", "H");
+			put("musketeer", "u");
+			put("berserker", "z");
+			put("shinobi", "E");
+			
+			//	legendary
+			put("warbeast", "W");
+			put("necromancer", "n");
+			put("artillery", "Y");
+			put("templar", "T");
+			put("orcslayer", "O");
+			put("mage", "G");
+			put("balloonbuster", "K");
+			put("alliesballoonbuster", "K");
+		}
+	};
+	
+	public static String getShortenedUnitAndPlanType(String type) {
+		return shortenedUnitAndPlanTypes.containsKey(type) ? shortenedUnitAndPlanTypes.get(type) : " ";
+	}
 	
 	public static void asGui(GUI parrent, Viewer run, int slot) {
 		Thread t = new Thread(new Runnable() {
@@ -124,7 +180,7 @@ public class MapGUI {
 							public void keyPressed(KeyEvent e) {
 								if((e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0 && (e.getModifiersEx() & KeyEvent.ALT_DOWN_MASK) > 0) {
 									Heatmap hm = new Heatmap();
-									showLastHeatMap(gui, hm, map.name, hm.getMaxHeat(map));
+									showHeatMap(gui, hm, map.name, hm.getMaxHeat(map));
 								} else if((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) > 0 && (e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0) {
 									switch(e.getKeyCode()) {
 									}
@@ -139,7 +195,7 @@ public class MapGUI {
 												asGui(gui, run, slot);
 											});
 										} catch (Exception e1) {
-											Debug.printException("MapGUI -> asGUI -> reload: err=failed to update Map", e1, Debug.runerr, Debug.error, run.cid, slot, true);
+											Logger.printException("MapGUI -> asGUI -> reload: err=failed to update Map", e1, Logger.runerr, Logger.error, run.cid, slot, true);
 										}
 										break;
 									}
@@ -154,7 +210,8 @@ public class MapGUI {
 						for(int x=0; x<map.width; x++) {
 							for(int y=0; y<map.length; y++) {
 
-								if(map.is(x, y, SRC.Map.isOccupied)) continue;
+								if(map.is(x, y, SRC.Map.isOccupied))
+									continue;
 								
 								int s = 10;
 								
@@ -164,6 +221,8 @@ public class MapGUI {
 								l.setInsets(0, 0, 0, 0);
 								l.setOpaque(true);
 								l.setPos(x, y);
+								l.setHalign(SwingConstants.CENTER);
+								l.setValign(SwingConstants.CENTER);
 								l.setBackground(Color.white);
 								
 								if(map.is(x, y, SRC.Map.isEnemyRect)) l.setBackground(new Color(255, 143, 143));
@@ -207,32 +266,19 @@ public class MapGUI {
 									l.setBorder(Color.black, 1);
 									if(!map.is(x, y, SRC.Map.isPlayer)) {
 										l.setText("X");
-										l.setFont(new Font(Font.SERIF, Font.PLAIN, 10));
 									} else {
+										JsonElement uType = map.get(x, y).get("unitType");
+										if(uType != null)
+											l.setText(getShortenedUnitAndPlanType(uType.getAsString()));
 										l.setTooltip(map.getUserName(x, y));
+										
 									}
+									l.setFont(new Font(Font.SERIF, Font.PLAIN, 10));
 								}
-								
 								
 								String plan = map.getPlanType(x, y);
 								if(plan != null && map.is(x, y, SRC.Map.isEmpty)) {
-									switch (plan) {
-									case "supportHealer":
-										l.setText("H");
-										break;
-									case "supportFlag":
-										l.setText("L");
-										break;
-									case "assassinFlyingExplosive":
-										l.setText("B");
-										break;
-									case "assassin":
-										l.setText("I");
-										break;
-									default:
-										l.setText(plan.replace("assassin", "").toUpperCase().substring(0, 1));
-										break;
-									}
+									l.setText(getShortenedUnitAndPlanType(plan));
 									l.setFont(new Font(Font.SERIF, Font.PLAIN, 10));
 								}
 								
@@ -243,7 +289,7 @@ public class MapGUI {
 						gui.refresh();
 					});
 				} catch (Exception e) {
-					Debug.printException("MapGUI -> asGui: err=failed to load", e, Debug.runerr, Debug.error, run.cid, slot, true);
+					Logger.printException("MapGUI -> asGui: err=failed to load", e, Logger.runerr, Logger.error, run.cid, slot, true);
 				}
 				
 				
@@ -251,4 +297,5 @@ public class MapGUI {
 		});
 		t.start();
 	}
+	
 }

@@ -1,7 +1,6 @@
 package bot;
 
-import include.GUI.CButListener;
-import include.GUI.CButton;
+import include.GUI.Button;
 import include.GUI.CombListener;
 import include.GUI.ComboBox;
 import include.GUI.Container;
@@ -9,9 +8,11 @@ import include.GUI.Image;
 import include.GUI.Label;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.regex.Pattern;
 
 import com.google.gson.JsonArray;
@@ -19,10 +20,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import include.GUI;
-import program.Debug;
+import program.Logger;
 import program.Options;
 import program.Remaper;
+import program.Store;
 import program.Unit;
+import program.viewer.Raid;
+import run.Manager;
 import include.Json;
 import include.NEF;
 
@@ -42,69 +46,54 @@ public class GuideContent {
 		}
 		
 		JsonArray cts = Json.parseArr(Options.get("chests"));
-		JsonObject chest_rews = Json.parseObj(Options.get("rewards"));
 		
-		int i=-1;
+		int i = 0;
 		for(String chest : chests.keySet()) {
 			chest = Remaper.map(chest);
-			
+
 			Image img;
 			if(chest.contains("dungeon") || chest.contains("vampire"))
 				img = new Image("data/ChestPics/dungeonchest.png");
 			else if(cts.contains(new JsonPrimitive(chest)))
 				img = new Image("data/ChestPics/" + chest + ".png");
 			else
-				continue;
+				img = new Image("data/ChestPics/nochest.png");;
 			
 			img.setSquare(100);
-			img.setPos(0, ++i);
+			img.setPos(0, i);
 			c.addImage(img);
 			
 			Label t = new Label();
-			t.setPos(1, i);
+			t.setPos(1, i++);
 			t.setText("<html><font size=7>" + chest.replace("chest", "") + "</font></html>");
 			c.addLabel(t);
 			
+			
 			JsonObject ch = chests.getAsJsonObject(chest);
-			
-			StringBuilder bs= new StringBuilder();
-			int slots = ch.size()-3;
+			StringBuffer sb = new StringBuffer("<html><center>");
 			int ind = 0;
-			for(String key : ch.keySet()) {
-				if(ind++ == slots) 
-					break;
-				bs.append("<tr><th>" + ind + "</th><th><table>");
-				
-				JsonObject slot = ch.getAsJsonObject(key);
-				for(String k : slot.keySet()) {
-					JsonObject item = chest_rews.getAsJsonObject(k);
-					String disname = item.get("DisplayName").getAsString();
-					bs.append("<tr><th>" + (disname.contains("scrolls") ? item.get("Quantity").getAsString() + " " : "") + disname + "</th><th>" + slot.getAsJsonPrimitive(k).getAsString() + "%</th></tr>");
+			for(String p : "Viewer Slots  Bonus Slots  Captain Slots".split("  ")) {
+				String p_ = p.substring(0, 1);
+				sb.append("<font size=5>"+p+"</font><br><table>");
+				while(ch.has(p_+ind)) {
+					sb.append("<tr><th>(" + (ind+1) + ")</th><th><table>");
+					JsonObject slot = ch.getAsJsonObject(p_+ind);
+					for(String k : slot.keySet()) {
+						sb.append("<tr><th>" + k + "</th><th>" + slot.get(k).getAsString() + "%</th></tr>");
+					}
+					ind++;
+					sb.append("</table></th></tr><tr><th colspan=\"2\"><hr></th></tr>");
 				}
-					
-				bs.append("</table></th></tr><tr><th colspan=\"2\"><hr></th></tr>");
+				ind = 0;
+				sb.append("</table>");
 			}
-			
-			StringBuilder vs = new StringBuilder();
-			ind = 0;
-			for(String key : ch.keySet()) {
-				if(ind++ < slots) continue;
-				vs.append("<tr><th>" + (ind-slots) + "</th><th><table>");
-				
-				JsonObject slot = ch.getAsJsonObject(key);
-				for(String k : slot.keySet()) {
-					JsonObject item = chest_rews.getAsJsonObject(k);
-					String disname = item.get("DisplayName").getAsString();
-					vs.append("<tr><th>" + (disname.contains("scrolls") ? item.get("Quantity").getAsString() + " " : "") + disname + "</th><th>" + slot.getAsJsonPrimitive(k).getAsString() + "%</th></tr>");
-				}
-				vs.append("</table></th></tr><tr><th colspan=\"2\"><hr></th></tr>");
-			}
-			
+			sb.append("</center></html>");
 			
 			Label l = new Label();
-			l.setPos(0, ++i);
+			l.setPos(0, i++);
 			l.setSpan(2, 1);
-			l.setText("<html><font size=5>Viewer Slots</font><br><table>" + vs.toString() + "</table><font size=5>Bonus Slots</font><table>" + bs.toString() + "</table></html>");
+			l.setText(sb.toString());
+			l.setAnchor("c");
 			c.addLabel(l);
 		}
 		
@@ -112,54 +101,89 @@ public class GuideContent {
 	}
 
 	
+	private static final HashSet<String> chestWhitelist = new HashSet<String>() {
+		private static final long serialVersionUID = 1L;
+		{
+			String chests = Options.get("chests");
+			addAll(Arrays.asList(chests.substring(2, chests.length()-2).split("\",\"")));
+			addAll(Store.getCurrentEventChests(Manager.getServerTime()));
+		}
+	};
+	
 	public static void saveChestRewards(JsonObject sheets) {
 		JsonObject chests = sheets.getAsJsonObject("Chests");
 		JsonObject slots = sheets.getAsJsonObject("ChestRewardSlots");
+		JsonObject chestRews = sheets.getAsJsonObject("ChestRewards");
 		
 		JsonObject complete = new JsonObject();
 		
 		for(String key : chests.keySet()) {
-			if(key.equals("anightmarechest") || key.equals("bonechest") || key.contains("achampion"))
+			if(!chestWhitelist.contains(key))
 				continue;
 			
-			complete.add(key, new JsonObject());
+			JsonObject defChest = chests.getAsJsonObject(key);
+			JsonObject chest = new JsonObject();
 			
-			String[] vs = chests.getAsJsonObject(key).getAsJsonPrimitive("ViewerSlots").getAsString().replace(" ", "").split(",");
-			String[] bs = chests.getAsJsonObject(key).getAsJsonPrimitive("BonusSlots").getAsString().replace(" ", "").split(",");
-			
-			String[] all = new String[bs.length + vs.length];
-			System.arraycopy(bs, 0, all, 0, bs.length);
-			System.arraycopy(vs, 0, all, bs.length, vs.length);
-			
-			for(int i=0; i<all.length; i++) {
-				String n = all[i];
-				while(true) {
-					if(complete.getAsJsonObject(key).has(n)) {
-						n += "_";
-					} else {
-						complete.getAsJsonObject(key).add(n, new JsonObject());
-						break;
-					}
-				}
-				
-				JsonObject slot = slots.getAsJsonObject(all[i]);
-				
-				String[] chances = slot.get("LootChanceList").getAsString().split(",");
-				String[] rews = slot.get("RewardList").getAsString().split(",");
-				
-				for(int j=0; j<chances.length && j<rews.length; j++) {
-					int q = Integer.parseInt(chances[j]);
-					complete.getAsJsonObject(key).getAsJsonObject(n).addProperty(rews[j], q);
-				}
-				
+			for(String ss : "ViewerSlots BonusSlots CaptainSlots".split(" ")) {
+				String[] chest_slots = defChest.get(ss).getAsString().split(",");
+				if(chest_slots.length == 1 && chest_slots[0].equals(""))
+					continue;
+				chestAddRewards(chest, chest_slots, slots, chestRews, ss.substring(0, 1));
 			}
-			
+				
+			complete.add(key, chest);
 		}
 		
 		try {
 			NEF.save(path + "chestRewards.json", Json.prettyJson(complete));
 		} catch (IOException e) {
-			Debug.printException("GuideContent -> saveChestRewards: err=failed to save chestRewards.json", e, Debug.runerr, Debug.error, null, null, true);
+			Logger.printException("GuideContent -> saveChestRewards: err=failed to save chestRewards.json", e, Logger.runerr, Logger.error, null, null, true);
+		}
+		
+	}
+	
+	public static final HashSet<String> typChestScrollRewards = new HashSet<String>() {
+		private static final long serialVersionUID = 1L; {
+			addAll(Arrays.asList("commonscrolls uncommonscrolls rarescrolls".split(" ")));
+	}};
+	
+	private static void chestAddRewards(JsonObject chest, String[] slots, JsonObject all_slots, JsonObject all_rewards, String prefix) {
+		for(int i=0; i<slots.length; i++) {
+			JsonObject s = all_slots.getAsJsonObject(slots[i]);
+			
+			JsonObject slot = new JsonObject();
+			
+			String[] chances = s.get("LootChanceList").getAsString().split(",");
+			String[] rews = s.get("RewardList").getAsString().split(",");
+			
+			for(int j=0; j<chances.length && j<rews.length; j++) {
+				int percent = Integer.parseInt(chances[j]);
+				
+				int quantity = all_rewards.getAsJsonObject(rews[j]).get("Quantity").getAsInt();
+				String name;
+				String frew = rews[j].split("_")[0];
+				if(Raid.typChestBasicRewards.containsKey(frew)) 
+					name = Raid.typChestBasicRewards.get(frew);
+				else if(typChestScrollRewards.contains(frew) || frew.startsWith("scroll"))
+					name = frew;
+				else if(rews[j].contains("skin"))
+					name = rews[j];
+				else {
+					Logger.print("GuideContent -> chestAddRewards: err=failed to determine reward, reward=" + rews[j], Logger.lowerr, Logger.error, null, null, true);
+					name = "unknown";
+				}
+				
+				name = (name.contains("skin") ? "" : quantity+" ") + name;
+				
+				//	sometimes two different rewards basically give the same
+				//	combine their odds
+				if(slot.has(name))
+					percent += slot.get(name).getAsInt();
+				
+				slot.addProperty(name, percent);
+			}
+			
+			chest.add(prefix+i, slot);
 		}
 	}
 	
@@ -216,7 +240,7 @@ public class GuideContent {
 				try {
 					GUI.setImage("guide::unit::img", img);
 				} catch (IOException e1) {
-					Debug.printException("GuideContent -> genUnits: err=failed to genUnits, uid="+uid, e1, Debug.general, Debug.error, null, null, true);
+					Logger.printException("GuideContent -> genUnits: err=failed to genUnits, uid="+uid, e1, Logger.general, Logger.error, null, null, true);
 				}
 				update(-1);
 			}
@@ -264,37 +288,37 @@ public class GuideContent {
 		});
 		c.addComboBox(speccb);
 		
-		CButton epic = new CButton("epic");
+		
+		Button epic = new Button();
 		epic.setPos(0, 2);
 		epic.setText("epic");
-		epic.setCBL(new CButListener() {
+		epic.setAL(new ActionListener() {
 			@Override
-			public void unselected(String id, ActionEvent e) {
-				GuideContent.epic = false;
-				GUI.setBackground("epic", GUI.getDefButCol());
-				String sel = GUI.getSelected("guide::spec");
-				if(spec != null) {
-					spec = getSpec(uid, sel);
-					update(Arrays.asList(GUI.getCombItems("guide::spec")).indexOf(sel));
+			public void actionPerformed(ActionEvent e) {
+				GuideContent.epic = !GuideContent.epic;
+				if(GuideContent.epic) {
+					GUI.setBackground("epic", Color.green);
+					String sel = GUI.getSelected("guide::spec");
+					if(spec != null) {
+						spec = getSpec(uid, sel);
+						update(Arrays.asList(GUI.getCombItems("guide::spec")).indexOf(sel));
+					} else {
+						update(-1);
+					}
 				} else {
-					update(-1);
-				}
-			}
-			@Override
-			public void selected(String id, ActionEvent e) {
-				GuideContent.epic = true;
-				GUI.setBackground("epic", Color.green);
-				String sel = GUI.getSelected("guide::spec");
-				if(spec != null) {
-					spec = getSpec(uid, sel);
-					update(Arrays.asList(GUI.getCombItems("guide::spec")).indexOf(sel));
-				} else {
-					update(-1);
+					GuideContent.epic = false;
+					GUI.setBackground("epic", GUI.getDefButCol());
+					String sel = GUI.getSelected("guide::spec");
+					if(spec != null) {
+						spec = getSpec(uid, sel);
+						update(Arrays.asList(GUI.getCombItems("guide::spec")).indexOf(sel));
+					} else {
+						update(-1);
+					}
 				}
 			}
 		});
-		c.addCBut(epic);
-		
+		c.addBut(epic, "epic");
 		
 		Image img = new Image("data/UnitPics/archer.png");
 		img.setSquare(200);
@@ -310,6 +334,15 @@ public class GuideContent {
 		c.addLabel(out, "out");
 		
 		return c;
+	}
+	
+	private static JsonObject specs = null;
+	static {
+		try {
+			specs = Json.parseObj(NEF.read(path+"specs.json"));
+		} catch (IOException e) {
+			Logger.printException("GuideContent -> static ini: err=failed to load specs", e, Logger.runerr, Logger.error, null, null, true);
+		}
 	}
 	
 	private static void update(int specIndex) {
@@ -334,7 +367,7 @@ public class GuideContent {
 				spec = getSpec(uid, list[0]);
 			}
 			
-			JsonObject specStats = Json.parseObj(Options.get("specsRaw")).getAsJsonObject((epic ? "epic" : "") + spec);
+			JsonObject specStats = specs.getAsJsonObject((epic ? "epic" : "") + spec);
 			
 			for(String key : unit.keySet()) {
 				String val = specStats.getAsJsonPrimitive(key).getAsString();
@@ -384,7 +417,7 @@ public class GuideContent {
 			"Description", "SpecialAbilityDescription", "SpecialAbilityRate"
 	};
 	
-	public static void gainStats(JsonObject units) {
+	public static void gainStats(JsonObject data) {
 		
 		JsonObject typesraw = Json.parseObj(Options.get("unitTypes"));
 		
@@ -395,6 +428,8 @@ public class GuideContent {
 		}
 		
 		JsonObject us = new JsonObject();
+		
+		JsonObject units = data.getAsJsonObject("Units");
 		
 		for(int i=0; i<types.size(); i++) {
 			String type = types.get(i).getAsString();
@@ -415,8 +450,11 @@ public class GuideContent {
 			us.add(type, u);
 		}
 		
+		specs = data.getAsJsonObject("Specialization");
+		
 		try {
 			NEF.save(path + "units.json", us.toString());
+			NEF.save(path + "specs.json", specs.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

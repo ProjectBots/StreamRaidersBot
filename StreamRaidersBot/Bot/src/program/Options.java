@@ -26,7 +26,7 @@ public class Options {
 		try {
 			NEF.saveOpt(op, opt);
 		} catch (IOException e) {
-			Debug.printException("Options -> save: err=failed to save options", e, Debug.runerr, Debug.error, null, null, true);
+			Logger.printException("Options -> save: err=failed to save options", e, Logger.runerr, Logger.error, null, null, true);
 		}
 	}
 	
@@ -41,21 +41,21 @@ public class Options {
 		opt = NEF.getOpt(op);
 		
 		ArgSplitter as = new ArgSplitter();
-		as.registerArg("debug", new Arg() {
+		as.registerArg("logger", new Arg() {
 			@Override
 			public void run(String[] args) {
 				int i = 0;
 				if(args[0].startsWith("=")) {
 					String s = args[0].substring(1);
-					Debug.setOutputDirectory(s);
+					Logger.setOutputDirectory(s);
 					i++;
 				}
 				
 				if(i == args.length) 
-					Debug.addScope("general");
+					Logger.addScope("general");
 				else 
 					for(; i<args.length; i++)
-						Debug.addScope(args[i]);
+						Logger.addScope(args[i]);
 			}
 		});
 		as.registerDefArg(new Arg() {

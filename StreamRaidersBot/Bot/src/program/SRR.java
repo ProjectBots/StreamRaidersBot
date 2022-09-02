@@ -112,7 +112,7 @@ public class SRR {
 	
 	public SRR(String cid, String clientVersion) throws NoConnectionException, OutdatedDataException, NotAuthorizedException {
 		this.cid = cid;
-		this.cookies = ConfigsV2.getPStr(cid, ConfigsV2.cookies);
+		this.cookies = Configs.getPStr(cid, Configs.cookies);
 		this.clientVersion = clientVersion;
 		reload();
 		addUserId(viewerUserId);
@@ -170,7 +170,7 @@ public class SRR {
 			if(err.isJsonPrimitive() && err.getAsString().equals("User is not authorized.")) {
 				throw new NotAuthorizedException();
 			} else {
-				Debug.print("SRR -> constructor: err=failed to get User, getUser=" + getUser, Debug.runerr, Debug.fatal, cid, null, true);
+				Logger.print("SRR -> constructor: err=failed to get User, getUser=" + getUser, Logger.runerr, Logger.fatal, cid, null, true);
 			}
 		}
 	}
@@ -232,9 +232,9 @@ public class SRR {
 		}
 		
 		if(p.contains("\"errorMessage\":\""))
-			Debug.print(post.getUrlArg("cn") + "\n" + post.getPayloadAsString().replace("&", ", ") + "\n" + p, Debug.srerr, Debug.warn, cid, null);
+			Logger.print(post.getUrlArg("cn") + "\n" + post.getPayloadAsString().replace("&", ", ") + "\n" + p, Logger.srerr, Logger.warn, cid, null);
 		else
-			Debug.print(post.getUrlArg("cn") + "\n" + post.getPayloadAsString().replace("&", ", ") + "\n" + p, Debug.srlog, Debug.info, cid, null);
+			Logger.print(post.getUrlArg("cn") + "\n" + post.getPayloadAsString().replace("&", ", ") + "\n" + p, Logger.srlog, Logger.info, cid, null);
 		
 		return p;
 	}
@@ -495,5 +495,9 @@ public class SRR {
 	
 	public String grantEventQuestMilestoneReward() throws NoConnectionException {
 		return sendPost(getPost("grantEventQuestMilestoneReward"));
+	}
+	
+	public String getOpenCountTrackedChests() throws NoConnectionException {
+		return sendPost(getPost("getOpenCountTrackedChests"));
 	}
 }

@@ -2,15 +2,16 @@ package userInterface;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.time.LocalDateTime;
+import java.util.UUID;
 
 import bot.Browser;
 import include.GUI;
 import include.GUI.Button;
 import include.GUI.Label;
 import include.GUI.TextField;
-import program.ConfigsV2;
-import program.Debug;
+import program.Configs;
+import program.Logger;
+import program.Options;
 import run.Manager;
 
 public class AddProfile {
@@ -19,21 +20,26 @@ public class AddProfile {
 	
 	public static void open(GUI parent, String cid) {
 		
-		final String uid = LocalDateTime.now().toString().hashCode()+"::";
+		final String uid = UUID.randomUUID().toString()+"::";
 		
 		np = new GUI(cid == null ? "New Profile" : "Update Cookies", 300, 400, parent, null);
-		np.setBackgroundGradient(Fonts.getGradient("add background"));
+		np.setBackgroundGradient(Colors.getGradient("stngs add background"));
 		
 		int y = 0;
 		Label lab1 = new Label();
 		lab1.setPos(0, y++);
 		lab1.setText("Profilename");
-		lab1.setForeground(Fonts.getColor("add labels"));
+		lab1.setForeground(Colors.getColor("stngs add labels"));
 		np.addLabel(lab1);
 		
 		ActionListener openBrowser = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if(Options.is("no_browser")) {
+					np.msg("No Browser Warning", "inbuild Browser disabled", GUI.MsgConst.WARNING);
+					return;
+				}
+				
 				String in = GUI.getInputText(uid+"newName");
 				if(cid == null && checkDupeName(in))
 					return;
@@ -47,11 +53,11 @@ public class AddProfile {
 							if(cid == null)
 								Manager.addProfile(in, ai);
 							else {
-								ConfigsV2.setPStr(cid, ConfigsV2.cookies, "ACCESS_INFO="+ai);
+								Configs.setPStr(cid, Configs.cookies, "ACCESS_INFO="+ai);
 								Manager.loadProfile(cid);
 							}
 						} else
-							Debug.print("NewProfile -> open -> openBrowser: err=no access_info", Debug.runerr, Debug.error, null, null, true);
+							Logger.print("NewProfile -> open -> openBrowser: err=no access_info", Logger.runerr, Logger.error, null, null, true);
 					}
 				});
 				t.start();
@@ -65,7 +71,7 @@ public class AddProfile {
 		name.setFill('h');
 		name.setAL(openBrowser);
 		if(cid != null) {
-			name.setText(ConfigsV2.getPStr(cid, ConfigsV2.pname));
+			name.setText(Configs.getPStr(cid, Configs.pname));
 			name.setEditable(false);
 		}
 		np.addTextField(name, uid+"newName");
@@ -74,14 +80,14 @@ public class AddProfile {
 		open.setPos(0, y++);
 		open.setText("open Browser to Login");
 		open.setAL(openBrowser);
-		open.setForeground(Fonts.getColor("add buttons"));
-		open.setGradient(Fonts.getGradient("add buttons"));
+		open.setForeground(Colors.getColor("stngs add buttons"));
+		open.setGradient(Colors.getGradient("stngs add buttons"));
 		np.addBut(open);
 		
 		Label lor = new Label();
 		lor.setPos(0, y++);
 		lor.setText("or: ACCESS_INFO=");
-		lor.setForeground(Fonts.getColor("add labels"));
+		lor.setForeground(Colors.getColor("stngs add labels"));
 		np.addLabel(lor);
 		
 		ActionListener direct = new ActionListener() {
@@ -100,7 +106,7 @@ public class AddProfile {
 				if(cid == null)
 					Manager.addProfile(name, ai);
 				else {
-					ConfigsV2.setPStr(cid, ConfigsV2.cookies, "ACCESS_INFO="+ai);
+					Configs.setPStr(cid, Configs.cookies, "ACCESS_INFO="+ai);
 					Manager.loadProfile(cid);
 				}
 			}
@@ -117,13 +123,13 @@ public class AddProfile {
 		bd.setPos(0, y++);
 		bd.setText("add directly");
 		bd.setAL(direct);
-		bd.setForeground(Fonts.getColor("add buttons"));
-		bd.setGradient(Fonts.getGradient("add buttons"));
+		bd.setForeground(Colors.getColor("stngs add buttons"));
+		bd.setGradient(Colors.getGradient("stngs add buttons"));
 		np.addBut(bd);
 	}
 	
 	private static boolean checkDupeName(String name) {
-		if(ConfigsV2.isPNameTaken(name)) {
+		if(Configs.isPNameTaken(name)) {
 			np.msg("Name Already Taken", name+" is already taken", GUI.MsgConst.WARNING);
 			return true;
 		}

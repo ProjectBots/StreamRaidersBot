@@ -18,12 +18,12 @@ import me.friwi.jcefmaven.CefInitializationException;
 import me.friwi.jcefmaven.UnsupportedPlatformException;
 import userInterface.MainFrame;
 import userInterface.WaitScreen;
-import program.ConfigsV2;
-import program.Debug;
+import program.Configs;
+import program.Logger;
 import program.Options;
-import program.Debug.DebugEventHandler;
-import program.Debug.Scope;
-import program.Debug.Type;
+import program.Logger.DebugEventHandler;
+import program.Logger.Scope;
+import program.Logger.Type;
 import program.viewer.Raid;
 import run.Manager;
 import run.BotListener;
@@ -50,7 +50,7 @@ public class StreamRaiders {
 				ind2 = text.length();
 			errmsg = text.substring(ind1+4, ind2);
 			
-			if(ConfigsV2.getGStr(ConfigsV2.blocked_errors).contains(errmsg))
+			if(Configs.getGStr(Configs.blocked_errors).contains(errmsg))
 				return;
 		} 
 		if(error_count == 0) {
@@ -92,13 +92,13 @@ public class StreamRaiders {
 				block.setAL(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						String blocked = ConfigsV2.getGStr(ConfigsV2.blocked_errors);
+						String blocked = Configs.getGStr(Configs.blocked_errors);
 						if(blocked.contains(errmsg))
 							return;
 						if(!blocked.equals(""))
 							blocked += "|";
 						blocked += errmsg;
-						ConfigsV2.setGStr(ConfigsV2.blocked_errors, blocked);
+						Configs.setGStr(Configs.blocked_errors, blocked);
 					}
 				});
 				err.addBut(block);
@@ -128,32 +128,32 @@ public class StreamRaiders {
 		*/
 		
 		
-		Debug.setDebugEventHandler(new DebugEventHandler() {
+		Logger.setDebugEventHandler(new DebugEventHandler() {
 			@Override
 			public void onPrintLine(String pre, String msg, Scope scope, Type type, String cid, Integer slot, boolean forced) {
-				if(scope.equals(Debug.runerr))
-					log((cid == null ? "" : "["+ConfigsV2.getPStr(cid, ConfigsV2.pname)+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
+				if(scope.equals(Logger.runerr))
+					log((cid == null ? "" : "["+Configs.getPStr(cid, Configs.pname)+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
 				DebugEventHandler.super.onPrintLine(pre, msg, scope, type, cid, slot, forced);
 			}
 			@Override
 			public void onWriteLine(String path, String pre, String msg, Scope scope, Type type, String cid, Integer slot, boolean forced) {
-				if(scope.equals(Debug.runerr))
-					log((cid == null ? "" : "["+ConfigsV2.getPStr(cid, ConfigsV2.pname)+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
-				if(Debug.getSevertyOf(type) > 1 && !msg.contains("couldnt set image"))
+				if(scope.equals(Logger.runerr))
+					log((cid == null ? "" : "["+Configs.getPStr(cid, Configs.pname)+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
+				if(Logger.getSevertyOf(type) > 1 && !msg.contains("couldnt set image"))
 					System.err.println(pre+msg);
 				DebugEventHandler.super.onWriteLine(path, pre, msg, scope, type, cid, slot, forced);
 			}
 			@Override
 			public void onPrintException(String pre, String msg, Exception e, Scope scope, Type type, String cid, Integer slot, boolean forced) {
-				if(scope.equals(Debug.runerr))
-					log((cid == null ? "" : "["+ConfigsV2.getPStr(cid, ConfigsV2.pname)+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
+				if(scope.equals(Logger.runerr))
+					log((cid == null ? "" : "["+Configs.getPStr(cid, Configs.pname)+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
 				DebugEventHandler.super.onPrintException(pre, msg, e, scope, type, cid, slot, forced);
 			}
 			@Override
 			public void onWriteException(String path, String pre, String msg, Exception e, Scope scope, Type type, String cid, Integer slot, boolean forced) {
-				if(scope.equals(Debug.runerr))
-					log((cid == null ? "" : "["+ConfigsV2.getPStr(cid, ConfigsV2.pname)+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
-				if(Debug.getSevertyOf(type) > 1) {
+				if(scope.equals(Logger.runerr))
+					log((cid == null ? "" : "["+Configs.getPStr(cid, Configs.pname)+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
+				if(Logger.getSevertyOf(type) > 1) {
 					System.err.println(pre+msg);
 					e.printStackTrace();
 				}
@@ -162,19 +162,19 @@ public class StreamRaiders {
 		});
 		
 		
-		Debug.print("started", Debug.general, Debug.info, null, null);
+		Logger.print("started", Logger.general, Logger.info, null, null);
 		
 		WaitScreen.setText("Initialize Bot"); 
 		try {
 			Manager.ini(new BotListener() {
 				@Override
 				public boolean configNotReadable() {
-					return GUI.showConfirmationBoxStatic("Loading Configs", "config file is corrupted\r\nreset?");
+					return WaitScreen.getGUI().showConfirmationBox("config file is corrupted\r\nreset?");
 				}
 				@Override
 				public void onSRDataUpdate(String dataPathUrl, JsonObject data) {
 					GuideContent.saveChestRewards(data);
-					GuideContent.gainStats(data.getAsJsonObject("Units"));
+					GuideContent.gainStats(data);
 				}
 				@Override
 				public void onConfigLoadStatusUpdate(int loaded, int failed, int total) {
@@ -222,7 +222,8 @@ public class StreamRaiders {
 				}
 			});
 		} catch (IniCanceledException e1) {
-			//	exit bot
+			//	Manager failed to initialize => stopping bot
+			System.exit(0);
 			return;
 		}
 		
@@ -231,15 +232,20 @@ public class StreamRaiders {
 			try {
 				Browser.create();
 			} catch (IOException | UnsupportedPlatformException | InterruptedException | CefInitializationException e) {
-				Debug.printException("err=Couldnt initialize embeded Browser", e, Debug.runerr, Debug.error, null, null, true);
+				Logger.printException("err=Couldnt initialize embeded Browser", e, Logger.runerr, Logger.error, null, null, true);
 				WaitScreen.close();
+				System.exit(-5);
 				return;
 			}
 		}
 		
 		WaitScreen.setText("Initialize MainFrame"); 
 		MainFrame.open();
-		Manager.loadAllNewProfiles();
+		
+		if(!Options.is("block_profile_auto_load"))
+			Manager.loadAllNewProfiles();
+		else
+			MainFrame.updateLoadStatus(0, 0, 0);
 	}
 	
 	

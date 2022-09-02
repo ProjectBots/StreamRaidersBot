@@ -21,13 +21,11 @@ import me.friwi.jcefmaven.UnsupportedPlatformException;
 
 public class Browser {
 
-	private static String URL = "https://www.streamraiders.com/game/";
-	
+	private static final String URL = "https://www.streamraiders.com/game/";
+	private static final boolean useOSR = false;
+	private static final boolean isTransparent = false;
+
 	private static CefApp cefApp;
-	
-	private static boolean useOSR = false;
-	private static boolean isTransparent = false;
-	
 	
 	public static void create() throws UnsupportedPlatformException, InterruptedException, CefInitializationException, IOException {
 		
@@ -72,7 +70,8 @@ public class Browser {
 					}
 				});
 				
-				//	TODO test if bug has been resolved (visitAllCookies not blocking until finished)
+				//	visitAllCookies does not wait until finished
+				//	disposing cm before finished leads to errors
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e1) {}

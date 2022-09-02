@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -19,15 +20,16 @@ import include.GUI.Button;
 import include.GUI.Container;
 import include.GUI.Label;
 import include.GUI.TextField;
-import program.ConfigsV2;
+import program.Configs;
 import run.Manager;
+import run.ProfileType;
 
 public class GlobalOptions {
 
 	
 	public static final String pre = "GlobalOptions::";
 	
-	private final String uid = pre + LocalDateTime.now().toString().hashCode() + "::";
+	private final String uid = UUID.randomUUID().toString()+"::";
 	
 	public void open() {
 		
@@ -35,21 +37,21 @@ public class GlobalOptions {
 		
 		GUI gui = new GUI("Global Settings", 400, 500, MainFrame.getGUI(), null);
 		
-		gui.setBackgroundGradient(Fonts.getGradient("stngs global background"));
+		gui.setBackgroundGradient(Colors.getGradient("stngs global background"));
 		
 		Button bumr = new Button();
 		bumr.setPos(0, p++);
 		bumr.setText("Prevent spiking Memory");
-		boolean umr = ConfigsV2.getGBoo(ConfigsV2.useMemoryReleaser);
-		bumr.setGradient(Fonts.getGradient("stngs global buttons "+(umr?"on":"def")));
-		bumr.setForeground(Fonts.getColor("stngs global buttons "+(umr?"on":"def")));
+		boolean umr = Configs.getGBoo(Configs.useMemoryReleaser);
+		bumr.setGradient(Colors.getGradient("stngs global buttons "+(umr?"on":"def")));
+		bumr.setForeground(Colors.getColor("stngs global buttons "+(umr?"on":"def")));
 		bumr.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				boolean umr = ConfigsV2.getGBoo(ConfigsV2.useMemoryReleaser);
-				ConfigsV2.setGBoo(ConfigsV2.useMemoryReleaser, !umr);
-				GUI.setGradient(uid+"umr", Fonts.getGradient("stngs global buttons "+(umr?"def":"on")));
-				GUI.setForeground(uid+"umr", Fonts.getColor("stngs global buttons "+(umr?"def":"on")));
+				boolean umr = Configs.getGBoo(Configs.useMemoryReleaser);
+				Configs.setGBoo(Configs.useMemoryReleaser, !umr);
+				GUI.setGradient(uid+"umr", Colors.getGradient("stngs global buttons "+(umr?"def":"on")));
+				GUI.setForeground(uid+"umr", Colors.getColor("stngs global buttons "+(umr?"def":"on")));
 			}
 		});
 		gui.addBut(bumr, uid+"umr");
@@ -57,16 +59,16 @@ public class GlobalOptions {
 		Button bncc = new Button();
 		bncc.setPos(0, p++);
 		bncc.setText("Need Close Confirmation");
-		boolean ncc = ConfigsV2.getGBoo(ConfigsV2.needCloseConfirm);
-		bncc.setGradient(Fonts.getGradient("stngs global buttons "+(ncc?"on":"def")));
-		bncc.setForeground(Fonts.getColor("stngs global buttons "+(ncc?"on":"def")));
+		boolean ncc = Configs.getGBoo(Configs.needCloseConfirm);
+		bncc.setGradient(Colors.getGradient("stngs global buttons "+(ncc?"on":"def")));
+		bncc.setForeground(Colors.getColor("stngs global buttons "+(ncc?"on":"def")));
 		bncc.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				boolean ncc = ConfigsV2.getGBoo(ConfigsV2.needCloseConfirm);
-				ConfigsV2.setGBoo(ConfigsV2.needCloseConfirm, !ncc);
-				GUI.setGradient(uid+"ncc", Fonts.getGradient("stngs global buttons "+(ncc?"def":"on")));
-				GUI.setForeground(uid+"ncc", Fonts.getColor("stngs global buttons "+(ncc?"def":"on")));
+				boolean ncc = Configs.getGBoo(Configs.needCloseConfirm);
+				Configs.setGBoo(Configs.needCloseConfirm, !ncc);
+				GUI.setGradient(uid+"ncc", Colors.getGradient("stngs global buttons "+(ncc?"def":"on")));
+				GUI.setForeground(uid+"ncc", Colors.getColor("stngs global buttons "+(ncc?"def":"on")));
 			}
 		});
 		gui.addBut(bncc, uid+"ncc");
@@ -75,19 +77,19 @@ public class GlobalOptions {
 		Button bfumbud = new Button();
 		bfumbud.setPos(0, p++);
 		bfumbud.setText("free up memory by using drive");
-		boolean fumbud = ConfigsV2.getGBoo(ConfigsV2.freeUpMemoryByUsingDrive);
-		bfumbud.setGradient(Fonts.getGradient("stngs global buttons "+(fumbud?"on":"def")));
-		bfumbud.setForeground(Fonts.getColor("stngs global buttons "+(fumbud?"on":"def")));
+		boolean fumbud = Configs.getGBoo(Configs.freeUpMemoryByUsingDrive);
+		bfumbud.setGradient(Colors.getGradient("stngs global buttons "+(fumbud?"on":"def")));
+		bfumbud.setForeground(Colors.getColor("stngs global buttons "+(fumbud?"on":"def")));
 		bfumbud.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				boolean fumbud = ConfigsV2.getGBoo(ConfigsV2.freeUpMemoryByUsingDrive);
-				ConfigsV2.setGBoo(ConfigsV2.freeUpMemoryByUsingDrive, !fumbud);
-				GUI.setGradient(uid+"ncc", Fonts.getGradient("stngs global buttons "+(fumbud?"def":"on")));
-				GUI.setForeground(uid+"ncc", Fonts.getColor("stngs global buttons "+(fumbud?"def":"on")));
+				boolean fumbud = Configs.getGBoo(Configs.freeUpMemoryByUsingDrive);
+				Configs.setGBoo(Configs.freeUpMemoryByUsingDrive, !fumbud);
+				GUI.setGradient(uid+"fumbud", Colors.getGradient("stngs global buttons "+(fumbud?"def":"on")));
+				GUI.setForeground(uid+"fumbud", Colors.getColor("stngs global buttons "+(fumbud?"def":"on")));
 			}
 		});
-		gui.addBut(bfumbud, uid+"ncc");
+		gui.addBut(bfumbud, uid+"fumbud");
 		
 		Container cmca = new Container();
 		cmca.setPos(0, p++);
@@ -95,12 +97,12 @@ public class GlobalOptions {
 			Label lmca = new Label();
 			lmca.setPos(0, 0);
 			lmca.setText("max concurrent actions:");
-			lmca.setForeground(Fonts.getColor("stngs global labels"));
+			lmca.setForeground(Colors.getColor("stngs global labels"));
 			cmca.addLabel(lmca);
 			
 			TextField tfmca = new TextField();
 			tfmca.setPos(1, 0);
-			tfmca.setText(""+ConfigsV2.getGInt(ConfigsV2.maxProfileActions));
+			tfmca.setText(""+Configs.getGInt(Configs.maxProfileActions));
 			tfmca.setSize(80, 22);
 			tfmca.setDocLis(new DocumentListener() {
 				@Override
@@ -118,7 +120,7 @@ public class GlobalOptions {
 				public void update() {
 					try {
 						int val = Integer.parseInt(GUI.getInputText(uid+"maxactions"));
-						ConfigsV2.setGInt(ConfigsV2.maxProfileActions, val);
+						Configs.setGInt(Configs.maxProfileActions, val);
 						Manager.setMaxConcurrentActions(val);
 						GUI.setBackground(uid+"maxactions", Color.white);
 					} catch (NumberFormatException e) {
@@ -136,8 +138,8 @@ public class GlobalOptions {
 			Button ofc = new Button();
 			ofc.setPos(0, 0);
 			ofc.setText("choose Font");
-			ofc.setGradient(Fonts.getGradient("stngs global buttons def"));
-			ofc.setForeground(Fonts.getColor("stngs global buttons def"));
+			ofc.setGradient(Colors.getGradient("stngs global buttons def"));
+			ofc.setForeground(Colors.getColor("stngs global buttons def"));
 			ofc.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -150,7 +152,7 @@ public class GlobalOptions {
 					});
 					
 					GUI fc = new GUI("Choose Font File", 400, 500, gui, null);
-					fc.setBackgroundGradient(Fonts.getGradient("stngs global chooser background"));
+					fc.setBackgroundGradient(Colors.getGradient("stngs global chooser background"));
 					int i = 0;
 					for(String file : files) {
 						String name = file.substring(0, file.lastIndexOf("."));
@@ -158,17 +160,17 @@ public class GlobalOptions {
 						bf.setPos(0, i++);
 						bf.setText(name);
 						bf.setFill('h');
-						if(file.equals("default.json") || file.equals(ConfigsV2.getGStr(ConfigsV2.fontFile))) {
-							bf.setGradient(Fonts.getGradient("stngs global chooser buttons on"));
-							bf.setForeground(Fonts.getColor("stngs global chooser buttons on"));
+						if(file.equals("default.json") || file.equals(Configs.getGStr(Configs.fontFile))) {
+							bf.setGradient(Colors.getGradient("stngs global chooser buttons on"));
+							bf.setForeground(Colors.getColor("stngs global chooser buttons on"));
 						} else {
-							bf.setGradient(Fonts.getGradient("stngs global chooser buttons def"));
-							bf.setForeground(Fonts.getColor("stngs global chooser buttons def"));
+							bf.setGradient(Colors.getGradient("stngs global chooser buttons def"));
+							bf.setForeground(Colors.getColor("stngs global chooser buttons def"));
 						}
 						bf.setAL(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								ConfigsV2.setGStr(ConfigsV2.fontFile, file);
+								Configs.setGStr(Configs.fontFile, file);
 								GUI.setText(uid+"lff", name);
 								fc.close();
 							}
@@ -179,10 +181,10 @@ public class GlobalOptions {
 			});
 			cff.addBut(ofc);
 			
-			String ff = ConfigsV2.getGStr(ConfigsV2.fontFile);
+			String ff = Configs.getGStr(Configs.fontFile);
 			Label lff = new Label();
 			lff.setPos(1, 0);
-			lff.setForeground(Fonts.getColor("stngs global labels"));
+			lff.setForeground(Colors.getColor("stngs global labels"));
 			lff.setText(ff.substring(0, ff.lastIndexOf(".")));
 			cff.addLabel(lff, uid+"lff");
 		
@@ -192,8 +194,8 @@ public class GlobalOptions {
 		bbe.setPos(0, p++);
 		bbe.setText("Blocked Errors");
 		bbe.setTooltip("Manage blocked errors");
-		bbe.setGradient(Fonts.getGradient("stngs global buttons def"));
-		bbe.setForeground(Fonts.getColor("stngs global buttons def"));
+		bbe.setGradient(Colors.getGradient("stngs global buttons def"));
+		bbe.setForeground(Colors.getColor("stngs global buttons def"));
 		bbe.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -202,7 +204,7 @@ public class GlobalOptions {
 				GUI err = new GUI("Blocked Errors", 400, 500, gui, null);
 				
 				
-				List<String> blocked = new ArrayList<>(Arrays.asList(ConfigsV2.getGStr(ConfigsV2.blocked_errors).split("\\|")));
+				List<String> blocked = new ArrayList<>(Arrays.asList(Configs.getGStr(Configs.blocked_errors).split("\\|")));
 				if(blocked.get(0).equals("")) {
 					Label lnts = new Label();
 					lnts.setText("Nothing to show :(");
@@ -224,7 +226,7 @@ public class GlobalOptions {
 							blocked.remove(s);
 							if(blocked.size() == 0)
 								err.close();
-							ConfigsV2.setGStr(ConfigsV2.blocked_errors, String.join("|", blocked));
+							Configs.setGStr(Configs.blocked_errors, String.join("|", blocked));
 						}
 					});
 					err.addBut(b, eid);
@@ -237,16 +239,21 @@ public class GlobalOptions {
 		Button resStats = new Button();
 		resStats.setPos(0, p++);
 		resStats.setText("Reset all Stats");
-		resStats.setGradient(Fonts.getGradient("stngs global buttons def"));
-		resStats.setForeground(Fonts.getColor("stngs global buttons def"));
+		resStats.setGradient(Colors.getGradient("stngs global buttons def"));
+		resStats.setForeground(Colors.getColor("stngs global buttons def"));
 		resStats.setInsets(20, 2, 2, 2);
 		resStats.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(gui.showConfirmationBox("Reset all the Stats?")) {
-					for(String key : ConfigsV2.getCids()) {
-						ConfigsV2.getProfile(key).remove(ConfigsV2.stats.get());
-						ConfigsV2.check(key);
+					for(String key : Configs.getConfigIds()) {
+						Configs.getProfile(key)
+							.getAsJsonObject(ProfileType.VIEWER.toString())
+							.remove(Configs.statsViewer.con);
+						Configs.getProfile(key)
+							.getAsJsonObject(ProfileType.CAPTAIN.toString())
+							.remove(Configs.statsCaptain.con);
+						Configs.check(key);
 					}
 				}
 			}
@@ -258,8 +265,8 @@ public class GlobalOptions {
 		fm.setText("forget me");
 		fm.setTooltip("deletes all profiles");
 		fm.setInsets(20, 2, 20, 2);
-		fm.setGradient(Fonts.getGradient("stngs global buttons def"));
-		fm.setForeground(Fonts.getColor("stngs global buttons def"));
+		fm.setGradient(Colors.getGradient("stngs global buttons def"));
+		fm.setForeground(Colors.getColor("stngs global buttons def"));
 		fm.setAL(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

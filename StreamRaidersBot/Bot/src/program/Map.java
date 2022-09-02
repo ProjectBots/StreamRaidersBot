@@ -17,7 +17,7 @@ public class Map {
 	public final int length;
 	public final int mapPower;
 	
-	private int playerPower;
+	private int playerPower = 0;
 	
 	public int getPlayerPower() {
 		return playerPower;
@@ -99,7 +99,9 @@ public class Map {
 		addRects(mapData.getAsJsonArray("EnemyPlacementRects"), SRC.Map.isEnemyRect);
 		addRects(mapData.getAsJsonArray("HoldingZoneRects"), SRC.Map.isHoldRect);
 		
-		addEntities(placements, users, userIds, Json.parseObj(Options.get("units")));
+		JsonObject unitsData = Json.parseObj(Options.get("unitPower"));
+		
+		addEntities(placements, users, userIds, unitsData);
 		addEntities(mapData.getAsJsonArray("PlacementData"), null, userIds, null);
 		addObstacles(mapData.getAsJsonArray("ObstaclePlacementData"));
 		
@@ -125,8 +127,9 @@ public class Map {
 	
 	private void addPlan(JsonObject plan) {
 		for(String key : plan.keySet()) {
-			addPT(key);
 			JsonArray pd = plan.getAsJsonArray(key);
+			key = key.toLowerCase();
+			addPT(key);
 			for(int i=0; i<pd.size(); i+=2)
 				set(pd.get(i).getAsInt(), pd.get(i+1).getAsInt(), "plan", key);
 			
@@ -171,21 +174,32 @@ public class Map {
 					rx += 0.4;
 					ry += 0.4;
 				}
-				playerPower += unitsData.getAsJsonObject(chaType).get("Power").getAsInt();
 			} catch (Exception e) {}
 			
 			int x = (int) Math.round(rx / 0.8 + hw());
 			int y = (int) Math.round(ry / -0.8 + hl());
 			
+			//	TODO optimize by getting the Jsonobject for x y and adding directly instead of using set(x, y, key, val)
+			
 			JsonElement jteam = place.get("team");
 			
 			String team = "Enemy";
 			
-			if(jteam != null && jteam.isJsonPrimitive()) team = jteam.getAsString();
+			if(jteam != null && jteam.isJsonPrimitive())
+				team = jteam.getAsString();
 			
 			switch(team) {
 			case "Ally":
-				if(place.get("CharacterType").getAsString().contains("epic") || place.get("CharacterType").getAsString().contains("captain")) {
+				String chaType = place.get("CharacterType").getAsString();
+				try {
+					if(unitsData != null)
+						playerPower += unitsData.get(chaType).getAsInt();
+				} catch(Exception e) {
+					System.err.println(chaType);
+				}
+				
+				
+				if(chaType.contains("epic") || place.get("CharacterType").getAsString().contains("captain")) {
 					set(x-1, y+1, SRC.Map.isOccupied, true);
 					set(x-1, y, SRC.Map.isOccupied, true);
 					set(x, y+1, SRC.Map.isOccupied, true);
@@ -196,7 +210,7 @@ public class Map {
 				}
 				set(x, y, SRC.Map.isAllied, true);
 				set(x, y, "spec", place.get("specializationUid").getAsString());
-				if(place.get("CharacterType").getAsString().contains("captain")) {
+				if(chaType.contains("captain")) {
 					set(x, y, SRC.Map.isCaptain, true);
 					set(x-1, y, SRC.Map.isCaptain, true);
 					set(x, y+1, SRC.Map.isCaptain, true);
@@ -212,10 +226,13 @@ public class Map {
 					else if(index > 0)
 						set(x, y, SRC.Map.isOther, true);
 					for(int u=0; u<users.size(); u++) {
-						if(userId.equals(users.get(u).getAsJsonObject().get("userId").getAsString())) {
-							set(x, y, "twitchUserName", users.get(u).getAsJsonObject().get("twitchUserName").getAsString());
-						}
+						JsonObject user = users.get(u).getAsJsonObject();
+						if(userId.equals(user.get("userId").getAsString()))
+							set(x, y, "twitchUserName", user.get("twitchUserName").getAsString());
 					}
+					String type = Unit.getUnitTypeFromCharacterType(chaType);
+					if(type != null)
+						set(x, y, "unitType", type);
 				}
 				break;
 			case "Enemy":
@@ -225,7 +242,7 @@ public class Map {
 				set(x, y, SRC.Map.isNeutral, true);
 				break;
 			default:
-				Debug.print("Map -> addEntity: err=failed to determine team, team=" + place.get("team").getAsString(), Debug.runerr, Debug.error, cid, slot, true);
+				Logger.print("Map -> addEntity: err=failed to determine team, team=" + place.get("team").getAsString(), Logger.runerr, Logger.error, cid, slot, true);
 			}
 			set(x, y, "isEntity", true);
 			set(x, y, "isEmpty", false);

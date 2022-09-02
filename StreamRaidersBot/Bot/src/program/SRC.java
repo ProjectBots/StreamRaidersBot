@@ -30,13 +30,8 @@ public class SRC {
 	}
 
 	public static class Store {
-		public static final int wholeSection = 0;
-		public static final int currentlyInShop = 1;
-		public static final int purchasable = 2;
-		public static final String daily = "Daily";
-		public static final String scrolls = "Scrolls";
 		public static final String dungeon = "Dungeon";
-		public static final String Event = "Event";
+		public static final String event = "Event";
 		public static final String bones = "Bones";
 	}
 	
@@ -102,7 +97,6 @@ public class SRC {
 	}
 	
 	public static class Unit {
-		public static final String unitType = "unitType";
 		public static final String level = "level";
 		public static final String skin = "skin";
 		public static final String cooldownTime = "cooldownTime";
@@ -110,10 +104,6 @@ public class SRC {
 		public static final String specializationUid = "specializationUid";
 		public static final String specializationDisName = "specializationDisName";
 		public static final String disName = "disName";
-	}
-	
-	public static enum UnitRarity {
-		common, uncommon, rare, legendary
 	}
 	
 	public static class BackEndHandler {

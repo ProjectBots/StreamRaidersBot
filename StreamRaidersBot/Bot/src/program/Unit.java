@@ -1,5 +1,6 @@
 package program;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import com.google.gson.JsonArray;
@@ -13,7 +14,7 @@ public class Unit {
 	
 	private static JsonObject uTypes = Json.parseObj(Options.get("unitTypes"));
 	
-	public static void setUnitTypes(JsonObject data) {
+	public static JsonObject genUnitTypesFromData(JsonObject data) {
 		uTypes = new JsonObject();
 		JsonObject us = data.getAsJsonObject("Units");
 		for(String key : us.keySet()) {
@@ -33,32 +34,11 @@ public class Unit {
 				ut.add(ss[0], u.get(ss[1]));
 			}
 			
-			ut.addProperty("rarity", u.get("Rarity").getAsString().toLowerCase());
+			ut.addProperty("rarity", u.get("Rarity").getAsString().toUpperCase());
 			
 			JsonArray roles = new JsonArray();
 			roles.add(u.get("Role").getAsString().toLowerCase());
-			//	i really hate to do this, but there is no other reliable way for it
-			//	add specific roles (that are not declared in the data)
-			switch(type) {
-			case "flagbearer":
-				roles.add("supportFlag");
-				break;
-			case "rogue":
-				roles.add("assassinDagger");
-				break;
-			case "buster":
-				roles.add("assassinExplosive");
-				break;
-			case "healer":
-				roles.add("supportHealer");
-				break;
-			case "flyingarcher":
-				roles.add("assassinFlyingDagger");
-				break;
-			case "alliesballoonbuster":
-				roles.add("assassinFlyingExplosive");
-				break;
-			}
+			roles.add(u.get("DisplayName").getAsString().toLowerCase().replace(" ", ""));
 			roles.add("vibe");
 			
 			ut.add("roles", roles);
@@ -69,7 +49,7 @@ public class Unit {
 		}
 		
 		JsonObject sps = data.getAsJsonObject("Specialization");
-		for(String key : sps.keySet()) {										//	 ¯\_(ツ)_/¯
+		for(String key : sps.keySet()) {										//	 ¯\_(ツ)_/¯ typo by sr
 			if(key.startsWith("epic") || key.startsWith("captain") || key.startsWith("cpatain"))
 				continue;
 			
@@ -84,10 +64,45 @@ public class Unit {
 				.add(spec);
 			
 		}
+		
+		return uTypes;
+	}
+	
+	public static JsonObject genUnitPowerFromData(JsonObject data) {
+		JsonObject units_raw = data.getAsJsonObject("Units");
+		JsonObject units = new JsonObject();
+		for(String key : units_raw.keySet()) {
+			JsonObject u = units_raw.getAsJsonObject(key);
+			if(u.get("CanBePlaced").getAsBoolean())
+				units.addProperty(key, u.get("Power").getAsInt());
+		}
+		return units;
 	}
 	
 	public static JsonObject getTypes() {
 		return uTypes.deepCopy();
+	}
+	
+	public static ArrayList<String> getTypesList() {
+		return new ArrayList<>(uTypes.keySet());
+	}
+	
+	/**
+	 * parses a character type (ex: epicbomber30) into its type (ex: bomber)
+	 * @param ct
+	 * @return the unit type
+	 */
+	public static String getUnitTypeFromCharacterType(String ct) {
+		String ret = ct.replaceAll("\\d+$|^captain|^epic", "");
+		switch (ret) {
+		case "paladin":
+			ret = "alliespaladin";
+			break;
+		case "balloonbuster":
+			ret = "alliesballoonbuster";
+			break;
+		}
+		return uTypes.has(ret) ? ret : null;
 	}
 	
 	public static JsonArray getSpecs(String type) {
@@ -95,37 +110,43 @@ public class Unit {
 	}
 	
 	public static boolean isLegendary(String type) {
-		return uTypes.getAsJsonObject(type).get("rarity").getAsString().equals("legendary");
+		return uTypes.getAsJsonObject(type).get("rarity").getAsString().equals(UnitRarity.LEGENDARY.toString());
 	}
 	
-	public static SRC.UnitRarity getRarity(String type) {
-		return SRC.UnitRarity.valueOf(uTypes.getAsJsonObject(type).get("rarity").getAsString());
+	public static String getName(String type) {
+		return uTypes.getAsJsonObject(type).get("name").getAsString();
 	}
+	
 	
 	public boolean canFly() {
-		return uTypes.getAsJsonObject(get(SRC.Unit.unitType)).get("canFly").getAsBoolean();
+		return uTypes.getAsJsonObject(unitType).get("canFly").getAsBoolean();
 	}
 	
 	
 	@Override
 	public String toString() {
-		return get(SRC.Unit.unitType);
+		return new StringBuilder().append("{").append(unitType)
+						.append(" ").append(get(SRC.Unit.level))
+						.append("}").toString();
 	}
 	
 	private final JsonObject unit;
+	public final String unitId, unitType;
 	private String cool = null;
 	private final HashSet<String> ptags = new HashSet<>();
 	
 	public final boolean dupe;
 	
-	public Unit(JsonObject unit) throws ClassCastException {
+	public Unit(JsonObject unit, String cid) throws ClassCastException {
 		this.unit = unit;
 		JsonElement jcool = unit.get(SRC.Unit.cooldownTime);
 		if(jcool.isJsonPrimitive())
 			setCooldown(unit.get(SRC.Unit.cooldownTime).getAsString());
 		
+		unitType = unit.remove("unitType").getAsString();
+		unitId = unit.get("unitId").getAsString();
 		
-		JsonObject uType = uTypes.getAsJsonObject(unit.get(SRC.Unit.unitType).getAsString());
+		JsonObject uType = uTypes.getAsJsonObject(unitType);
 		
 		dupe = false;
 		
@@ -135,10 +156,10 @@ public class Unit {
 	}
 	
 	private Unit(String unitType, boolean dupe) {
-		JsonObject unit = new JsonObject();
-		unit.addProperty(SRC.Unit.unitType, unitType);
 		this.dupe = dupe;
-		this.unit = unit;
+		unit = null;
+		unitId = null;
+		this.unitType = unitType;
 	}
 	
 	
@@ -151,7 +172,7 @@ public class Unit {
 		case SRC.Unit.specializationDisName:
 			String spec = get(SRC.Unit.specializationUid);
 			if(spec != null) {
-				JsonArray spc = uTypes.getAsJsonObject(get(SRC.Unit.unitType)).getAsJsonArray("specs");	// specs.getAsJsonArray(get(SRC.Unit.unitType));
+				JsonArray spc = uTypes.getAsJsonObject(unitType).getAsJsonArray("specs");
 				for(int i=0; i<spc.size(); i++) {
 					JsonObject sp = spc.get(i).getAsJsonObject();
 					if(spec.equals(sp.get("uid").getAsString()))
@@ -166,7 +187,7 @@ public class Unit {
 			
 			String specname = get(SRC.Unit.specializationDisName);
 			return specname == null
-					? uTypes.getAsJsonObject(get(SRC.Unit.unitType))
+					? uTypes.getAsJsonObject(unitType)
 						.get("name").getAsString()
 					: specname;
 		default:
@@ -196,11 +217,8 @@ public class Unit {
 	}
 	
 	public void setSkin(Skin skin) {
-		unit.addProperty(SRC.Unit.disName, skin==null?uTypes.getAsJsonObject(get(SRC.Unit.unitType)).get("name").getAsString():skin.disname);
 		unit.addProperty(SRC.Unit.skin, skin==null?null:skin.uid);
 	}
 
-
-	
 	
 }

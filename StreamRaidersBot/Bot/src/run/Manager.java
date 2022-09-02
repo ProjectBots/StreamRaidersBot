@@ -15,8 +15,12 @@ import com.google.gson.JsonObject;
 import include.Http.NoConnectionException;
 import include.Json;
 import include.Time;
-import program.ConfigsV2;
-import program.Debug;
+import program.Configs;
+import program.Configs.IllegalConfigTypeException;
+import program.Configs.IllegalConfigVersionException;
+import program.Configs.PStr;
+import program.Configs.SleInt;
+import program.Logger;
 import program.Event;
 import program.Options;
 import program.Remaper;
@@ -24,6 +28,7 @@ import program.SRC;
 import program.SRR;
 import program.Store;
 import program.Unit;
+import program.viewer.Raid;
 import program.SRR.NotAuthorizedException;
 import program.SRR.OutdatedDataException;
 
@@ -54,7 +59,7 @@ public class Manager {
 	 */
 	
 	
-	private static Hashtable<String, Profile<?,?>> profiles = new Hashtable<>();
+	private static Hashtable<String, AbstractProfile<?,?>> profiles = new Hashtable<>();
 	private static Hashtable<String, Integer> poss = new Hashtable<>();
 	
 	private static long secsoff = Long.MIN_VALUE;
@@ -138,12 +143,11 @@ public class Manager {
 		Manager.blis = blis;
 		
 		System.out.println("\r\n"
-				+ "\u0009███████╗██████╗     ██████╗  ██████╗ ████████╗\r\n"
-				+ "\u0009██╔════╝██╔══██╗    ██╔══██╗██╔═══██╗╚══██╔══╝\r\n"
-				+ "\u0009███████╗██████╔╝    ██████╔╝██║   ██║   ██║   \r\n"
-				+ "\u0009╚════██║██╔══██╗    ██╔══██╗██║   ██║   ██║   \r\n"
-				+ "\u0009███████║██║  ██║    ██████╔╝╚██████╔╝   ██║   \r\n"
-				+ "\u0009╚══════╝╚═╝  ╚═╝    ╚═════╝  ╚═════╝    ╚═╝   \r\n"
+				+ "\t   _____ ____     ____        __ \r\n"
+				+ "\t  / ___// __ \\   / __ )____  / /_\r\n"
+				+ "\t  \\__ \\/ /_/ /  / __  / __ \\/ __/\r\n"
+				+ "\t ___/ / _, _/  / /_/ / /_/ / /_  \r\n"
+				+ "\t/____/_/ |_|  /_____/\\____/\\__/  \r\n"
 				+ "\r\n");
 		
 		try {
@@ -152,30 +156,30 @@ public class Manager {
 			throw new IniCanceledException("Couldnt load options");
 		}
 		
-		System.out.println("by ProjectBots https://github.com/ProjectBots/StreamRaiderBot\r\n"
+		System.out.println("by ProjectBots https://github.com/ProjectBots/StreamRaidersBot\r\n"
 				+ "Version: " + Options.get("botVersion") + "\r\n");
 		
 		Remaper.load();
 		
 		try {
-			ConfigsV2.load();
-		} catch (IOException e) {
-			Debug.printException("err=failed to load config", e, Debug.runerr, Debug.error, null, null, true);
+			Configs.load();
+		} catch (IOException | IllegalConfigTypeException | IllegalConfigVersionException e) {
+			Logger.printException("err=failed to load config", e, Logger.runerr, Logger.error, null, null, true);
 			if(Manager.blis.configNotReadable()) {
 				try {
-					ConfigsV2.load(true);
-				} catch (IOException e1) {
-					Debug.printException("err=failed to reset config", e, Debug.runerr, Debug.error, null, null, true);
+					Configs.load(true);
+				} catch (IOException | IllegalConfigTypeException | IllegalConfigVersionException e1) {
+					Logger.printException("err=failed to reset config", e, Logger.runerr, Logger.error, null, null, true);
 					throw new IniCanceledException("config not resetable");
 				}
 			} else {
 				throw new IniCanceledException("config not readable");
 			}
 		}
-		setMaxConcurrentActions(ConfigsV2.getGInt(ConfigsV2.maxProfileActions));
+		setMaxConcurrentActions(Configs.getGInt(Configs.maxProfileActions));
 		setClockRunning(true);
 		int i=0;
-		for(String cid : ConfigsV2.getCids())
+		for(String cid : Configs.getConfigIds())
 			poss.put(cid, i++);
 		poss.put("(next)", i);
 		
@@ -189,8 +193,8 @@ public class Manager {
 	 * @return the profile id assigned
 	 */
 	public static String addProfile(String name, String access_info) {
-		String cid = ConfigsV2.add(name, access_info);
-		ConfigsV2.saveb();
+		String cid = Configs.addProfile(name, access_info);
+		Configs.saveb();
 		loadProfile(cid);
 		blis.onProfileAdded(cid);
 		return cid;
@@ -203,8 +207,8 @@ public class Manager {
 	public static void remProfile(String cid) {
 		if(profiles.containsKey(cid))
 			unloadProfile(cid);
-		ConfigsV2.remProfile(cid);
-		ConfigsV2.saveb();
+		Configs.remProfile(cid);
+		Configs.saveb();
 		poss.remove(cid);
 		blis.onProfileRemoved(cid);
 		failedProfiles.remove(cid);
@@ -218,7 +222,7 @@ public class Manager {
 	 * checks the config for new profiles and loads them
 	 */
 	public static void loadAllNewProfiles() {
-		List<String> cids = ConfigsV2.getCids();
+		List<String> cids = Configs.getConfigIds();
 		cids.removeAll(profiles.keySet());
 		for(final String cid : cids)
 			loadProfile(cid);
@@ -246,7 +250,7 @@ public class Manager {
 				}
 				failedProfiles.remove(cid);
 				blis.onProfileStartedLoading(cid);
-				Profile<?,?> p = null;
+				AbstractProfile<?,?> p = null;
 				try {
 					SRR req = null;
 					try {
@@ -261,11 +265,21 @@ public class Manager {
 					}
 					if(req.playsAsCaptain()) {
 						p = new Captain(cid, req);
-						profiles.put(cid, p);
-					} else {
+						if(!Options.is("captain_beta"))
+							p = p.switchProfileType();
+					} else
 						p = new Viewer(cid, req);
-						profiles.put(cid, p);
+					profiles.put(cid, p);
+					
+					boolean before = Configs.getPBoo(cid, Configs.canCaptain);
+					if(!before) {
+						boolean now = req.canPlayAsCaptain();
+						if(now) {
+							Configs.setPBoo(cid, Configs.canCaptain, now);
+							Configs.check(cid);
+						}
 					}
+					
 					blis.onProfileLoadComplete(cid, poss.get(cid), p.getType());
 					p.setReady(true);
 				} catch (Exception e) {
@@ -276,7 +290,7 @@ public class Manager {
 						?failedProfiles
 						:loadedProfiles
 						).add(cid);
-					blis.onConfigLoadStatusUpdate(loadedProfiles.size(), failedProfiles.size(), ConfigsV2.getCids().size());
+					blis.onConfigLoadStatusUpdate(loadedProfiles.size(), failedProfiles.size(), Configs.getConfigIds().size());
 				}
 				releaseAction();
 			}
@@ -299,7 +313,7 @@ public class Manager {
 		if(!profiles.containsKey(cid))
 			throw new IllegalArgumentException("No Profile with cid="+cid+" loaded");
 		setRunningAll(cid, false);
-		Profile<?,?> p = profiles.remove(cid);
+		AbstractProfile<?,?> p = profiles.remove(cid);
 		blis.onProfileUnloaded(cid);
 		loadedProfiles.remove(cid);
 		
@@ -322,7 +336,7 @@ public class Manager {
 			profiles.get(key).saveStats();
 		for(String cid : getLoadedProfiles())
 			unloadProfile(cid);
-		ConfigsV2.save();
+		Configs.save();
 	}
 	
 	/**
@@ -350,13 +364,13 @@ public class Manager {
 	 * @param slot
 	 */
 	public static void switchRunning(String cid, int slot) {
-		Profile<?,?> p = profiles.get(cid);
+		AbstractProfile<?,?> p = profiles.get(cid);
 		p.setRunning(!p.isRunning(slot), slot);
 	}
 	
 	
 	/**
-	 * syncs a slot to another slot.
+	 * syncs a slot to another slot.<br>
 	 * a synced slot will be managed by the slot it's synced to
 	 * @param cid profile id
 	 * @param lay layer id
@@ -364,16 +378,24 @@ public class Manager {
 	 * @param syncTo the slot that rules from now on, use -1 to unsync
 	 */
 	public static void syncSlots(String cid, String lay, int slot, int syncTo) {
-		ConfigsV2.setSleepInt(cid, lay, ""+slot, ConfigsV2.sync, syncTo);
+		ProfileType pt = profiles.get(cid).getType();
+		
+		SleInt con = pt == ProfileType.VIEWER ? Configs.syncSlotViewer : Configs.syncSlotCaptain;
+		Configs.setSleepInt(cid, lay, ""+slot, con, syncTo);
 		if(syncTo != -1)
-			ConfigsV2.setSleepInt(cid, lay, ""+syncTo, ConfigsV2.sync, -1);
-		String configSyncTo = ConfigsV2.getPStr(cid, ConfigsV2.synced);
+			Configs.setSleepInt(cid, lay, ""+syncTo, con, -1);
+		
+		PStr syncProfile = pt == ProfileType.VIEWER ? Configs.syncedViewer : Configs.syncedCaptain;
+		
+		String configSyncTo = Configs.getPStr(cid, syncProfile);
 		if(!configSyncTo.equals("(none)"))
 			cid = configSyncTo;
 		
-		for(String cid_ : getLoadedProfiles())
-			if(ConfigsV2.getPStr(cid_, ConfigsV2.synced).equals(cid) || cid_.equals(cid)) 
-				getViewer(cid_).updateSlotSync();
+		for(String cid_ : getLoadedProfiles()) {
+			AbstractProfile<?,?> p = profiles.get(cid);
+			if(p.getType() == pt && (Configs.getPStr(cid_, syncProfile).equals(cid) || cid_.equals(cid)))
+				p.updateSlotSync();
+		}
 	}
 	
 	/**
@@ -427,15 +449,102 @@ public class Manager {
 		return v != null ? v.getTwitchLink(slot) : null;
 	}
 	
+	
+	
+	/**
+	 * updates every Profile
+	 */
+	public static void updateAllProfiles() {
+		for(final String key : profiles.keySet())
+			updateProfile(key);
+	}
+	
+	/**
+	 * updates the Profile
+	 * @param cid profile id
+	 */
+	public static void updateProfile(String cid) {
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					profiles.get(cid).updateFrame(null);
+				} catch (NoConnectionException | NotAuthorizedException e1) {
+					Logger.printException("Manager -> updateProfile: err=failed to update frame", e1, Logger.general, Logger.error, cid, null, true);
+				}
+			}
+		});
+		t.start();
+	}
+	
+	/**
+	 * does an action for all profiles<br>
+	 * @param con see {@link program.SRC.Manager} for constants
+	 * @param delay time between starting each action
+	 */
+	public static void doAll(int con, int delay) {
+		for(String key : profiles.keySet()) {
+			AbstractProfile<?,?> p = profiles.get(key);
+			switch(con) {
+			case SRC.Manager.start:
+				p.setRunningAll(true);
+				break;
+			case SRC.Manager.skip:
+				p.skipAll();
+				break;
+			case SRC.Manager.stop:
+				p.setRunningAll(false);
+				break;
+			}
+			try {
+				Thread.sleep(delay);
+			} catch (InterruptedException e) {}
+		}
+	}
+	
+	private static final String[] catsToUpdateData = "obstacles Obstacles quests Quests mapNodes MapNodes store Store events Events skins Skins".split(" ");
+	
+	/**
+	 * retrieves the StreamRaiders data from the data path url which the bot uses
+	 * @param dataPathUrl
+	 * @param req (will be reloaded, null to disable)
+	 * @throws NoConnectionException
+	 * @throws NotAuthorizedException
+	 */
+	synchronized static void updateSRData(String dataPathUrl, SRR req) throws NoConnectionException, NotAuthorizedException {
+		if(!Options.get("data").equals(dataPathUrl)) {
+			JsonObject data = Json.parseObj(SRR.getData(dataPathUrl)).getAsJsonObject("sheets");
+			for(int i=0; i<catsToUpdateData.length; i+=2)
+				Options.set(catsToUpdateData[i], data.get(catsToUpdateData[i+1]).toString());
+			
+			Options.set("eventTiers", Event.genTiersFromData(data, getServerTime()).toString());
+			Options.set("currentEventCurrency", data.getAsJsonObject("Items").getAsJsonObject("eventcurrency").get("CurrencyTypeAwarded").getAsString());
+			Options.set("unitCosts", Store.genUnitCostsFromData(data).toString());
+			Options.set("unitTypes", Unit.genUnitTypesFromData(data).toString());
+			Options.set("unitPower", Unit.genUnitPowerFromData(data).toString());
+			Options.set("rewards", Raid.updateChestRews(data).toString());
+			Options.set("data", dataPathUrl);
+			Options.save();
+			Manager.blis.onSRDataUpdate(dataPathUrl, data);
+		}
+
+		if(req != null)
+			try {
+				req.reload();
+			} catch (OutdatedDataException e) {
+				Logger.printException("BackEndHandler -> updateDataPath: err=failed to update data path",  e, Logger.runerr, Logger.fatal, null, null, true);
+			}
+	}
+	
 	private static int currentActions = 0;
-	private static int max;
+	private static int maxConcurrentActions;
 	
 	/**
 	 * sets the max of concurrent (defined) actions of the bot
 	 * @param x the integer value (-1 to disable)
 	 */
 	public static void setMaxConcurrentActions(int x) {
-		max = x;
+		maxConcurrentActions = x;
 	}
 	
 	private static List<Thread> actions = Collections.synchronizedList(new LinkedList<>());
@@ -469,7 +578,7 @@ public class Manager {
 				@Override
 				public void run() {
 					while(isClockRunning) {
-						if(actions.size() > 0 && (currentActions < max || max < 0)) {
+						if(actions.size() > 0 && (currentActions < maxConcurrentActions || maxConcurrentActions < 0)) {
 							currentActions++;
 							Thread ct = actions.remove(0);
 							synchronized (ct) {
@@ -486,113 +595,6 @@ public class Manager {
 		} else
 			while(actions.size() > 0)
 				actions.remove(0).interrupt();
-	}
-	
-	/**
-	 * updates every Profile
-	 */
-	public static void updateAllProfiles() {
-		for(final String key : profiles.keySet())
-			updateProfile(key);
-	}
-	
-	/**
-	 * updates the Profile
-	 * @param cid profile id
-	 */
-	public static void updateProfile(String cid) {
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					profiles.get(cid).updateFrame(null);
-				} catch (NoConnectionException | NotAuthorizedException e1) {
-					Debug.printException("Manager -> updateProfile: err=failed to update frame", e1, Debug.general, Debug.error, cid, null, true);
-				}
-			}
-		});
-		t.start();
-	}
-	
-	/**
-	 * does an action for all profiles<br>
-	 * @param con see {@link program.SRC.Manager} for constants
-	 * @param delay time between starting each action
-	 */
-	public static void doAll(int con, int delay) {
-		for(String key : profiles.keySet()) {
-			Profile<?,?> p = profiles.get(key);
-			switch(con) {
-			case SRC.Manager.start:
-				p.setRunningAll(true);
-				break;
-			case SRC.Manager.skip:
-				p.skipAll();
-				break;
-			case SRC.Manager.stop:
-				p.setRunningAll(false);
-				break;
-			}
-			try {
-				Thread.sleep(delay);
-			} catch (InterruptedException e) {}
-		}
-	}
-	
-	
-	/**
-	 * retrieves StreamRaiders data from the data path url
-	 * @param dataPathUrl
-	 * @param req
-	 * @throws NoConnectionException
-	 * @throws NotAuthorizedException
-	 */
-	synchronized static void updateSRData(String dataPathUrl, SRR req) throws NoConnectionException, NotAuthorizedException {
-		if(!Options.get("data").equals(dataPathUrl)) {
-			JsonObject data = Json.parseObj(SRR.getData(dataPathUrl)).getAsJsonObject("sheets");
-			for(String s : "obstacles Obstacles  quests Quests  mapNodes MapNodes  specsRaw Specialization  store Store  rewards ChestRewards  events Events  skins Skins".split("  ")) {
-				String[] ss = s.split(" ");
-				Options.set(ss[0], data.getAsJsonObject(ss[1]).toString());
-			}
-			Event.updateCurrentEvent(getServerTime());
-			String currentEventUid = Event.getCurrentEvent();
-			if(currentEventUid != null) {
-				currentEventUid = currentEventUid.split("_")[0];
-				JsonObject tiers = data.getAsJsonObject("EventTiers");
-				JsonObject currentTiers = new JsonObject();
-				for(String key : tiers.keySet())
-					if(key.matches("^"+currentEventUid+"[0-9]+$"))
-						currentTiers.add(key, tiers.get(key));
-				Options.set("eventTiers", currentTiers.toString());
-			} else {
-				Options.set("eventTiers", "{}");
-			}
-			Options.set("currentEventCurrency", data.getAsJsonObject("Items").getAsJsonObject("eventcurrency").get("CurrencyTypeAwarded").getAsString());
-			JsonObject unitCosts = data.getAsJsonObject("UnitCosts");
-			Options.set("unitCosts", unitCosts.toString());
-			Store.setUnitCosts(unitCosts);
-			Unit.setUnitTypes(data);
-			Options.set("unitTypes", Unit.getTypes().toString());
-			
-			JsonObject units_raw = data.getAsJsonObject("Units");
-			JsonObject units = new JsonObject();
-			for(String key : units_raw.keySet()) {
-				JsonObject u = units_raw.getAsJsonObject(key);
-				if(u.get("CanBePlaced").getAsBoolean())
-					units.add(key, u);
-			}
-			Options.set("units", units.toString());
-			
-			Options.set("data", dataPathUrl);
-			Options.save();
-			Manager.blis.onSRDataUpdate(dataPathUrl, data);
-		}
-		try {
-			if(req != null)
-				req.reload();
-		} catch (OutdatedDataException e) {
-			Debug.printException("BackEndHandler -> updateDataPath: err=failed to update data path",  e, Debug.runerr, Debug.fatal, null, null, true);
-		}
 	}
 	
 }

@@ -12,6 +12,19 @@ public class Event {
 
 	private static String currentEvent = null;
 	
+	public static JsonObject genTiersFromData(JsonObject data, String serverTime) {
+		updateCurrentEvent(serverTime, data.getAsJsonObject("Events"));
+		JsonObject currentTiers = new JsonObject();
+		if(currentEvent != null) {
+			currentEvent = currentEvent.split("_")[0];
+			JsonObject tiers = data.getAsJsonObject("EventTiers");
+			for(String key : tiers.keySet())
+				if(key.matches("^"+currentEvent+"[0-9]+$"))
+					currentTiers.add(key, tiers.getAsJsonObject(key).get("Power"));
+		}
+		return currentTiers;
+	}
+	
 	public static String getCurrentEvent() {
 		return currentEvent;
 	}
@@ -30,8 +43,7 @@ public class Event {
 		return tier;
 	}
 	
-	synchronized public static void updateCurrentEvent(String serverTime) {
-		JsonObject events = Json.parseObj(Options.get("events"));
+	private static void updateCurrentEvent(String serverTime, JsonObject events) {
 		for(String key : events.keySet()) {
 			JsonObject event = events.getAsJsonObject(key);
 			
@@ -50,7 +62,7 @@ public class Event {
 	
 	
 	public void updateEvent(String serverTime, JsonArray userEventProgression) {
-		updateCurrentEvent(serverTime);
+		updateCurrentEvent(serverTime, Json.parseObj(Options.get("events")));
 		for(int i=0; i<userEventProgression.size(); i++) {
 			JsonObject raw = userEventProgression.get(i).getAsJsonObject();
 			
@@ -127,6 +139,7 @@ public class Event {
 	public JsonObject collectEvent(int p, boolean battlePass, JsonObject grantEventReward) {
 		JsonObject ret = new JsonObject();
 		JsonElement err = grantEventReward.get(SRC.errorMessage);
+		System.out.println(Json.prettyJson(grantEventReward));
 		
 		if(err.isJsonPrimitive()) {
 			ret.add(SRC.errorMessage, err);

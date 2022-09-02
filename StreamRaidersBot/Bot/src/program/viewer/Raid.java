@@ -8,7 +8,7 @@ import com.google.gson.JsonObject;
 
 import include.Json;
 import include.Time;
-import program.Debug;
+import program.Logger;
 import program.Options;
 import program.SRC;
 import program.Store;
@@ -126,14 +126,13 @@ public class Raid {
 		{Store.bones.get(), "bonesAwarded"}
 	};
 	
-	public static final Hashtable<String, String> typViewChestRews = new Hashtable<String, String>() {
-		private static final long serialVersionUID = 1L;
-		{
-		put("goldbag", Store.gold.get());
-		put("eventtoken", "token");
-		put("cooldown", Store.meat.get());
-		put("potion", Store.potions.get());
-		put("epicpotion", Store.potions.get());
+	public static final Hashtable<String, String> typChestBasicRewards = new Hashtable<String, String>() {
+		private static final long serialVersionUID = 1L; {
+			put("goldbag", Store.gold.get());
+			put("eventtoken", "token");
+			put("cooldown", Store.meat.get());
+			put("potion", Store.potions.get());
+			put("epicpotion", Store.potions.get());
 	}};
 	
 	
@@ -157,8 +156,6 @@ public class Raid {
 					ret.addProperty(typChestRews[i][0], ityp);
 			}
 			
-			updateChestRews();
-			
 			JsonElement rawRews = raidStats.get("viewerChestRewards");
 			if(rawRews != null && rawRews.isJsonArray()) {
 				JsonArray rews = rawRews.getAsJsonArray();
@@ -177,33 +174,34 @@ public class Raid {
 				}
 			}
 		} catch (UnsupportedOperationException e) {
-			Debug.printException("Raid -> getChest: err=failed to get chest, rawData="+raidStats.toString(), e, Debug.runerr, Debug.error, cid, slot, true);
+			Logger.printException("Raid -> getChest: err=failed to get chest, rawData="+raidStats.toString(), e, Logger.runerr, Logger.error, cid, slot, true);
 		}
 		return ret;
 	}
 
-	private static JsonObject chest_rews = null;
+	private static JsonObject chest_rews = Json.parseObj(Options.get("rewards"));
 	
-	public static void updateChestRews() {
-		chest_rews = Json.parseObj(Options.get("rewards"));
+	public static JsonObject updateChestRews(JsonObject data) {
+		chest_rews = data.getAsJsonObject("ChestRewards");
+		return chest_rews;
 	}
 	
 	public static class Reward {
 		public final String name;
 		public final int quantity;
-		public Reward(String reward, String cid, int slot) {
+		public Reward(String reward, String cid, Integer slot) {
 			String[] rew = reward.split("\\|");
 			quantity = chest_rews.getAsJsonObject(rew[0]).get("Quantity").getAsInt();
 			
 			String frew = rew[0].split("_")[0];
-			if(typViewChestRews.containsKey(frew)) {
-				name = typViewChestRews.get(frew);
+			if(typChestBasicRewards.containsKey(frew)) {
+				name = typChestBasicRewards.get(frew);
 			} else if(rew.length == 2) {
 				name = rew[1];
 			} else if(rew[0].contains("skin")) {
 				name = "skin";
 			} else {
-				Debug.print("Raid -> Reward -> const.: err=failed to determine reward, reward=" + reward, Debug.runerr, Debug.error, cid, slot, true);
+				Logger.print("Raid -> Reward -> const.: err=failed to determine reward, reward=" + reward, Logger.runerr, Logger.error, cid, slot, true);
 				name = "unknown";
 			}
 		}

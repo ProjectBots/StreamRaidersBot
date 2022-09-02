@@ -2,6 +2,7 @@ package include;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.google.gson.Gson;
@@ -126,29 +127,33 @@ public class Json {
 	}
 	
 	public static void set(JsonObject json, String path, JsonElement el) {
-		set(json, path.split(" "), el);
+		set(json, new LinkedList<String>(Arrays.asList(path.split(" "))), el);
 	}
-	public static void set(JsonObject json, String[] path, JsonElement el) {
-		for(int i=0; i<path.length-1; i++) {
-			JsonElement tmp = json.get(path[i]);
+	public static void set(JsonObject json, List<String> path, JsonElement el) {
+		while(path.size() > 1) {
+			final String p = path.remove(0);
+			JsonElement tmp = json.get(p);
 			if(tmp == null || !tmp.isJsonObject())
-				json.add(path[i], new JsonObject());
-			json = json.getAsJsonObject(path[i]);
+				json.add(p, new JsonObject());
+			json = json.getAsJsonObject(p);
 		}
-		json.add(path[path.length-1], el);
+		if(el == null)
+			json.remove(path.remove(0));
+		else
+			json.add(path.remove(0), el);
 	}
 	
 	public static JsonElement get(JsonObject json, String path) {
-		return get(json, path.split(" "));
+		return get(json, new LinkedList<String>(Arrays.asList(path.split(" "))));
 	}
-	public static JsonElement get(JsonObject json, String[] path) {
-		for(int i=0; i<path.length-1; i++) {
-			JsonElement tmp = json.get(path[i]);
+	public static JsonElement get(JsonObject json, List<String> path) {
+		while(path.size() > 1) {
+			JsonElement tmp = json.get(path.remove(0));
 			if(tmp == null || !tmp.isJsonObject())
 				return null;
 			json = tmp.getAsJsonObject();
 		}
-		return json.get(path[path.length-1]);
+		return json.get(path.remove(0));
 	}
 	
 	public static JsonObject override(JsonObject json, JsonObject override) {

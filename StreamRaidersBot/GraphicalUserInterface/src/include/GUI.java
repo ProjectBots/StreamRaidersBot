@@ -27,6 +27,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -293,7 +294,7 @@ public class GUI{
 	
 	public WindowAdapter defaultCloseListener = new WindowAdapter() {
 		public void windowClosing(WindowEvent e) {
-	        close();
+	        close(false);
 	    }
 	};
 	
@@ -416,6 +417,15 @@ public class GUI{
 			frame.setExtendedState(JFrame.NORMAL);
 	}
 	
+	public void setSize(int x, int y) {
+		size = new int[] {x,y};
+		frame.setSize(x, y);
+	}
+	
+	public void toFront() {
+		frame.toFront();
+	}
+	
 
 
 	//	general methods for components
@@ -455,7 +465,8 @@ public class GUI{
 			com.getClass().getMethod("setGradient", Gradient.class).invoke(com, gr);
 			return true;
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
-				| SecurityException e) {
+				| SecurityException | NullPointerException e) {
+			System.err.println("id:" + id);
 			e(e);
 			return false;
 		}
@@ -516,7 +527,16 @@ public class GUI{
 	
 	//	general methods
 	public void close() {
+		close(true);
+	}
+	
+	public void close(boolean noticeListeners) {
 		if(!isContainer) {
+			if(noticeListeners) {
+				WindowListener[] liss = frame.getWindowListeners();
+				for(WindowListener lis : liss)
+					lis.windowClosing(null);
+			}
 			frame.dispose();
 			for(int i=0; i<ids.length; i++)
 				comps.remove(ids[i]);
@@ -526,6 +546,10 @@ public class GUI{
 	public void remove(String id) {
 		pane.remove((Component) getComp(id));
 		refresh();
+	}
+	
+	public void removeSilent(String id) {
+		pane.remove((Component) getComp(id));
 	}
 	
 	public void setBackgroundGradient(Gradient gr) {
@@ -1281,6 +1305,7 @@ public class GUI{
 			}
 		};
 		private String id;
+		private boolean startValue = false;
 		
 		public CButton(String id) {
 			cbut.put(id, false);
@@ -1304,6 +1329,14 @@ public class GUI{
 			};
 		}
 		
+		public void setStartValue(boolean b) {
+			startValue = b;
+		}
+		
+		public boolean getStartValue() {
+			return startValue;
+		}
+		
 		public ActionListener getAl() {
 			return al;
 		}
@@ -1315,17 +1348,6 @@ public class GUI{
 			
 	}
 	
-
-	public void addCBut(CButton opt) {
-		JButton cbut = new JButton(opt.getText());
-		cbut.addActionListener(opt.getAl());
-		
-		String tt = opt.getTooltip();
-		if(tt != null) {
-			cbut.setToolTipText(tt);
-		}
-		addObj(opt, cbut, opt.getId());
-	}
 	
 	public static boolean isCButSelected(String id) {
 		return cbut.get(id);
@@ -1341,10 +1363,12 @@ public class GUI{
 	public void addCheckBox(CButton opt) {
 		JCheckBox cb = new JCheckBox(opt.getText());
 		cb.addActionListener(opt.getAl());
+		cb.setSelected(opt.getStartValue());
 		Color fore = opt.getForeground();
 		if(fore != null)
 			cb.setForeground(fore);
 		addObj(opt, cb, opt.getId());
+		cbut.put(opt.getId(), opt.getStartValue());
 	}
 	
 	
@@ -1352,7 +1376,9 @@ public class GUI{
 	public void addTogBut(CButton opt) {
 		JToggleButton tg = new JToggleButton(opt.getText());
 		tg.addActionListener(opt.getAl());
+		tg.setSelected(opt.getStartValue());
 		addObj(opt, tg, opt.getId());
+		cbut.put(opt.getId(), opt.getStartValue());
 	}
 	
 	
@@ -1608,14 +1634,15 @@ public class GUI{
 	
 	
 	public static void setSelected(String id, int index) {
-		if(getComp(id) instanceof JComboBox<?>) {
-			JComboBox<?> cb = (JComboBox<?>) getComp(id);
+		Object comp = getComp(id);
+		if(comp instanceof JComboBox<?>) {
+			JComboBox<?> cb = (JComboBox<?>) comp;
 			ItemListener[] lis = cb.getItemListeners();
 			cb.removeItemListener(lis[0]);
 			cb.setSelectedIndex(index);
 			cb.addItemListener(lis[0]);
-		} else if(getComp(id) instanceof JList<?>) {
-			((JList<?>) getComp(id)).setSelectedIndex(index);
+		} else if(comp instanceof JList<?>) {
+			((JList<?>) comp).setSelectedIndex(index);
 		}
 	}
 	
@@ -1667,20 +1694,21 @@ public class GUI{
 		addObj(opt, comb, opt.getId());
 	}
 	
-	
+	/**
+	 * @param id
+	 * @return an ordered Array of the items in the ComboBox
+	 */
 	public static String[] getCombItems(String id) {
-		//	get ComboBox
 		Object obj = getComp(id);
-		String[] items = new String[0];
-		//	cast Object to ComboBox
 		if(obj instanceof JComboBox<?>) {
 			JComboBox<?> cb = (JComboBox<?>) obj;
-			//	save items to String[]
-			for(int i=0; i<cb.getItemCount(); i++) {
-				items = Container.add(items, cb.getItemAt(i).toString());
-			}
+			String[] items = new String[cb.getItemCount()];
+			for(int i=0; i<cb.getItemCount(); i++)
+				items[i] = cb.getItemAt(i).toString();
+			
+			return items;
 		}
-		return items;
+		return null;
 	}
 	
 	public static void setCombList(String id, String[] list) {
@@ -1777,11 +1805,10 @@ public class GUI{
 	
 	public static String[] getList(String id) {
 		Object[] list = models.get(id).toArray();
-		String[] items = new String[0];
-		for(int i=0; i<list.length; i++) {
-			//	adds one item to String Array
-			items = Container.add(items, list[i].toString());
-		}
+		String[] items = new String[list.length];
+		for(int i=0; i<list.length; i++)
+			items[i] = list[i].toString();
+		
 		return items;
 	}
 	
@@ -2059,6 +2086,13 @@ public class GUI{
 		
 	}
 	
+	public static class ImageUnretrievableException extends RuntimeException {
+		private static final long serialVersionUID = 1L;
+		public ImageUnretrievableException(Throwable e) {
+			super("Image is unretrievable", e);
+		}
+	}
+	
 	public void addImage(Image opt, String id) {
 		try {
 			//	new JLabel
@@ -2102,7 +2136,7 @@ public class GUI{
 				addComp("image::"+id, img);
 			
 		} catch (Exception e) {
-			e(e);
+			throw new ImageUnretrievableException(e);
 		}
 	}
 	
@@ -2196,7 +2230,6 @@ public class GUI{
 	public static class Container extends BlankForm {
 		private Label[] labels = new Label[0];
 		private String[] idlabels = new String[0];
-		private CButton[] cButtons = new CButton[0];
 		private CButton[] checkBoxs = new CButton[0];
 		private CButton[] togButs = new CButton[0];
 		private Button[] buttons = new Button[0];
@@ -2251,17 +2284,6 @@ public class GUI{
 		
 		
 		
-		public void addCBut(CButton opt) {
-			CButton[] cButtons2 = new CButton[cButtons.length + 1];
-			System.arraycopy(cButtons, 0, cButtons2, 0, cButtons.length);
-			cButtons2[cButtons.length] = opt;
-			cButtons = cButtons2;
-		}
-		
-		public CButton[] getCButtons() {
-			return cButtons;
-		}
-
 		
 
 		public void addCheckBox(CButton opt) {
@@ -2503,7 +2525,7 @@ public class GUI{
 		
 	}
 	
-	private JPanel addContainer(Container opt, String id, boolean add) {
+	private JPanel addContainer(Container opt, final String id, boolean add) {
 		//	creates new GUI class without a window
 		GUI con = new GUI(true, opt.isOpaque(), keylis);
 		
@@ -2516,15 +2538,12 @@ public class GUI{
 			con.addLabel(labs[i], ids[i]);
 		}
 		
-		CButton[] cbuts = opt.getCButtons();
-		for(int i=0; i<cbuts.length; i++) {
-			con.addCBut(cbuts[i]);
-		}
 		
-		cbuts = opt.getCheckBoxs();
+		CButton[] cbuts = opt.getCheckBoxs();
 		for(int i=0; i<cbuts.length; i++) {
 			con.addCheckBox(cbuts[i]);
 		}
+
 		
 		cbuts = opt.getTogButs();
 		for(int i=0; i<cbuts.length; i++) {
@@ -2590,10 +2609,10 @@ public class GUI{
 		}
 		
 		String[] nids = con.getIds();
-		String[] ids2 = new String[ids.length + nids.length];
-		System.arraycopy(ids, 0, ids2, 0, ids.length);
-		System.arraycopy(nids, 0, ids2, ids.length, nids.length);
-		ids = ids2;
+		String[] ids2 = new String[this.ids.length + nids.length];
+		System.arraycopy(this.ids, 0, ids2, 0, this.ids.length);
+		System.arraycopy(nids, 0, ids2, this.ids.length, nids.length);
+		this.ids = ids2;
 		
 		if(add) {
 			addObj(opt, pane, id);
@@ -2603,7 +2622,6 @@ public class GUI{
 		
 		con.close();
 		return pane;
-		
 	}
 	
 	public void addContainer(Container opt, String id) {

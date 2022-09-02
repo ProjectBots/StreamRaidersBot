@@ -37,7 +37,7 @@ public class Skins {
 				try {
 					this.skins.put(uid, new Skin(packs.getAsJsonObject(uid)));
 				} catch (NullPointerException e) {
-					Debug.printException("Skins -> Skins(): err=unable to ini skin, uid="+uid, e, Debug.runerr, Debug.error, null, null, true);
+					Logger.printException("Skins -> Skins(): err=unable to ini skin, uid="+uid, e, Logger.runerr, Logger.error, null, null, true);
 				}
 			}
 		}
