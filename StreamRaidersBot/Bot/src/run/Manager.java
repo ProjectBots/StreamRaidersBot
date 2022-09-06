@@ -35,25 +35,16 @@ import program.SRR.OutdatedDataException;
 public class Manager {
 	
 	/*	TODO
-	 * 	rename Fonts to CS (ColorScheme)
 	 * 	add tooltips (everywhere)
 	 * 	fonts manage error blocks (GlobalOptions)
-	 * 	config versioning
-	 * 	make epic slot dependent
-	 * 	get unlock/upgrade cost from datapath (sheets\UnitCosts\...)
 	 *	make epic slot dependent
-	 *	get unit types from datapath
-	 *	get unit costs (unlock/upgrade) from datapath
 	 * 	get Donators from github source
 	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
 	 * 	when creating chest rewards for guide: exclude chest which aren't obtainable, compare to chests in Store
 	 * 	option to disable loading images (saves ram)
-	 * 	ViewerBackEnd change arrays to lists
+	 * 	optimize SkinSettings
 	 * 
 	 * 
-	 * 	???:
-	 * 	kill (slot) round and restart if it takes more than x min
-	 * 	- may not be possible, didn't found a reliable way to "kill" a thread if it's hung up
 	 * 	
 	 * 
 	 */

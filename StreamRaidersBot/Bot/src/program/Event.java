@@ -12,19 +12,42 @@ public class Event {
 
 	private static String currentEvent = null;
 	
-	public static JsonObject genTiersFromData(JsonObject data, String serverTime) {
+	public static JsonArray genTiersFromData(JsonObject data, String serverTime) {
 		updateCurrentEvent(serverTime, data.getAsJsonObject("Events"));
-		JsonObject currentTiers = new JsonObject();
-		if(currentEvent != null) {
-			currentEvent = currentEvent.split("_")[0];
+		String event = currentEvent;
+		if(event == null)
+			event = getNextEvent(data, serverTime, data.getAsJsonObject("Events"));
+		
+		JsonArray currentTiers = new JsonArray();
+		if_clause:
+		if(event != null) {
 			JsonObject tiers = data.getAsJsonObject("EventTiers");
-			for(String key : tiers.keySet())
-				if(key.matches("^"+currentEvent+"[0-9]+$"))
-					currentTiers.add(key, tiers.getAsJsonObject(key).get("Power"));
+
+			//	sr seems to not have a constant naming convention here
+			//	therefore we get the prefix by searching
+			for(String key : tiers.keySet()) {
+				JsonObject tier = tiers.getAsJsonObject(key);
+				if(tier.get("Streamer").getAsBoolean())
+					continue;
+				
+				if(!tier.get("EventUid").getAsString().equals(event))
+					continue;
+				
+				//	remove the last numbers
+				event = key.replaceFirst("[0-9]+$", "");
+				
+				for(int i=1; i<=60; i++)
+					currentTiers.add(tiers.getAsJsonObject(event+i));
+				
+				break if_clause;
+			}
+			Logger.print("Event -> genTiersFromData: err=failed to find tiers, event="+event, Logger.runerr, Logger.error, null, null, true);
 		}
 		return currentTiers;
 	}
 	
+	
+
 	public static String getCurrentEvent() {
 		return currentEvent;
 	}
@@ -47,7 +70,7 @@ public class Event {
 		for(String key : events.keySet()) {
 			JsonObject event = events.getAsJsonObject(key);
 			
-			if(Time.isAfter(serverTime, event.get("EndTime").getAsString())) 
+			if(Time.isAfter(serverTime, event.get("EndTime").getAsString()) || Time.isAfter(event.get("StartTime").getAsString(), serverTime)) 
 				continue;
 
 			currentEvent = key;
@@ -56,12 +79,26 @@ public class Event {
 		currentEvent = null;
 	}
 	
+	private static String getNextEvent(JsonObject data, String serverTime, JsonObject events) {
+		for(String key : events.keySet()) {
+			JsonObject event = events.getAsJsonObject(key);
+			
+			if(Time.isAfter(serverTime, event.get("EndTime").getAsString())) 
+				continue;
+
+			return key;
+		}
+		return null;
+	}
+	
+	
+	
 	public boolean hasBattlePass() {
 		return hasBattlePass;
 	}
 	
 	
-	public void updateEvent(String serverTime, JsonArray userEventProgression) {
+	public void updateEventProgression(String serverTime, JsonArray userEventProgression) {
 		updateCurrentEvent(serverTime, Json.parseObj(Options.get("events")));
 		for(int i=0; i<userEventProgression.size(); i++) {
 			JsonObject raw = userEventProgression.get(i).getAsJsonObject();
@@ -139,7 +176,6 @@ public class Event {
 	public JsonObject collectEvent(int p, boolean battlePass, JsonObject grantEventReward) {
 		JsonObject ret = new JsonObject();
 		JsonElement err = grantEventReward.get(SRC.errorMessage);
-		System.out.println(Json.prettyJson(grantEventReward));
 		
 		if(err.isJsonPrimitive()) {
 			ret.add(SRC.errorMessage, err);
@@ -154,38 +190,31 @@ public class Event {
 			collected.add(""+p, tmp);
 		}
 		
-		JsonObject tiers = Json.parseObj(Options.get("eventTiers"));
-		for(String key : tiers.keySet()) {
-			if(!key.matches("^[A-z]+"+p+"$"))
-				continue;
-			
-			String rew;
-			int qty;
-			if(battlePass) {
-				rew = tiers.getAsJsonObject(key).get("BattlePassRewards").getAsString();
-				qty = tiers.getAsJsonObject(key).get("BattlePassAmount").getAsInt();
-			} else {
-				rew = tiers.getAsJsonObject(key).get("BasicRewards").getAsString();
-				qty = tiers.getAsJsonObject(key).get("BasicAmount").getAsInt();
-			}
-			
-			if(rew.equals("")) {
-				rew = "badges";
-				qty = 1;
-			} else if(rew.startsWith("skin")) {
-				rew = "skin";
-			} else if(rewardUnknown.contains(rew)) {
-				rew = grantEventReward.get("data").getAsString();
-			} else if(rewardRenames.containsKey(rew)) {
-				rew = rewardRenames.get(rew);
-			}
-			
-			ret.addProperty("reward", rew);
-			ret.addProperty("quantity", qty);
-			
-			break;
+		JsonArray tiers = Json.parseArr(Options.get("eventTiers"));
+		JsonObject tier = tiers.get(p-1).getAsJsonObject();
+		String rew;
+		int qty;
+		if(battlePass) {
+			rew = tier.get("BattlePassRewards").getAsString();
+			qty = tier.get("BattlePassAmount").getAsInt();
+		} else {
+			rew = tier.get("BasicRewards").getAsString();
+			qty = tier.get("BasicAmount").getAsInt();
 		}
 		
+		if(rew.equals("")) {
+			rew = "badges";
+			qty = 1;
+		} else if(rew.startsWith("skin")) {
+			rew = "skin";
+		} else if(rewardUnknown.contains(rew)) {
+			rew = grantEventReward.get("data").getAsString();
+		} else if(rewardRenames.containsKey(rew)) {
+			rew = rewardRenames.get(rew);
+		}
+		
+		ret.addProperty("reward", rew);
+		ret.addProperty("quantity", qty);
 		
 		return ret;
 	}

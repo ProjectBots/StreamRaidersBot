@@ -133,6 +133,12 @@ public class SkinSettings extends AbstractSettings {
 						lu.setForeground(Colors.getColor(fontPath+"labels"));
 						cu.addLabel(lu, gid+"l");
 
+						/* TODO	optimize
+						 * 	skins are not unit specific, but type specific
+						 * 	the lists for each type could be loaded beforehand
+						 * 	therefore only the selected skin nedds to be moved in the array
+						 */
+						
 						ArrayList<String> list = new ArrayList<>(skinNames);
 						String suid = u.get(SRC.Unit.skin);
 						String sn = null;

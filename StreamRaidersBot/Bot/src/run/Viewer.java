@@ -1528,8 +1528,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 			JsonElement err = ce.get(SRC.errorMessage);
 			if(err != null && err.isJsonPrimitive()) {
 				Logger.print("Run -> event -> collectEvent: tier="+tier+", bp="+bp+", err=" + err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
-			} else {//TODO
-				System.out.println(Json.prettyJson(ce));
+			} else {
 				String rew = ce.get("reward").getAsString();
 				if(!rew.equals("badges"))
 					addRew(beh, SRC.Run.event, rew, ce.get("quantity").getAsInt());

@@ -438,7 +438,7 @@ public class ProfileSettings extends AbstractSettings {
 		buts.setPos(0, g++);
 		buts.setInsets(10, 2, 2, 2);
 			
-			int g = 0;
+			int y = 0;
 			String[] sbuts = "Prefer Rogues On Treasure Maps  Allow Place First".split("  ");
 			if(Options.is("exploits"))
 				sbuts = ArrayUtils.addAll(sbuts, "Use Multi Place Exploit  Use Multi Quest Exploit  Use Multi Event Exploit  Use Multi Chest Exploit  Use Multi Unit Exploit".split("  "));
@@ -446,7 +446,7 @@ public class ProfileSettings extends AbstractSettings {
 			for(String key : sbuts) {
 				final Boo con = new Boo(key.substring(0, 1).toLowerCase() + key.substring(1).replace(" ", ""), ProfileType.VIEWER);
 				Button cbsb = new Button();
-				cbsb.setPos(0, g++);
+				cbsb.setPos(0, y++);
 				cbsb.setText(key);
 				cbsb.setFill('h');
 				Boolean val = Configs.getBoolean(cid, lid, con);
@@ -485,7 +485,7 @@ public class ProfileSettings extends AbstractSettings {
 		csi.setPos(0, g++);
 		csi.setInsets(10, 2, 2, 2);
 
-			int y = 0;
+			y = 0;
 			Label ltsi = new Label();
 			ltsi.setPos(0, y++);
 			ltsi.setText("Special Store:");

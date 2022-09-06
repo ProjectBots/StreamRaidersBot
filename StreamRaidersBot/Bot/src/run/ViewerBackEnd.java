@@ -218,7 +218,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd>{
 		if(testUpdate(userEventProgression))
 			userEventProgression = Json.parseObj(req.getUserEventProgression());
 		
-		event.updateEvent(Manager.getServerTime(), userEventProgression.getAsJsonArray("data"));
+		event.updateEventProgression(Manager.getServerTime(), userEventProgression.getAsJsonArray("data"));
 		
 		JsonObject userQuests = Json.parseObj(req.getUserQuests());
 		if(testUpdate(userQuests))
