@@ -17,10 +17,14 @@ public enum UnitRarity {
 	private final static HashMap<String, UnitRarity> from_string;
 	static {
 	    from_string = new HashMap<>();
-	    for (UnitRarity values : values())
-	        from_string.put(values.toString(), values);
+	    for (UnitRarity value : values())
+	        from_string.put(value.toString(), value);
 	    
 	}
+	public static UnitRarity parseString(String arg) {
+		return from_string.get(arg);
+	}
+	
 	private final static HashMap<String, UnitRarity> from_type;
 	static {
 		from_type = new HashMap<>();
@@ -28,14 +32,6 @@ public enum UnitRarity {
 		for(String type : types.keySet())
 			from_type.put(type, parseString(types.getAsJsonObject(type).get("rarity").getAsString()));
 	}
-	
-	
-	
-	//	faster than .valueOf
-	public static UnitRarity parseString(String arg) {
-		return from_string.get(arg);
-	}
-	
 	public static UnitRarity parseType(String type) {
 		return from_type.get(type);
 	}

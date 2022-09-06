@@ -365,6 +365,7 @@ public class Configs {
 	public static final Boo allowPlaceFirstViewer = new Boo("allowPlaceFirst", ProfileType.VIEWER);
 	public static final Boo proxyMandatoryViewer = new Boo("proxyMandatory", ProfileType.VIEWER);
 	public static final Boo storePriceAsDefaultPrioViewer = new Boo("storePriceAsDefaultPrio", ProfileType.VIEWER);
+	public static final Boo useSkinFromCaptainViewer = new Boo("useSkinFromCaptain", ProfileType.VIEWER);
 	
 	public static final Boo preferRoguesOnTreasureMapsCaptain = new Boo("preferRoguesOnTreasureMaps", ProfileType.CAPTAIN);
 	public static final Boo proxyMandatoryCaptain = new Boo("proxyMandatory", ProfileType.CAPTAIN);
@@ -1872,6 +1873,8 @@ public class Configs {
 			}
 		}
 		
+		//	TODO exports
+		
 		private static final HashSet<String> globalConfs = new HashSet<String>() {
 			private static final long serialVersionUID = 1L;
 			{
@@ -1940,6 +1943,7 @@ public class Configs {
 						+ "maxUnitPerRaidMax "
 						+ "capInactiveTreshold "
 						+ "allowPlaceFirst "
+						+ "useSkinFromCaptain "
 						+ "capsUpdate "
 						+ "caps"
 						).split(" ")));

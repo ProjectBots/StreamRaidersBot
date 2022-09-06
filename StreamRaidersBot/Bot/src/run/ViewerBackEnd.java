@@ -21,13 +21,13 @@ import program.Quests;
 import program.Quests.Quest;
 import program.SRC;
 import program.SRR;
-import program.Skins;
-import program.Skins.Skin;
 import include.Http.NoConnectionException;
 import program.SRR.NotAuthorizedException;
 import program.Store;
 import program.Store.C;
 import program.Store.Item;
+import program.skins.Skin;
+import program.skins.Skins;
 import program.viewer.CaptainData;
 import program.viewer.Raid;
 import program.viewer.RaidType;
@@ -170,11 +170,6 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd>{
 		if(err.isJsonPrimitive())
 			Logger.print("BackEndHandler -> updateStore: items, err="+err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
 		
-		JsonObject skins = Json.parseObj(req.getUserItems());
-		err = skins.get(SRC.errorMessage);
-		if(err.isJsonPrimitive())
-			Logger.print("BackEndHandler -> updateStore: skins, err="+err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
-		
 		JsonObject openedChests = Json.parseObj(req.getOpenCountTrackedChests());
 		err = openedChests.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
@@ -185,9 +180,6 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd>{
 				cur.getAsJsonArray("data"),
 				items.getAsJsonArray("data"),
 				openedChests.getAsJsonArray("data"));
-		
-
-		this.skins = new Skins(skins.get("data").isJsonArray() ? skins.getAsJsonArray("data") : null);
 		
 		rts.put("store", Time.parse(now));
 		uelis.afterUpdate("store", this);
@@ -465,9 +457,9 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd>{
 		return ret;
 	}
 	
-	public String placeUnit(int slot, Unit unit, boolean epic, int[] pos, boolean onPlanIcon) throws NoConnectionException {
+	public String placeUnit(int slot, Unit unit, boolean epic, int[] pos, boolean onPlanIcon, Skin overrideSkin) throws NoConnectionException {
 		String atr = req.addToRaid(raids[slot].get(SRC.Raid.raidId),
-				createPlacementData(unit, epic, maps[slot].getAsSRCoords(epic, pos), onPlanIcon));
+				createPlacementData(unit, epic, maps[slot].getAsSRCoords(epic, pos), onPlanIcon, overrideSkin));
 		
 		try {
 			JsonElement je = Json.parseObj(atr).get(SRC.errorMessage);
@@ -480,38 +472,23 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd>{
 		return null;
 	}
 	
-	public String createPlacementData(Unit unit, boolean epic, double[] pos, boolean onPlanIcon) {
+	public String createPlacementData(Unit unit, boolean epic, double[] pos, boolean onPlanIcon, Skin overrideSkin) {
 		JsonObject ret = new JsonObject();
 		ret.addProperty("raidPlacementsId", "");
 		ret.addProperty("userId", req.getViewerUserId());
-		if(epic) {
-			ret.addProperty("CharacterType", "epic"+unit.unitType+unit.get(SRC.Unit.level));
-		} else {
-			ret.addProperty("CharacterType", unit.unitType+unit.get(SRC.Unit.level));
-		}
+		ret.addProperty("CharacterType", (epic?"epic":"")+unit.unitType+unit.get(SRC.Unit.level));
 		ret.addProperty("X", pos[0]);
 		ret.addProperty("Y", pos[1]);
-		
-		String skin = unit.get(SRC.Unit.skin);
-		if(skin != null) {
-			ret.addProperty("skin", skin);
-		} else {
-			ret.addProperty("skin", "");
-		}
+		String skin = overrideSkin == null ? unit.get(SRC.Unit.skin) : overrideSkin.uid;
+		ret.addProperty("skin", skin == null ? "" : skin);
 		ret.addProperty("unitId", unit.get(SRC.Unit.unitId));
-		
 		String suid = unit.get(SRC.Unit.specializationUid);
-		if(suid != null) {
-			ret.addProperty("specializationUid", suid);
-		} else {
-			ret.addProperty("specializationUid", "");
-		}
-		
+		ret.addProperty("specializationUid", suid == null ? "" : suid);
 		ret.addProperty("team", "Ally");
 		ret.addProperty("onPlanIcon", onPlanIcon);
 		ret.addProperty("isSpell", false);
 		ret.addProperty("stackRaidPlacementsId", "0");
-		
+		ret.addProperty("SoulType", "");
 		return ret.toString();
 	}
 	

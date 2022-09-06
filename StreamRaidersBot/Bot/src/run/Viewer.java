@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import org.apache.commons.lang3.ArrayUtils;
@@ -39,6 +40,8 @@ import program.viewer.Raid.Reward;
 import program.viewer.RaidType;
 import run.AbstractBackEnd.UpdateEventListener;
 import program.Unit;
+import program.skins.Skin;
+import program.skins.Skins;
 import program.Configs.ListType;
 import program.Configs.StorePrioType;
 import program.MapConv.NoFinException;
@@ -639,7 +642,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 				goMultiPlace = false;
 				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
 					final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, r.getFromNode(SRC.MapNode.chestType),
-							Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.get(SRC.Raid.twitchDisplayName)), slot);
+							Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.get(SRC.Raid.twitchDisplayName)), slot, vbe.getSkins(), r.get(SRC.Raid.captainId));
 					if(pla == null)
 						continue;
 					bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
@@ -652,7 +655,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 								} catch (InterruptedException e) {}
 							}
 							try {
-								vbe.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
+								vbe.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan, pla.skin);
 							} catch (NoConnectionException e) {}
 						}
 					});
@@ -664,16 +667,18 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 				} catch (InterruptedException e) {}
 				break;
 			} else {
-				String node = Remaper.map(r.getFromNode(SRC.MapNode.chestType));
-				boolean fav = Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.get(SRC.Raid.twitchDisplayName));
-				final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, node, fav, slot);
+				final String node = Remaper.map(r.getFromNode(SRC.MapNode.chestType));
+				final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, node,
+						Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.get(SRC.Raid.twitchDisplayName)), slot, vbe.getSkins(), r.get(SRC.Raid.captainId));
+				
 				if(pla == null) {
 					Logger.print("Place=null", Logger.units, Logger.info, cid, slot);
 					System.out.println("place=null, "+Configs.getPStr(cid, Configs.pname)+" - "+slot);
 					break;
 				}
+				
 				Logger.print("Place="+pla.toString(), Logger.place, Logger.info, cid, slot);
-				String err = vbe.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan);
+				String err = vbe.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan, pla.skin);
 				bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
 				
 				if(err == null) {
@@ -723,11 +728,13 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		public final int[] pos;
 		public final boolean epic;
 		public final boolean isOnPlan;
-		public Place(Unit u, int[] pos, boolean epic, boolean isOnPlan) {
+		public final Skin skin;
+		public Place(Unit u, int[] pos, boolean epic, boolean isOnPlan, Skin skin) {
 			this.unit = u;
 			this.pos = pos;
 			this.epic = epic;
 			this.isOnPlan = isOnPlan;
+			this.skin = skin;
 		}
 		@Override
 		public String toString() {
@@ -755,7 +762,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		}
 	}
 	
-	private Place findPlace(Map map, int[] mh, HashSet<String> bannedPos, List<String> neededUnits, final Unit[] units, final boolean epic, final boolean dungeon, final int dunLvl, final boolean dunNeeded, final String chest, final boolean fav, final int slot) {
+	private Place findPlace(Map map, int[] mh, HashSet<String> bannedPos, List<String> neededUnits, final Unit[] units, final boolean epic, final boolean dungeon, final int dunLvl, final boolean dunNeeded, final String chest, final boolean fav, final int slot, Skins skins, final String captainId) {
 		HashSet<String> nupts = map.getUsablePlanTypes(false);
 		HashSet<String> eupts = map.getUsablePlanTypes(true);
 		
@@ -890,7 +897,12 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 				} catch (NoFinException e) {}
 				if(pos == null)
 					continue;
-				return new Place(u, pos, i%2==0, i<2);
+				
+				if(Configs.getBoolean(cid, currentLayer, Configs.useSkinFromCaptainViewer)) {
+					ArrayList<Skin> ss = skins.searchSkins(captainId, u.unitType);
+					return new Place(u, pos, i%2==0, i<2, ss.size() == 0 ? null : ss.get(new Random().nextInt(ss.size())));
+				} else
+					return new Place(u, pos, i%2==0, i<2, null);
 			}
 		}
 		

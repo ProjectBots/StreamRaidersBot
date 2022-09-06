@@ -1,32 +1,19 @@
-package program;
+package program.skins;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import include.Json;
+import program.Logger;
+import program.Options;
 
 public class Skins {
 	
-	public static class Skin {
-		public final String uid;
-		public final String unit;
-		public final String disname;
-		public final String type;
-		public Skin(JsonObject pack) {
-			uid = pack.get("Uid").getAsString();
-			unit = pack.get("BaseUnitType").getAsString();
-			disname = pack.get("DisplayName").getAsString();
-			type = pack.get("Type").getAsString();
-		}
-		@Override
-		public String toString() {
-			return "{uid="+uid+", disname="+disname+", unit="+unit+", type="+type+"}";
-		}
-	}
-
 	private Hashtable<String, Skin> skins = new Hashtable<>();
 	
 	public Skins(JsonArray skins) {
@@ -57,6 +44,16 @@ public class Skins {
 	
 	public Skin getSkin(String skinUid) {
 		return skins.get(skinUid);
+	}
+	
+	public ArrayList<Skin> searchSkins(String captainId, String unit, SkinType... exclude) {
+		ArrayList<Skin> ret = new ArrayList<>();
+		for(Skin skin : skins.values())
+			if((captainId == null || skin.captainId.equals(captainId))
+					&& (unit == null || skin.unit.equals(unit))
+					&& !ArrayUtils.contains(exclude, skin.type))
+				ret.add(skin);
+		return ret;
 	}
 	
 }

@@ -8,7 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import include.Json;
 import include.Time;
-import program.Skins.Skin;
+import program.skins.Skin;
 
 public class Unit {
 	
