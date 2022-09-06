@@ -1327,7 +1327,11 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 			Item best = null;
 			int p = -1;
 			for(Item item : items) {
-				int p_ = Configs.getStorePrioInt(cid, currentLayer, spt, item.uid);
+				Integer p_ = Configs.getStorePrioInt(cid, currentLayer, spt, item.uid);
+				if(p_ == null) {
+					p_ = Configs.getBoolean(cid, currentLayer, Configs.storePriceAsDefaultPrioViewer) ? item.price : -1;
+					Configs.setStorePrioInt(cid, currentLayer, spt, item.uid, p_);
+				}
 				if(p_ > p) {
 					best = item;
 					p = p_;

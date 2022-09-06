@@ -364,9 +364,11 @@ public class Configs {
 	public static final Boo preferRoguesOnTreasureMapsViewer = new Boo("preferRoguesOnTreasureMaps", ProfileType.VIEWER);
 	public static final Boo allowPlaceFirstViewer = new Boo("allowPlaceFirst", ProfileType.VIEWER);
 	public static final Boo proxyMandatoryViewer = new Boo("proxyMandatory", ProfileType.VIEWER);
+	public static final Boo storePriceAsDefaultPrioViewer = new Boo("storePriceAsDefaultPrio", ProfileType.VIEWER);
 	
 	public static final Boo preferRoguesOnTreasureMapsCaptain = new Boo("preferRoguesOnTreasureMaps", ProfileType.CAPTAIN);
 	public static final Boo proxyMandatoryCaptain = new Boo("proxyMandatory", ProfileType.CAPTAIN);
+	public static final Boo storePriceAsDefaultPrioCaptain = new Boo("storePriceAsDefaultPrio", ProfileType.CAPTAIN);
 	
 	public static Boolean getBoolean(String cid, String lid, Boo con) {
 		if(lid.equals("(all)")) {
@@ -1231,7 +1233,7 @@ public class Configs {
 		
 		return sp.has(type)
 				? sp.get(type).getAsInt()
-				: -1;
+				: null;
 	}
 	
 	public static void setStorePrioInt(String cid, String lid, StorePrioType spt, String type, int val) {
@@ -1333,7 +1335,6 @@ public class Configs {
 		}
 		
 		//	sync units
-		//	TODO canCaptain
 		for(String cid : getConfigIds()) {
 			
 			String psync = getPStr(cid, syncedViewer);
@@ -1902,6 +1903,7 @@ public class Configs {
 				addAll(Arrays.asList(("color "
 						+ "storeKeyPrios "
 						+ "storeEventPrios "
+						+ "storePriceAsDefaultPrio "
 						+ "storeRefresh "
 						+ "sleep "
 						+ "unitPlaceRetries "

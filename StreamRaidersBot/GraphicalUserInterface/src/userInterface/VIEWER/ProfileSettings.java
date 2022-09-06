@@ -439,7 +439,7 @@ public class ProfileSettings extends AbstractSettings {
 		buts.setInsets(10, 2, 2, 2);
 			
 			int y = 0;
-			String[] sbuts = "Prefer Rogues On Treasure Maps  Allow Place First".split("  ");
+			String[] sbuts = "Prefer Rogues On Treasure Maps  Allow Place First  Store Price As Default Prio".split("  ");
 			if(Options.is("exploits"))
 				sbuts = ArrayUtils.addAll(sbuts, "Use Multi Place Exploit  Use Multi Quest Exploit  Use Multi Event Exploit  Use Multi Chest Exploit  Use Multi Unit Exploit".split("  "));
 			
