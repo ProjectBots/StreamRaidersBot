@@ -862,6 +862,16 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 			prios[i] = new Prio(units[i], np, ep, n, e, vn, ve);
 		}
 		
+		//	Fisher-Yates shuffle
+		//	that way there is no favoritism bcs of the order
+		Random r = new Random();
+		for(int i=prios.length-1; i>0; i--) {
+			int index = r.nextInt(i+1);
+			Prio t = prios[index];
+			prios[index] = prios[i];
+			prios[i] = t;
+		}
+		
 		Logger.print("prios=" + Arrays.toString(prios), Logger.units, Logger.info, cid, slot);
 		
 		for(int i=0; i<4; i++) {
