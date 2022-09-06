@@ -162,8 +162,8 @@ public class GuideContent {
 				int quantity = all_rewards.getAsJsonObject(rews[j]).get("Quantity").getAsInt();
 				String name;
 				String frew = rews[j].split("_")[0];
-				if(Raid.typChestBasicRewards.containsKey(frew)) 
-					name = Raid.typChestBasicRewards.get(frew);
+				if(Raid.TYPICAL_CHEST_BASIC_REWARDS.containsKey(frew)) 
+					name = Raid.TYPICAL_CHEST_BASIC_REWARDS.get(frew);
 				else if(typChestScrollRewards.contains(frew) || frew.startsWith("scroll"))
 					name = frew;
 				else if(rews[j].contains("skin"))

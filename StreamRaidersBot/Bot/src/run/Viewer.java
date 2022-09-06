@@ -36,6 +36,7 @@ import program.Store.Item;
 import program.viewer.CaptainData;
 import program.viewer.Raid;
 import program.viewer.Raid.Reward;
+import program.viewer.RaidType;
 import run.AbstractBackEnd.UpdateEventListener;
 import program.Unit;
 import program.Configs.ListType;
@@ -517,7 +518,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		if(r == null)
 			return;
 
-		if(r.isVersus())
+		if(r.type == RaidType.VERSUS)
 			return;
 		
 		String placeSer = r.get(SRC.Raid.placementsSerialized);
@@ -528,7 +529,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 			return;
 		
 		
-		final boolean dungeon = r.isDungeon();
+		final boolean dungeon = r.type == RaidType.DUNGEON;
 		
 		//	check place settings (eg.: min loy/room) before placement (bcs of locked slots)
 		
@@ -545,8 +546,8 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		//	check if epic is available
 		boolean epic;
 		int dunLvl = -1;
-		int loy;
-		int length;
+		final int loy;
+		final int length;
 		if(dungeon) {
 			vbe.addUserDungeonInfo(r);
 			JsonObject udi = r.getUserDungeonInfo();
@@ -565,7 +566,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 			length = 1800;
 		}
 
-		boolean enabled = Configs.getChestBoolean(cid, currentLayer, ct, Configs.enabledViewer);
+		final boolean enabled = Configs.getChestBoolean(cid, currentLayer, ct, Configs.enabledViewer);
 		
 		int maxLoy = Configs.getChestInt(cid, currentLayer, ct, Configs.maxLoyViewer);
 		int minLoy = Configs.getChestInt(cid, currentLayer, ct, Configs.minLoyViewer);
@@ -907,20 +908,20 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		Raid r = vbe.getRaid(slot, true);
 		
 		if(r != null && Configs.isSlotLocked(cid, currentLayer, ""+slot)) {
-			if(r.isDungeon() && !dungeon) {
+			if(r.type == RaidType.DUNGEON && !dungeon) {
 				Raid[] all = vbe.getRaids(SRC.BackEndHandler.all);
 				boolean change = true;
 				for(int i=0; i<all.length; i++) {
 					if(i == slot || all[i] == null)
 						continue;
-					if(all[i].isDungeon() && Configs.isSlotLocked(cid, currentLayer, ""+i))
+					if(all[i].type == RaidType.DUNGEON && Configs.isSlotLocked(cid, currentLayer, ""+i))
 						change = false;
 				}
 				if(change) {
 					Configs.setStr(cid, currentLayer, Configs.dungeonSlotViewer, ""+slot);
 					dungeon = true;
 				}
-			} else if(!r.isDungeon() && dungeon) {
+			} else if(r.type != RaidType.DUNGEON && dungeon) {
 				Configs.setStr(cid, currentLayer, Configs.dungeonSlotViewer, "(none)");
 				dungeon = false;
 			}
@@ -938,7 +939,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 			return;
 
 		String tdn = r.get(SRC.Raid.twitchDisplayName);
-		if(r.isVersus()) {
+		if(r.type == RaidType.VERSUS) {
 			switchCap(vbe, slot, dungeon, r, tdn, noCap, first, null);
 			return;
 		}
@@ -999,7 +1000,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		
 		String capTeam = Configs.getStr(cid, currentLayer, Configs.captainTeamViewer); //TODO rem after event
 		
-		if((dungeon ^ r.isDungeon())
+		if((dungeon ^ (r.type == RaidType.DUNGEON))
 			|| !(ic || capTeam.equals("(none)")			//TODO rem after event
 				|| capTeam.equals(r.get("teamUid")))	//TODO rem after event
 			|| r.isOffline(Manager.getServerTime(), il, Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer))
@@ -1053,12 +1054,22 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 			long plus;
 			if(overrideBanTime != null)
 				plus = overrideBanTime;
-			else if(r.isVersus()) 
-				plus = 420;
-			else if(r.isDungeon())
-				plus = 420;
-			else
-				plus = 2100;
+			else {
+				switch(r.type) {
+				case CAMPAIGN:
+					plus = 2100;
+					break;
+				case DUNGEON:
+					plus = 420;
+					break;
+				case VERSUS:
+					plus = 420;
+					break;
+				default:
+					//	won't happen, but important for compiler
+					plus = 0;
+				}
+			}
 			if(now.isAfter(start.plusSeconds(plus-120)))
 				banned.put(disname, now.plusSeconds(120));
 			else
@@ -1577,7 +1588,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 			} else {
 				cnames[i] = raids[i].get(SRC.Raid.twitchUserName);
 				cnames[i+4] = raids[i].get(SRC.Raid.twitchDisplayName);
-				cnames[i+8] = raids[i].isDungeon() ? "d" : "c";
+				cnames[i+8] = raids[i].type == RaidType.DUNGEON ? "d" : "c";
 			}
 			Manager.blis.onProfileUpdateSlot(cid, i, raids[i], Configs.isSlotLocked(cid, currentLayer, ""+i), change[i]);
 		}

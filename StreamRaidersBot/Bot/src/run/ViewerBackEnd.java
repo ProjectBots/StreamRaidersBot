@@ -30,6 +30,7 @@ import program.Store.C;
 import program.Store.Item;
 import program.viewer.CaptainData;
 import program.viewer.Raid;
+import program.viewer.RaidType;
 import program.Unit;
 
 public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd>{
@@ -340,7 +341,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd>{
 	}
 	
 	public void addUserDungeonInfo(Raid r) throws NoConnectionException, NotAuthorizedException {
-		if(!r.isDungeon())
+		if(r.type != RaidType.DUNGEON)
 			return;
 		
 		JsonObject rdata = Json.parseObj(req.getUserDungeonInfoForRaid(r.get(SRC.Raid.raidId)));
@@ -418,10 +419,16 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd>{
 	
 	public Unit[] getPlaceableUnits(Raid r) throws NoConnectionException, NotAuthorizedException {
 		updateUnits(true);
-		Unit[] ret = new Unit[0];
+		Unit[] buffer = new Unit[units.length];
+		int index = 0;
 		
-		if(r.isDungeon()) {
-			
+		switch(r.type) {
+		case CAMPAIGN:
+			for(int i=0; i<units.length; i++)
+				if(units[i].isAvailable(Manager.getServerTime()))
+					buffer[index++] = units[i];
+			break;
+		case DUNGEON:
 			JsonObject data = r.getUserDungeonInfo();
 			
 			HashSet<String> bnd = new HashSet<>();
@@ -439,20 +446,22 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd>{
 			if(pmnt != null) 
 				for(int i=0; i<pmnt.size(); i++) 
 					bnd.add(pmnt.get(i).getAsJsonObject().get(SRC.Unit.unitId).getAsString());
-				
+			
 			
 			for(int i=0; i<units.length; i++) {
 				if(bnd.contains(units[i].get(SRC.Unit.unitId)))
 					continue;
 				
-				ret = add(ret, units[i]);
+				buffer[index++] = units[i];
 			}
-		} else {
-			for(Unit u : units)
-				if(u.isAvailable(Manager.getServerTime()))
-					ret = add(ret, u);
+			break;
+		case VERSUS:
+			//	TODO versus
+			break;
 		}
 		
+		Unit[] ret = new Unit[index];
+		System.arraycopy(buffer, 0, ret, 0, index);
 		return ret;
 	}
 	

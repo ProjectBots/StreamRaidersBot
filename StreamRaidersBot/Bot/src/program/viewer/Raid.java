@@ -28,6 +28,8 @@ public class Raid {
 	
 	private JsonObject userDungeonInfo = null;
 	
+	public final RaidType type;
+	
 	public boolean hasUserDungeonInfo() {
 		return userDungeonInfo == null;
 	}
@@ -39,7 +41,6 @@ public class Raid {
 	public JsonObject getUserDungeonInfo() {
 		return userDungeonInfo.deepCopy();
 	}
-	
 	
 	public JsonObject getRaidJsonObject() {
 		return raid;
@@ -56,21 +57,15 @@ public class Raid {
 		this.slot = slot;
 		this.node = Json.parseObj(Options.get("mapNodes")).getAsJsonObject(get(SRC.Raid.nodeId));
 		this.cid = cid;
-	}
-	
-	public boolean isDungeon() {
-		JsonElement node = raid.get(SRC.Raid.nodeId);
-		if(node == null || !node.isJsonPrimitive())
-			return false;
-		return node.getAsString().contains("dungeon");
-	}
-	
-	public boolean isVersus() {
-		JsonElement node = raid.get(SRC.Raid.nodeId);
-		if(node == null || !node.isJsonPrimitive())
-			return false;
-		String nodeId = node.getAsString();
-		return nodeId.contains("pvp") || nodeId.contains("calibration");
+
+		String nodeId = raid.get(SRC.Raid.nodeId).getAsString();
+		if(nodeId.contains("dungeon"))
+			type = RaidType.DUNGEON;
+		else if(nodeId.contains("pvp") || nodeId.contains("calibration"))
+			type = RaidType.VERSUS;
+		else
+			type = RaidType.CAMPAIGN;
+		
 	}
 	
 	public String get(String con) {
@@ -85,7 +80,8 @@ public class Raid {
 	
 	public boolean isSwitchable(String serverTime, int treshold) {
 		JsonElement je = raid.get(SRC.Raid.lastUnitPlacedTime);
-		if(je.isJsonNull()) return true;
+		if(je.isJsonNull())
+			return true;
 		return isOffline(serverTime, false, treshold);
 	}
 	
@@ -118,22 +114,13 @@ public class Raid {
 		return true;
 	}
 	
-	private static final String[][] typChestRews = new String[][] {
+	private static final String[][] AWARDED_REWARDS = new String[][] {
 		{Store.gold.get(), "goldAwarded"},
 		{"token", "eventTokensReceived"},
 		{Store.potions.get(), "potionsAwarded"},
 		{Store.keys.get(), "keysAwarded"},
 		{Store.bones.get(), "bonesAwarded"}
 	};
-	
-	public static final Hashtable<String, String> typChestBasicRewards = new Hashtable<String, String>() {
-		private static final long serialVersionUID = 1L; {
-			put("goldbag", Store.gold.get());
-			put("eventtoken", "token");
-			put("cooldown", Store.meat.get());
-			put("potion", Store.potions.get());
-			put("epicpotion", Store.potions.get());
-	}};
 	
 	
 	public JsonObject getChest(JsonObject raidStats) {
@@ -150,10 +137,10 @@ public class Raid {
 				ret.addProperty("chestsalvage", 1);
 			
 			
-			for(int i=0; i<typChestRews.length; i++) {
-				int ityp = raidStats.get(typChestRews[i][1]).getAsInt();
+			for(int i=0; i<AWARDED_REWARDS.length; i++) {
+				int ityp = raidStats.get(AWARDED_REWARDS[i][1]).getAsInt();
 				if(ityp != 0) 
-					ret.addProperty(typChestRews[i][0], ityp);
+					ret.addProperty(AWARDED_REWARDS[i][0], ityp);
 			}
 			
 			JsonElement rawRews = raidStats.get("viewerChestRewards");
@@ -186,6 +173,15 @@ public class Raid {
 		return chest_rews;
 	}
 	
+	public static final Hashtable<String, String> TYPICAL_CHEST_BASIC_REWARDS = new Hashtable<String, String>() {
+		private static final long serialVersionUID = 1L; {
+			put("goldbag", Store.gold.get());
+			put("eventtoken", "token");
+			put("cooldown", Store.meat.get());
+			put("potion", Store.potions.get());
+			put("epicpotion", Store.potions.get());
+	}};
+	
 	public static class Reward {
 		public final String name;
 		public final int quantity;
@@ -194,8 +190,8 @@ public class Raid {
 			quantity = chest_rews.getAsJsonObject(rew[0]).get("Quantity").getAsInt();
 			
 			String frew = rew[0].split("_")[0];
-			if(typChestBasicRewards.containsKey(frew)) {
-				name = typChestBasicRewards.get(frew);
+			if(TYPICAL_CHEST_BASIC_REWARDS.containsKey(frew)) {
+				name = TYPICAL_CHEST_BASIC_REWARDS.get(frew);
 			} else if(rew.length == 2) {
 				name = rew[1];
 			} else if(rew[0].contains("skin")) {

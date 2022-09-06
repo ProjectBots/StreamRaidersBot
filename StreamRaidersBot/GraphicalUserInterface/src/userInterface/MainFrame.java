@@ -34,6 +34,7 @@ import program.Options;
 import program.Remaper;
 import program.SRC;
 import program.viewer.Raid;
+import program.viewer.RaidType;
 import run.Manager;
 import run.ProfileType;
 import run.Viewer;
@@ -473,38 +474,34 @@ public class MainFrame {
 				Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
 			String cap = raid.get(SRC.Raid.twitchDisplayName);
-			Integer val = Configs.getCapInt(cid, "(all)", cap, raid.isDungeon() ? Configs.dungeon : Configs.campaign, Configs.fav);
+			Integer val = Configs.getCapInt(cid, "(all)", cap, raid.type == RaidType.DUNGEON ? Configs.dungeon : Configs.campaign, Configs.fav);
+			String favPath;
+			String blockPath;
+			
+			
 			if(val == null) {
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons def"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor("main buttons def"));
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient("main buttons def"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor("main buttons def"));
+				favPath = "main buttons def";
+				blockPath = "main buttons def";
 			} else if(val == Integer.MAX_VALUE-1) {
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons fav_cat"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor("main buttons fav_cat"));
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient("main buttons def"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor("main buttons def"));
+				favPath = "main buttons fav_cat";
+				blockPath = "main buttons def";
 			} else if(val == Integer.MIN_VALUE+1) {
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons def"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor("main buttons def"));
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient("main buttons cat"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor("main buttons cat"));
+				favPath = "main buttons def";
+				blockPath = "main buttons cat";
 			} else if(val == 0) {
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons fav_cat"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor("main buttons fav_cat"));
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient("main buttons cat"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor("main buttons cat"));
+				favPath = "main buttons fav_cat";
+				blockPath = "main buttons cat";
 			} else if(val > 0) {
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons fav_on"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor("main buttons fav_on"));
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient("main buttons def"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor("main buttons def"));
+				favPath = "main buttons fav_on";
+				blockPath = "main buttons def";
 			} else {
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons def"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor("main buttons def"));
-				GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient("main buttons on"));
-				GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor("main buttons on"));
+				favPath = "main buttons def";
+				blockPath = "main buttons on";
 			}
+			GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient(favPath));
+			GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor(favPath));
+			GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient(blockPath));
+			GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor(blockPath));
 			JsonArray cts = Json.parseArr(Options.get("chests"));
 			cts.add("bonechest");
 			cts.add("dungeonchest");
