@@ -1,5 +1,6 @@
 package userInterface;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -10,6 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -121,44 +124,30 @@ public class ConfigsImport {
 		
 		
 		//	contents should not be changed later on
-		final HashMap<String, String[][]> overridableLayersAll = new HashMap<String, String[][]>() {
+		final HashMap<String, String[][]> overridableLayers = new HashMap<String, String[][]>() {
 			private static final long serialVersionUID = 1L; {
 				for(String cid : Configs.getConfigIds()) {
+					boolean canCaptain = Configs.getPBoo(cid, Configs.canCaptain);
+					
 					ArrayList<String> tmp1 = new ArrayList<>();
 					tmp1.add("(override)");
 					ArrayList<String> tmp2 = new ArrayList<>();
 					tmp2.add("ProjectBots"); //	can be anything, won't be looked up
 					for(String lid : Configs.getLayerIds(cid, ProfileType.VIEWER)) {
-						tmp1.add(Configs.getStr(cid, lid, Configs.lnameViewer)+" (VIEWER)");
+						tmp1.add(Configs.getStr(cid, lid, Configs.lnameViewer)+(canCaptain?" (VIEWER)":""));
 						tmp2.add(lid);
 					}
-					for(String lid : Configs.getLayerIds(cid, ProfileType.CAPTAIN)) {
-						tmp1.add(Configs.getStr(cid, lid, Configs.lnameCaptain)+" (CAPTAIN)");
-						tmp2.add(lid);
+					if(canCaptain) {
+						for(String lid : Configs.getLayerIds(cid, ProfileType.CAPTAIN)) {
+							tmp1.add(Configs.getStr(cid, lid, Configs.lnameCaptain)+" (CAPTAIN)");
+							tmp2.add(lid);
+						}
 					}
 					put(cid, new String[][] {tmp1.toArray(new String[tmp1.size()]), tmp2.toArray(new String[tmp2.size()])});
 				}
 			}
 		};
 		
-		
-		//	contents should not be changed later on
-		final HashMap<String, String[][]> overridableLayersViewer = new HashMap<String, String[][]>() {
-			private static final long serialVersionUID = 1L; {
-				for(String cid : Configs.getConfigIds()) {
-					ArrayList<String> tmp1 = new ArrayList<>();
-					tmp1.add("(override)");
-					ArrayList<String> tmp2 = new ArrayList<>();
-					tmp2.add("ProjectBots"); //	can be anything, won't be looked up
-					for(String lid : Configs.getLayerIds(cid, ProfileType.VIEWER)) {
-						tmp1.add(Configs.getStr(cid, lid, Configs.lnameViewer));
-						tmp2.add(lid);
-					}
-					put(cid, new String[][] {tmp1.toArray(new String[tmp1.size()]), tmp2.toArray(new String[tmp2.size()])});
-				}
-			}
-		};
-
 		final HashMap<String, Integer> poss = new HashMap<>();
 		for(final String cid : Configs.getConfigIds()) {
 			poss.put(cid, 0);
@@ -182,16 +171,7 @@ public class ConfigsImport {
 					public void unselected(String id, ItemEvent e) {}
 					@Override
 					public void selected(String id, ItemEvent e) {
-						//	TODO check if layer name is already taken
-						String lay = GUI.getSelected(uce+"cblay");
-						String over = GUI.getSelected(uce+"cbover");
-						if(lay.equals("(add layer)") || (!over.equals("(override)") && (canCaptain && lay.endsWith(ProfileType.VIEWER.toString()+")") != over.endsWith(ProfileType.VIEWER.toString()+")")))) {
-							GUI.setForeground(uce+"badd", Colors.getColor("stngs import buttons disabled"));
-							GUI.setGradient(uce+"badd", Colors.getGradient("stngs import buttons disabled"));
-						} else {
-							GUI.setForeground(uce+"badd", Colors.getColor("stngs import buttons def"));
-							GUI.setGradient(uce+"badd", Colors.getGradient("stngs import buttons def"));
-						}
+						check(cid, uce, canCaptain);
 					}
 				};
 				
@@ -202,7 +182,8 @@ public class ConfigsImport {
 				cal.addComboBox(cblay);
 				
 				ComboBox cbover = new ComboBox(uce+"cbover");
-				cbover.setList((canCaptain ? overridableLayersAll : overridableLayersViewer).get(cid)[0]);
+				//cbover.setList((canCaptain ? overridableLayers : overridableLayersViewer).get(cid)[0]);
+				cbover.setList(overridableLayers.get(cid)[0]);
 				cbover.setPos(x++, 0);
 				cbover.setCL(cl);
 				cal.addComboBox(cbover);
@@ -211,6 +192,20 @@ public class ConfigsImport {
 				tfnewname.setPos(x++, 0);
 				tfnewname.setText("");
 				tfnewname.setSize(120, 22);
+				tfnewname.setDocLis(new DocumentListener() {
+					@Override
+					public void removeUpdate(DocumentEvent e) {
+						check(cid, uce, canCaptain);
+					}
+					@Override
+					public void insertUpdate(DocumentEvent e) {
+						check(cid, uce, canCaptain);
+					}
+					@Override
+					public void changedUpdate(DocumentEvent e) {
+						check(cid, uce, canCaptain);
+					}
+				});
 				cal.addTextField(tfnewname, uce+"tfNewNameLayer");
 				
 				Button badd = new Button();
@@ -218,6 +213,7 @@ public class ConfigsImport {
 				badd.setText("+");
 				badd.setGradient(Colors.getGradient("stngs import buttons disabled"));
 				badd.setForeground(Colors.getColor("stngs import buttons disabled"));
+				badd.setTooltip("No Layer to import selected");
 				badd.setAL(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -240,7 +236,7 @@ public class ConfigsImport {
 							butText = lay + (new_name.equals("") ? "" : " as " + new_name);
 																//	== because both can be captain (false == false)
 						} else if(!canCaptain || lay_.endsWith(ProfileType.VIEWER.toString()+")") == over_.endsWith(ProfileType.VIEWER.toString()+")")) {
-							String[][] arrs = overridableLayersAll.get(cid);
+							String[][] arrs = overridableLayers.get(cid);
 							String lid = arrs[1][ArrayUtils.indexOf(arrs[0], over_)];
 							if(!im.setMergeLayer(pt, lay, cid, lid, true))
 								return;
@@ -366,6 +362,40 @@ public class ConfigsImport {
 	
 	private static int nextPos(HashMap<String, Integer> poss, String cid) {
 		return poss.put(cid, poss.get(cid)+1);
+	}
+	
+	private static void check(String cid, String uce, boolean canCaptain) {
+		GUI.setBackground(uce+"tfNewNameLayer", Color.white);
+		
+		String lay = GUI.getSelected(uce+"cblay");
+		if(lay.equals("(add layer)")) {
+			setDisabled(uce, "No Layer to import selected");
+			return;
+		}
+
+		String over = GUI.getSelected(uce+"cbover");
+		boolean override = !over.equals("(override)");
+		if(override) {
+			if(canCaptain && lay.endsWith(ProfileType.VIEWER.toString()+")") != over.endsWith(ProfileType.VIEWER.toString()+")")) {
+				setDisabled(uce, "Layer Type Mismatch");
+				return;
+			}
+			String new_name = GUI.getInputText(uce+"tfNewNameLayer");
+			if(!new_name.equals("")) {
+				setDisabled(uce, "Can not rename a layer in override mode");
+				GUI.setBackground(uce+"tfNewNameLayer", new Color(255, 122, 122));
+				return;
+			}
+		}
+		GUI.setForeground(uce+"badd", Colors.getColor("stngs import buttons def"));
+		GUI.setGradient(uce+"badd", Colors.getGradient("stngs import buttons def"));
+		GUI.setTooltip(uce+"badd", "Add");
+	}
+	
+	private static void setDisabled(String uce, String reason) {
+		GUI.setForeground(uce+"badd", Colors.getColor("stngs import buttons disabled"));
+		GUI.setGradient(uce+"badd", Colors.getGradient("stngs import buttons disabled"));
+		GUI.setTooltip(uce+"badd", reason);
 	}
 	
 }

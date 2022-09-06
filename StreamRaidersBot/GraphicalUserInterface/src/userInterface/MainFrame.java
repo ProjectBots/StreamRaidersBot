@@ -477,8 +477,6 @@ public class MainFrame {
 			Integer val = Configs.getCapInt(cid, "(all)", cap, raid.type == RaidType.DUNGEON ? Configs.dungeon : Configs.campaign, Configs.fav);
 			String favPath;
 			String blockPath;
-			
-			
 			if(val == null) {
 				favPath = "main buttons def";
 				blockPath = "main buttons def";

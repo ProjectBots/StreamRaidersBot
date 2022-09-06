@@ -511,9 +511,14 @@ public class GUI{
 		((JComponent) getComp(id)).setBorder(new LineBorder(col, thickness, roundedCorners));
 	}
 	
+	public static void setTooltip(String id, String tooltip) {
+		((JComponent) getComp(id)).setToolTipText(tooltip);
+	}
+	
 	public static void removeFromContainer(String ContainerId, String id) {
 		((JPanel) getComp(ContainerId)).remove((Component) getComp(id));
 	}
+	
 	
 	
 	public void addToContainer(String ContainerId, Container con, String id) {

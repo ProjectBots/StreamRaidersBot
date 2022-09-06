@@ -2345,7 +2345,11 @@ public class Configs {
 			final int version = cv.getAsInt();
 			isCompatibleOldConfig = version != configVersion;
 			if(isCompatibleOldConfig) {
-				if(version != configVersion-1)
+				//	TODO acceptable version difference for old config import
+				//	this version is 3 and old is 1 by accident (should have been 2)
+				//	therefore the acceptable difference is one more than it should be atm
+				//if(version == configVersion-1)
+				if(version == configVersion-2)
 					glob = source;
 				else
 					throw new IllegalConfigVersionException(version, configVersion);
@@ -2377,7 +2381,6 @@ public class Configs {
 		public boolean hasGlobalOptions() {
 			return glob != null && glob.size() > 0;
 		}
-		
 		
 		/**
 		 * @return an ArrayList with all Profile names that can be imported
@@ -2453,6 +2456,7 @@ public class Configs {
 		public boolean setAddLayer(ProfileType pt, String lname, String cid, boolean b, String new_name) {
 			return lays.get(pt).get(lname).setAddTo(cid, b, new_name);
 		}
+		
 		
 		/**
 		 * imports and merges everything set.
