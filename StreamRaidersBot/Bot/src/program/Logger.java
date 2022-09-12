@@ -114,7 +114,7 @@ public class Logger {
 		
 		String[] scs = Scope.isScope(scope);
 		if(scs == null) {
-			System.err.println("[Debug] \"" + scope + "\" is not a scope");
+			System.err.println("[" + error.con + "] \"" + scope + "\" is not a scope");
 			return;
 		}
 		
@@ -123,12 +123,12 @@ public class Logger {
 				scopes.add(scs[i]);
 				
 				if(path == null)
-					System.out.println("[Debug] added scope " + scs[i]);
+					System.out.println("[" + error.con + "] added scope " + scs[i]);
 				else
 					try {
-						NEF.save(path, "\n[Debug] added scope " + scs[i], true);
+						NEF.save(path, "\n[" + error.con + "] added scope " + scs[i], true);
 					} catch (IOException e) {
-						System.out.println("Debug -> print: err=failed to save to file");
+						System.out.println("Logger -> print: err=failed to save to file");
 						e.printStackTrace();
 					}
 			}
@@ -167,7 +167,7 @@ public class Logger {
 	private static String getPre(Scope scope, Type type, String cid, Integer slot) {
 		LocalDateTime now = LocalDateTime.now();
 		return concat("[", type.con, "] [", now.getHour(), ":", now.getMinute(), ":", now.getSecond(), "] [", scope.getScopes()[0], "] ",
-				(cid == null ? "[none]" : concat("[", cid, "@", Configs.getPStr(cid, Configs.pname), "] ")), (slot == null ? "[n]" : concat("[", slot, "] ")));
+				(cid == null ? "[none]" : concat("[", cid, "@", Configs.getPStr(cid, Configs.pname), "] ")), (slot == null ? "[n] " : concat("[", slot, "] ")));
 	}
 	
 	public static String print(String in, Scope scope, Type type, String cid, Integer slot) {

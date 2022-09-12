@@ -101,7 +101,7 @@ public class Captain extends AbstractProfile<Captain.CaptainBackEndRunnable,Capt
 	
 	
 	private void slotSequence(int slot) {
-		
+		//TODO
 	}
 	
 	

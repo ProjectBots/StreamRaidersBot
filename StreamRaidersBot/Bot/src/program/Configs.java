@@ -2297,12 +2297,14 @@ public class Configs {
 		
 		private static JsonObject convertUnitObject(ProfileType pt, JsonObject lay, String cid) {
 			JsonObject units = lay.getAsJsonObject("units");
-			ArrayList<String> unitIds = cid == null ? new ArrayList<>() : getUnitIds(cid, pt, true);
-			for(String key : new ArrayList<>(units.keySet())) {
-				JsonObject u = units.remove(key).getAsJsonObject();
-				if(!unitIds.contains(key))
-					continue;
-				units.add(key.split("  ")[0], u);
+			if(units != null) {
+				ArrayList<String> unitIds = cid == null ? new ArrayList<>() : getUnitIds(cid, pt, true);
+				for(String key : new ArrayList<>(units.keySet())) {
+					JsonObject u = units.remove(key).getAsJsonObject();
+					if(!unitIds.contains(key))
+						continue;
+					units.add(key.split("  ")[0], u);
+				}
 			}
 			return lay;
 		}

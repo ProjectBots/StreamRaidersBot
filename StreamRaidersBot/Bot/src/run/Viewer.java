@@ -110,7 +110,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 			r.addProperty(type, r.get(type).getAsInt() + amount);
 			beh.addCurrency(type, amount);
 		} catch (NullPointerException e) {
-			Logger.printException("Run -> addRew: err=failed to add reward, con=" + con + ", type=" + type + ", amount=" + amount, e, Logger.runerr, Logger.error, cid, null, true);
+			Logger.printException("Viewer -> addRew: err=failed to add reward, con=" + con + ", type=" + type + ", amount=" + amount, e, Logger.runerr, Logger.error, cid, null, true);
 		}
 	}
 	
@@ -282,7 +282,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		try {
 			updateFrame(null);
 		} catch (NoConnectionException | NotAuthorizedException e) {
-			Logger.printException(cid+": Run -> change: slot="+slot+", err=failed to update Frame", e, Logger.runerr, Logger.error, cid, slot, true);
+			Logger.printException(cid+": Viewer -> change: slot="+slot+", err=failed to update Frame", e, Logger.runerr, Logger.error, cid, slot, true);
 		}
 	}
 	
@@ -331,10 +331,10 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 				updateFrame(vbe);
 			});
 		} catch (NoConnectionException | NotAuthorizedException e) {
-			Logger.printException("Run -> slotSequence: slot=" + slot + " err=No stable Internet Connection", e, Logger.runerr, Logger.fatal, cid, slot, true);
+			Logger.printException("Viewer -> slotSequence: slot=" + slot + " err=No stable Internet Connection", e, Logger.runerr, Logger.fatal, cid, slot, true);
 		} catch (StreamRaidersException | NoCapMatchesException e) {
 		} catch (Exception e) {
-			Logger.printException("Run -> slotSequence: slot=" + slot + " err=unknown", e, Logger.runerr, Logger.fatal, cid, slot, true);
+			Logger.printException("Viewer -> slotSequence: slot=" + slot + " err=unknown", e, Logger.runerr, Logger.fatal, cid, slot, true);
 		}
 		
 		
@@ -398,7 +398,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 			Logger.print("sleeping "+w+" sec", Logger.general, Logger.info, cid, slot);
 			sleep(w, slot);
 		} else {
-			Logger.print("Run -> slotSequence: err=couldn't find wait time", Logger.runerr, Logger.fatal, cid, slot, true);
+			Logger.print("Viewer -> slotSequence: err=couldn't find wait time", Logger.runerr, Logger.fatal, cid, slot, true);
 			Manager.blis.onProfileChangedRunning(cid, slot, false);
 			isActiveRunning[slot] = false;
 			isRunning[slot] = false;
@@ -711,7 +711,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 					continue;
 				}
 				
-				Logger.print("Run -> place: tdn="+r.toString()+" err="+err, Logger.lowerr, Logger.error, cid, slot, true);
+				Logger.print("Viewer -> place: tdn="+r.toString()+" err="+err, Logger.lowerr, Logger.error, cid, slot, true);
 				break;
 			}
 			
@@ -990,7 +990,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		Integer maxTimeLeft = Configs.getChestInt(cid, currentLayer, ct, Configs.maxTimeViewer);
 		Integer minTimeLeft = Configs.getChestInt(cid, currentLayer, ct, Configs.minTimeViewer);
 		if(maxLoy == null || minLoy == null || enabled == null || maxTimeLeft == null || minTimeLeft == null) {
-			Logger.print("Run -> captain: ct="+ct+", err=failed to get chest config", Logger.runerr, Logger.error, cid, slot, true);
+			Logger.print("Viewer -> captain: ct="+ct+", err=failed to get chest config", Logger.runerr, Logger.error, cid, slot, true);
 			//	prevents picking the chest
 			maxLoy = 5;
 			minLoy = 8;
@@ -1061,7 +1061,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 				beh.updateCaps(true, dungeon);
 				captain(beh, slot, first, true);
 			} else {
-				Logger.print("Run -> switchCap: slot="+slot+", err=No Captain Matches Config", Logger.runerr, Logger.error, cid, slot, true);
+				Logger.print("Viewer -> switchCap: slot="+slot+", err=No Captain Matches Config", Logger.runerr, Logger.error, cid, slot, true);
 				throw e;
 			}
 		}
@@ -1237,7 +1237,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 			
 			String err = beh.upgradeUnit(us[ind], Configs.getUnitSpec(cid, ProfileType.VIEWER, currentLayer, us[ind].unitId));
 			if(err != null && (!(err.equals("no specUID") || err.equals("cant upgrade unit")))) {
-				Logger.print("Run -> upgradeUnits: type=" + us[ind].unitType + " err=" + err, Logger.lowerr, Logger.error, cid, 4, true);
+				Logger.print("Viewer -> upgradeUnits: type=" + us[ind].unitType + " err=" + err, Logger.lowerr, Logger.error, cid, 4, true);
 				break;
 			}
 			
@@ -1301,7 +1301,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 			} else {
 				String err = beh.unlockUnit(unlockable[ind]);
 				if(err != null && !err.equals("not enough gold")) 
-					Logger.print("Run -> unlock: type=" + unlockable[ind].unitType + ", err=" + err, Logger.lowerr, Logger.error, cid, 4, true);
+					Logger.print("Viewer -> unlock: type=" + unlockable[ind].unitType + ", err=" + err, Logger.lowerr, Logger.error, cid, 4, true);
 			}
 			
 			ps[ind] = -1;
@@ -1317,7 +1317,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		if(daily != null) {
 			JsonElement err = beh.buyItem(daily).get(SRC.errorMessage);
 			if(err.isJsonPrimitive())
-				Logger.print("Run -> store -> daily: err="+err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
+				Logger.print("Viewer -> store -> daily: err="+err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
 			else
 				addRew(beh, SRC.Run.bought, Store.eventcurrency.get(), daily.quantity);
 		}
@@ -1382,10 +1382,10 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 					addRew(beh, SRC.Run.bought, "skin", 1);
 					break;
 				default:
-					Logger.print("Run -> store -> buyItem: err=unknown buyType, buyType="+resp.get("buyType").getAsString()+", item="+best.toString(), Logger.runerr, Logger.error, cid, 4, true);
+					Logger.print("Viewer -> store -> buyItem: err=unknown buyType, buyType="+resp.get("buyType").getAsString()+", item="+best.toString(), Logger.runerr, Logger.error, cid, 4, true);
 				}
 			} else if(!err.getAsString().startsWith("not enough "))
-				Logger.print("Run -> store -> buyItem: err="+err.getAsString()+", item="+best.toString(), Logger.runerr, Logger.error, cid, 4, true);
+				Logger.print("Viewer -> store -> buyItem: err="+err.getAsString()+", item="+best.toString(), Logger.runerr, Logger.error, cid, 4, true);
 		}
 		
 		
@@ -1408,7 +1408,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 					try {
 						ps[i] = Configs.getUnitInt(cid, currentLayer, type, Configs.buyViewer);
 					} catch (NullPointerException e) {
-						Logger.printException("Run -> store: err=item is not correct, item=" + item.toString(), e, Logger.runerr, Logger.error, cid, 4, true);
+						Logger.printException("Viewer -> store: err=item is not correct, item=" + item.toString(), e, Logger.runerr, Logger.error, cid, 4, true);
 						ps[i] = -1;
 					}
 				}
@@ -1428,7 +1428,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 					JsonElement err = beh.buyItem(item).get(SRC.errorMessage);
 					if(err != null && err.isJsonPrimitive()) {
 						if(!err.getAsString().startsWith("not enough"))
-							Logger.print("Run -> store: err=" + err.getAsString() + ", item=" + item.toString(), Logger.lowerr, Logger.error, cid, 4, true);
+							Logger.print("Viewer -> store: err=" + err.getAsString() + ", item=" + item.toString(), Logger.lowerr, Logger.error, cid, 4, true);
 					} else
 						addRew(beh, SRC.Run.bought, item.name, item.quantity);
 					
@@ -1443,7 +1443,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 				if(min > -1 && min < gold) {
 					String err = beh.refreshStore();
 					if(err != null)
-						Logger.print("Run -> Store: err="+err, Logger.runerr, Logger.error, cid, 4, true);
+						Logger.print("Viewer -> Store: err="+err, Logger.runerr, Logger.error, cid, 4, true);
 					store(beh);
 				}
 			}
@@ -1484,7 +1484,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 				JsonObject dat = beh.claimQuest(q);
 				JsonElement err = dat.get(SRC.errorMessage);
 				if(err.isJsonPrimitive())
-					Logger.print("Run -> claimQuests: err=" + err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
+					Logger.print("Viewer -> claimQuests: err=" + err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
 				else {
 					dat = dat.getAsJsonObject("data").getAsJsonObject("rewardData");
 					String item = dat.get("ItemId").getAsString();
@@ -1493,7 +1493,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 					else if(item.startsWith("skin"))
 						item = "skin";
 					else if(!item.startsWith("scroll") && !item.equals("eventcurrency")) {
-						Logger.print("Run -> claimQuests: err=unknown reward, item="+item, Logger.lowerr, Logger.error, cid, 4, true);
+						Logger.print("Viewer -> claimQuests: err=unknown reward, item="+item, Logger.lowerr, Logger.error, cid, 4, true);
 						return;
 					}
 					int a = dat.get("Amount").getAsInt();
@@ -1549,7 +1549,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 							}
 						} catch (NoConnectionException e) {
 						} catch (NullPointerException e) {
-							Logger.print("Run -> event -> collectEvent(exploit): err=failed to collectEvent(exploit), tier="+tier+", bp="+bp, Logger.runerr, Logger.error, cid, 4, true);
+							Logger.print("Viewer -> event -> collectEvent(exploit): err=failed to collectEvent(exploit), tier="+tier+", bp="+bp, Logger.runerr, Logger.error, cid, 4, true);
 						}
 						
 					}
@@ -1564,7 +1564,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 			JsonObject ce = beh.collectEvent(tier, bp);
 			JsonElement err = ce.get(SRC.errorMessage);
 			if(err != null && err.isJsonPrimitive()) {
-				Logger.print("Run -> event -> collectEvent: tier="+tier+", bp="+bp+", err=" + err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
+				Logger.print("Viewer -> event -> collectEvent: tier="+tier+", bp="+bp+", err=" + err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
 			} else {
 				String rew = ce.get("reward").getAsString();
 				if(!rew.equals("badges"))

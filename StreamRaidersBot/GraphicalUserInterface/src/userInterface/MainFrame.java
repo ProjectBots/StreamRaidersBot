@@ -339,7 +339,7 @@ public class MainFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					gui.remove(pre+cid+"::profile");
-					Manager.loadProfile(cid);
+					Manager.retryLoadProfile(cid);
 				}
 			});
 			c.addBut(retry);

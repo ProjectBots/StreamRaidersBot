@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -81,6 +82,9 @@ public class Manager {
 		return poss.get(cid);
 	}
 	
+	/**
+	 * @return the ProfileType of the specified profile
+	 */
 	public static ProfileType getProfileType(String cid) {
 		return profiles.get(cid).getType();
 	}
@@ -89,7 +93,7 @@ public class Manager {
 	 * updates the value that will be returned by {@link #getSecsOff()}
 	 * @param st StreamRaiders server time
 	 */
-	static void updateSecsOff(String st) {
+	protected static void updateSecsOff(String st) {
 		secsoff = ChronoUnit.SECONDS.between(Time.parse(st), LocalDateTime.now());
 	}
 	
@@ -205,6 +209,7 @@ public class Manager {
 		failedProfiles.remove(cid);
 	}
 	
+	private static int countProfiles = -1;
 	private static HashSet<String> loadedProfiles = new HashSet<>();
 	private static HashSet<String> failedProfiles = new HashSet<>();
 	private static final Object config_load_status_update_sync_lock = new Object();
@@ -213,12 +218,13 @@ public class Manager {
 	 * checks the config for new profiles and loads them
 	 */
 	public static void loadAllNewProfiles() {
-		List<String> cids = Configs.getConfigIds();
+		ArrayList<String> cids = Configs.getConfigIds();
+		countProfiles = cids.size();
 		cids.removeAll(profiles.keySet());
 		for(final String cid : cids)
 			loadProfile(cid);
 		synchronized(config_load_status_update_sync_lock) {
-			blis.onConfigLoadStatusUpdate(loadedProfiles.size(), failedProfiles.size(), cids.size());
+			blis.onConfigLoadStatusUpdate(loadedProfiles.size(), failedProfiles.size(), countProfiles);
 		}
 	}
 	
@@ -226,7 +232,7 @@ public class Manager {
 	 * loads a specific profile
 	 * @param cid profile id
 	 */
-	public static void loadProfile(final String cid) {
+	private static void loadProfile(final String cid) {
 		if(profiles.containsKey(cid))
 			return;
 		if(!poss.containsKey(cid))
@@ -281,12 +287,18 @@ public class Manager {
 						?failedProfiles
 						:loadedProfiles
 						).add(cid);
-					blis.onConfigLoadStatusUpdate(loadedProfiles.size(), failedProfiles.size(), Configs.getConfigIds().size());
+					blis.onConfigLoadStatusUpdate(loadedProfiles.size(), failedProfiles.size(), countProfiles);
 				}
 				releaseAction();
 			}
 		});
 		t.start();
+	}
+	
+	public static void retryLoadProfile(final String cid) {
+		if(!failedProfiles.contains(cid))
+			return;
+		loadProfile(cid);
 	}
 	
 	/**
@@ -300,7 +312,7 @@ public class Manager {
 	 * stops and unloads a profile
 	 * @param cid profile id
 	 */
-	public static void unloadProfile(String cid) {
+	private static void unloadProfile(String cid) {
 		if(!profiles.containsKey(cid))
 			throw new IllegalArgumentException("No Profile with cid="+cid+" loaded");
 		setRunningAll(cid, false);
@@ -412,7 +424,7 @@ public class Manager {
 	 * @param cid profile id
 	 * @param slot
 	 */
-	public static void switchSlotChangeMarker(String cid, int slot) {
+	public static void switchSlotFriendly(String cid, int slot) {
 		Viewer v = profiles.get(cid).getAsViewer();
 		if(v != null)
 			v.change(slot);

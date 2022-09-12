@@ -236,7 +236,7 @@ public class ViewerProfileSection {
 						change.setAL(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								Manager.switchSlotChangeMarker(cid, ii);
+								Manager.switchSlotFriendly(cid, ii);
 							}
 						});
 						cloy.addBut(change, pre+cid+"::"+i+"::change");

@@ -171,7 +171,7 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 	
 	
 	boolean ready = false;
-	public void setReady(boolean b) {
+	protected void setReady(boolean b) {
 		ready = b;
 	}
 	

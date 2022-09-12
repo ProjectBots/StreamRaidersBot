@@ -54,7 +54,7 @@ public class AddProfile {
 								Manager.addProfile(in, ai);
 							else {
 								Configs.setPStr(cid, Configs.cookies, "ACCESS_INFO="+ai);
-								Manager.loadProfile(cid);
+								Manager.retryLoadProfile(cid);
 							}
 						} else
 							Logger.print("NewProfile -> open -> openBrowser: err=no access_info", Logger.runerr, Logger.error, null, null, true);
@@ -107,7 +107,7 @@ public class AddProfile {
 					Manager.addProfile(name, ai);
 				else {
 					Configs.setPStr(cid, Configs.cookies, "ACCESS_INFO="+ai);
-					Manager.loadProfile(cid);
+					Manager.retryLoadProfile(cid);
 				}
 			}
 		};
