@@ -24,33 +24,31 @@ import include.Json;
 import include.Maths;
 import include.Pathfinding;
 import include.Time;
-import program.Configs;
-import program.Remaper;
-import program.SRC;
-import program.SRR;
-import program.Store;
 import include.Http.NoConnectionException;
-import program.SRR.NotAuthorizedException;
-
-import program.Store.C;
-import program.Store.Item;
-import program.viewer.CaptainData;
-import program.viewer.Raid;
-import program.viewer.Raid.Reward;
-import program.viewer.RaidType;
+import otherlib.Configs;
+import otherlib.Logger;
+import otherlib.MapConv;
+import otherlib.Options;
+import otherlib.Remaper;
+import otherlib.Configs.ListType;
+import otherlib.Configs.StorePrioType;
+import otherlib.MapConv.NoFinException;
 import run.AbstractBackEnd.UpdateEventListener;
-import program.Unit;
-import program.skins.Skin;
-import program.skins.Skins;
-import program.Configs.ListType;
-import program.Configs.StorePrioType;
-import program.MapConv.NoFinException;
-import program.Logger;
-import program.Heatmap;
-import program.Map;
-import program.MapConv;
-import program.Options;
-import program.Quests.Quest;
+import srlib.Map;
+import srlib.SRC;
+import srlib.SRR;
+import srlib.Store;
+import srlib.Unit;
+import srlib.Quests.Quest;
+import srlib.SRR.NotAuthorizedException;
+import srlib.Store.C;
+import srlib.Store.Item;
+import srlib.skins.Skin;
+import srlib.skins.Skins;
+import srlib.viewer.CaptainData;
+import srlib.viewer.Raid;
+import srlib.viewer.RaidType;
+import srlib.viewer.Raid.Reward;
 
 public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerBackEnd> {
 	
@@ -617,7 +615,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		final Unit[] units = vbe.getPlaceableUnits(r);
 		Logger.print("units="+Arrays.toString(units), Logger.units, Logger.info, cid, slot);
 		
-		int[] mh = new Heatmap().getMaxHeat(map);
+		int[] mh = new MapConv().createHeatMap(map).getMaxHeat();
 		
 		int re = 0;
 		int retries = Configs.getInt(cid, currentLayer, Configs.unitPlaceRetriesViewer);
@@ -903,7 +901,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 				
 				int[] pos = null;
 				try {
-					pos = new Pathfinding().search(new MapConv().asField(map, u.canFly(), pts, mh, bannedPos), cid, slot, i%2==0);
+					pos = new Pathfinding().search(new MapConv().createField2DArray(map, u.canFly(), pts, mh, bannedPos).getField2DArray(), cid, slot, i%2==0);
 				} catch (NoFinException e) {}
 				if(pos == null)
 					continue;

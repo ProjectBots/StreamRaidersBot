@@ -1,4 +1,4 @@
-package program;
+package srlib;
 
 import java.util.HashSet;
 import java.util.List;
@@ -9,7 +9,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import include.Json;
-import program.viewer.Raid;
+import otherlib.Logger;
+import otherlib.Options;
+import srlib.viewer.Raid;
 
 public class Map {
 

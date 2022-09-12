@@ -9,9 +9,9 @@ import include.GUI;
 import include.GUI.Button;
 import include.GUI.Label;
 import include.GUI.TextField;
-import program.Configs;
-import program.Logger;
-import program.Options;
+import otherlib.Configs;
+import otherlib.Logger;
+import otherlib.Options;
 import run.Manager;
 
 public class AddProfile {

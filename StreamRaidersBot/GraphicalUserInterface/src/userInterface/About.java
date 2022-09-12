@@ -11,7 +11,7 @@ import java.net.URISyntaxException;
 import include.GUI;
 import include.GUI.Button;
 import include.GUI.Label;
-import program.Logger;
+import otherlib.Logger;
 
 public class About {
 

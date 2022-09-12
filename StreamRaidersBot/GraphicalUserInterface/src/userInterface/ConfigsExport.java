@@ -23,9 +23,9 @@ import include.GUI.ComboBox;
 import include.GUI.Container;
 import include.GUI.Label;
 import include.GUI.WinLis;
-import program.Configs.Exportable;
-import program.Configs.Exportable.Category;
-import program.Logger;
+import otherlib.Logger;
+import otherlib.Configs.Exportable;
+import otherlib.Configs.Exportable.Category;
 
 public class ConfigsExport {
 

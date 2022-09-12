@@ -10,7 +10,7 @@ import include.GUI.CombListener;
 import include.GUI.ComboBox;
 import include.GUI.Container;
 import include.GUI.Label;
-import program.Configs;
+import otherlib.Configs;
 import run.ProfileType;
 
 public abstract class AbstractSettings {

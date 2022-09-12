@@ -1,4 +1,4 @@
-package program;
+package srlib;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,7 +12,8 @@ import com.google.gson.JsonObject;
 import include.Json;
 import include.Time;
 import include.Http.NoConnectionException;
-import program.skins.Skins;
+import otherlib.Options;
+import srlib.skins.Skins;
 
 public class Store {
 	

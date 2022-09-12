@@ -11,10 +11,10 @@ import com.google.gson.JsonObject;
 import include.Json;
 import include.NEF;
 import include.Http.NoConnectionException;
-import program.Configs;
-import program.SRR;
-import program.SRR.NotAuthorizedException;
+import otherlib.Configs;
 import run.AbstractBackEnd.UpdateEventListener;
+import srlib.SRR;
+import srlib.SRR.NotAuthorizedException;
 
 
 /**

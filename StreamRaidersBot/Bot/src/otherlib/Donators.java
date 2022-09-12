@@ -1,4 +1,4 @@
-package program;
+package otherlib;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +25,7 @@ public class Donators {
 		private static final long serialVersionUID = 1L;
 		{
 			add(new Don("DJ Lively Pants", 14293, "Thanks for such a great way for me to not waste time during the day! And your community on Discord is fantastic. Thanks BearHugsByDay!"));
-			add(new Don("Deus", 6448, "Got to support this awesome project +1 time saver"));
+			add(new Don("Deus", 7096, "Got to support this awesome project +1 time saver"));
 			add(new Don("Skyzor", 5266, "Real men support"));
 			add(new Don("Info#5598", 3579, ""));
 			add(new Don("Obelisk", 2201, "thanks for taking the time from your schedule to make this :)"));

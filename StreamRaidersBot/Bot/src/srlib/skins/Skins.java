@@ -1,4 +1,4 @@
-package program.skins;
+package srlib.skins;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -9,8 +9,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import include.Json;
-import program.Logger;
-import program.Options;
+import otherlib.Logger;
+import otherlib.Options;
 
 public class Skins {
 	

@@ -1,4 +1,4 @@
-package program;
+package srlib;
 
 public class SRC {
 	

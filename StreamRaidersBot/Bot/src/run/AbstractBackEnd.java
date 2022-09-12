@@ -4,9 +4,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.Http.NoConnectionException;
-import program.SRC;
-import program.SRR;
-import program.SRR.NotAuthorizedException;
+import srlib.SRC;
+import srlib.SRR;
+import srlib.SRR.NotAuthorizedException;
 
 public abstract class AbstractBackEnd<B extends AbstractBackEnd<B>> {
 	

@@ -1,4 +1,4 @@
-package program;
+package srlib;
 
 import java.util.HashMap;
 

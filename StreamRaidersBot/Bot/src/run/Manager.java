@@ -14,24 +14,24 @@ import java.util.List;
 import com.google.gson.JsonObject;
 
 import include.Http.NoConnectionException;
+import otherlib.Configs;
+import otherlib.Logger;
+import otherlib.Options;
+import otherlib.Remaper;
+import otherlib.Configs.IllegalConfigTypeException;
+import otherlib.Configs.IllegalConfigVersionException;
+import otherlib.Configs.PStr;
+import otherlib.Configs.SleInt;
+import srlib.Event;
+import srlib.SRC;
+import srlib.SRR;
+import srlib.Store;
+import srlib.Unit;
+import srlib.SRR.NotAuthorizedException;
+import srlib.SRR.OutdatedDataException;
+import srlib.viewer.Raid;
 import include.Json;
 import include.Time;
-import program.Configs;
-import program.Configs.IllegalConfigTypeException;
-import program.Configs.IllegalConfigVersionException;
-import program.Configs.PStr;
-import program.Configs.SleInt;
-import program.Logger;
-import program.Event;
-import program.Options;
-import program.Remaper;
-import program.SRC;
-import program.SRR;
-import program.Store;
-import program.Unit;
-import program.viewer.Raid;
-import program.SRR.NotAuthorizedException;
-import program.SRR.OutdatedDataException;
 
 public class Manager {
 	
@@ -482,7 +482,7 @@ public class Manager {
 	
 	/**
 	 * does an action for all profiles<br>
-	 * @param con see {@link program.SRC.Manager} for constants
+	 * @param con see {@link srlib.SRC.Manager} for constants
 	 * @param delay time between starting each action
 	 */
 	public static void doAll(int con, int delay) {

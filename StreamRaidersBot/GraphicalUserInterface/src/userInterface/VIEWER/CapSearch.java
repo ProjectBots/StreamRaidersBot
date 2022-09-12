@@ -12,11 +12,11 @@ import include.GUI;
 import include.GUI.Button;
 import include.GUI.Label;
 import include.GUI.WinLis;
-import program.Configs;
-import program.SRC;
-import program.Configs.ListType;
-import program.Logger;
+import otherlib.Configs;
+import otherlib.Logger;
+import otherlib.Configs.ListType;
 import run.Manager;
+import srlib.SRC;
 import userInterface.Colors;
 
 public class CapSearch {

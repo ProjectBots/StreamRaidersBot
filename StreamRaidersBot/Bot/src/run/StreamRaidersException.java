@@ -1,6 +1,6 @@
 package run;
 
-import program.Logger;
+import otherlib.Logger;
 
 public class StreamRaidersException extends RuntimeException {
 	private static final long serialVersionUID = 1L;

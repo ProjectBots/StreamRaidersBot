@@ -8,9 +8,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import include.GUI.Gradient;
+import otherlib.Configs;
 import include.Json;
 import include.NEF;
-import program.Configs;
 
 public class Colors {
 	

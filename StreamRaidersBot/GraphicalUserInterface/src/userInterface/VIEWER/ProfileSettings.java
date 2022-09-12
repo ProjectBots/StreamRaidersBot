@@ -25,23 +25,23 @@ import include.GUI.WinLis;
 import include.Http;
 import include.Http.NoConnectionException;
 import include.Http.NotAllowedProxyException;
-import program.Configs;
-import program.Options;
-import program.SRC;
-import program.Store;
-import program.SRR.NotAuthorizedException;
-import program.Store.Item;
+import otherlib.Configs;
+import otherlib.Logger;
+import otherlib.Options;
+import otherlib.Configs.Boo;
+import otherlib.Configs.Int;
+import otherlib.Configs.SleInt;
+import otherlib.Configs.StorePrioType;
 import run.ViewerBackEnd;
+import srlib.SRC;
+import srlib.Store;
+import srlib.SRR.NotAuthorizedException;
+import srlib.Store.Item;
 import userInterface.AbstractSettings;
 import userInterface.Colors;
 import run.Manager;
 import run.ProfileType;
 import run.Viewer;
-import program.Configs.Boo;
-import program.Configs.Int;
-import program.Configs.SleInt;
-import program.Configs.StorePrioType;
-import program.Logger;
 
 public class ProfileSettings extends AbstractSettings {
 	

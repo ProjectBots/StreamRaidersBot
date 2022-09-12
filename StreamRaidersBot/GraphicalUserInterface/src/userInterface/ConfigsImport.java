@@ -26,11 +26,11 @@ import include.GUI.Container;
 import include.GUI.Label;
 import include.GUI.TextField;
 import include.GUI.WinLis;
-import program.Configs;
-import program.Configs.IllegalConfigTypeException;
-import program.Configs.IllegalConfigVersionException;
-import program.Configs.Importable;
-import program.Logger;
+import otherlib.Configs;
+import otherlib.Logger;
+import otherlib.Configs.IllegalConfigTypeException;
+import otherlib.Configs.IllegalConfigVersionException;
+import otherlib.Configs.Importable;
 import run.Manager;
 import run.ProfileType;
 

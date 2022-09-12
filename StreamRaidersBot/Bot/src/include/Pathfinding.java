@@ -1,6 +1,6 @@
 package include;
 
-import program.Logger;
+import otherlib.Logger;
 
 public class Pathfinding {
 

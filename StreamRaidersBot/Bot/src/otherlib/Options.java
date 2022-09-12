@@ -1,4 +1,4 @@
-package program;
+package otherlib;
 
 import java.io.IOException;
 import java.util.HashSet;

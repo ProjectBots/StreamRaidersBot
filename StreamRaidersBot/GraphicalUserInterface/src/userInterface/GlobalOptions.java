@@ -20,7 +20,7 @@ import include.GUI.Button;
 import include.GUI.Container;
 import include.GUI.Label;
 import include.GUI.TextField;
-import program.Configs;
+import otherlib.Configs;
 import run.Manager;
 import run.ProfileType;
 

@@ -1,4 +1,4 @@
-package program.skins;
+package srlib.skins;
 
 import com.google.gson.JsonObject;
 

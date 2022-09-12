@@ -16,22 +16,23 @@ import include.GUI.TextArea;
 import include.GUI.WinLis;
 import me.friwi.jcefmaven.CefInitializationException;
 import me.friwi.jcefmaven.UnsupportedPlatformException;
+import otherlib.Configs;
+import otherlib.Logger;
+import otherlib.Options;
+import otherlib.Logger.DebugEventHandler;
+import otherlib.Logger.Scope;
+import otherlib.Logger.Type;
 import userInterface.MainFrame;
 import userInterface.WaitScreen;
-import program.Configs;
-import program.Logger;
-import program.Options;
-import program.Logger.DebugEventHandler;
-import program.Logger.Scope;
-import program.Logger.Type;
-import program.viewer.Raid;
 import run.Manager;
 import run.BotListener;
 import run.Manager.IniCanceledException;
+import srlib.viewer.Raid;
 import run.ProfileType;
 
 public class StreamRaiders {
 	
+	private static boolean configLoaded = false;
 	private static int error_count = 0;
 	private static GUI err = null;
 	public static final String pre = "StreamRaiders::";
@@ -50,7 +51,7 @@ public class StreamRaiders {
 				ind2 = text.length();
 			errmsg = text.substring(ind1+4, ind2);
 			
-			if(Configs.getGStr(Configs.blocked_errors).contains(errmsg))
+			if(configLoaded && Configs.getGStr(Configs.blocked_errors).contains(errmsg))
 				return;
 		} 
 		if(error_count == 0) {
@@ -109,24 +110,6 @@ public class StreamRaiders {
 	}
 	
 	public static void main(String[] args) {
-		
-		/*	TODO make better / test if bug has been resolved over time
-		if(!System.getProperty("java.version").startsWith("16")) {
-			System.err.println("Incompatible java Version\nRestarting with new Version\n");
-			
-			StringBuilder sb = new StringBuilder();
-			for(int i=0; i<args.length; i++)
-				sb.append(" " + args[i]);
-			try {
-				Runtime.getRuntime().exec("cmd.exe /c jdk-16\\bin\\java.exe -jar StreamRaidersBot.jar" + sb.toString());
-			} catch (IOException e) {
-				System.out.println("StreamRaiders -> main: err=failed to restart with jdk-16");
-			}
-			
-			return;
-		}
-		*/
-		
 		
 		Logger.setDebugEventHandler(new DebugEventHandler() {
 			@Override
@@ -226,6 +209,8 @@ public class StreamRaiders {
 			System.exit(0);
 			return;
 		}
+		configLoaded = true;
+		
 		
 		if(!Options.is("no_browser")) {
 			WaitScreen.setText("Initialize Browser");

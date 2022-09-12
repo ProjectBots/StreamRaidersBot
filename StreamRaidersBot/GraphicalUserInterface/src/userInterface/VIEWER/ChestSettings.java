@@ -16,14 +16,14 @@ import include.GUI.Container;
 import include.GUI.Image;
 import include.GUI.Label;
 import include.GUI.TextField;
+import otherlib.Configs;
+import otherlib.Logger;
+import otherlib.Options;
 import include.Json;
-import program.Configs;
-import program.Options;
 import run.ProfileType;
 import run.Viewer;
 import userInterface.AbstractSettings;
 import userInterface.Colors;
-import program.Logger;
 
 public class ChestSettings extends AbstractSettings {
 

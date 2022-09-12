@@ -5,10 +5,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import include.Http.NoConnectionException;
-import program.Logger;
-import program.SRR;
-import program.SRR.NotAuthorizedException;
+import otherlib.Logger;
 import run.AbstractBackEnd.UpdateEventListener;
+import srlib.SRR;
+import srlib.SRR.NotAuthorizedException;
 
 public class Captain extends AbstractProfile<Captain.CaptainBackEndRunnable,CaptainBackEnd> {
 	

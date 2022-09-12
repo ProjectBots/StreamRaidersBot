@@ -6,6 +6,10 @@ import include.GUI.ComboBox;
 import include.GUI.Container;
 import include.GUI.Image;
 import include.GUI.Label;
+import otherlib.Logger;
+import otherlib.Options;
+import otherlib.Remaper;
+
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,13 +24,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import include.GUI;
-import program.Logger;
-import program.Options;
-import program.Remaper;
-import program.Store;
-import program.Unit;
-import program.viewer.Raid;
 import run.Manager;
+import srlib.Store;
+import srlib.Unit;
+import srlib.viewer.Raid;
 import include.Json;
 import include.NEF;
 

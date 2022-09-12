@@ -4,7 +4,7 @@ import java.awt.Color;
 
 import com.google.gson.JsonObject;
 
-import program.viewer.Raid;
+import srlib.viewer.Raid;
 
 public interface BotListener {
 	/**
@@ -60,7 +60,7 @@ public interface BotListener {
 	 * will be called if a profile failed to load
 	 * @param cid profile id
 	 * @param pos a instance unique number assigned to the profile starting from 0 and counting up. Can change when restarted, but keeps the order in which the profiles where added.
-	 * @param e Exception thrown [{@link {@link program.SRR.NotAuthorizedException}, {@link program.SRR.NotAuthorizedException}, {@link program.SRR.OutdatedDataException}, {@link java.lang.Exception}]
+	 * @param e Exception thrown [{@link {@link srlib.SRR.NotAuthorizedException}, {@link srlib.SRR.NotAuthorizedException}, {@link srlib.SRR.OutdatedDataException}, {@link java.lang.Exception}]
 	 */
 	public default void onProfileLoadError(String cid, int pos, Exception e) {}
 	

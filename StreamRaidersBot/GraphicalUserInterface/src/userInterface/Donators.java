@@ -15,8 +15,8 @@ import include.GUI.Button;
 import include.GUI.Container;
 import include.GUI.Label;
 import include.GUI.TextArea;
-import program.Logger;
-import program.Donators.Don;
+import otherlib.Logger;
+import otherlib.Donators.Don;
 
 public class Donators {
 
@@ -31,7 +31,7 @@ public class Donators {
 		dc.setInsets(2, 40, 40, 2);
 		
 			int y1 = 0;
-			for(Don d : program.Donators.dons) {
+			for(Don d : otherlib.Donators.dons) {
 				int x = 1;
 				
 				Label ln = new Label();

@@ -4,12 +4,12 @@ import include.GUI;
 import include.GUI.Label;
 import include.GUI.TextArea;
 import include.Maths.Scaler;
-import program.Logger;
-import program.Heatmap;
-import program.Map;
-import program.SRC;
-import program.Unit;
+import otherlib.Logger;
+import otherlib.MapConv;
 import run.Viewer;
+import srlib.Map;
+import srlib.SRC;
+import srlib.Unit;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -49,7 +49,7 @@ public class MapGUI {
 		
 	}
 	
-	public static void showHeatMap(GUI parrent, Heatmap heatMap, String name, int[] h) {
+	public static void showHeatMap(GUI parrent, MapConv heatMap, String name) {
 		
 		double[][] hmap = heatMap.getHMap();
 		
@@ -81,6 +81,8 @@ public class MapGUI {
 				map.close();
 			}
 		});
+		
+		int[] h = heatMap.getMaxHeat();
 		
 		for(int i=0; i<hmap.length; i++) {
 			for(int j=0; j<hmap[i].length; j++) {
@@ -180,8 +182,8 @@ public class MapGUI {
 							@Override
 							public void keyPressed(KeyEvent e) {
 								if((e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0 && (e.getModifiersEx() & KeyEvent.ALT_DOWN_MASK) > 0) {
-									Heatmap hm = new Heatmap();
-									showHeatMap(gui, hm, map.name, hm.getMaxHeat(map));
+									MapConv hm = new MapConv().createHeatMap(map);
+									showHeatMap(gui, hm, map.name);
 								} else if((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) > 0 && (e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0) {
 									switch(e.getKeyCode()) {
 									}
@@ -239,18 +241,14 @@ public class MapGUI {
 									else
 										l.setBackground(new Color(51, 51, 51));
 								}
-
+								//	TODO switch with enums
 								if(map.is(x, y, SRC.Map.isEnemy)) {
 									l.setBackground(Color.red);
 									l.setBorder(Color.black, 1);
-								}
-								
-								if(map.is(x, y, SRC.Map.isNeutral)) {
+								} else if(map.is(x, y, SRC.Map.isNeutral)) {
 									l.setBackground(new Color(244, 242, 170));
 									l.setBorder(Color.black, 1);
-								}
-
-								if(map.is(x, y, SRC.Map.isAllied)) {
+								} else if(map.is(x, y, SRC.Map.isAllied)) {
 									if(map.is(x, y, SRC.Map.isEpic)) {
 										l.setPos(x-1, y);
 										l.setSpan(2, 2);
@@ -272,9 +270,7 @@ public class MapGUI {
 										String ut = null;
 										if(uType != null)
 											l.setText(getShortenedUnitAndPlanType(ut = uType.getAsString()));
-										
 										l.setTooltip(map.getUserName(x, y) + (ut==null?"":" - "+Unit.getName(ut)));
-										
 									}
 									l.setFont(new Font(Font.SERIF, Font.PLAIN, 10));
 								}

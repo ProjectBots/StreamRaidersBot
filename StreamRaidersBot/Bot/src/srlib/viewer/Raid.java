@@ -1,4 +1,4 @@
-package program.viewer;
+package srlib.viewer;
 
 import java.util.Hashtable;
 
@@ -8,10 +8,10 @@ import com.google.gson.JsonObject;
 
 import include.Json;
 import include.Time;
-import program.Logger;
-import program.Options;
-import program.SRC;
-import program.Store;
+import otherlib.Logger;
+import otherlib.Options;
+import srlib.SRC;
+import srlib.Store;
 
 public class Raid {
 	

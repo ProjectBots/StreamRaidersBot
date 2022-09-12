@@ -1,4 +1,4 @@
-package program;
+package otherlib;
 
 import java.util.Hashtable;
 

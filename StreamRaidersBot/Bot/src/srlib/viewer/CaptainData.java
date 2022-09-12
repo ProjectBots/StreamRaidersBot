@@ -1,9 +1,9 @@
-package program.viewer;
+package srlib.viewer;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import program.SRC;
+import srlib.SRC;
 
 public class CaptainData {
 

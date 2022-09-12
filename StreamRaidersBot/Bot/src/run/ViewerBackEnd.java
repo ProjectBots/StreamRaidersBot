@@ -14,24 +14,24 @@ import com.google.gson.JsonObject;
 
 import include.Json;
 import include.Time;
-import program.Logger;
-import program.Map;
-import program.Event;
-import program.Quests;
-import program.Quests.Quest;
-import program.SRC;
-import program.SRR;
 import include.Http.NoConnectionException;
-import program.SRR.NotAuthorizedException;
-import program.Store;
-import program.Store.C;
-import program.Store.Item;
-import program.skins.Skin;
-import program.skins.Skins;
-import program.viewer.CaptainData;
-import program.viewer.Raid;
-import program.viewer.RaidType;
-import program.Unit;
+import otherlib.Logger;
+import srlib.Event;
+import srlib.Map;
+import srlib.Quests;
+import srlib.SRC;
+import srlib.SRR;
+import srlib.Store;
+import srlib.Unit;
+import srlib.Quests.Quest;
+import srlib.SRR.NotAuthorizedException;
+import srlib.Store.C;
+import srlib.Store.Item;
+import srlib.skins.Skin;
+import srlib.skins.Skins;
+import srlib.viewer.CaptainData;
+import srlib.viewer.Raid;
+import srlib.viewer.RaidType;
 
 public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd>{
 
