@@ -152,12 +152,12 @@ public class UnitSettings extends AbstractSettings {
 	private final Hashtable<String, U> unitsById;
 	
 	
-	public UnitSettings(String cid, String lid, GUI parrent) throws AlreadyOpenException {
-		super(ProfileType.VIEWER, cid, lid, parrent, 500, 500, false, true);
+	public UnitSettings(String cid, String lid, GUI parrent) {
+		super(cid, lid, parrent, 500, 500, false, true);
 		
 		ArrayList<String> types = Unit.getTypesList();
 		
-		String[] unitIDs_raw = Configs.getUnitIdsArray(cid, ProfileType.VIEWER);
+		String[] unitIDs_raw = Configs.getUnitIdsArray(cid, pt);
 		units = new U[unitIDs_raw.length + types.size()];
 		String[] froms = new String[unitIDs_raw.length];
 		boolean containsOther = false;
@@ -178,21 +178,21 @@ public class UnitSettings extends AbstractSettings {
 				units[i] = new U(unitIDs_raw[i], type, 
 							Configs.getUnitInfoInt(cid, unitIDs_raw[i], Configs.levelViewer),
 							cidNameConv.get(Configs.getUnitInfoStr(cid, unitIDs_raw[i], Configs.fromViewer)),
-							Configs.getUnitSync(cid, ProfileType.VIEWER, lid, unitIDs_raw[i]), froms[i]);
+							Configs.getUnitSync(cid, pt, lid, unitIDs_raw[i]), froms[i]);
 			}
 		} else {
 			for(i=0; i<unitIDs_raw.length; i++) {
 				final String type = Configs.getUnitInfoStr(cid, unitIDs_raw[i], Configs.typeViewer);
 				units[i] = new U(unitIDs_raw[i], type,
 							Configs.getUnitInfoInt(cid, unitIDs_raw[i], Configs.levelViewer),
-							Configs.getUnitSync(cid, ProfileType.VIEWER, lid, unitIDs_raw[i]), froms[i]);
+							Configs.getUnitSync(cid, pt, lid, unitIDs_raw[i]), froms[i]);
 			}
 		}
 		
 		
 		
 		for(int j=0; j<types.size(); j++)
-			units[i++] = new U(types.get(j), Configs.getUnitSync(cid, ProfileType.VIEWER, lid, types.get(j)));
+			units[i++] = new U(types.get(j), Configs.getUnitSync(cid, pt, lid, types.get(j)));
 		
 		Arrays.sort(units);
 		
@@ -208,9 +208,14 @@ public class UnitSettings extends AbstractSettings {
 	public String getSettingsName() {
 		return "Unit";
 	}
+	
+	@Override
+	protected ProfileType getProfileType() {
+		return ProfileType.VIEWER;
+	}
 
 	@Override
-	protected AbstractSettings getNewInstance(String lid) throws AlreadyOpenException {
+	protected AbstractSettings getNewInstance(String lid) {
 		return new UnitSettings(cid, lid, gui);
 	}
 
@@ -331,26 +336,26 @@ public class UnitSettings extends AbstractSettings {
 							break unsync;
 						
 						//	go through each layer and sync units that have been synced with this unit to sel
-						for(String l : Configs.getLayerIds(cid, ProfileType.VIEWER)) {
-							//boolean selUnsync = !Configs.getUnitSync(cid, ProfileType.VIEWER, l, sel).equals(SYNC_NONE);
+						for(String l : Configs.getLayerIds(cid, pt)) {
+							//boolean selUnsync = !Configs.getUnitSync(cid, pt, l, sel).equals(SYNC_NONE);
 							for(int i=0; i<unitIdsToTest.size(); i++) {
-								if(Configs.getUnitSync(cid, ProfileType.VIEWER, l, unitIdsToTest.get(i)).equals(u.uId)) {
+								if(Configs.getUnitSync(cid, pt, l, unitIdsToTest.get(i)).equals(u.uId)) {
 									//if(selUnsync)
-									//	Configs.syncUnit(cid, ProfileType.VIEWER, l, sel, null);
-									Configs.syncUnit(cid, ProfileType.VIEWER, l, unitIdsToTest.get(i), sel);
+									//	Configs.syncUnit(cid, pt, l, sel, null);
+									Configs.syncUnit(cid, pt, l, unitIdsToTest.get(i), sel);
 								}
 							}
 						}
 					} else {
 						for(int i=0; i<units.length; i++) {
 							if(units[i].sync.equals(u.uId)) {
-								Configs.syncUnit(cid, ProfileType.VIEWER, lid, units[i].uId, sel);
+								Configs.syncUnit(cid, pt, lid, units[i].uId, sel);
 								units[i].sync = sel;
 							}
 						}
 					}
 				}
-				Configs.syncUnit(cid, ProfileType.VIEWER, lid, u.uId, sel);
+				Configs.syncUnit(cid, pt, lid, u.uId, sel);
 				u.sync = sel;
 				
 				updateUnitSync();
@@ -433,7 +438,7 @@ public class UnitSettings extends AbstractSettings {
 			
 			String id = uid+u.uId+"::"+key;
 			
-			Integer val = Configs.getUnitInt(cid, lid, u.uId, new UniInt(key, ProfileType.VIEWER));
+			Integer val = Configs.getUnitInt(cid, lid, u.uId, new UniInt(key, pt));
 			
 			TextField tf = new TextField();
 			tf.setPos(p++, g);
@@ -455,7 +460,7 @@ public class UnitSettings extends AbstractSettings {
 				private void check() {
 					try {
 						int val = Integer.parseInt(GUI.getInputText(id));
-						Configs.setUnitInt(cid, lid, u.uId, new UniInt(key, ProfileType.VIEWER), val);
+						Configs.setUnitInt(cid, lid, u.uId, new UniInt(key, pt), val);
 						GUI.setBackground(id, Color.white);
 					} catch (NumberFormatException e1) {
 						GUI.setBackground(id, new Color(255, 122, 122));
@@ -503,11 +508,11 @@ public class UnitSettings extends AbstractSettings {
 						int c = StringUtils.countMatches(val, "::") + 1;
 						int m = StringUtils.countMatches(val, s+",");
 						if(m == c) {
-							for(String lay : Configs.getLayerIds(cid, ProfileType.VIEWER))
+							for(String lay : Configs.getLayerIds(cid, pt))
 								Configs.setUnitString(cid, lay, u.uId, Configs.chestsViewer, Configs.getUnitString(cid, lay, u.uId, Configs.chestsViewer).replace(s+",", ""));
 							GUI.setGradient(id, Colors.getGradient(fontPath+"buttons def"));
 						} else {
-							for(String lay : Configs.getLayerIds(cid, ProfileType.VIEWER)) {
+							for(String lay : Configs.getLayerIds(cid, pt)) {
 								String old = Configs.getUnitString(cid, lay, u.uId, Configs.chestsViewer);
 								if(old.contains(s+","))
 									continue;
@@ -538,7 +543,7 @@ public class UnitSettings extends AbstractSettings {
 			space.setText("");
 			gui.addLabel(space, uid+u.uId+"::opt::"+o+"::space1");
 			
-			final UniStr us = new UniStr(o, ProfileType.VIEWER);
+			final UniStr us = new UniStr(o, pt);
 			val = Configs.getUnitString(cid, lid, u.uId, us);
 			c = StringUtils.countMatches(val, "::") + 1;
 			
@@ -567,12 +572,12 @@ public class UnitSettings extends AbstractSettings {
 							int c = StringUtils.countMatches(val, "::") + 1;
 							int m = StringUtils.countMatches(val, s);
 							if(m == c) {
-								for(String l : Configs.getLayerIds(cid, ProfileType.VIEWER))
+								for(String l : Configs.getLayerIds(cid, pt))
 									Configs.setUnitString(cid, l, u.uId, us, Configs.getUnitString(cid, l, u.uId, us).replaceFirst(s+",?", ""));
 								GUI.setGradient(id1, Colors.getGradient(fontPath+"buttons def"));
 								GUI.setForeground(id1, Colors.getColor(fontPath+"buttons def"));
 							} else {
-								for(String l : Configs.getLayerIds(cid, ProfileType.VIEWER)) {
+								for(String l : Configs.getLayerIds(cid, pt)) {
 									String old = Configs.getUnitString(cid, l, u.uId, us);
 									if(old.contains(s))
 										continue;
@@ -678,7 +683,7 @@ public class UnitSettings extends AbstractSettings {
 	private void addSpecs(final String type, final String unitId, final int g) {
 		final JsonArray specs = Unit.getSpecs(type);
 		
-		String old = Configs.getUnitSpec(cid, ProfileType.VIEWER, lid, unitId);
+		String old = Configs.getUnitSpec(cid, pt, lid, unitId);
 		
 		int p = 12;
 		
@@ -703,12 +708,12 @@ public class UnitSettings extends AbstractSettings {
 			buid.setAL(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					if(Configs.getUnitSpec(cid, ProfileType.VIEWER, lid, unitId).equals(u)) {
-						Configs.setUnitSpec(cid, ProfileType.VIEWER, lid, unitId, "null");
+					if(Configs.getUnitSpec(cid, pt, lid, unitId).equals(u)) {
+						Configs.setUnitSpec(cid, pt, lid, unitId, "null");
 						GUI.setGradient(id1+ii, Colors.getGradient(fontPath+"buttons def"));
 						GUI.setForeground(id1+ii, Colors.getColor(fontPath+"buttons def"));
 					} else {
-						Configs.setUnitSpec(cid, ProfileType.VIEWER, lid, unitId, u);
+						Configs.setUnitSpec(cid, pt, lid, unitId, u);
 						GUI.setGradient(id1+ii, Colors.getGradient(fontPath+"buttons on"));
 						GUI.setForeground(id1+ii, Colors.getColor(fontPath+"buttons on"));
 						GUI.setGradient(id1+((ii+1)%3), Colors.getGradient(fontPath+"buttons def"));
@@ -721,6 +726,8 @@ public class UnitSettings extends AbstractSettings {
 			gui.addBut(buid, id1+i);
 		}
 	}
+
+	
 
 	
 

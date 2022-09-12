@@ -30,17 +30,22 @@ public class ChestSettings extends AbstractSettings {
 	private static final String[] mm = "min max".split(" ");
 	private static final Color[] loyCols = new Color[] {new Color(54, 54, 54), new Color(192, 137, 112), new Color(192,192,192), new Color(212, 175, 55)};
 	
-	public ChestSettings(String cid, String lid, GUI parent) throws AlreadyOpenException {
-		super(ProfileType.VIEWER, cid, lid, parent, 750, 550, false, false);
+	public ChestSettings(String cid, String lid, GUI parent) {
+		super(cid, lid, parent, 750, 550, false, false);
 	}
 
 	@Override
 	protected String getSettingsName() {
 		return "Chest";
 	}
+	
+	@Override
+	protected ProfileType getProfileType() {
+		return ProfileType.VIEWER;
+	}
 
 	@Override
-	protected AbstractSettings getNewInstance(String lid) throws AlreadyOpenException {
+	protected AbstractSettings getNewInstance(String lid) {
 		return new ChestSettings(cid, lid, gui);
 	}
 

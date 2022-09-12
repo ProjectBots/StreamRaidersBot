@@ -47,8 +47,8 @@ public class LayerSettings extends AbstractSettings {
 	
 	private int colpos = 0;
 
-	protected LayerSettings(String cid, String lid, GUI parent) throws AlreadyOpenException {
-		super(ProfileType.VIEWER, cid, lid, parent, 700, 800, true, true);
+	protected LayerSettings(String cid, String lid, GUI parent){
+		super(cid, lid, parent, 700, 800, true, true);
 		addContent();
 	}
 
@@ -56,9 +56,14 @@ public class LayerSettings extends AbstractSettings {
 	protected String getSettingsName() {
 		return "Layer";
 	}
+	
+	@Override
+	protected ProfileType getProfileType() {
+		return ProfileType.VIEWER;
+	}
 
 	@Override
-	protected AbstractSettings getNewInstance(String lid) throws AlreadyOpenException {
+	protected AbstractSettings getNewInstance(String lid) {
 		return new LayerSettings(cid, lid, gui);
 	}
 

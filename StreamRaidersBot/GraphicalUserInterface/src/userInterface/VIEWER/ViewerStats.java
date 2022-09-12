@@ -7,8 +7,6 @@ import java.awt.event.KeyListener;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.util.Hashtable;
-import java.util.UUID;
-
 import com.google.gson.JsonObject;
 
 import include.GUI;
@@ -20,52 +18,37 @@ import include.GUI.TextArea;
 import include.Http.NoConnectionException;
 import otherlib.Configs;
 import otherlib.Logger;
+import run.Viewer;
 import run.ViewerBackEnd;
 import srlib.SRC;
 import srlib.Store;
 import srlib.Unit;
 import srlib.UnitRarity;
 import srlib.SRR.NotAuthorizedException;
+import userInterface.AbstractStats;
 import userInterface.Colors;
-import userInterface.MainFrame;
-import run.Manager;
-import run.Viewer;
 
-public class Stats {
 
-	public static final String pre = "Stats::";
-	
-	private final String uid = UUID.randomUUID().toString()+"::", cid;
-	
-	public Stats(String cid) {
-		this.cid = cid;
-	}
+public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.ViewerBackEndRunnable> {
 	
 	private static final AffineTransform affinetransform = new AffineTransform();     
 	private static final FontRenderContext frc = new FontRenderContext(affinetransform,true,true);     
 	private static final Font font = new Font("Arial", Font.PLAIN, 12);
 	
-	public void open() {
-		Viewer run = Manager.getViewer(cid);
-		try {
-			run.useBackEnd(beh -> {
-				open(run, beh);
-			});
-		} catch (Exception e) {
-			Logger.printException("Stats -> open: err=unable to load stats", e, Logger.runerr, Logger.error, Configs.getPStr(cid, Configs.pname), null, true);
-		}
+	public ViewerStats(String cid, ViewerBackEnd vbe) {
+		super(cid, vbe);
 	}
 	
-	
-	public void open(Viewer run, ViewerBackEnd beh) {
+	@Override
+	public void open(Viewer run, ViewerBackEnd vbe) {
 		
 		int[] pos = new int[4];
 		
 		Unit[] units;
 		Hashtable<String, Integer> curs;
 		try {
-			units = beh.getUnits(SRC.BackEndHandler.all, false);
-			curs = beh.getCurrencies();
+			units = vbe.getUnits(SRC.BackEndHandler.all, false);
+			curs = vbe.getCurrencies();
 		} catch (NoConnectionException | NotAuthorizedException e) {
 			Logger.printException("Stats -> open: err=failed to get infos", e, Logger.general, Logger.error, run.cid, null, true);
 			return;
@@ -73,8 +56,6 @@ public class Stats {
 		JsonObject rews = run.getRews();
 		JsonObject stats = Configs.getUObj(cid, Configs.statsViewer);
 		
-		
-		GUI gui = new GUI("Stats for " + Configs.getPStr(cid, Configs.pname), 1400, 900, MainFrame.getGUI(), null);
 		gui.setBackgroundGradient(Colors.getGradient("VIEWER stats background"));
 		gui.setFullScreen(true);
 		
@@ -250,5 +231,5 @@ public class Stats {
 		
 		gui.refresh();
 	}
-	
+
 }

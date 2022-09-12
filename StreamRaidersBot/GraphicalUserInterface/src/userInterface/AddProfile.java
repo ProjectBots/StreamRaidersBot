@@ -57,7 +57,7 @@ public class AddProfile {
 								Manager.retryLoadProfile(cid);
 							}
 						} else
-							Logger.print("NewProfile -> open -> openBrowser: err=no access_info", Logger.runerr, Logger.error, null, null, true);
+							Logger.print("AddProfile -> open -> openBrowser: err=no access_info", Logger.runerr, Logger.error, null, null, true);
 					}
 				});
 				t.start();

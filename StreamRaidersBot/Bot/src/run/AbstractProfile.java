@@ -110,8 +110,13 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 	
 	public void useBackEnd(R ber) throws Exception {
 		loadBE();
-		ber.run(be_);
-		unloadBE();
+		try {
+			ber.run(be_);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			unloadBE();
+		}
 	};
 	
 	@SuppressWarnings("unchecked")

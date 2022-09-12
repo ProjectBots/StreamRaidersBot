@@ -33,7 +33,7 @@ import srlib.viewer.CaptainData;
 import srlib.viewer.Raid;
 import srlib.viewer.RaidType;
 
-public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd>{
+public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 
 	private Raid[] raids = new Raid[4];
 	private Map[] maps = new Map[4];

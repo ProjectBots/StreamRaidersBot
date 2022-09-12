@@ -31,17 +31,22 @@ public class SkinSettings extends AbstractSettings {
 
 	private boolean closed = false;
 
-	protected SkinSettings(String cid, String lid, GUI parent) throws AlreadyOpenException {
-		super(ProfileType.VIEWER, cid, lid, parent, 500, 500, true, false);
+	protected SkinSettings(String cid, String lid, GUI parent) {
+		super(cid, lid, parent, 500, 500, true, false);
 	}
 	
 	@Override
 	protected String getSettingsName() {
 		return "Skin";
 	}
+	
+	@Override
+	protected ProfileType getProfileType() {
+		return ProfileType.VIEWER;
+	}
 
 	@Override
-	protected AbstractSettings getNewInstance(String lid) throws AlreadyOpenException {
+	protected AbstractSettings getNewInstance(String lid) {
 		return new SkinSettings(cid, lid, gui);
 	}
 

@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
@@ -2204,9 +2205,11 @@ public class Configs {
 					Hashtable<String, Layer> uLays = lays.get(pt);
 					JsonObject layers = new JsonObject();
 					
-					while(lids.size() > 0)
-						layers.add(UUID.randomUUID().toString(), convertUnitObject(pt, uLays.get(lids.pop()).getContentFull(false, null, null), null));
-					
+					while(lids.size() > 0) {
+						Layer l = uLays.get(lids.pop());
+						layers.add(l.name.equals("(default)")?"(default)":UUID.randomUUID().toString(), convertUnitObject(pt, l.getContentFull(false, null, null), null));
+					}
+						
 					JsonObject acc = pro.getAsJsonObject(pt.toString());
 					acc.add("layers", layers);
 					//	adjust from value in unit info to new cid
@@ -2335,7 +2338,7 @@ public class Configs {
 		//	global options or sauce if old config
 		private JsonObject glob;
 		//	profiles
-		private Hashtable<String, Profile> pros = new Hashtable<>();
+		private HashMap<String, Profile> pros = new HashMap<>();
 		//	layers
 		private Hashtable<ProfileType, Hashtable<String, Layer>> lays = new Hashtable<>();
 		

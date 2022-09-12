@@ -348,7 +348,11 @@ public class ViewerProfileSection {
 				stats.setAL(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						new Stats(cid).open();
+						try {
+							Manager.getViewer(cid).useBackEnd(vbe -> new ViewerStats(cid, vbe));
+						} catch (Exception e1) {
+							Logger.printException("ViewerProfileSection -> openStats: err=failed to load stats", e1, Logger.runerr, Logger.error, cid, null, true);
+						}
 					}
 				});
 				stngs.addBut(stats);

@@ -47,8 +47,8 @@ public class ProfileSettings extends AbstractSettings {
 	
 	private final Viewer run;
 
-	protected ProfileSettings(String cid, String lid, GUI parent) throws AlreadyOpenException {
-		super(ProfileType.VIEWER, cid, lid, parent, 500, 500, true, true);
+	protected ProfileSettings(String cid, String lid, GUI parent) {
+		super(cid, lid, parent, 500, 500, true, true);
 
 		run = Manager.getViewer(cid);
 		addHead();
@@ -59,9 +59,14 @@ public class ProfileSettings extends AbstractSettings {
 	protected String getSettingsName() {
 		return "Profile";
 	}
+	
+	@Override
+	protected ProfileType getProfileType() {
+		return ProfileType.VIEWER;
+	}
 
 	@Override
-	protected AbstractSettings getNewInstance(String lid) throws AlreadyOpenException {
+	protected AbstractSettings getNewInstance(String lid) {
 		return new ProfileSettings(cid, lid, gui);
 	}
 	

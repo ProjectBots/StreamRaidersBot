@@ -29,14 +29,14 @@ public class CaptainSettings extends AbstractSettings {
 
 	private ListType list;
 	
-	public CaptainSettings(String cid, String lid, GUI parrent) throws AlreadyOpenException {
-		super(ProfileType.VIEWER, cid, lid, parrent, 800, 500, false, true);
+	public CaptainSettings(String cid, String lid, GUI parrent) {
+		super(cid, lid, parrent, 800, 500, false, true);
 		this.list = new ListType("campaign");
 		addContent();
 	}
 	
-	public CaptainSettings(String cid, String lid, GUI parrent, ListType list) throws AlreadyOpenException {
-		super(ProfileType.VIEWER, cid, lid, parrent, 800, 500, false, true);
+	public CaptainSettings(String cid, String lid, GUI parrent, ListType list) {
+		super(cid, lid, parrent, 800, 500, false, true);
 		this.list = list;
 		addContent();
 	}
@@ -47,7 +47,12 @@ public class CaptainSettings extends AbstractSettings {
 	}
 
 	@Override
-	protected AbstractSettings getNewInstance(String lid) throws AlreadyOpenException {
+	protected ProfileType getProfileType() {
+		return ProfileType.VIEWER;
+	}
+	
+	@Override
+	protected AbstractSettings getNewInstance(String lid) {
 		return new CaptainSettings(cid, lid, gui, list);
 	}
 

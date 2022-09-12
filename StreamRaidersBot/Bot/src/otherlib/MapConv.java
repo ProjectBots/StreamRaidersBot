@@ -34,7 +34,8 @@ public class MapConv {
 			for(int y=0; y<length; y++) {
 				fields[x][y] = new Field();
 				String pt = map.getPlanType(x, y);
-				if(pt == null) pt = "Programmed by ProjectBots";
+				if(pt == null)
+					pt = "Programmed by ProjectBots";
 				if(map.is(x, y, SRC.Map.isObstacle) && !map.is(x, y, SRC.Map.canWalkOver)) {
 					if(canFly && map.is(x, y, SRC.Map.canFlyOver)) 
 						continue;

@@ -57,6 +57,9 @@ public class Manager {
 	private static long secsoff = Long.MIN_VALUE;
 	protected static BotListener blis;
 	
+	public static AbstractProfile<?, ?> getProfile(String cid) {
+		return profiles.get(cid);
+	}
 	
 	/**
 	 * @param cid profile id

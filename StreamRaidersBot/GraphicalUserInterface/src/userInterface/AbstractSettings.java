@@ -1,6 +1,7 @@
 package userInterface;
 
 import java.awt.event.ItemEvent;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.UUID;
@@ -10,39 +11,50 @@ import include.GUI.CombListener;
 import include.GUI.ComboBox;
 import include.GUI.Container;
 import include.GUI.Label;
+import include.GUI.WinLis;
 import otherlib.Configs;
 import run.ProfileType;
 
 public abstract class AbstractSettings {
 	
-	public static class AlreadyOpenException extends Exception {
-		private static final long serialVersionUID = 1L;
-	}
-	
 	private static Hashtable<String, GUI> open = new Hashtable<>();
 	
-	protected final String uid = UUID.randomUUID().toString()+"::", cid, lid, fontPath;
+	protected final String uid = UUID.randomUUID().toString()+"::", cid, lid, fontPath, sn;
 	protected final GUI gui;
+	protected final ProfileType pt;
 	
 	protected int g = 0;
 	
-	protected AbstractSettings(ProfileType pt, String cid, String lid, GUI parent, int width, int height, boolean skipLayerChooser, boolean skipAddContent) throws AlreadyOpenException {
+	protected AbstractSettings(String cid, String lid, GUI parent, int width, int height, boolean skipLayerChooser, boolean skipAddContent) {
 		this.cid = cid;
 		this.lid = lid;
+		this.pt = getProfileType();
+		this.sn = getSettingsName();
 		
-		String sn = getSettingsName();
-		
-		if(open.contains(sn)) {
-			open.get(sn).toFront();
-			throw new AlreadyOpenException();
-		}
+		if(open.containsKey(pt.toString()+sn))
+			open.get(pt.toString()+sn).close();
 		
 		fontPath = pt.toString() + " stngs " + sn.toLowerCase() + " ";
 		
 		gui = new GUI(sn + " Settings for " + Configs.getPStr(cid, Configs.pname), width, height, parent, null);
 		gui.setBackgroundGradient(Colors.getGradient(fontPath+"background"));
 		
-		open.put(sn, gui);
+		gui.addWinLis(new WinLis() {
+			@Override
+			public void onIconfied(WindowEvent e) {}
+			@Override
+			public void onFocusLost(WindowEvent e) {}
+			@Override
+			public void onFocusGained(WindowEvent e) {}
+			@Override
+			public void onDeIconfied(WindowEvent e) {}
+			@Override
+			public void onClose(WindowEvent e) {
+				open.remove(pt.toString()+sn);
+			}
+		});
+		
+		open.put(pt.toString()+sn, gui);
 		
 		if(!skipLayerChooser)
 			addLayerChooser();
@@ -52,16 +64,17 @@ public abstract class AbstractSettings {
 		
 	}
 	
+
 	protected abstract String getSettingsName();
+	protected abstract ProfileType getProfileType();
 	
-	protected abstract AbstractSettings getNewInstance(String lid) throws AlreadyOpenException; 
+	protected abstract AbstractSettings getNewInstance(String lid); 
 	
 	public void openNewInstance(String lid) {
 		open.remove(getSettingsName());
-		try {
-			getNewInstance(lid);
-		} catch (AlreadyOpenException e) {}
+		AbstractSettings as = getNewInstance(lid);
 		gui.close();
+		open.put(pt.toString()+sn, as.gui);
 	}
 	
 	protected void addLayerChooser() {
