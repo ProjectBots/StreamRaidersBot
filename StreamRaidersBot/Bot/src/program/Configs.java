@@ -1579,6 +1579,11 @@ public class Configs {
 				if(getUnitInfoStr(defCid, uId, fromProfile).equals(cid))
 					remUnitId(defCid, pt, uId);
 		} else {
+			//	unsync if it already was synced before
+			String sync_before = getPStr(cid, syncProfile);
+			if(!sync_before.equals("(none)"))
+				syncProfile(cid, null, pt);
+			
 			//	sync
 			JsonObject def = getProfile(defCid);
 			setPStr(cid, syncProfile, defCid);

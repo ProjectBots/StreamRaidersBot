@@ -8,6 +8,7 @@ import program.Logger;
 import program.Heatmap;
 import program.Map;
 import program.SRC;
+import program.Unit;
 import run.Viewer;
 
 import java.awt.Color;
@@ -268,9 +269,11 @@ public class MapGUI {
 										l.setText("X");
 									} else {
 										JsonElement uType = map.get(x, y).get("unitType");
+										String ut = null;
 										if(uType != null)
-											l.setText(getShortenedUnitAndPlanType(uType.getAsString()));
-										l.setTooltip(map.getUserName(x, y));
+											l.setText(getShortenedUnitAndPlanType(ut = uType.getAsString()));
+										
+										l.setTooltip(map.getUserName(x, y) + (ut==null?"":" - "+Unit.getName(ut)));
 										
 									}
 									l.setFont(new Font(Font.SERIF, Font.PLAIN, 10));

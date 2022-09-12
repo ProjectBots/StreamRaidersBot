@@ -672,7 +672,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 						Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.get(SRC.Raid.twitchDisplayName)), slot, vbe.getSkins(), r.get(SRC.Raid.captainId));
 				
 				if(pla == null) {
-					Logger.print("Place=null", Logger.units, Logger.info, cid, slot);
+					Logger.print("place=null", Logger.units, Logger.info, cid, slot);
 					System.out.println("place=null, "+Configs.getPStr(cid, Configs.pname)+" - "+slot);
 					break;
 				}
