@@ -44,6 +44,7 @@ import userInterface.VIEWER.ViewerProfileSection;
 public class MainFrame {
 	
 	public static final String pre = "MainFrame::";
+	public static final String pspre = "ProfileSection::";
 	
 	private static GUI gui = null;
 	
@@ -389,27 +390,29 @@ public class MainFrame {
 			return;
 		remProfile(cid);
 		addLoadedProfile(cid, Manager.getProfilePos(cid), type);
+		gui.refresh();
+		Manager.updateProfile(cid);
 	}
 	
 	public static void updateSlotRunning(String cid, int slot, boolean run) {
 		if(gui == null)
 			return;
-		GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::run", Colors.getGradient("main buttons " + (run?"on":"def")));
-		GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::run", Colors.getColor("main buttons " + (run?"on":"def")));
+		GUI.setGradient(pspre+cid+"::"+slot+"::run", Colors.getGradient("main buttons " + (run?"on":"def")));
+		GUI.setForeground(pspre+cid+"::"+slot+"::run", Colors.getColor("main buttons " + (run?"on":"def")));
 	}
 	
 	public static void updateTimer(String cid, int slot, String time) {
 		if(gui == null)
 			return;
-		GUI.setText(ViewerProfileSection.pre+cid+"::"+slot+"::time", time);
+		GUI.setText(pspre+cid+"::"+slot+"::time", time);
 	}
 	
 	public static void updateSlot(String cid, int slot, Raid raid, boolean change) {
 		if(gui == null)
 			return;
 		
-		GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::change", Colors.getColor("main buttons " + (change ? "on" : "def")));
-		GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::change", Colors.getGradient("main buttons " + (change ? "on" : "def")));
+		GUI.setForeground(pspre+cid+"::"+slot+"::change", Colors.getColor("main buttons " + (change ? "on" : "def")));
+		GUI.setGradient(pspre+cid+"::"+slot+"::change", Colors.getGradient("main buttons " + (change ? "on" : "def")));
 		
 		Boolean locked = Configs.isSlotLocked(cid, "(all)", ""+slot);
 		String fid = "main buttons " +(locked == null
@@ -417,59 +420,59 @@ public class MainFrame {
 										: locked
 											? "on"
 											: "def");
-		GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::lock", Colors.getGradient(fid));
-		GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::lock", Colors.getColor(fid));
+		GUI.setGradient(pspre+cid+"::"+slot+"::lock", Colors.getGradient(fid));
+		GUI.setForeground(pspre+cid+"::"+slot+"::lock", Colors.getColor(fid));
 
 		if(raid == null) {
-			GUI.setText(ViewerProfileSection.pre+cid+"::"+slot+"::capname", "????????");
+			GUI.setText(pspre+cid+"::"+slot+"::capname", "????????");
 			Image img = new Image("data/Other/icon.png");
 			img.setSquare(100);
 			try {
-				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::img", img);
+				GUI.setImage(pspre+cid+"::"+slot+"::img", img);
 			} catch (IOException e) {
 				Logger.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
-			GUI.setText(ViewerProfileSection.pre+cid+"::"+slot+"::wins", "??");
+			GUI.setText(pspre+cid+"::"+slot+"::wins", "??");
 			img = new Image("data/LoyaltyPics/noloy.png");
 			img.setSquare(20);
 			try {
-				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::loy", img);
+				GUI.setImage(pspre+cid+"::"+slot+"::loy", img);
 			} catch (IOException e) {
 				Logger.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
-			GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient("main buttons def"));
-			GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor("main buttons def"));
-			GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons def"));
-			GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor("main buttons def"));
+			GUI.setGradient(pspre+cid+"::"+slot+"::block", Colors.getGradient("main buttons def"));
+			GUI.setForeground(pspre+cid+"::"+slot+"::block", Colors.getColor("main buttons def"));
+			GUI.setGradient(pspre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons def"));
+			GUI.setForeground(pspre+cid+"::"+slot+"::fav", Colors.getColor("main buttons def"));
 			img = new Image("data/ChestPics/nochest.png");
 			img.setSquare(25);
 			try {
-				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::chest", img);
+				GUI.setImage(pspre+cid+"::"+slot+"::chest", img);
 			} catch (IOException e) {
 				Logger.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
 		} else {
-			GUI.setText(ViewerProfileSection.pre+cid+"::"+slot+"::capname", raid.get(SRC.Raid.twitchDisplayName));
+			GUI.setText(pspre+cid+"::"+slot+"::capname", raid.get(SRC.Raid.twitchDisplayName));
 			Image img = new Image(raid.get(SRC.Raid.twitchUserImage));
 			img.setUrl(true);
 			img.setSquare(100);
 			try {
-				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::img", img);
+				GUI.setImage(pspre+cid+"::"+slot+"::img", img);
 			} catch (IOException e) {
 				Logger.print("MainFrame -> onUpdateSlot: err=couldnt set image, url="+raid.get(SRC.Raid.twitchUserImage), Logger.general, Logger.error, cid, slot, true);
 				try {
 					img = new Image("data/Other/icon.png");
-					GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::img", img);
+					GUI.setImage(pspre+cid+"::"+slot+"::img", img);
 				} catch (IOException e1) {
 					Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set default image", e, Logger.general, Logger.error, cid, slot, true);
 				}
 			}
-			GUI.setText(ViewerProfileSection.pre+cid+"::"+slot+"::wins", raid.get(SRC.Raid.pveWins));
+			GUI.setText(pspre+cid+"::"+slot+"::wins", raid.get(SRC.Raid.pveWins));
 			int loy = Integer.parseInt(raid.get(SRC.Raid.pveLoyaltyLevel));
 			img = new Image("data/LoyaltyPics/" + Viewer.pveloy[loy] + ".png");
 			img.setSquare(20);
 			try {
-				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::loy", img);
+				GUI.setImage(pspre+cid+"::"+slot+"::loy", img);
 			} catch (IOException e) {
 				Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
@@ -496,10 +499,10 @@ public class MainFrame {
 				favPath = "main buttons def";
 				blockPath = "main buttons on";
 			}
-			GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getGradient(favPath));
-			GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::fav", Colors.getColor(favPath));
-			GUI.setGradient(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getGradient(blockPath));
-			GUI.setForeground(ViewerProfileSection.pre+cid+"::"+slot+"::block", Colors.getColor(blockPath));
+			GUI.setGradient(pspre+cid+"::"+slot+"::fav", Colors.getGradient(favPath));
+			GUI.setForeground(pspre+cid+"::"+slot+"::fav", Colors.getColor(favPath));
+			GUI.setGradient(pspre+cid+"::"+slot+"::block", Colors.getGradient(blockPath));
+			GUI.setForeground(pspre+cid+"::"+slot+"::block", Colors.getColor(blockPath));
 			JsonArray cts = Json.parseArr(Options.get("chests"));
 			cts.add("bonechest");
 			cts.add("dungeonchest");
@@ -511,7 +514,7 @@ public class MainFrame {
 			img = new Image("data/ChestPics/"+ct+".png");
 			img.setSquare(25);
 			try {
-				GUI.setImage(ViewerProfileSection.pre+cid+"::"+slot+"::chest", img);
+				GUI.setImage(pspre+cid+"::"+slot+"::chest", img);
 			} catch (IOException e) {
 				Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
@@ -522,22 +525,22 @@ public class MainFrame {
 	public static void updateSlotSync(String cid, int slot, boolean synced) {
 		if(gui == null)
 			return;
-		GUI.setEnabled(ViewerProfileSection.pre+cid+"::"+slot+"::run", !synced);
-		GUI.setEnabled(ViewerProfileSection.pre+cid+"::"+slot+"::skip", !synced);
+		GUI.setEnabled(pspre+cid+"::"+slot+"::run", !synced);
+		GUI.setEnabled(pspre+cid+"::"+slot+"::skip", !synced);
 	}
 	
 	public static void updateCurrency(String cid, String type, int amount) {
 		if(gui == null)
 			return;
-		GUI.setText(ViewerProfileSection.pre+cid+"::"+type, ""+amount);
+		GUI.setText(pspre+cid+"::"+type, ""+amount);
 	}
 	
 	public static void updateGeneral(String cid, String pn, String ln, Color lc) {
 		if(gui == null)
 			return;
-		GUI.setText(ViewerProfileSection.pre+cid+"::pname", pn);
-		GUI.setText(ViewerProfileSection.pre+cid+"::layer", ln);
-		GUI.setBackground(ViewerProfileSection.pre+cid+"::laycol", lc);
+		GUI.setText(pspre+cid+"::pname", pn);
+		GUI.setText(pspre+cid+"::layer", ln);
+		GUI.setBackground(pspre+cid+"::laycol", lc);
 	}
 	
 	

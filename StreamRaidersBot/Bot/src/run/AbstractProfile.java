@@ -38,6 +38,7 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 	UpdateEventListener<B> uelis = null;
 	String currentLayer = "(default)";
 	String currentLayerId = null;
+	boolean isSwitching = false;
 	
 	public ProfileType getType() {
 		return ptype;
@@ -121,6 +122,12 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 	
 	@SuppressWarnings("unchecked")
 	public <T extends AbstractProfile<?,?>>T switchProfileType() throws Exception {
+		//	stopping slots
+		isSwitching = true;
+		setRunningAll(false);
+		while(!hasStopped())
+			Thread.sleep(100);
+		
 		loadBE();
 		try {
 			SRR req = be_.getSRR();
@@ -148,6 +155,7 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 	public abstract void skipAll();
 	
 	public abstract void updateFrame(B be) throws NoConnectionException, NotAuthorizedException;
+	
 	public synchronized void updateLayer() {
 		LocalDateTime now = LocalDateTime.now();
 		// current time in layer-units (1 = 5 min)

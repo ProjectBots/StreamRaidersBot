@@ -240,62 +240,55 @@ public class Manager {
 			return;
 		if(!poss.containsKey(cid))
 			poss.put(cid, poss.put("(next)", poss.get("(next)")+1));
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					requestAction();
-				} catch (InterruptedException e1) {
-					return;
-				}
-				failedProfiles.remove(cid);
-				blis.onProfileStartedLoading(cid);
-				AbstractProfile<?,?> p = null;
-				try {
-					SRR req = null;
-					try {
-						req = new SRR(cid, Options.get("clientVersion"));
-					} catch (OutdatedDataException e) {
-						updateSecsOff(e.getServerTime());
-						updateSRData(e.getDataPath(), req);
-						try {
-							Thread.sleep(1000);
-						} catch (InterruptedException e1) {}
-						req = new SRR(cid, Options.get("clientVersion"));
-					}
-					if(req.playsAsCaptain()) {
-						p = new Captain(cid, req);
-						if(!Options.is("captain_beta"))
-							p = p.switchProfileType();
-					} else
-						p = new Viewer(cid, req);
-					profiles.put(cid, p);
-					
-					boolean before = Configs.getPBoo(cid, Configs.canCaptain);
-					if(!before) {
-						boolean now = req.canPlayAsCaptain();
-						if(now) {
-							Configs.setPBoo(cid, Configs.canCaptain, now);
-							Configs.check(cid);
-						}
-					}
-					
-					blis.onProfileLoadComplete(cid, poss.get(cid), p.getType());
-					p.setReady(true);
-				} catch (Exception e) {
-					blis.onProfileLoadError(cid, poss.get(cid), e);
-				}
-				synchronized(config_load_status_update_sync_lock) {
-					(p == null
-						?failedProfiles
-						:loadedProfiles
-						).add(cid);
-					blis.onConfigLoadStatusUpdate(loadedProfiles.size(), failedProfiles.size(), countProfiles);
-				}
-				releaseAction();
+		new Thread(() -> {
+			try {
+				requestAction();
+			} catch (InterruptedException e1) {
+				return;
 			}
-		});
-		t.start();
+			failedProfiles.remove(cid);
+			blis.onProfileStartedLoading(cid);
+			AbstractProfile<?,?> p = null;
+			try {
+				SRR req = null;
+				try {
+					req = new SRR(cid, Options.get("clientVersion"));
+				} catch (OutdatedDataException e) {
+					updateSecsOff(e.getServerTime());
+					updateSRData(e.getDataPath(), req);
+					req = new SRR(cid, Options.get("clientVersion"));
+				}
+				if(req.playsAsCaptain()) {
+					p = new Captain(cid, req);
+					if(!Options.is("captain_beta"))
+						p = p.switchProfileType();
+				} else
+					p = new Viewer(cid, req);
+				profiles.put(cid, p);
+				
+				boolean before = Configs.getPBoo(cid, Configs.canCaptain);
+				if(!before) {
+					boolean now = req.canPlayAsCaptain();
+					if(now) {
+						Configs.setPBoo(cid, Configs.canCaptain, now);
+						Configs.check(cid);
+					}
+				}
+				
+				blis.onProfileLoadComplete(cid, poss.get(cid), p.getType());
+				p.setReady(true);
+			} catch (Exception e) {
+				blis.onProfileLoadError(cid, poss.get(cid), e);
+			}
+			synchronized(config_load_status_update_sync_lock) {
+				(p == null
+					?failedProfiles
+					:loadedProfiles
+					).add(cid);
+				blis.onConfigLoadStatusUpdate(loadedProfiles.size(), failedProfiles.size(), countProfiles);
+			}
+			releaseAction();
+		}).start();
 	}
 	
 	public static void retryLoadProfile(final String cid) {
@@ -372,6 +365,22 @@ public class Manager {
 	public static void switchRunning(String cid, int slot) {
 		AbstractProfile<?,?> p = profiles.get(cid);
 		p.setRunning(!p.isRunning(slot), slot);
+	}
+	
+	/**
+	 * switches the profile type
+	 * this should not be called with a profile, which is viewer only
+	 * @param cid profile id
+	 * @throws Exception
+	 */
+	public static void switchProfileType(String cid) throws Exception {
+		AbstractProfile<?,?> p = profiles.get(cid);
+		p = p.switchProfileType();
+		if(p == null)
+			throw new Exception("Failed to switch, p is null");
+		profiles.put(cid, p);
+		blis.onProfileSwitchedAccountType(cid, p.getType());
+		p.setReady(true);
 	}
 	
 	
@@ -465,22 +474,19 @@ public class Manager {
 			updateProfile(key);
 	}
 	
+	
 	/**
 	 * updates the Profile
 	 * @param cid profile id
 	 */
 	public static void updateProfile(String cid) {
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					profiles.get(cid).updateFrame(null);
-				} catch (NoConnectionException | NotAuthorizedException e1) {
-					Logger.printException("Manager -> updateProfile: err=failed to update frame", e1, Logger.general, Logger.error, cid, null, true);
-				}
+		new Thread(() -> {
+			try {
+				profiles.get(cid).updateFrame(null);
+			} catch (NoConnectionException | NotAuthorizedException e1) {
+				Logger.printException("Manager -> updateProfile: err=failed to update frame", e1, Logger.general, Logger.error, cid, null, true);
 			}
-		});
-		t.start();
+		}).start();
 	}
 	
 	/**

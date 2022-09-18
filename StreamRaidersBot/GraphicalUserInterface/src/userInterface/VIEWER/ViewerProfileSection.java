@@ -20,9 +20,6 @@ import userInterface.MapGUI;
 
 public class ViewerProfileSection {
 
-	public static final String pre = "ViewerProfileSection::";
-	
-	
 	private static String[] sc = "Gold Potions Meat EventCurrency Keys Bones".split(" ");
 	
 	private final String cid;
@@ -50,7 +47,29 @@ public class ViewerProfileSection {
 				pname.setTooltip("Profilename");
 				pname.setInsets(2, 2, 2, 20);
 				pname.setForeground(Colors.getColor("main labels"));
-				head.addLabel(pname, pre+cid+"::pname");
+				head.addLabel(pname, MainFrame.pspre+cid+"::pname");
+				
+				if(Configs.getPBoo(cid, Configs.canCaptain)) {
+					Button bcap = new Button();
+					bcap.setPos(p++, 0);
+					bcap.setText("switch");
+					bcap.setTooltip("switch to captain");
+					bcap.setGradient(Colors.getGradient("main buttons def"));
+					bcap.setForeground(Colors.getColor("main buttons def"));
+					bcap.setAL((ae) -> {
+						new Thread(() -> {
+							try {
+								GUI.setEnabled(MainFrame.pspre+cid+"::switch", false);
+								Manager.switchProfileType(cid);
+								GUI.setEnabled(MainFrame.pspre+cid+"::switch", true);
+								update();
+							} catch (Exception e) {
+								Logger.printException("ViewerProfileSection -> (head) -> switchProfileType: error=failed to switch profile type", e, Logger.runerr, Logger.error, cid, null, true);
+							}
+						}).start();
+					});
+					head.addBut(bcap, MainFrame.pspre+cid+"::switch");
+				}
 				
 				for(String key : sc) {
 					Label slab = new Label();
@@ -66,7 +85,7 @@ public class ViewerProfileSection {
 					lab.setTooltip("Amount of "+key);
 					lab.setInsets(2, 2, 2, 20);
 					lab.setForeground(Colors.getColor("main labels"));
-					head.addLabel(lab, pre+cid+"::"+key.toLowerCase());
+					head.addLabel(lab, MainFrame.pspre+cid+"::"+key.toLowerCase());
 				}
 				
 				Label counter = new Label();
@@ -74,7 +93,7 @@ public class ViewerProfileSection {
 				counter.setText("00:00");
 				counter.setTooltip("Time until next Check");
 				counter.setForeground(Colors.getColor("main labels"));
-				head.addLabel(counter, pre+cid+"::4::time");
+				head.addLabel(counter, MainFrame.pspre+cid+"::4::time");
 				
 				Button start = new Button();
 				start.setPos(p++, 0);
@@ -88,7 +107,7 @@ public class ViewerProfileSection {
 						Manager.switchRunning(cid, 4);
 					}
 				});
-				head.addBut(start, pre+cid+"::4::run");
+				head.addBut(start, MainFrame.pspre+cid+"::4::run");
 				
 				Button skiph = new Button();
 				skiph.setPos(p++, 0);
@@ -102,7 +121,7 @@ public class ViewerProfileSection {
 						Manager.skipSleep(cid, 4);
 					}
 				});
-				head.addBut(skiph, pre+cid+"::4::skip");
+				head.addBut(skiph, MainFrame.pspre+cid+"::4::skip");
 				
 				Label s1 = new Label();
 				s1.setPos(p++, 0);
@@ -115,7 +134,7 @@ public class ViewerProfileSection {
 				layer.setText("(default)");
 				layer.setTooltip("current active Layer");
 				layer.setForeground(Colors.getColor("main labels"));
-				head.addLabel(layer, pre+cid+"::layer");
+				head.addLabel(layer, MainFrame.pspre+cid+"::layer");
 				
 				Label laycol = new Label();
 				laycol.setPos(p++, 0);
@@ -124,7 +143,7 @@ public class ViewerProfileSection {
 				laycol.setTooltip("Layer color");
 				laycol.setBackground(Color.LIGHT_GRAY);
 				laycol.setOpaque(true);
-				head.addLabel(laycol, pre+cid+"::laycol");
+				head.addLabel(laycol, MainFrame.pspre+cid+"::laycol");
 				
 			con.addContainer(head);
 			
@@ -146,7 +165,7 @@ public class ViewerProfileSection {
 						time.setTooltip("Timer until next Check");
 						time.setInsets(2, 2, 2, 10);
 						time.setForeground(Colors.getColor("main labels"));
-						tsr.addLabel(time, pre+cid+"::"+i+"::time");
+						tsr.addLabel(time, MainFrame.pspre+cid+"::"+i+"::time");
 						
 						Button run = new Button();
 						run.setPos(1, 0);
@@ -160,7 +179,7 @@ public class ViewerProfileSection {
 								Manager.switchRunning(cid, ii);
 							}
 						});
-						tsr.addBut(run, pre+cid+"::"+i+"::run");
+						tsr.addBut(run, MainFrame.pspre+cid+"::"+i+"::run");
 						
 						Button skip = new Button();
 						skip.setPos(2, 0);
@@ -174,7 +193,7 @@ public class ViewerProfileSection {
 								Manager.skipSleep(cid, ii);
 							}
 						});
-						tsr.addBut(skip, pre+cid+"::"+i+"::skip");
+						tsr.addBut(skip, MainFrame.pspre+cid+"::"+i+"::skip");
 				
 					raid.addContainer(tsr);
 					
@@ -184,14 +203,14 @@ public class ViewerProfileSection {
 					cap.setText("???????");
 					cap.setTooltip("Captain Name");
 					cap.setForeground(Colors.getColor("main labels"));
-					raid.addLabel(cap, pre+cid+"::"+i+"::capname");
+					raid.addLabel(cap, MainFrame.pspre+cid+"::"+i+"::capname");
 					
 					Image img = new Image("data/Other/icon.png");
 					img.setPos(0, p++);
 					img.setAnchor("c");
 					img.setSquare(100);
 					img.setTooltip("Captain Profile Pic");
-					raid.addImage(img, pre+cid+"::"+i+"::img");
+					raid.addImage(img, MainFrame.pspre+cid+"::"+i+"::img");
 					
 					Button twitch = new Button();
 					twitch.setPos(0, p++);
@@ -218,14 +237,14 @@ public class ViewerProfileSection {
 						wins.setText("??");
 						wins.setTooltip("Wins in this Event with this Captain");
 						wins.setForeground(Colors.getColor("main labels"));
-						cloy.addLabel(wins, pre+cid+"::"+i+"::wins");
+						cloy.addLabel(wins, MainFrame.pspre+cid+"::"+i+"::wins");
 						
 						Image loy = new Image("data/LoyaltyPics/noloy.png");
 						loy.setPos(1, 0);
 						loy.setSquare(20);
 						loy.setInsets(2, 15, 2, 15);
 						loy.setTooltip("Your Loyalty with this Captain");
-						cloy.addImage(loy, pre+cid+"::"+i+"::loy");
+						cloy.addImage(loy, MainFrame.pspre+cid+"::"+i+"::loy");
 						
 						Button change = new Button();
 						change.setPos(2, 0);
@@ -239,7 +258,7 @@ public class ViewerProfileSection {
 								Manager.switchSlotFriendly(cid, ii);
 							}
 						});
-						cloy.addBut(change, pre+cid+"::"+i+"::change");
+						cloy.addBut(change, MainFrame.pspre+cid+"::"+i+"::change");
 					
 					raid.addContainer(cloy);
 					
@@ -262,7 +281,7 @@ public class ViewerProfileSection {
 								update();
 							}
 						});
-						capActs.addBut(lock, pre+cid+"::"+i+"::lock");
+						capActs.addBut(lock, MainFrame.pspre+cid+"::"+i+"::lock");
 						
 						Button fav = new Button();
 						fav.setPos(1, 0);
@@ -277,7 +296,7 @@ public class ViewerProfileSection {
 								update();
 							}
 						});
-						capActs.addBut(fav, pre+cid+"::"+i+"::fav");
+						capActs.addBut(fav, MainFrame.pspre+cid+"::"+i+"::fav");
 						
 						Button block = new Button();
 						block.setPos(2, 0);
@@ -292,7 +311,7 @@ public class ViewerProfileSection {
 								update();
 							}
 						});
-						capActs.addBut(block, pre+cid+"::"+i+"::block");
+						capActs.addBut(block, MainFrame.pspre+cid+"::"+i+"::block");
 					
 					raid.addContainer(capActs);
 					
@@ -325,7 +344,7 @@ public class ViewerProfileSection {
 						chest.setAnchor("c");
 						chest.setSquare(25);
 						chest.setTooltip("The Chest this Raid will return");
-						mapchest.addImage(chest, pre+cid+"::"+i+"::chest");
+						mapchest.addImage(chest, MainFrame.pspre+cid+"::"+i+"::chest");
 					
 					raid.addContainer(mapchest);
 				
@@ -400,20 +419,16 @@ public class ViewerProfileSection {
 		return con;
 	}
 
-	public void update() {
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				String syncTo = Configs.getPStr(cid, Configs.syncedViewer);
-				if(syncTo.equals("(none)"))
-					syncTo = cid;
-				
-				for(String s : Manager.getLoadedProfiles())
-					if(Configs.getPStr(s, Configs.syncedViewer).equals(cid) || s.equals(cid))
-						Manager.updateProfile(s);
-			}
-		});
-		t.start();
+	private void update() {
+		new Thread(() -> {
+			String syncTo = Configs.getPStr(cid, Configs.syncedViewer);
+			if(syncTo.equals("(none)"))
+				syncTo = cid;
+			
+			for(String s : Manager.getLoadedProfiles())
+				if(Configs.getPStr(s, Configs.syncedViewer).equals(cid) || s.equals(cid))
+					Manager.updateProfile(s);
+		}).start();
 	}
 
 }

@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import include.Http.NoConnectionException;
+import otherlib.Configs;
 import otherlib.Logger;
 import run.AbstractBackEnd.UpdateEventListener;
 import srlib.SRR;
@@ -48,6 +49,7 @@ public class Captain extends AbstractProfile<Captain.CaptainBackEndRunnable,Capt
 	private boolean[] isRunning = new boolean[4];
 	private boolean[] isActiveRunning = new boolean[2];
 	private boolean[] setRun = new boolean[2];
+	private int[] sleep = new int[2];
 	private List<List<Boolean>> queue = Collections.synchronizedList(new LinkedList<List<Boolean>>() {
 		private static final long serialVersionUID = 1L;
 		{
@@ -57,94 +59,100 @@ public class Captain extends AbstractProfile<Captain.CaptainBackEndRunnable,Capt
 	});
 	
 	@Override
-	public void setRunning(boolean bb, int slot) {
-		if(slot < 2) {
-			if(isRunning[slot] == bb)
+	public void setRunning(boolean b, int slot) {
+		if(slot < isActiveRunning.length) {
+			if(Configs.getSleepInt(cid, currentLayer, ""+slot, Configs.syncSlotCaptain) != -1 || isSwitching)
+				b = false;
+			if(isRunning[slot] == b)
 				return;
-			final boolean b_ = bb;
+			List<Boolean> q = queue.get(slot);
+			q.add(b);
+			if(setRun[slot])
+				return;
+			setRun[slot] = true;
 			new Thread(() -> {
-				List<Boolean> q = queue.get(slot);
-				q.add(b_);
-				if(setRun[slot])
-					return;
-				setRun[slot] = true;
 				while(q.size() > 0) {
-					boolean b = q.remove(0);
-					Manager.blis.onProfileChangedRunning(cid, slot, b);
-					if(isRunning[slot] == b)
+					final boolean bb = q.remove(0);
+					Manager.blis.onProfileChangedRunning(cid, slot, bb);
+					if(isRunning[slot] == bb)
 						continue;
-					isRunning[slot] = b;
+					isRunning[slot] = bb;
 					while(isActiveRunning[slot]) {
 						try {
 							Thread.sleep(100);
 						} catch (InterruptedException e) {}
 					}
-					if(b) {
+					if(bb) {
 						isActiveRunning[slot] = true;
-						Thread t = new Thread(new Runnable() {
-							@Override
-							public void run() {
-								slotSequence(slot);
-							}
-						});
-						t.start();
+						new Thread(() -> slotSequence(slot)).start();
 					}
 				}
 				setRun[slot] = false;
-			}
-			).start();
+			}).start();
 		} else {
-			isRunning[slot] = bb;
-			Manager.blis.onProfileChangedRunning(cid, slot, bb);
+			//	passive slots
+			isRunning[slot] = b;
+			Manager.blis.onProfileChangedRunning(cid, slot, b);
 		}
 	}
 	
-	
-	private void slotSequence(int slot) {
-		//TODO
-	}
-	
-	
-
 	@Override
 	public void setRunningAll(boolean b) {
-		// TODO Auto-generated method stub
-		
+		for(int i=0; i<isRunning.length; i++)
+			setRunning(b, i);
 	}
 
 	@Override
 	public boolean isRunning(int slot) {
-		// TODO Auto-generated method stub
-		return false;
+		return isRunning[slot];
 	}
 
 	@Override
 	public boolean hasStopped() {
-		// TODO Auto-generated method stub
-		return false;
+		boolean b = false;
+		for(int i=0; i<isActiveRunning.length; i++)
+			b |= isActiveRunning[i];
+		return !b;
 	}
 
 	@Override
 	public void skip(int slot) {
-		// TODO Auto-generated method stub
-		
+		sleep[slot] = 0;
 	}
 
 	@Override
 	public void skipAll() {
-		// TODO Auto-generated method stub
-		
+		for(int i=0; i<5; i++)
+			skip(i);
+	}
+	
+	private void slotSequence(int slot) {
+		//TODO
 	}
 
 	@Override
 	public void updateFrame(CaptainBackEnd be) throws NoConnectionException, NotAuthorizedException {
-		// TODO Auto-generated method stub
+		if(!ready)
+			return;
+		
+		updateSlotSync();
+		
+		updateLayer();
 		
 	}
 
 	@Override
 	synchronized public void updateSlotSync() {
-		// TODO Auto-generated method stub
+		for(int slot=0; slot<2; slot++) {
+			int sync = Configs.getSleepInt(cid, currentLayer, ""+slot, Configs.syncSlotCaptain);
+			Manager.blis.onProfileUpdateSlotSync(cid, slot, sync);
+			if(sync == -1)
+				continue;
+			if(isRunning(slot)) {
+				setRunning(false, slot);
+				setRunning(true, sync);
+			}
+		}
 		
 	}
 

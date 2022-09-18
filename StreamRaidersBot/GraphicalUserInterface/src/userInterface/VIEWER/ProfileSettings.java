@@ -84,7 +84,7 @@ public class ProfileSettings extends AbstractSettings {
 			public void onClose(WindowEvent e) {
 				try {
 					run.useBackEnd(vbe -> {
-						run.updateProxySettings(vbe);
+						run.updateBeh(vbe);
 					});
 				} catch (Exception e1) {
 					Logger.printException("ProfileSettings -> open: err=failed to update proxy settings", e1, Logger.runerr, Logger.error, Configs.getPStr(cid, Configs.pname), null, true);

@@ -1,6 +1,5 @@
 package run;
 
-import java.awt.Color;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.WeekFields;
@@ -215,41 +214,33 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 	}
 	
 	@Override
-	public void setRunning(boolean bb, int slot) {
-		if(Configs.getSleepInt(cid, currentLayer, ""+slot, Configs.syncSlotViewer) != -1)
-			bb = false;
-		final boolean b_ = bb;
+	public void setRunning(boolean b, int slot) {
+		if(Configs.getSleepInt(cid, currentLayer, ""+slot, Configs.syncSlotViewer) != -1 || isSwitching)
+			b = false;
+		List<Boolean> q = queue.get(slot);
+		q.add(b);
+		if(setRun[slot])
+			return;
+		setRun[slot] = true;
 		new Thread(() -> {
-			List<Boolean> q = queue.get(slot);
-			q.add(b_);
-			if(setRun[slot])
-				return;
-			setRun[slot] = true;
 			while(q.size() > 0) {
-				boolean b = q.remove(0);
-				Manager.blis.onProfileChangedRunning(cid, slot, b);
-				if(isRunning[slot] == b)
+				final boolean bb = q.remove(0);
+				Manager.blis.onProfileChangedRunning(cid, slot, bb);
+				if(isRunning[slot] == bb)
 					continue;
-				isRunning[slot] = b;
+				isRunning[slot] = bb;
 				while(isActiveRunning[slot]) {
 					try {
 						Thread.sleep(100);
 					} catch (InterruptedException e) {}
 				}
-				if(b) {
+				if(bb) {
 					isActiveRunning[slot] = true;
-					Thread t = new Thread(new Runnable() {
-						@Override
-						public void run() {
-							slotSequence(slot);
-						}
-					});
-					t.start();
+					new Thread(() -> slotSequence(slot)).start();
 				}
 			}
 			setRun[slot] = false;
-		}
-		).start();
+		}).start();
 	}
 	
 	@Override
@@ -259,9 +250,10 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 	
 	@Override
 	public boolean hasStopped() {
-		for(boolean b : isActiveRunning)
-			if(b) return false;
-		return true;
+		boolean b = false;
+		for(int i=0; i<isActiveRunning.length; i++)
+			b |= isActiveRunning[i];
+		return !b;
 	}
 
 	@Override
@@ -1628,6 +1620,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 			
 	}
 	
+	/*	TODO remove
 	@Override
 	public synchronized void updateLayer() {
 		LocalDateTime now = LocalDateTime.now();
@@ -1651,9 +1644,17 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		
 		Manager.blis.onProfileUpdateGeneral(cid, Configs.getPStr(cid, Configs.pname), Configs.getStr(cid, currentLayer, Configs.lnameViewer), new Color(Configs.getInt(cid, currentLayer, Configs.colorViewer)));
 	}
+	*/
 	
 	public void updateBeh(ViewerBackEnd beh) {
-		updateProxySettings(beh);
+		String proxy = Configs.getStr(cid, currentLayer, Configs.proxyDomainViewer);
+		String user = Configs.getStr(cid, currentLayer, Configs.proxyUserViewer);
+		beh.setOptions(proxy.equals("") ? null : proxy, 
+				Configs.getInt(cid, currentLayer, Configs.proxyPortViewer),
+				user.equals("") ? null : user,
+				Configs.getStr(cid, currentLayer, Configs.proxyPassViewer),
+				Configs.getStr(cid, currentLayer, Configs.userAgentViewer),
+				Configs.getBoolean(cid, currentLayer, Configs.proxyMandatoryViewer));
 		
 		beh.setUpdateTimes( Configs.getInt(cid, currentLayer, Configs.unitUpdateViewer),
 							Configs.getInt(cid, currentLayer, Configs.raidUpdateViewer),
@@ -1674,16 +1675,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		return beh.getMap(slot, false);
 	}
 	
-	public void updateProxySettings(ViewerBackEnd beh) {
-		String proxy = Configs.getStr(cid, currentLayer, Configs.proxyDomainViewer);
-		String user = Configs.getStr(cid, currentLayer, Configs.proxyUserViewer);
-		beh.setOptions(proxy.equals("") ? null : proxy, 
-				Configs.getInt(cid, currentLayer, Configs.proxyPortViewer),
-				user.equals("") ? null : user,
-				Configs.getStr(cid, currentLayer, Configs.proxyPassViewer),
-				Configs.getStr(cid, currentLayer, Configs.userAgentViewer),
-				Configs.getBoolean(cid, currentLayer, Configs.proxyMandatoryViewer));
-	}
+	
 	
 	private static <T>T[] add(T[] arr, T item) {
 		return ArrayUtils.add(arr, item);

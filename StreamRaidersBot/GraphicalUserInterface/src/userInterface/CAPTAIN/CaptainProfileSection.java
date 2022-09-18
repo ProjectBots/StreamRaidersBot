@@ -18,10 +18,8 @@ import userInterface.MainFrame;
 
 public class CaptainProfileSection {
 
-	public static final String pre = "CaptainProfileSection::";
-
 	private static String[] sc = "Gold Potions Meat EventCurrency Keys Bones".split(" ");
-	private static String[] stngsNames = "".split(" ");
+	private static String[] stngsNames = "Profile Units Chests".split(" ");
 	
 	private final String cid;
 	
@@ -48,7 +46,27 @@ public class CaptainProfileSection {
 				pname.setTooltip("Profilename");
 				pname.setInsets(2, 2, 2, 20);
 				pname.setForeground(Colors.getColor("main labels"));
-				head.addLabel(pname, pre+cid+"::pname");
+				head.addLabel(pname, MainFrame.pspre+cid+"::pname");
+				
+				Button bvie = new Button();
+				bvie.setPos(p++, 0);
+				bvie.setText("switch");
+				bvie.setTooltip("switch to viewer");
+				bvie.setGradient(Colors.getGradient("main buttons def"));
+				bvie.setForeground(Colors.getColor("main buttons def"));
+				bvie.setAL((ae) -> {
+					new Thread(() -> {
+						try {
+							GUI.setEnabled(MainFrame.pspre+cid+"::switch", false);
+							Manager.switchProfileType(cid);
+							GUI.setEnabled(MainFrame.pspre+cid+"::switch", true);
+							update();
+						} catch (Exception e) {
+							Logger.printException("CaptainProfileSection -> (head) -> switchProfileType: error=failed to switch profile type", e, Logger.runerr, Logger.error, cid, null, true);
+						}
+					}).start();
+				});
+				head.addBut(bvie, MainFrame.pspre+cid+"::switch");
 				
 				for(String key : sc) {
 					Label slab = new Label();
@@ -64,7 +82,7 @@ public class CaptainProfileSection {
 					lab.setTooltip("Amount of "+key);
 					lab.setInsets(2, 2, 2, 20);
 					lab.setForeground(Colors.getColor("main labels"));
-					head.addLabel(lab, pre+cid+"::"+key.toLowerCase());
+					head.addLabel(lab, MainFrame.pspre+cid+"::"+key.toLowerCase());
 				}
 				
 				Label s1 = new Label();
@@ -78,7 +96,7 @@ public class CaptainProfileSection {
 				layer.setText("(default)");
 				layer.setTooltip("current active Layer");
 				layer.setForeground(Colors.getColor("main labels"));
-				head.addLabel(layer, pre+cid+"::layer");
+				head.addLabel(layer, MainFrame.pspre+cid+"::layer");
 				
 				Label laycol = new Label();
 				laycol.setPos(p++, 0);
@@ -87,10 +105,11 @@ public class CaptainProfileSection {
 				laycol.setTooltip("Layer color");
 				laycol.setBackground(Color.LIGHT_GRAY);
 				laycol.setOpaque(true);
-				head.addLabel(laycol, pre+cid+"::laycol");
+				head.addLabel(laycol, MainFrame.pspre+cid+"::laycol");
 				
 			con.addContainer(head);
 			
+			p = 0;
 			
 			Container cr = new Container();
 			cr.setPos(p++, 1);
@@ -191,7 +210,7 @@ public class CaptainProfileSection {
 						@Override
 						public void actionPerformed(ActionEvent e) {
 							try {
-								Class.forName("userInterface."+ProfileType.VIEWER.toString()+"."+name)
+								Class.forName("userInterface."+ProfileType.CAPTAIN.toString()+"."+name)
 									.getDeclaredConstructor(String.class, String.class, GUI.class)
 									.newInstance(cid, Manager.getCurrentLayer(cid), MainFrame.getGUI());
 							} catch (IllegalArgumentException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException e1) {
@@ -205,5 +224,17 @@ public class CaptainProfileSection {
 			con.addContainer(stngs);
 		
 		return con;
+	}
+	
+	private void update() {
+		new Thread(() -> {
+			String syncTo = Configs.getPStr(cid, Configs.syncedViewer);
+			if(syncTo.equals("(none)"))
+				syncTo = cid;
+			
+			for(String s : Manager.getLoadedProfiles())
+				if(Configs.getPStr(s, Configs.syncedViewer).equals(cid) || s.equals(cid))
+					Manager.updateProfile(s);
+		}).start();
 	}
 }
