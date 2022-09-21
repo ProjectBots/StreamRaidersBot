@@ -1620,31 +1620,6 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 			
 	}
 	
-	/*	TODO remove
-	@Override
-	public synchronized void updateLayer() {
-		LocalDateTime now = LocalDateTime.now();
-		// current time in layer-units (1 = 5 min)
-		int n = ((now.get(WeekFields.ISO.dayOfWeek()) - 1) * 288) 
-				+ (now.getHour() * 12) 
-				+ (now.getMinute() / 5);
-
-		// set current layer
-		JsonObject ptimes = Configs.getUObj(cid, Configs.ptimesViewer);
-		for(String key : ptimes.keySet()) {
-			String[] sp = key.split("-");
-			if(Integer.parseInt(sp[0]) <= n && Integer.parseInt(sp[1]) >= n) {
-				if(key.equals(currentLayerId))
-					break;
-				currentLayer = ptimes.get(key).getAsString();
-				currentLayerId = key;
-				break;
-			}
-		}
-		
-		Manager.blis.onProfileUpdateGeneral(cid, Configs.getPStr(cid, Configs.pname), Configs.getStr(cid, currentLayer, Configs.lnameViewer), new Color(Configs.getInt(cid, currentLayer, Configs.colorViewer)));
-	}
-	*/
 	
 	public void updateBeh(ViewerBackEnd beh) {
 		String proxy = Configs.getStr(cid, currentLayer, Configs.proxyDomainViewer);
