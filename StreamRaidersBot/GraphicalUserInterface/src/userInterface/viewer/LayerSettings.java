@@ -63,8 +63,8 @@ public class LayerSettings extends AbstractSettings {
 	}
 
 	@Override
-	protected AbstractSettings getNewInstance(String lid) {
-		return new LayerSettings(cid, lid, gui);
+	protected void openNewInstance(String lid) {
+		new LayerSettings(cid, lid, gui);
 	}
 
 	@Override

@@ -31,12 +31,14 @@ public abstract class AbstractSettings {
 		this.pt = getProfileType();
 		this.sn = getSettingsName();
 		
-		if(open.containsKey(pt.toString()+sn))
-			open.get(pt.toString()+sn).close();
-		
 		fontPath = pt.toString() + " stngs " + sn.toLowerCase() + " ";
 		
 		gui = new GUI(sn + " Settings for " + Configs.getPStr(cid, Configs.pname), width, height, parent, null);
+		
+		//	close old gui if it exist
+		if(open.containsKey(pt.toString()+sn))
+			open.get(pt.toString()+sn).close();
+		
 		gui.setBackgroundGradient(Colors.getGradient(fontPath+"background"));
 		
 		gui.addWinLis(new WinLis() {
@@ -68,14 +70,7 @@ public abstract class AbstractSettings {
 	protected abstract String getSettingsName();
 	protected abstract ProfileType getProfileType();
 	
-	protected abstract AbstractSettings getNewInstance(String lid); 
-	
-	public void openNewInstance(String lid) {
-		open.remove(getSettingsName());
-		AbstractSettings as = getNewInstance(lid);
-		gui.close();
-		open.put(pt.toString()+sn, as.gui);
-	}
+	protected abstract void openNewInstance(String lid); 
 	
 	protected void addLayerChooser() {
 		ArrayList<String> listlays = Configs.getLayerIds(cid, ProfileType.VIEWER);

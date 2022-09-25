@@ -46,8 +46,8 @@ public class SkinSettings extends AbstractSettings {
 	}
 
 	@Override
-	protected AbstractSettings getNewInstance(String lid) {
-		return new SkinSettings(cid, lid, gui);
+	protected void openNewInstance(String lid) {
+		new SkinSettings(cid, lid, gui);
 	}
 
 	@Override

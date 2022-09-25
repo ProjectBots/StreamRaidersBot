@@ -20,8 +20,7 @@ public abstract class Slot {
 	protected boolean isRunning = false;
 	protected boolean isActivelyRunning = false;
 	private final Slot[] slots;
-	private final boolean[] synced;
-	private boolean isSynced = false;
+	private int sync = -1;
 	private final AbstractProfile<?, ?> p;
 	protected String currentLayer;
 	
@@ -30,7 +29,6 @@ public abstract class Slot {
 		this.cid = p.cid;
 		this.slot = slot;
 		this.slots = slots;
-		this.synced = new boolean[slots.length];
 		this.p = p;
 		this.currentLayer = p.currentLayer;
 	}
@@ -47,24 +45,23 @@ public abstract class Slot {
 		return isActivelyRunning;
 	}
 	
-	public void syncSlot(int slot, boolean b) {
-		if(b && this.slot == slot)
+	public void sync(int slot) {
+		if(this.slot == slot)
 			throw new IllegalArgumentException("cannot sync with itself");
-		if(b && isSynced)
+		if(slot != -1 && slots[slot].sync != -1)
 			throw new IllegalStateException("cannot sync a slot to a synced slot");
-		synced[slot] = b;
+		sync = slot;
 	}
 	
-	public void setSynced(boolean b) {
-		isSynced = b;
+	public int getSync() {
+		return sync;
 	}
 	
 	private final LinkedList<Boolean> queue = new LinkedList<>();
 	private boolean setRun = false;
 	
 	public void setRunning(boolean b) {
-		p.updateSlotSync();
-		if(isSynced || p.isSwitching())
+		if(sync != -1 || p.isSwitching())
 			b = false;
 		
 		queue.add(b);
@@ -110,8 +107,8 @@ public abstract class Slot {
 		
 		exeSlotSequence();
 		
-		for(int i=0; i<synced.length; i++)
-			if(synced[i])
+		for(int i=0; i<slots.length; i++)
+			if(slots[i].sync == slot)
 				slots[i].exeSlotSequence();
 		
 		Logger.print("releasing action", Logger.general, Logger.info, cid, slot);
@@ -224,8 +221,8 @@ public abstract class Slot {
 				ms += ss;
 				
 				Manager.blis().onProfileTimerUpdate(cid, slot, ms);
-				for(int i=0; i<5; i++)
-					if(synced[i])
+				for(int i=0; i<slots.length; i++)
+					if(slots[i].sync == slot)
 						Manager.blis().onProfileTimerUpdate(cid, i, ms);
 				
 				sleep--;

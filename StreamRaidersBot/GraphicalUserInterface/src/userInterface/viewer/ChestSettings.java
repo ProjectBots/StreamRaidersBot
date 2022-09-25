@@ -45,8 +45,8 @@ public class ChestSettings extends AbstractSettings {
 	}
 
 	@Override
-	protected AbstractSettings getNewInstance(String lid) {
-		return new ChestSettings(cid, lid, gui);
+	protected void openNewInstance(String lid) {
+		new ChestSettings(cid, lid, gui);
 	}
 
 	@Override

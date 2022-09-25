@@ -220,37 +220,41 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 	}
 	
 	public void updateSlotSync() {
-		for(int s=0; s<slots.length; s++) {
-			if(!slots[s].canManageItself())
-				continue;
-			slots[s].syncSlot(s, false);
-			slots[s].setSynced(false);
-		}
+		boolean[] wasRunning = new boolean[slots.length];
+		for(int s=0; s<slots.length; s++)
+			wasRunning[s] = slots[s].isRunning;
+		
 		for(int s=0; s<slots.length; s++) {
 			if(!slots[s].canManageItself())
 				continue;
 			
 			final int sync = Configs.getSleepInt(cid, currentLayer, ""+s, ptype == ProfileType.VIEWER ? Configs.syncSlotViewer : Configs.syncSlotCaptain);
+			
+			int before = slots[s].getSync();
+			if(before == sync)
+				continue;
+
+			slots[s].sync(sync);
 			Manager.blis().onProfileUpdateSlotSync(cid, s, sync);
 			
-			if(sync == -1)
-				continue;
-			
-			slots[sync].syncSlot(s, true);
-			slots[s].setSynced(true);
-			if(isRunning(s)) {
-				final int ss = s;
-				new Thread(() -> {
-					setRunning(ss, false);
-					//	wait for the slot to finish before starting the other
-					//	to prevent concuerent actions on the same slot
-					while(slots[ss].isActivelyRunning()) {
-						try {
-							Thread.sleep(100);
-						} catch (InterruptedException e) {}
-					}
-					setRunning(sync, true);
-				}).start();
+			if(sync == -1) {
+				//	starts the slot if the slot it was synced to was running
+				setRunning(s, wasRunning[before]);
+			} else {
+				setRunning(s, false);
+				if(wasRunning[s]) {
+					final int ss = s;
+					new Thread(() -> {
+						//	wait for the slot to finish before starting the other
+						//	to prevent concuerent actions on the same slot
+						while(slots[ss].isActivelyRunning()) {
+							try {
+								Thread.sleep(100);
+							} catch (InterruptedException e) {}
+						}
+						setRunning(sync, true);
+					}).start();
+				}
 			}
 		}
 	}

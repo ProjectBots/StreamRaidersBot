@@ -52,8 +52,8 @@ public class CaptainSettings extends AbstractSettings {
 	}
 	
 	@Override
-	protected AbstractSettings getNewInstance(String lid) {
-		return new CaptainSettings(cid, lid, gui, list);
+	protected void openNewInstance(String lid) {
+		new CaptainSettings(cid, lid, gui, list);
 	}
 
 	@Override

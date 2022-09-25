@@ -66,8 +66,8 @@ public class ProfileSettings extends AbstractSettings {
 	}
 
 	@Override
-	protected AbstractSettings getNewInstance(String lid) {
-		return new ProfileSettings(cid, lid, gui);
+	protected void openNewInstance(String lid) {
+		new ProfileSettings(cid, lid, gui);
 	}
 	
 	private void addHead() {

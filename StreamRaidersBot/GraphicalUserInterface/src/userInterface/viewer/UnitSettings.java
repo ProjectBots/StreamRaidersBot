@@ -215,8 +215,8 @@ public class UnitSettings extends AbstractSettings {
 	}
 
 	@Override
-	protected AbstractSettings getNewInstance(String lid) {
-		return new UnitSettings(cid, lid, gui);
+	protected void openNewInstance(String lid) {
+		new UnitSettings(cid, lid, gui);
 	}
 
 	
