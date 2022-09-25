@@ -12,6 +12,7 @@ import include.GUI.Image;
 import include.GUI.Label;
 import otherlib.Configs;
 import otherlib.Logger;
+import otherlib.Options;
 import run.Manager;
 import userInterface.Colors;
 import userInterface.MainFrame;
@@ -48,7 +49,7 @@ public class ViewerProfileSection {
 				pname.setForeground(Colors.getColor("main labels"));
 				head.addLabel(pname, MainFrame.pspre+cid+"::pname");
 				
-				if(Configs.getPBoo(cid, Configs.canCaptain)) {
+				if(Configs.getPBoo(cid, Configs.canCaptain) && Options.is("captain_beta")) {
 					Button bcap = new Button();
 					bcap.setPos(p++, 0);
 					bcap.setText("switch");
