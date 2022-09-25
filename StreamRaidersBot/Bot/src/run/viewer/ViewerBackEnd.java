@@ -18,6 +18,7 @@ import run.AbstractBackEnd;
 import srlib.Event;
 import srlib.Map;
 import srlib.Quests;
+import srlib.RaidType;
 import srlib.SRC;
 import srlib.SRR;
 import srlib.Store;
@@ -30,7 +31,6 @@ import srlib.skins.Skin;
 import srlib.skins.Skins;
 import srlib.viewer.CaptainData;
 import srlib.viewer.Raid;
-import srlib.viewer.RaidType;
 
 public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 
@@ -348,7 +348,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	public void addRaid(CaptainData captain, String slot) throws NoConnectionException {
-		req.addPlayerToRaid(captain.get(SRC.Captain.captainId), slot);
+		req.addPlayerToRaid(captain.captainId, slot);
 	}
 	
 	public void switchRaid(CaptainData captain, int slot) throws NoConnectionException, NotAuthorizedException {

@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import include.Json;
 import otherlib.Logger;
 import otherlib.Options;
+import srlib.RaidType;
 import srlib.SRC;
 import srlib.Store;
 import srlib.Time;

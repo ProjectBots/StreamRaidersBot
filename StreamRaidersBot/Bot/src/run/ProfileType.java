@@ -1,5 +1,5 @@
 package run;
 
 public enum ProfileType {
-	VIEWER, CAPTAIN
+	VIEWER, CAPTAIN;
 }

@@ -359,7 +359,7 @@ public class SpecialSlot extends Slot {
 					String item = dat.get("ItemId").getAsString();
 					if(item.equals("goldpiecebag"))
 						item = Store.gold.get();
-					else if(item.startsWith("skin"))
+					else if(item.contains("skin"))
 						item = "skin";
 					else if(!item.startsWith("scroll") && !item.equals("eventcurrency")) {
 						Logger.print("SpecialSlot (viewer) -> claimQuests: err=unknown reward, item="+item, Logger.lowerr, Logger.error, cid, 4, true);

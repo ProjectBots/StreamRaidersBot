@@ -19,6 +19,7 @@ import run.Manager;
 import run.ProfileType;
 import run.AbstractBackEnd.UpdateEventListener;
 import srlib.Map;
+import srlib.RaidType;
 import srlib.SRC;
 import srlib.SRR;
 import srlib.Store;
@@ -27,7 +28,6 @@ import srlib.SRR.NotAuthorizedException;
 import srlib.Store.C;
 import srlib.viewer.CaptainData;
 import srlib.viewer.Raid;
-import srlib.viewer.RaidType;
 
 public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerBackEnd> {
 	
@@ -128,7 +128,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 						caps = vbe.getCaps(dungeon);
 						HashSet<String> got = new HashSet<>();
 						for(CaptainData c : caps)
-							got.add(c.get(SRC.Captain.twitchDisplayName));
+							got.add(c.twitchDisplayName);
 						
 						HashSet<String> favs = Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign);
 						for(String tdn : favs) {
@@ -141,7 +141,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 							
 							CaptainData n = new CaptainData(results.get(0).getAsJsonObject());
 							
-							if(n.get(SRC.Captain.isPlaying).equals("1"))
+							if(n.isPlaying)
 								caps = add(caps, n);
 						}
 						vbe.setCaps(caps, dungeon);

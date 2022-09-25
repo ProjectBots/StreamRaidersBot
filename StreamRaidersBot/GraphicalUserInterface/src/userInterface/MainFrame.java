@@ -35,10 +35,10 @@ import include.Guide;
 import run.Manager;
 import run.ProfileType;
 import run.viewer.Viewer;
+import srlib.RaidType;
 import srlib.SRC;
 import srlib.Time;
 import srlib.viewer.Raid;
-import srlib.viewer.RaidType;
 import userInterface.captain.CaptainProfileSection;
 import userInterface.viewer.ViewerProfileSection;
 

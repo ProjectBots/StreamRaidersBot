@@ -67,19 +67,6 @@ public class SRC {
 		public static final String allyBoons = "allyBoons";
 	}
 	
-	public static class Captain {
-		public static final String isLive = "isLive";
-		public static final String isPlaying = "isPlaying";
-		public static final String isPvp = "isPvp";
-		public static final String raidState = "raidState";
-		public static final String twitchDisplayName = "twitchDisplayName";
-		public static final String twitchUserImage = "twitchUserImage";
-		public static final String twitchUserName = "twitchUserName";
-		public static final String type = "type";
-		public static final String captainId = "userId";
-		public static final String pveWins = "pveWins";
-		public static final String pveLoyaltyLevel = "pveLoyaltyLevel";
-	}
 	
 	public static class Helper {
 		public static final int canPlaceUnit = 0;

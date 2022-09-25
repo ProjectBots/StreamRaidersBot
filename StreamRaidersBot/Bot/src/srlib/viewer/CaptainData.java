@@ -1,30 +1,42 @@
 package srlib.viewer;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import srlib.SRC;
+import srlib.RaidType;
 
 public class CaptainData {
+	
+	public final boolean isLive, isPlaying;
+	public final String twitchDisplayName, twitchUserImage, twitchUserName, captainId;
+	public final int pveWins, pveLoyaltyLevel;
+	public final RaidType type;
 
-	private final JsonObject cap;
-	
 	public CaptainData(JsonObject cap) {
-		this.cap = cap;
+		this.isLive = cap.get("isLive").getAsInt() == 1;
+		this.isPlaying = cap.get("isPlaying").getAsInt() == 1;
+		this.twitchDisplayName = cap.get("twitchDisplayName").getAsString();
+		this.twitchUserImage = cap.get("twitchUserImage").getAsString();
+		this.twitchUserName = cap.get("twitchUserName").getAsString();
+		this.captainId = cap.get("captainId").getAsString();
+		this.pveWins = cap.get("pveWins").getAsInt();
+		this.pveLoyaltyLevel = cap.get("pveLoyaltyLevel").getAsInt();
+		this.type = RaidType.parseInt(cap.get("type").getAsInt());
 	}
 	
-	public String get(String con) {
-		if(!cap.has(con))
-			return null;
-		JsonElement je = cap.get(con);
-		if(!je.isJsonPrimitive())
-			return null;
-		return je.getAsString();
-	}
 	
 	@Override
 	public String toString() {
-		return get(SRC.Captain.twitchDisplayName);
+		return new StringBuilder("{")
+				.append(twitchDisplayName)
+				.append("@")
+				.append(captainId)
+				.append(" - ")
+				.append(isLive ? "live ":"")
+				.append(isPlaying ? "playing ":"")
+				.append(pveWins)
+				.append(" ")
+				.append(type.toString())
+				.toString();
 	}
 	
 }

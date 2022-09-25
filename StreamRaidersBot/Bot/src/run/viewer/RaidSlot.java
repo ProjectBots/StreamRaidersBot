@@ -23,6 +23,7 @@ import otherlib.MapConv.NoFinException;
 import run.Slot;
 import run.StreamRaidersException;
 import srlib.Map;
+import srlib.RaidType;
 import srlib.SRC;
 import srlib.Store;
 import srlib.Time;
@@ -32,7 +33,6 @@ import srlib.skins.Skin;
 import srlib.skins.Skins;
 import srlib.viewer.CaptainData;
 import srlib.viewer.Raid;
-import srlib.viewer.RaidType;
 
 public class RaidSlot extends Slot {
 
@@ -731,7 +731,7 @@ public class RaidSlot extends Slot {
 		
 		
 		for(int i=0; i<caps.length; i++) {
-			String tdn = caps[i].get(SRC.Captain.twitchDisplayName);
+			String tdn = caps[i].twitchDisplayName;
 
 			Integer fav = Configs.getCapInt(cid, currentLayer, tdn, list, Configs.fav);
 			fav = fav == null ? 0 : fav;
@@ -742,7 +742,7 @@ public class RaidSlot extends Slot {
 				skipped.add(tdn);
 				continue;
 			}
-			int nloy = Integer.parseInt(caps[i].get(SRC.Captain.pveWins));
+			int nloy = caps[i].pveWins;
 			if(fav > val || (fav == val && nloy > loy)) {
 				best = caps[i];
 				val = fav;
@@ -758,7 +758,7 @@ public class RaidSlot extends Slot {
 		
 		beh.switchRaid(best, slot);
 		
-		Logger.print("switched to " + best.get(SRC.Captain.twitchDisplayName), Logger.caps, Logger.info, cid, slot);
+		Logger.print("switched to " + best.twitchDisplayName, Logger.caps, Logger.info, cid, slot);
 		
 		captain(beh, false, noCap);
 	}
