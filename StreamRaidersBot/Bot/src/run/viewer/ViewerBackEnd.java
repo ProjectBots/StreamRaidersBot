@@ -1,6 +1,5 @@
 package run.viewer;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -13,11 +12,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.Json;
-import include.Time;
 import include.Http.NoConnectionException;
 import otherlib.Logger;
 import run.AbstractBackEnd;
-import run.Manager;
 import srlib.Event;
 import srlib.Map;
 import srlib.Quests;
@@ -46,7 +43,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	private CaptainData[] dunCaps;
 	private Quests quests = new Quests();
 	private Event event = new Event();
-	private Hashtable<String, String> rts = new Hashtable<>();
+	private Hashtable<String, Long> rts = new Hashtable<>();
 	private int[] updateTimes = new int[] {10, 1, 5, 30, 15, 10, 60};
 	
 	
@@ -78,9 +75,9 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	synchronized public void updateUnits(boolean force) throws NoConnectionException, NotAuthorizedException {
-		String rt = rts.get("units");
-		LocalDateTime now = LocalDateTime.now();
-		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[0]))) && !force)
+		Long wt = rts.get("units");
+		long now = System.currentTimeMillis();
+		if(!force && !(wt == null || now - wt > 0))
 			return;
 		
 		JsonObject jo = Json.parseObj(req.getUserUnits());
@@ -92,14 +89,14 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		for(int i=0; i<u.size(); i++)
 			units[i] = new Unit(u.get(i).getAsJsonObject(), cid);
 		
-		rts.put("units", Time.parse(now));
+		rts.put("units", now + updateTimes[0]*60*1000);
 		uelis.afterUpdate("units", this);
 	}
 	
 	synchronized public void updateRaids(boolean force) throws NoConnectionException, NotAuthorizedException {
-		String rt = rts.get("raids");
-		LocalDateTime now = LocalDateTime.now();
-		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[1]))) && !force)
+		Long wt = rts.get("raids");
+		long now = System.currentTimeMillis();
+		if(!force && !(wt == null || now - wt > 0))
 			return;
 		
 		JsonObject jo = Json.parseObj(req.getActiveRaidsByUser());
@@ -119,15 +116,16 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 			if(!got[i])
 				raids[i] = null;
 		
-		rts.put("raids", Time.parse(now));
+		rts.put("raids", now + updateTimes[1]*60*1000);
 		uelis.afterUpdate("raids", this);
 	}
 	
 	synchronized public void updateMap(int slot, boolean force) throws NoConnectionException, NotAuthorizedException {
-		String rt = rts.get("map::"+slot);
-		LocalDateTime now = LocalDateTime.now();
-		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[2]))) && !force)
+		Long wt = rts.get("map::"+slot);
+		long now = System.currentTimeMillis();
+		if(!force && !(wt == null || now - wt > 0))
 			return;
+		
 		
 		updateRaids(true);
 		
@@ -148,14 +146,14 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 				userIds,
 				cid, slot);
 		
-		rts.put("map::"+slot, Time.parse(now));
+		rts.put("map::"+slot, now + updateTimes[2]*60*1000);
 		uelis.afterUpdate("map::"+slot, this);
 	}
 	
 	synchronized public void updateStore(boolean force) throws NoConnectionException, NotAuthorizedException {
-		String rt = rts.get("store");
-		LocalDateTime now = LocalDateTime.now();
-		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[3]))) && !force)
+		Long wt = rts.get("store");
+		long now = System.currentTimeMillis();
+		if(!force && !(wt == null || now - wt > 0))
 			return;
 		
 		JsonObject user = Json.parseObj(req.getUser());
@@ -183,14 +181,14 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 				items.getAsJsonArray("data"),
 				openedChests.getAsJsonArray("data"));
 		
-		rts.put("store", Time.parse(now));
+		rts.put("store", now + updateTimes[3]*60*1000);
 		uelis.afterUpdate("store", this);
 	}
 	
 	synchronized public void updateSkins(boolean force) throws NoConnectionException, NotAuthorizedException {
-		String rt = rts.get("skins");
-		LocalDateTime now = LocalDateTime.now();
-		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[6]))) && !force)
+		Long wt = rts.get("skins");
+		long now = System.currentTimeMillis();
+		if(!force && !(wt == null || now - wt > 0))
 			return;
 		
 		JsonObject skins = Json.parseObj(req.getUserItems());
@@ -199,21 +197,21 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		
 		this.skins = new Skins(skins.get("data").isJsonArray() ? skins.getAsJsonArray("data") : null);
 		
-		rts.put("skins", Time.parse(now));
+		rts.put("skins", now + updateTimes[6]*60*1000);
 		uelis.afterUpdate("skins", this);
 	}
 	
 	synchronized public void updateQuestEventRewards(boolean force) throws NoConnectionException, NotAuthorizedException {
-		String rt = rts.get("qer");
-		LocalDateTime now = LocalDateTime.now();
-		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[4]))) && !force)
+		Long wt = rts.get("qer");
+		long now = System.currentTimeMillis();
+		if(!force && !(wt == null || now - wt > 0))
 			return;
 		
 		JsonObject userEventProgression = Json.parseObj(req.getUserEventProgression());
 		if(testUpdate(userEventProgression))
 			userEventProgression = Json.parseObj(req.getUserEventProgression());
 		
-		event.updateEventProgression(Manager.getServerTime(), userEventProgression.getAsJsonArray("data"));
+		event.updateEventProgression(userEventProgression.getAsJsonArray("data"));
 		
 		JsonObject userQuests = Json.parseObj(req.getUserQuests());
 		if(testUpdate(userQuests))
@@ -222,14 +220,14 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		//TODO split
 		quests.updateQuests(userQuests.getAsJsonArray("data"));
 		
-		rts.put("qer", Time.parse(now));
+		rts.put("qer", now + updateTimes[4]*60*1000);
 		uelis.afterUpdate("qer", this);
 	}
 	
 	synchronized public void updateCaps(boolean force, boolean dungeon) throws NoConnectionException, NotAuthorizedException {
-		String rt = rts.get("caps::"+dungeon);
-		LocalDateTime now = LocalDateTime.now();
-		if(!(rt == null || now.isAfter(Time.parse(rt).plusMinutes(updateTimes[5]))) && !force)
+		Long wt = rts.get("caps::"+dungeon);
+		long now = System.currentTimeMillis();
+		if(!force && !(wt == null || now - wt > 0))
 			return;
 		
 		JsonArray rawCaps = new JsonArray();
@@ -244,7 +242,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		
 		setCaps(caps, dungeon);
 		
-		rts.put("caps::"+dungeon, Time.parse(now));
+		rts.put("caps::"+dungeon, now + updateTimes[5]*60*1000);
 		uelis.afterUpdate("caps::"+dungeon, this);
 	}
 	
@@ -329,7 +327,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		updateRaids(false);
 		Raid[] ret = new Raid[0];
 		for(int i=0; i<raids.length; i++)
-			if(raids[i].isOffline(Manager.getServerTime(), il, treshold))
+			if(raids[i].isOffline(il, treshold))
 				ret = add(ret, raids[i]);
 		return ret;
 	}
@@ -382,7 +380,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 				ret = add(ret, units[i]);
 				break;
 			case SRC.BackEndHandler.isUnitPlaceable:
-				if(units[i].isAvailable(Manager.getServerTime()))
+				if(units[i].isAvailable())
 					ret = add(ret, units[i]);
 				break;
 			case SRC.BackEndHandler.isUnitUnlockable:
@@ -419,7 +417,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		switch(r.type) {
 		case CAMPAIGN:
 			for(int i=0; i<units.length; i++)
-				if(units[i].isAvailable(Manager.getServerTime()))
+				if(units[i].isAvailable())
 					buffer[index++] = units[i];
 			break;
 		case DUNGEON:
@@ -533,18 +531,18 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	
 	public ArrayList<Item> getPurchasableScrolls() throws NoConnectionException, NotAuthorizedException {
 		updateStore(false);
-		return store.getPurchasableScrolls(Manager.getServerTime());
+		return store.getPurchasableScrolls();
 	}
 	
 	public ArrayList<Item> getAvailableEventStoreItems(String section, boolean includePurchased) throws NoConnectionException, NotAuthorizedException {
 		updateSkins(false);
 		updateStore(false);
-		return store.getAvailableEventStoreItems(section, Manager.getServerTime(), includePurchased, skins);
+		return store.getAvailableEventStoreItems(section, includePurchased, skins);
 	}
 	
 	public Item getDaily() throws NoConnectionException, NotAuthorizedException {
 		updateStore(false);
-		return store.getDaily(Manager.getServerTime());
+		return store.getDaily();
 	}
 	
 	public String refreshStore() throws NoConnectionException, NotAuthorizedException {

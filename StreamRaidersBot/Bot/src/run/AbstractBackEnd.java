@@ -7,6 +7,7 @@ import include.Http.NoConnectionException;
 import srlib.SRC;
 import srlib.SRR;
 import srlib.SRR.NotAuthorizedException;
+import srlib.Time;
 
 public abstract class AbstractBackEnd<B extends AbstractBackEnd<B>> {
 	
@@ -35,7 +36,7 @@ public abstract class AbstractBackEnd<B extends AbstractBackEnd<B>> {
 	}
 	
 	protected boolean testUpdate(JsonObject jo) throws NoConnectionException, NotAuthorizedException {
-		Manager.updateSecsOff(jo.getAsJsonObject("info").get("serverTime").getAsString());
+		Time.updateSecsOff(jo.getAsJsonObject("info").get("serverTime").getAsString());
 		JsonElement je = jo.get(SRC.errorMessage);
 		if(!je.isJsonPrimitive()) 
 			return false;

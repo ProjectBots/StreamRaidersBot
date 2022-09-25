@@ -10,7 +10,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.Json;
-import include.Time;
 import include.Http.NoConnectionException;
 import otherlib.Options;
 import srlib.skins.Skins;
@@ -333,7 +332,7 @@ public class Store {
 		}
 	}
 	
-	public ArrayList<Item> getPurchasableScrolls(String serverTime) {
+	public ArrayList<Item> getPurchasableScrolls() {
 		JsonObject packs = Json.parseObj(Options.get("store"));
 		ArrayList<Item> ret = new ArrayList<>();
 		for(int i=0; i<shopItems.size(); i++) {
@@ -342,21 +341,21 @@ public class Store {
 			String let = pack.get("LiveEndTime").getAsString();
 			if(item.get("purchased").getAsString().equals("0")
 				&& item.get("section").getAsString().equals("Scrolls")
-				&& (let.equals("") || Time.isAfter(let, serverTime)))
+				&& (let.equals("") || Time.isAfterServerTime(let)))
 				ret.add(new Item(pack, false));
 		}
 		return ret;
 	}
 	
-	public Item getDaily(String serverTime) {
+	public Item getDaily() {
 		JsonObject daily = Json.parseObj(Options.get("store")).getAsJsonObject("dailydrop");
 		
 		String let = daily.get("LiveEndTime").getAsString();
-		if(Time.isAfter(serverTime, let))
+		if(Time.isBeforeServerTime(let))
 			return null;
 		
 		String lst = daily.get("LiveStartTime").getAsString();
-		if(Time.isAfter(lst, serverTime))
+		if(Time.isAfterServerTime(lst))
 			return null;
 		
 		for(int i=0; i<shopItems.size(); i++) {
@@ -369,7 +368,7 @@ public class Store {
 		return null;
 	}
 	
-	public ArrayList<Item> getAvailableEventStoreItems(String section, String serverTime, boolean includePurchased, Skins skins) {
+	public ArrayList<Item> getAvailableEventStoreItems(String section, boolean includePurchased, Skins skins) {
 		JsonObject packs = Json.parseObj(Options.get("store"));
 		
 		//	check for already purchased items
@@ -389,7 +388,7 @@ public class Store {
 				continue;
 			
 			//filter out other stuff
-			if(!filter(pack, serverTime))
+			if(!filter(pack))
 				continue;
 			
 			//check if purchased
@@ -405,7 +404,7 @@ public class Store {
 		return ret;
 	}
 	
-	public static ArrayList<String> getCurrentEventChests(String serverTime) {
+	public static ArrayList<String> getCurrentEventChests() {
 		ArrayList<String> ret = new ArrayList<>();
 		JsonObject store = Json.parseObj(Options.get("store"));
 		
@@ -415,7 +414,7 @@ public class Store {
 			
 			JsonObject pack = store.getAsJsonObject(key);
 			
-			if(!filter(pack, serverTime))
+			if(!filter(pack))
 				continue;
 			
 			ret.add(key);
@@ -424,7 +423,7 @@ public class Store {
 		return ret;
 	}
 	
-	private static boolean filter(JsonObject pack, String serverTime) {
+	private static boolean filter(JsonObject pack) {
 		
 		//filtering out stuff for real money
 		if(pack.get("BasePrice").getAsInt() == -1)
@@ -439,13 +438,13 @@ public class Store {
 		String let = pack.get("LiveEndTime").getAsString();
 		if(let.equals(""))
 			let = pack.get("BonesEndTime").getAsString();
-		if(!let.equals("") && Time.isAfter(serverTime, let))
+		if(!let.equals("") && Time.isBeforeServerTime(let))
 			return false;
 		
 		String lst = pack.get("LiveStartTime").getAsString();
 		if(lst.equals(""))
 			lst = pack.get("BonesStartTime").getAsString();
-		if(!lst.equals("") && Time.isAfter(lst, serverTime))
+		if(!lst.equals("") && Time.isAfterServerTime(lst))
 			return false;
 		
 		return true;

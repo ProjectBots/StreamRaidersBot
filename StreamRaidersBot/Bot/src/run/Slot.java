@@ -108,11 +108,11 @@ public abstract class Slot {
 			return;
 		}
 		
-		slotSequence();
+		exeSlotSequence();
 		
 		for(int i=0; i<synced.length; i++)
 			if(synced[i])
-				slots[i].slotSequence();
+				slots[i].exeSlotSequence();
 		
 		Logger.print("releasing action", Logger.general, Logger.info, cid, slot);
 		Manager.releaseAction();
@@ -183,6 +183,18 @@ public abstract class Slot {
 		Logger.print("before MemoryReleaser", Logger.general, Logger.info, cid, slot);
 		Manager.gc();
 		Logger.print("after MemoryReleaser", Logger.general, Logger.info, cid, slot);
+	}
+	
+	private void exeSlotSequence() {
+		Timer t = new Timer();
+		t.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				Logger.print("Slot -> exeSlotSequence: err=slot seems to be stuck", Logger.runerr, Logger.error, cid, slot, true);
+			}
+		}, 120*1000);
+		slotSequence();
+		t.cancel();
 	}
 	
 	

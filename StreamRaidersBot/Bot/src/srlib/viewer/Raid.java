@@ -7,11 +7,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.Json;
-import include.Time;
 import otherlib.Logger;
 import otherlib.Options;
 import srlib.SRC;
 import srlib.Store;
+import srlib.Time;
 
 public class Raid {
 	
@@ -78,14 +78,14 @@ public class Raid {
 		}
 	}
 	
-	public boolean isSwitchable(String serverTime, int treshold) {
+	public boolean isSwitchable(int treshold) {
 		JsonElement je = raid.get(SRC.Raid.lastUnitPlacedTime);
 		if(je.isJsonNull())
 			return true;
-		return isOffline(serverTime, false, treshold);
+		return isOffline(false, treshold);
 	}
 	
-	public boolean isOffline(String serverTime, boolean whenNotLive, int treshold) {
+	public boolean isOffline(boolean whenNotLive, int treshold) {
 		String hvr = get(SRC.Raid.hasViewedResults);
 		String hrr = get(SRC.Raid.hasRecievedRewards);
 		String ip = get(SRC.Raid.isPlaying);
@@ -97,10 +97,10 @@ public class Raid {
 			if(!(ip.contains("0") || (whenNotLive && il.contains("0")))) break ifc;
 			return true;
 		}
-		if(treshold == -1) return false;
+		if(treshold == -1) 
+			return false;
 		
-		return Time.isAfter(serverTime, Time.plusMinutes(get(SRC.Raid.creationDate), (get(SRC.Raid.nodeId).contains("dungeon") ? 6 : 30) + treshold));
-		
+		return Time.isBeforeServerTime(Time.plus(get(SRC.Raid.creationDate), (get(SRC.Raid.nodeId).contains("dungeon") ? 6*60 : 30*60) + treshold));
 	}
 	
 	public boolean isReward() {
@@ -204,20 +204,19 @@ public class Raid {
 	}
 	
 	
-	public boolean canPlaceUnit(String serverTime) {
+	public boolean canPlaceUnit(long serverTime) {
 		if(raid.get(SRC.Raid.endTime).isJsonPrimitive()) return false;
 		if(raid.get(SRC.Raid.startTime).isJsonPrimitive()) return false;
 
 		JsonElement date = raid.get(SRC.Raid.lastUnitPlacedTime);
-		String node = raid.get(SRC.Raid.nodeId).getAsString();
 		if(date.isJsonPrimitive()) 
-			if(Time.isAfter(Time.plusMinutes(date.getAsString(), node.contains("dungeon") ? 2 : 5), serverTime)) 
+			if(Time.isAfterServerTime(Time.plus(date.getAsString(), type.placementCooldownDuration)))
 				return false;
 
-		if(Time.isAfter(serverTime, Time.plusMinutes(raid.get(SRC.Raid.creationDate).getAsString(), node.contains("dungeon") ? 6 : 30))) 
+		if(Time.isBeforeServerTime(Time.plus(raid.get(SRC.Raid.creationDate).getAsString(), type.raidDuration))) 
 			return false;
 
-		if(node.contains("dungeon") && Time.isAfter(Time.plusSeconds(raid.get(SRC.Raid.creationDate).getAsString(), 60), serverTime))
+		if(Time.isAfterServerTime(Time.plus(raid.get(SRC.Raid.creationDate).getAsString(), type.planningPeriodDuration)))
 			return false;
 		
 		return true;

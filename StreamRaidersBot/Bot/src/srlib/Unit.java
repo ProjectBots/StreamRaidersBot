@@ -7,7 +7,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import include.Json;
-import include.Time;
 import otherlib.Options;
 import srlib.skins.Skin;
 
@@ -199,10 +198,10 @@ public class Unit {
 		}
 	}
 	
-	public boolean isAvailable(String serverTime) {
-		if(cool == null) 
+	public boolean isAvailable() {
+		if(cool == null)
 			return true;
-		return Time.isAfter(serverTime, cool);
+		return Time.isBeforeServerTime(cool);
 	}
 	
 	public boolean hasPlanType(String tag) {

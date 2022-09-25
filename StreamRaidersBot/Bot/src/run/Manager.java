@@ -2,8 +2,6 @@ package run;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,12 +26,12 @@ import srlib.Event;
 import srlib.SRC;
 import srlib.SRR;
 import srlib.Store;
+import srlib.Time;
 import srlib.Unit;
 import srlib.SRR.NotAuthorizedException;
 import srlib.SRR.OutdatedDataException;
 import srlib.viewer.Raid;
 import include.Json;
-import include.Time;
 
 public class Manager {
 	
@@ -59,7 +57,6 @@ public class Manager {
 	private static Hashtable<String, AbstractProfile<?,?>> profiles = new Hashtable<>();
 	private static Hashtable<String, Integer> poss = new Hashtable<>();
 	
-	private static long secsoff = Long.MIN_VALUE;
 	private static BotListener blis;
 	
 	public static BotListener blis() {
@@ -99,30 +96,6 @@ public class Manager {
 	 */
 	public static ProfileType getProfileType(String cid) {
 		return profiles.get(cid).getType();
-	}
-	
-	/**
-	 * updates the value that will be returned by {@link #getSecsOff()}
-	 * @param st StreamRaiders server time
-	 */
-	protected static void updateSecsOff(String st) {
-		secsoff = ChronoUnit.SECONDS.between(Time.parse(st), LocalDateTime.now());
-	}
-	
-	/**
-	 * @return the amount off seconds between StreamRaiders's server time and local time
-	 */
-	public static long getSecsOff() {
-		return secsoff;
-	}
-	
-	/**
-	 * @return the current StreamRaiders server time or null if not updated
-	 */
-	public static String getServerTime() {
-		if(secsoff == Long.MIN_VALUE)
-			return null;
-		return Time.parse(LocalDateTime.now().minusSeconds(secsoff));
 	}
 	
 	
@@ -256,7 +229,7 @@ public class Manager {
 				try {
 					req = new SRR(cid, Options.get("clientVersion"));
 				} catch (OutdatedDataException e) {
-					updateSecsOff(e.getServerTime());
+					Time.updateSecsOff(e.getServerTime());
 					updateSRData(e.getDataPath(), req);
 					req = new SRR(cid, Options.get("clientVersion"));
 				}
@@ -531,7 +504,7 @@ public class Manager {
 			for(int i=0; i<catsToUpdateData.length; i+=2)
 				Options.set(catsToUpdateData[i], data.get(catsToUpdateData[i+1]).toString());
 			
-			Options.set("eventTiers", Event.genTiersFromData(data, getServerTime()).toString());
+			Options.set("eventTiers", Event.genTiersFromData(data).toString());
 			Options.set("currentEventCurrency", data.getAsJsonObject("Items").getAsJsonObject("eventcurrency").get("CurrencyTypeAwarded").getAsString());
 			Options.set("unitCosts", Store.genUnitCostsFromData(data).toString());
 			Options.set("unitTypes", Unit.genUnitTypesFromData(data).toString());

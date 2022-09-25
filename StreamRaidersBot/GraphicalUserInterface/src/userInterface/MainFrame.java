@@ -36,6 +36,7 @@ import run.Manager;
 import run.ProfileType;
 import run.viewer.Viewer;
 import srlib.SRC;
+import srlib.Time;
 import srlib.viewer.Raid;
 import srlib.viewer.RaidType;
 import userInterface.captain.CaptainProfileSection;
@@ -121,9 +122,8 @@ public class MainFrame {
 						Manager.doAll(SRC.Manager.skip, 0);
 						break;
 					case KeyEvent.VK_T:
-						String st = Manager.getServerTime();
-						if(st != null)
-							gui.msg("ServerTime", st, GUI.MsgConst.INFO);
+						String st = Time.format(Time.getServerTime());
+						gui.msg("ServerTime", st, GUI.MsgConst.INFO);
 						break;
 					}
 				} else if((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) > 0) {

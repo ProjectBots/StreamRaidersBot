@@ -243,7 +243,6 @@ public class Configs {
 	public static final Str proxyDomainViewer = new Str("proxyDomain", ProfileType.VIEWER);
 	public static final Str proxyUserViewer = new Str("proxyUser", ProfileType.VIEWER);
 	public static final Str proxyPassViewer = new Str("proxyPass", ProfileType.VIEWER);
-	public static final Str captainTeamViewer = new Str("captainTeam", ProfileType.VIEWER);
 	
 	public static final Str lnameCaptain = new Str("name", ProfileType.CAPTAIN);
 	public static final Str userAgentCaptain = new Str("userAgent", ProfileType.CAPTAIN);
@@ -1943,7 +1942,6 @@ public class Configs {
 			{
 				addAll(Arrays.asList(("lockedSlots "
 						+ "unitPlaceDelay "
-						+ "captainTeam "
 						+ "dungeonSlot "
 						+ "mapReloadAfterXRetries "
 						+ "maxUnitPerRaidMin "

@@ -24,7 +24,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import include.GUI;
-import run.Manager;
 import srlib.Store;
 import srlib.Unit;
 import srlib.viewer.Raid;
@@ -108,7 +107,7 @@ public class GuideContent {
 		chestWhitelist.clear();
 		String chests = Options.get("chests");
 		chestWhitelist.addAll(Arrays.asList(chests.substring(2, chests.length()-2).split("\",\"")));
-		chestWhitelist.addAll(Store.getCurrentEventChests(Manager.getServerTime()));
+		chestWhitelist.addAll(Store.getCurrentEventChests());
 	}
 	
 	public static void saveChestRewards(JsonObject sheets) {

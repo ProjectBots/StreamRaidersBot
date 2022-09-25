@@ -354,42 +354,6 @@ public class ProfileSettings extends AbstractSettings {
 			
 		gui.addContainer(csleep);
 		
-		//TODO after event remove from here
-		Container cct = new Container();
-		cct.setPos(0, g++);
-		cct.setInsets(10, 2, 2, 2);
-		
-			Label lsct = new Label();
-			lsct.setPos(0, 0);
-			lsct.setText("use team: ");
-			lsct.setForeground(Colors.getColor(fontPath+"labels"));
-			cct.addLabel(lsct);
-			
-			String ct = Configs.getStr(cid, lid, Configs.captainTeamViewer);
-			if(ct == null)
-				ct = "(---)";
-			else if(!ct.equals("(none)"))
-				ct = ct.split("_")[1];
-		
-			ComboBox cbct = new ComboBox(uid+"useTeam");
-			cbct.setPos(1, 0);
-			cbct.setList(putFirst("(none) green blue yellow red pink".split(" "), ct));
-			cbct.setCL(new CombListener() {
-				@Override
-				public void unselected(String id, ItemEvent e) {}
-				@Override
-				public void selected(String id, ItemEvent e) {
-					String in = GUI.getSelected(id);
-					if(!in.equals("(none)"))
-						in = "team_"+in+"_02";
-					Configs.setStr(cid, lid, Configs.captainTeamViewer, in);
-				}
-			});
-			cct.addComboBox(cbct);
-		
-		gui.addContainer(cct);
-		//TODO after event remove to here
-		
 		Container clock = new Container();
 		clock.setPos(0, g++);
 		clock.setInsets(10, 2, 2, 2);

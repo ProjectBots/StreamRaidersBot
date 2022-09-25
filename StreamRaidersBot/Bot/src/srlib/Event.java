@@ -6,7 +6,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import include.Json;
-import include.Time;
 import otherlib.Logger;
 import otherlib.Options;
 
@@ -14,11 +13,11 @@ public class Event {
 
 	private static String currentEvent = null;
 	
-	public static JsonArray genTiersFromData(JsonObject data, String serverTime) {
-		updateCurrentEvent(serverTime, data.getAsJsonObject("Events"));
+	public static JsonArray genTiersFromData(JsonObject data) {
+		updateCurrentEvent(data.getAsJsonObject("Events"));
 		String event = currentEvent;
 		if(event == null)
-			event = getNextEvent(data, serverTime, data.getAsJsonObject("Events"));
+			event = getNextEvent(data, data.getAsJsonObject("Events"));
 		
 		JsonArray currentTiers = new JsonArray();
 		if_clause:
@@ -68,11 +67,11 @@ public class Event {
 		return tier;
 	}
 	
-	private static void updateCurrentEvent(String serverTime, JsonObject events) {
+	private static void updateCurrentEvent(JsonObject events) {
 		for(String key : events.keySet()) {
 			JsonObject event = events.getAsJsonObject(key);
 			
-			if(Time.isAfter(serverTime, event.get("EndTime").getAsString()) || Time.isAfter(event.get("StartTime").getAsString(), serverTime)) 
+			if(Time.isBeforeServerTime(event.get("EndTime").getAsString()) || Time.isAfterServerTime(event.get("StartTime").getAsString())) 
 				continue;
 
 			currentEvent = key;
@@ -81,11 +80,11 @@ public class Event {
 		currentEvent = null;
 	}
 	
-	private static String getNextEvent(JsonObject data, String serverTime, JsonObject events) {
+	private static String getNextEvent(JsonObject data, JsonObject events) {
 		for(String key : events.keySet()) {
 			JsonObject event = events.getAsJsonObject(key);
 			
-			if(Time.isAfter(serverTime, event.get("EndTime").getAsString())) 
+			if(Time.isBeforeServerTime(event.get("EndTime").getAsString())) 
 				continue;
 
 			return key;
@@ -100,8 +99,8 @@ public class Event {
 	}
 	
 	
-	public void updateEventProgression(String serverTime, JsonArray userEventProgression) {
-		updateCurrentEvent(serverTime, Json.parseObj(Options.get("events")));
+	public void updateEventProgression(JsonArray userEventProgression) {
+		updateCurrentEvent(Json.parseObj(Options.get("events")));
 		for(int i=0; i<userEventProgression.size(); i++) {
 			JsonObject raw = userEventProgression.get(i).getAsJsonObject();
 			

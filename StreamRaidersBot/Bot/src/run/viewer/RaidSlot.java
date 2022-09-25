@@ -1,7 +1,5 @@
 package run.viewer;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -15,7 +13,6 @@ import com.google.gson.JsonObject;
 import include.Json;
 import include.Maths;
 import include.Pathfinding;
-import include.Time;
 import include.Http.NoConnectionException;
 import otherlib.Configs;
 import otherlib.Logger;
@@ -24,12 +21,12 @@ import otherlib.Options;
 import otherlib.Remaper;
 import otherlib.Configs.ListType;
 import otherlib.MapConv.NoFinException;
-import run.Manager;
 import run.Slot;
 import run.StreamRaidersException;
 import srlib.Map;
 import srlib.SRC;
 import srlib.Store;
+import srlib.Time;
 import srlib.Unit;
 import srlib.SRR.NotAuthorizedException;
 import srlib.skins.Skin;
@@ -91,11 +88,11 @@ public class RaidSlot extends Slot {
 	}
 	
 	private boolean goMultiPlace;
-	private LocalDateTime placeTime = LocalDateTime.now();
+	private long placeTime = System.currentTimeMillis();
 	
 	private void place(final ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
 		//	Unit place delay
-		long tdif = ChronoUnit.MILLIS.between(LocalDateTime.now(), placeTime);
+		long tdif = placeTime - System.currentTimeMillis();
 		if(tdif > 0) {
 			try {
 				Thread.sleep(tdif);
@@ -110,7 +107,7 @@ public class RaidSlot extends Slot {
 			return;
 		
 		String placeSer = r.get(SRC.Raid.placementsSerialized);
-		if(!r.canPlaceUnit(Manager.getServerTime())
+		if(!r.canPlaceUnit(Time.getServerTime())
 			|| Configs.getInt(cid, currentLayer, Configs.maxUnitPerRaidViewer) < (placeSer == null 
 																					? 0 
 																					: placeSer.split(vbe.getViewerUserId()).length-1))
@@ -143,15 +140,12 @@ public class RaidSlot extends Slot {
 			loy = udi.get("completedLevels").getAsInt() + 1;
 			if(epic)
 				dunLvl = loy % 3;
-			
-			length = 360;
+			length = RaidType.DUNGEON.raidDuration;
 		} else {
 			Integer potionsc = vbe.getCurrency(Store.potions, true);
 			epic = potionsc == null ? false : (potionsc >= 45);
-			
 			loy = Integer.parseInt(r.get(SRC.Raid.pveWins));
-			
-			length = 1800;
+			length = RaidType.DUNGEON.raidDuration;
 		}
 
 		final boolean enabled = Configs.getChestBoolean(cid, currentLayer, ct, Configs.enabledViewer);
@@ -166,11 +160,8 @@ public class RaidSlot extends Slot {
 		maxTimeLeft = length - maxTimeLeft;
 		
 		if((dungeon ^ Configs.getStr(cid, currentLayer, Configs.dungeonSlotViewer).equals(""+slot))
-				|| (!ic && Time.isAfter(Time.parse(r.get(SRC.Raid.creationDate))
-									.plusSeconds(maxTimeLeft), Manager.getServerTime()))
-				||(!ic && Time.isAfter(Manager.getServerTime(),
-						Time.parse(r.get(SRC.Raid.creationDate))
-						.plusSeconds(length - minTimeLeft)))
+				|| (!ic && Time.isAfterServerTime(Time.plus(r.get(SRC.Raid.creationDate), maxTimeLeft)))
+				|| (!ic && Time.isBeforeServerTime(Time.plus(r.get(SRC.Raid.creationDate), length - minTimeLeft)))
 				|| (!ic && !enabled)
 				|| (!ic && (loy < minLoy || loy > maxLoy))
 				) {
@@ -185,18 +176,19 @@ public class RaidSlot extends Slot {
 		
 		boolean dunNeeded = false;
 		if(dungeon) {
-			LocalDateTime start = Time.parse(r.get(SRC.Raid.creationDate)).plusMinutes(1);
-			LocalDateTime now = Time.parse(Manager.getServerTime());
-			long t = ChronoUnit.SECONDS.between(start, now);
-			double tp = (100 * t) / 300.0;
+			long start = Time.plus(r.get(SRC.Raid.creationDate), 60);
+			long now = Time.getServerTime();
+			
+			long timeElapsed = now - start - RaidType.DUNGEON.planningPeriodDuration;
+			double timePercentage = (100.0 * timeElapsed) / (RaidType.DUNGEON.raidDuration - RaidType.DUNGEON.planningPeriodDuration);
 			
 			double mp = map.mapPower;
 			int pp = map.getPlayerPower();
 			
-			double pd = (100 * pp) / mp;
+			double powerPercentage = (100 * pp) / mp;
 			
-			dunNeeded = tp > pd + 10;
-			Logger.print("t="+t+" tp="+tp+" mp="+mp+" pp="+pp+" pd="+pd, Logger.place, Logger.info, cid, slot);
+			dunNeeded = timePercentage > powerPercentage + 10;
+			Logger.print("timeElapsed="+timeElapsed+" timePercentage="+timePercentage+" mp="+mp+" pp="+pp+" powerPercentage="+powerPercentage, Logger.place, Logger.info, cid, slot);
 		}
 		
 		final Unit[] units = vbe.getPlaceableUnits(r);
@@ -209,7 +201,7 @@ public class RaidSlot extends Slot {
 		int reload = Configs.getInt(cid, currentLayer, Configs.mapReloadAfterXRetriesViewer);
 		HashSet<String> bannedPos = new HashSet<>();
 		
-		List<String> neededUnits = vbe.getNeededUnitTypesForQuests();
+		ArrayList<String> neededUnits = vbe.getNeededUnitTypesForQuests();
 		
 		if(Configs.getBoolean(cid, currentLayer, Configs.preferRoguesOnTreasureMapsViewer) 
 			&& r.getFromNode(SRC.MapNode.nodeType).contains("treasure")
@@ -275,10 +267,9 @@ public class RaidSlot extends Slot {
 					String ut = pla.unit.unitType;
 					if(!Unit.isLegendary(ut))
 						vbe.addCurrency(pla.unit.unitType, 1);
-					placeTime = LocalDateTime.now().plus(Maths.ranInt(
-															Configs.getInt(cid, currentLayer, Configs.unitPlaceDelayMinViewer),
-															Configs.getInt(cid, currentLayer, Configs.unitPlaceDelayMaxViewer)), 
-														ChronoUnit.MILLIS);
+					placeTime = System.currentTimeMillis() 
+								+ Maths.ranInt(Configs.getInt(cid, currentLayer, Configs.unitPlaceDelayMinViewer),
+											Configs.getInt(cid, currentLayer, Configs.unitPlaceDelayMaxViewer));
 					
 					break;
 				}
@@ -564,22 +555,22 @@ public class RaidSlot extends Slot {
 			return;
 		
 		if(r == null) {
-			switchCap(vbe, dungeon, null, null, noCap, first, null);
+			switchCap(vbe, dungeon, null, null, noCap, first);
 			return;
 		}
 		
-		if(!r.isSwitchable(Manager.getServerTime(), Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer)))
+		if(!r.isSwitchable(Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer)))
 			return;
 
 		String tdn = r.get(SRC.Raid.twitchDisplayName);
 		if(r.type == RaidType.VERSUS) {
-			switchCap(vbe, dungeon, r, tdn, noCap, first, null);
+			switchCap(vbe, dungeon, r, tdn, noCap, first);
 			return;
 		}
 		
 		String ct = r.getFromNode(SRC.MapNode.chestType);
 		if(ct == null) {
-			switchCap(vbe, dungeon, r, tdn, noCap, first, null);
+			switchCap(vbe, dungeon, r, tdn, noCap, first);
 			return;
 		}
 		ct = Remaper.map(ct);
@@ -611,62 +602,48 @@ public class RaidSlot extends Slot {
 		} else if(maxLoy < 0)
 			maxLoy = Integer.MAX_VALUE;
 			
-		int length = dungeon ? 360 : 1800;
-		
-		maxTimeLeft = length - maxTimeLeft;
-		
-		if(!ic && Time.isAfter(Time.parse(r.get(SRC.Raid.creationDate))
-									.plusSeconds(maxTimeLeft),
-								Manager.getServerTime())) {
-			switchCap(vbe, dungeon, r, tdn, noCap, first, maxTimeLeft);
-			return;
-		}
-		
 		
 		JsonArray users = Json.parseArr(r.get(SRC.Raid.users));
 		if(users != null) {
-			String uid = vbe.getViewerUserId();
+			String vid = vbe.getViewerUserId();
 			for(int i=0; i<users.size(); i++)
-				if(users.get(i).getAsJsonObject().get("userId").getAsString().equals(uid))
+				if(users.get(i).getAsJsonObject().get("userId").getAsString().equals(vid)) {
 					minTimeLeft = Integer.MIN_VALUE;
+					break;
+				}
 		}
 		
-		String capTeam = Configs.getStr(cid, currentLayer, Configs.captainTeamViewer); //TODO rem after event
-		
 		if((dungeon ^ (r.type == RaidType.DUNGEON))
-			|| !(ic || capTeam.equals("(none)")			//TODO rem after event
-				|| capTeam.equals(r.get("teamUid")))	//TODO rem after event
-			|| r.isOffline(Manager.getServerTime(), il, Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer))
-			|| (!ic && Time.isAfter(Manager.getServerTime(),
-							Time.parse(r.get(SRC.Raid.creationDate))
-								.plusSeconds(length - minTimeLeft)))
+			|| r.isOffline(il, Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer))
+			|| (!ic && Time.isBeforeServerTime(Time.plus(r.get(SRC.Raid.creationDate), r.type.raidDuration - minTimeLeft)))
+			|| (!ic && Time.isAfterServerTime(Time.plus(r.get(SRC.Raid.creationDate), r.type.raidDuration - maxTimeLeft)))
 			|| (!ic && !enabled)
 			|| (!ic && (loy < minLoy || loy > maxLoy))
 			|| fav < 0
 			) {
-			switchCap(vbe, dungeon, r, tdn, noCap, first, null);
+			switchCap(vbe, dungeon, r, tdn, noCap, first);
 			return;
 		}
 		
 		if(change) {
 			if(first)
-				switchCap(vbe, dungeon, r, tdn, noCap, first, null);
+				switchCap(vbe, dungeon, r, tdn, noCap, first);
 			else
 				change = false;
 		}
 		
 	}
 	
-	private Hashtable<String, LocalDateTime> banned = new Hashtable<>();
+	private Hashtable<String, Long> banned = new Hashtable<>();
 	
 	public static class NoCapMatchesException extends Exception {
 		private static final long serialVersionUID = 6502943388417577268L;
 	}
 	
 	
-	private void switchCap(ViewerBackEnd beh, boolean dungeon, Raid r, String disname, boolean noCap, boolean first, Integer overrideBanTime) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void switchCap(ViewerBackEnd beh, boolean dungeon, Raid r, String disname, boolean noCap, boolean first) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 		try {
-			switchCap(beh, dungeon, r, disname, noCap, overrideBanTime);
+			switchCap(beh, dungeon, r, disname, noCap);
 		} catch (NoCapMatchesException e) {
 			if(!noCap) {
 				beh.updateCaps(true, dungeon);
@@ -678,42 +655,23 @@ public class RaidSlot extends Slot {
 		}
 	}
 	
-	private void switchCap(ViewerBackEnd beh, boolean dungeon, Raid r, String disname, boolean noCap, Integer overrideBanTime) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void switchCap(ViewerBackEnd beh, boolean dungeon, Raid r, String disname, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 
-		LocalDateTime now = Time.parse(Manager.getServerTime());
+		long now = Time.getServerTime();
 		
 		if(!(r == null || disname == null)) {
-			LocalDateTime start = Time.parse(r.get(SRC.Raid.creationDate));
-			long plus;
-			if(overrideBanTime != null)
-				plus = overrideBanTime;
-			else {
-				switch(r.type) {
-				case CAMPAIGN:
-					plus = 2100;
-					break;
-				case DUNGEON:
-					plus = 420;
-					break;
-				case VERSUS:
-					plus = 420;
-					break;
-				default:
-					//	won't happen, but important for compiler
-					plus = 0;
-				}
-			}
-			if(now.isAfter(start.plusSeconds(plus-120)))
-				banned.put(disname, now.plusSeconds(120));
+			long start = Time.parse(r.get(SRC.Raid.creationDate));
+			if(now - (start + r.type.raidDuration - 120) > 0)
+				banned.put(disname, now + 3*60);
 			else
-				banned.put(disname, start.plusSeconds(plus));
+				banned.put(disname, start + r.type.raidDuration + 3*60);
 			Logger.print("blocked " + disname, Logger.caps, Logger.info, cid, slot);
 		}
 		
 		
 		HashSet<String> removed = new HashSet<>();
 		for(String key : banned.keySet().toArray(new String[banned.size()])) {
-			if(now.isAfter(banned.get(key))) {
+			if(now - banned.get(key) > 0) {
 				removed.add(key);
 				banned.remove(key);
 			}
@@ -742,21 +700,15 @@ public class RaidSlot extends Slot {
 		
 		HashSet<String> skipped = new HashSet<>();
 		
-		String capTeam = Configs.getStr(cid, currentLayer, Configs.captainTeamViewer);	//TODO rem after event
 		
 		for(int i=0; i<caps.length; i++) {
 			String tdn = caps[i].get(SRC.Captain.twitchDisplayName);
 
-			Boolean ic = Configs.getCapBoo(cid, currentLayer, tdn, list, Configs.ic);	//TODO rem after event
-			ic = ic == null ? false : ic;													//TODO rem after event
-			
 			Integer fav = Configs.getCapInt(cid, currentLayer, tdn, list, Configs.fav);
 			fav = fav == null ? 0 : fav;
 			if(fav < 0 
 				|| banned.containsKey(tdn) 
 				|| otherCaps.contains(tdn)
-				|| !(ic || capTeam.equals("(none)")				//TODO rem after event
-					|| capTeam.equals(caps[i].get("teamUid")))	//TODO rem after event
 				) {
 				skipped.add(tdn);
 				continue;
