@@ -70,13 +70,13 @@ public class RaidSlot extends Slot {
 					return;
 
 				Logger.print("chest", Logger.general, Logger.info, cid, slot);
-				chest(vbe, slot);
+				chest(vbe);
 
 				Logger.print("captain", Logger.general, Logger.info, cid, slot);
-				captain(vbe, slot);
+				captain(vbe);
 
 				Logger.print("place", Logger.general, Logger.info, cid, slot);
-				place(vbe, slot);
+				place(vbe);
 
 				Logger.print("updateFrame", Logger.general, Logger.info, cid, slot);
 				v.updateFrame(vbe);
@@ -93,7 +93,7 @@ public class RaidSlot extends Slot {
 	private boolean goMultiPlace;
 	private LocalDateTime placeTime = LocalDateTime.now();
 	
-	private void place(final ViewerBackEnd vbe, final int slot) throws NoConnectionException, NotAuthorizedException {
+	private void place(final ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
 		//	Unit place delay
 		long tdif = ChronoUnit.MILLIS.between(LocalDateTime.now(), placeTime);
 		if(tdif > 0) {
@@ -227,7 +227,7 @@ public class RaidSlot extends Slot {
 				goMultiPlace = false;
 				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
 					final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, r.getFromNode(SRC.MapNode.chestType),
-							Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.get(SRC.Raid.twitchDisplayName)), slot, vbe.getSkins(), r.get(SRC.Raid.captainId));
+							Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.get(SRC.Raid.twitchDisplayName)), vbe.getSkins(), r.get(SRC.Raid.captainId));
 					if(pla == null)
 						continue;
 					bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
@@ -254,12 +254,9 @@ public class RaidSlot extends Slot {
 			} else {
 				final String node = Remaper.map(r.getFromNode(SRC.MapNode.chestType));
 				final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, node,
-						Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.get(SRC.Raid.twitchDisplayName)), slot, vbe.getSkins(), r.get(SRC.Raid.captainId));
+						Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.get(SRC.Raid.twitchDisplayName)), vbe.getSkins(), r.get(SRC.Raid.captainId));
 				
 
-//				TODO rem
-				System.out.println(5);
-				
 				if(pla == null) {
 					Logger.print("place=null", Logger.place, Logger.info, cid, slot);
 					System.out.println("place=null, "+Configs.getPStr(cid, Configs.pname)+" - "+slot);
@@ -270,8 +267,6 @@ public class RaidSlot extends Slot {
 				String err = vbe.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan, pla.skin);
 				bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
 				
-//				TODO rem
-				System.out.println(6);
 				if(err == null) {
 					if(pla.epic && !dungeon)
 						vbe.decreaseCurrency(Store.potions, 45);
@@ -284,13 +279,9 @@ public class RaidSlot extends Slot {
 															Configs.getInt(cid, currentLayer, Configs.unitPlaceDelayMinViewer),
 															Configs.getInt(cid, currentLayer, Configs.unitPlaceDelayMaxViewer)), 
 														ChronoUnit.MILLIS);
-//					TODO rem
-					System.out.println(9);
+					
 					break;
 				}
-				
-//				TODO rem
-				System.out.println(7);
 				
 				if(err.equals("NOT_ENOUGH_POTIONS")) {
 					vbe.setCurrency(Store.potions, 0);
@@ -306,9 +297,6 @@ public class RaidSlot extends Slot {
 					}
 					continue;
 				}
-				
-//				TODO rem
-				System.out.println(8);
 				
 				Logger.print("RaidSlot (viewer) -> place: tdn="+r.toString()+" err="+err, Logger.lowerr, Logger.error, cid, slot, true);
 				break;
@@ -361,7 +349,7 @@ public class RaidSlot extends Slot {
 		}
 	}
 	
-	private Place findPlace(Map map, int[] mh, HashSet<String> bannedPos, List<String> neededUnits, final Unit[] units, final boolean epic, final boolean dungeon, final int dunLvl, final boolean dunNeeded, final String chest, final boolean fav, final int slot, Skins skins, final String captainId) {
+	private Place findPlace(Map map, int[] mh, HashSet<String> bannedPos, List<String> neededUnits, final Unit[] units, final boolean epic, final boolean dungeon, final int dunLvl, final boolean dunNeeded, final String chest, final boolean fav, Skins skins, final String captainId) {
 		HashSet<String> nupts = map.getUsablePlanTypes(false);
 		HashSet<String> eupts = map.getUsablePlanTypes(true);
 		
@@ -474,16 +462,13 @@ public class RaidSlot extends Slot {
 		Logger.print("prios=" + Arrays.toString(prios), Logger.units, Logger.info, cid, slot);
 		
 		for(int i=0; i<4; i++) {
-			//	TODO rem
-			System.out.println("i="+i);
+			Logger.print("outer i="+i, Logger.place, Logger.info, cid, slot);
 			if(!epic && i%2 == 0)
 				continue;
 
-			//	TODO rem
 			int loop = 1;
 			while(true) {
-				//	TODO rem
-				System.out.println("loop="+loop++);
+				Logger.print("inner loop="+loop++, Logger.place, Logger.info, cid, slot);
 				int p = 0;
 				
 				for(int j=1; j<prios.length; j++) 
@@ -492,8 +477,7 @@ public class RaidSlot extends Slot {
 							&& (Integer.parseInt(prios[j].unit.get(SRC.Unit.level)) > Integer.parseInt(prios[p].unit.get(SRC.Unit.level)))))
 						p = j;
 				
-				//	TODO rem
-				System.out.println(1);
+				Logger.print("inner 1", Logger.place, Logger.info, cid, slot);
 				
 				if(prios[p].ps[i] < 0)
 					break;
@@ -508,8 +492,8 @@ public class RaidSlot extends Slot {
 					if(!prios[p].vs[i])
 						pts.remove("vibe");
 				}
-				//	TODO rem
-				System.out.println(2);
+
+				Logger.print("inner 2", Logger.place, Logger.info, cid, slot);
 				
 				int[] pos = null;
 				try {
@@ -517,16 +501,12 @@ public class RaidSlot extends Slot {
 				} catch (NoFinException e) {}
 				if(pos == null)
 					continue;
-//				TODO rem
-				System.out.println(3);
+
+				Logger.print("inner 3", Logger.place, Logger.info, cid, slot);
 				if(Configs.getBoolean(cid, currentLayer, Configs.useSkinFromCaptainViewer)) {
 					ArrayList<Skin> ss = skins.searchSkins(captainId, u.unitType);
-//					TODO rem
-					System.out.println(4);
 					return new Place(u, pos, i%2==0, i<2, ss.size() == 0 ? null : ss.get(new Random().nextInt(ss.size())));
 				} else {
-//					TODO rem
-					System.out.println(4);
 					return new Place(u, pos, i%2==0, i<2, null);
 				}
 			}
@@ -550,11 +530,11 @@ public class RaidSlot extends Slot {
 		return change;
 	}
 	
-	private void captain(ViewerBackEnd beh, int slot) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
-		captain(beh, slot, true, false);
+	private void captain(ViewerBackEnd beh) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+		captain(beh, true, false);
 	}
 
-	private void captain(ViewerBackEnd vbe, int slot, boolean first, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void captain(ViewerBackEnd vbe, boolean first, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 		
 		boolean dungeon = Configs.getStr(cid, currentLayer, Configs.dungeonSlotViewer).equals(""+slot);
 		
@@ -584,7 +564,7 @@ public class RaidSlot extends Slot {
 			return;
 		
 		if(r == null) {
-			switchCap(vbe, slot, dungeon, null, null, noCap, first, null);
+			switchCap(vbe, dungeon, null, null, noCap, first, null);
 			return;
 		}
 		
@@ -593,13 +573,13 @@ public class RaidSlot extends Slot {
 
 		String tdn = r.get(SRC.Raid.twitchDisplayName);
 		if(r.type == RaidType.VERSUS) {
-			switchCap(vbe, slot, dungeon, r, tdn, noCap, first, null);
+			switchCap(vbe, dungeon, r, tdn, noCap, first, null);
 			return;
 		}
 		
 		String ct = r.getFromNode(SRC.MapNode.chestType);
 		if(ct == null) {
-			switchCap(vbe, slot, dungeon, r, tdn, noCap, first, null);
+			switchCap(vbe, dungeon, r, tdn, noCap, first, null);
 			return;
 		}
 		ct = Remaper.map(ct);
@@ -638,7 +618,7 @@ public class RaidSlot extends Slot {
 		if(!ic && Time.isAfter(Time.parse(r.get(SRC.Raid.creationDate))
 									.plusSeconds(maxTimeLeft),
 								Manager.getServerTime())) {
-			switchCap(vbe, slot, dungeon, r, tdn, noCap, first, maxTimeLeft);
+			switchCap(vbe, dungeon, r, tdn, noCap, first, maxTimeLeft);
 			return;
 		}
 		
@@ -664,13 +644,13 @@ public class RaidSlot extends Slot {
 			|| (!ic && (loy < minLoy || loy > maxLoy))
 			|| fav < 0
 			) {
-			switchCap(vbe, slot, dungeon, r, tdn, noCap, first, null);
+			switchCap(vbe, dungeon, r, tdn, noCap, first, null);
 			return;
 		}
 		
 		if(change) {
 			if(first)
-				switchCap(vbe, slot, dungeon, r, tdn, noCap, first, null);
+				switchCap(vbe, dungeon, r, tdn, noCap, first, null);
 			else
 				change = false;
 		}
@@ -684,13 +664,13 @@ public class RaidSlot extends Slot {
 	}
 	
 	
-	private void switchCap(ViewerBackEnd beh, int slot, boolean dungeon, Raid r, String disname, boolean noCap, boolean first, Integer overrideBanTime) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void switchCap(ViewerBackEnd beh, boolean dungeon, Raid r, String disname, boolean noCap, boolean first, Integer overrideBanTime) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 		try {
-			switchCap(beh, slot, dungeon, r, disname, noCap, overrideBanTime);
+			switchCap(beh, dungeon, r, disname, noCap, overrideBanTime);
 		} catch (NoCapMatchesException e) {
 			if(!noCap) {
 				beh.updateCaps(true, dungeon);
-				captain(beh, slot, first, true);
+				captain(beh, first, true);
 			} else {
 				Logger.print("RaidSlot (viewer) -> switchCap: slot="+slot+", err=No Captain Matches Config", Logger.runerr, Logger.error, cid, slot, true);
 				throw e;
@@ -698,7 +678,7 @@ public class RaidSlot extends Slot {
 		}
 	}
 	
-	private void switchCap(ViewerBackEnd beh, int slot, boolean dungeon, Raid r, String disname, boolean noCap, Integer overrideBanTime) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void switchCap(ViewerBackEnd beh, boolean dungeon, Raid r, String disname, boolean noCap, Integer overrideBanTime) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 
 		LocalDateTime now = Time.parse(Manager.getServerTime());
 		
@@ -799,13 +779,13 @@ public class RaidSlot extends Slot {
 		
 		Logger.print("switched to " + best.get(SRC.Captain.twitchDisplayName), Logger.caps, Logger.info, cid, slot);
 		
-		captain(beh, slot, false, noCap);
+		captain(beh, false, noCap);
 	}
 
 	
 	private boolean goMultiChestClaim;
 	
-	private void chest(ViewerBackEnd vbe, int slot) throws NoConnectionException, NotAuthorizedException {
+	private void chest(ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
 		if(!vbe.isReward(slot))
 			return;
 		if(Options.is("exploits") && Configs.getBoolean(cid, currentLayer, Configs.useMultiChestExploitViewer)) {

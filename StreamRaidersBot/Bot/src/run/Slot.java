@@ -110,14 +110,9 @@ public abstract class Slot {
 		
 		slotSequence();
 		
-//		TODO rem
-		System.out.println(10);
-		
 		for(int i=0; i<synced.length; i++)
 			if(synced[i])
 				slots[i].slotSequence();
-		
-		
 		
 		Logger.print("releasing action", Logger.general, Logger.info, cid, slot);
 		Manager.releaseAction();

@@ -121,20 +121,12 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 	
 	public void useBackEnd(R ber) throws Exception {
 		loadBE();
-//		TODO rem
-		System.out.println(9.1);
 		try {
 			ber.run(be_);
-//			TODO rem
-			System.out.println(9.2);
 		} catch (Exception e) {
 			throw e;
 		} finally {
-//			TODO rem
-			System.out.println(9.3);
 			unloadBE();
-//			TODO rem
-			System.out.println(9.4);
 		}
 	};
 	
