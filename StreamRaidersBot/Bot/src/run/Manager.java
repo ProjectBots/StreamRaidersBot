@@ -22,6 +22,8 @@ import otherlib.Configs.IllegalConfigTypeException;
 import otherlib.Configs.IllegalConfigVersionException;
 import otherlib.Configs.PStr;
 import otherlib.Configs.SleInt;
+import run.captain.Captain;
+import run.viewer.Viewer;
 import srlib.Event;
 import srlib.SRC;
 import srlib.SRR;
@@ -37,14 +39,17 @@ public class Manager {
 	
 	/*	TODO
 	 * 	add tooltips (everywhere)
-	 * 	fonts manage error blocks (GlobalOptions)
+	 * 	colors  error blocks (GlobalOptions)
 	 *	make epic slot dependent
 	 * 	get Donators from github source
 	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
 	 * 	when creating chest rewards for guide: exclude chest which aren't obtainable, compare to chests in Store
-	 * 	option to disable loading images (saves ram)
+	 * 	option to disable loading images
 	 * 	optimize SkinSettings
-	 * 
+	 * 	when stopping wait for slots to finish
+	 * 	options to force close
+	 * 	better ressource management
+	 * 	better config
 	 * 
 	 * 	
 	 * 
@@ -55,7 +60,11 @@ public class Manager {
 	private static Hashtable<String, Integer> poss = new Hashtable<>();
 	
 	private static long secsoff = Long.MIN_VALUE;
-	protected static BotListener blis;
+	private static BotListener blis;
+	
+	public static BotListener blis() {
+		return blis;
+	}
 	
 	public static AbstractProfile<?, ?> getProfile(String cid) {
 		return profiles.get(cid);
@@ -117,20 +126,13 @@ public class Manager {
 	}
 	
 	
-	/**
-	 * changes the current BotListener
-	 * @param blis
-	 */
-	public static void setBotListener(BotListener blis) {
-		Manager.blis = blis;
-	}
-	
 	public static class IniCanceledException extends Exception {
 		private static final long serialVersionUID = 1L;
 		private IniCanceledException(String reason) {
 			super(reason);
 		}
 	}
+	
 	
 	/**
 	 * Initializes the BotManager
@@ -354,7 +356,7 @@ public class Manager {
 	 * @param b true => start, false => stop
 	 */
 	public static void setRunning(String cid, int slot, boolean b) {
-		profiles.get(cid).setRunning(b, slot);
+		profiles.get(cid).setRunning(slot, b);
 	}
 	
 	/**
@@ -364,7 +366,7 @@ public class Manager {
 	 */
 	public static void switchRunning(String cid, int slot) {
 		AbstractProfile<?,?> p = profiles.get(cid);
-		p.setRunning(!p.isRunning(slot), slot);
+		p.setRunning(slot, !p.isRunning(slot));
 	}
 	
 	/**
@@ -439,7 +441,7 @@ public class Manager {
 	public static void switchSlotFriendly(String cid, int slot) {
 		Viewer v = profiles.get(cid).getAsViewer();
 		if(v != null)
-			v.change(slot);
+			v.switchChange(slot);
 	}
 	
 	/**
@@ -607,6 +609,19 @@ public class Manager {
 		} else
 			while(actions.size() > 0)
 				actions.remove(0).interrupt();
+	}
+	
+
+	private static final Object gclock = new Object();
+	private static long gcwait = System.currentTimeMillis();
+	public static void gc() {
+		synchronized (gclock) {
+			long now = System.currentTimeMillis();
+			if(Configs.getGBoo(Configs.useMemoryReleaser) && now > gcwait) {
+				System.gc();
+				gcwait = now + 30000;
+			}
+		}
 	}
 	
 }

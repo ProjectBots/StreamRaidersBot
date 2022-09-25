@@ -114,7 +114,7 @@ public class Logger {
 		
 		String[] scs = Scope.isScope(scope);
 		if(scs == null) {
-			System.err.println("[" + error.con + "] \"" + scope + "\" is not a scope");
+			System.err.println("[" + info.con + "] \"" + scope + "\" is not a scope");
 			return;
 		}
 		
@@ -123,10 +123,10 @@ public class Logger {
 				scopes.add(scs[i]);
 				
 				if(path == null)
-					System.out.println("[" + error.con + "] added scope " + scs[i]);
+					System.out.println("[" + info.con + "] added scope " + scs[i]);
 				else
 					try {
-						NEF.save(path, "\n[" + error.con + "] added scope " + scs[i], true);
+						NEF.save(path, "\n[" + info.con + "] added scope " + scs[i], true);
 					} catch (IOException e) {
 						System.out.println("Logger -> print: err=failed to save to file");
 						e.printStackTrace();

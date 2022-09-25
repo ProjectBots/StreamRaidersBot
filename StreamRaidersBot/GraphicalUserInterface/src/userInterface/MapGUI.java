@@ -6,7 +6,7 @@ import include.GUI.TextArea;
 import include.Maths.Scaler;
 import otherlib.Logger;
 import otherlib.MapConv;
-import run.Viewer;
+import run.viewer.Viewer;
 import srlib.Map;
 import srlib.SRC;
 import srlib.Unit;

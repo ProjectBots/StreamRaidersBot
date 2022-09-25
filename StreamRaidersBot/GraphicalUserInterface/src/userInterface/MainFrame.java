@@ -34,12 +34,12 @@ import otherlib.Remaper;
 import include.Guide;
 import run.Manager;
 import run.ProfileType;
-import run.Viewer;
+import run.viewer.Viewer;
 import srlib.SRC;
 import srlib.viewer.Raid;
 import srlib.viewer.RaidType;
-import userInterface.CAPTAIN.CaptainProfileSection;
-import userInterface.VIEWER.ViewerProfileSection;
+import userInterface.captain.CaptainProfileSection;
+import userInterface.viewer.ViewerProfileSection;
 
 public class MainFrame {
 	

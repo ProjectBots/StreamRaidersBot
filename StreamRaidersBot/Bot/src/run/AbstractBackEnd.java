@@ -10,8 +10,8 @@ import srlib.SRR.NotAuthorizedException;
 
 public abstract class AbstractBackEnd<B extends AbstractBackEnd<B>> {
 	
-	final String cid;
-	final SRR req;
+	protected final String cid;
+	protected final SRR req;
 	
 	public SRR getSRR() {
 		return req;
@@ -22,19 +22,19 @@ public abstract class AbstractBackEnd<B extends AbstractBackEnd<B>> {
 		this.cid = cid;
 	}
 
-	abstract void ini() throws NoConnectionException, NotAuthorizedException;
+	protected abstract void ini() throws NoConnectionException, NotAuthorizedException;
 	
 	public static interface UpdateEventListener<B extends AbstractBackEnd<B>> {
 		public default void afterUpdate(String obj, B be) {};
 	}
 	
-	UpdateEventListener<B> uelis = null;
+	protected UpdateEventListener<B> uelis = null;
 	
 	public void setUpdateEventListener(UpdateEventListener<B> uelis) {
 		this.uelis = uelis;
 	}
 	
-	boolean testUpdate(JsonObject jo) throws NoConnectionException, NotAuthorizedException {
+	protected boolean testUpdate(JsonObject jo) throws NoConnectionException, NotAuthorizedException {
 		Manager.updateSecsOff(jo.getAsJsonObject("info").get("serverTime").getAsString());
 		JsonElement je = jo.get(SRC.errorMessage);
 		if(!je.isJsonPrimitive()) 

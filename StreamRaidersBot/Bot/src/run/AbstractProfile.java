@@ -13,6 +13,9 @@ import include.NEF;
 import include.Http.NoConnectionException;
 import otherlib.Configs;
 import run.AbstractBackEnd.UpdateEventListener;
+import run.captain.Captain;
+import run.captain.CaptainBackEnd;
+import run.viewer.Viewer;
 import srlib.SRR;
 import srlib.SRR.NotAuthorizedException;
 
@@ -32,27 +35,34 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 		public void run(B vbe) throws Exception;
 	}
 
+
 	public final String cid;
 	private B be_;
 	private ProfileType ptype;
-	UpdateEventListener<B> uelis = null;
-	String currentLayer = "(default)";
-	String currentLayerId = null;
-	boolean isSwitching = false;
+	protected UpdateEventListener<B> uelis = null;
+	protected String currentLayer = "(default)";
+	protected String currentLayerId = null;
+	protected boolean isSwitching = false;
+	protected final Slot[] slots;
 	
 	public ProfileType getType() {
 		return ptype;
 	}
 	
-
+	public boolean isSwitching() {
+		return isSwitching;
+	}
+	
 	public String getCurrentLayer() {
 		return currentLayer;
 	}
 	
-	public AbstractProfile(String cid, B be, ProfileType ptype) {
+	public AbstractProfile(String cid, B be, ProfileType ptype, int slotSize) {
 		this.be_ = be;
 		this.cid = cid;
 		this.ptype = ptype;
+		slots = new Slot[slotSize];
+		iniSlots();
 		unloadBE();
 	}
 	
@@ -111,12 +121,20 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 	
 	public void useBackEnd(R ber) throws Exception {
 		loadBE();
+//		TODO rem
+		System.out.println(9.1);
 		try {
 			ber.run(be_);
+//			TODO rem
+			System.out.println(9.2);
 		} catch (Exception e) {
 			throw e;
 		} finally {
+//			TODO rem
+			System.out.println(9.3);
 			unloadBE();
+//			TODO rem
+			System.out.println(9.4);
 		}
 	};
 	
@@ -127,6 +145,9 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 		setRunningAll(false);
 		while(!hasStopped())
 			Thread.sleep(100);
+		
+		for(int i=0; i<slots.length; i++)
+			slots[i] = null;
 		
 		loadBE();
 		try {
@@ -146,13 +167,31 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 		}
 	}
 	
+	protected abstract void iniSlots();
 	public abstract void saveStats();
-	public abstract void setRunning(boolean b, int slot);
-	public abstract void setRunningAll(boolean b);
-	public abstract boolean isRunning(int slot);
-	public abstract boolean hasStopped();
-	public abstract void skip(int slot);
-	public abstract void skipAll();
+	public void setRunning(int slot, boolean b) {
+		slots[slot].setRunning(b);
+	}
+	public void setRunningAll(boolean b) {
+		for(int i=0; i<slots.length; i++)
+			slots[i].setRunning(b);
+	}
+	public boolean isRunning(int slot) {
+		return slots[slot].isRunning;
+	}
+	public boolean hasStopped() {
+		boolean b = false;
+		for(int i=0; i<slots.length; i++)
+			b |= slots[i].isActivelyRunning;
+		return !b;
+	}
+	public void skip(int slot) {
+		slots[slot].skipSleep();
+	}
+	public void skipAll() {
+		for(int i=0; i<slots.length; i++)
+			slots[i].skipSleep();
+	}
 	
 	public abstract void updateFrame(B be) throws NoConnectionException, NotAuthorizedException;
 	
@@ -176,18 +215,54 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 			}
 		}
 		
-		Manager.blis.onProfileUpdateGeneral(cid,
+		Manager.blis().onProfileUpdateGeneral(cid,
 				Configs.getPStr(cid, Configs.pname),
 				Configs.getStr(cid, currentLayer, ptype == ProfileType.VIEWER ? Configs.lnameViewer : Configs.lnameCaptain),
 				new Color(Configs.getInt(cid, currentLayer, ptype == ProfileType.VIEWER ? Configs.colorViewer : Configs.colorCaptain)));
 	}
 	
 	
-	boolean ready = false;
+	protected boolean ready = false;
 	protected void setReady(boolean b) {
 		ready = b;
 	}
 	
-	public abstract void updateSlotSync();
+	public void updateSlotSync() {
+		for(int s=0; s<slots.length; s++) {
+			if(!slots[s].canManageItself())
+				continue;
+			slots[s].syncSlot(s, false);
+			slots[s].setSynced(false);
+		}
+		for(int s=0; s<slots.length; s++) {
+			if(!slots[s].canManageItself())
+				continue;
+			
+			final int sync = Configs.getSleepInt(cid, currentLayer, ""+s, ptype == ProfileType.VIEWER ? Configs.syncSlotViewer : Configs.syncSlotCaptain);
+			Manager.blis().onProfileUpdateSlotSync(cid, s, sync);
+			
+			if(sync == -1)
+				continue;
+			
+			slots[sync].syncSlot(s, true);
+			slots[s].setSynced(true);
+			if(isRunning(s)) {
+				final int ss = s;
+				new Thread(() -> {
+					setRunning(ss, false);
+					//	wait for the slot to finish before starting the other
+					//	to prevent concuerent actions on the same slot
+					while(slots[ss].isActivelyRunning()) {
+						try {
+							Thread.sleep(100);
+						} catch (InterruptedException e) {}
+					}
+					setRunning(sync, true);
+				}).start();
+			}
+		}
+	}
+	
+	
 	
 }

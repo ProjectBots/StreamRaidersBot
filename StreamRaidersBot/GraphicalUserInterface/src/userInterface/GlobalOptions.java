@@ -200,7 +200,7 @@ public class GlobalOptions {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				
-				
+				//	TODO Colors
 				GUI err = new GUI("Blocked Errors", 400, 500, gui, null);
 				
 				

@@ -1,7 +1,7 @@
 package srlib.skins;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -14,7 +14,7 @@ import otherlib.Options;
 
 public class Skins {
 	
-	private Hashtable<String, Skin> skins = new Hashtable<>();
+	private HashMap<String, Skin> skins = new HashMap<>();
 	
 	public Skins(JsonArray skins) {
 		if(skins != null) {

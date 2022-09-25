@@ -1,2 +1,1 @@
--debug =debug general loop srerr
--beta_frame
+-logger =logs general loop srerr

@@ -8,7 +8,7 @@ public class Skin {
 	public final String disname;
 	public final SkinType type;
 	public final String captainId;
-	public Skin(JsonObject pack) {
+	Skin(JsonObject pack) {
 		uid = pack.get("Uid").getAsString();
 		unit = pack.get("BaseUnitType").getAsString();
 		disname = pack.get("DisplayName").getAsString();

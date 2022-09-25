@@ -102,14 +102,14 @@ public class GuideContent {
 	}
 
 	
-	private static final HashSet<String> chestWhitelist = new HashSet<String>() {
-		private static final long serialVersionUID = 1L;
-		{
-			String chests = Options.get("chests");
-			addAll(Arrays.asList(chests.substring(2, chests.length()-2).split("\",\"")));
-			addAll(Store.getCurrentEventChests(Manager.getServerTime()));
-		}
-	};
+	private static final HashSet<String> chestWhitelist = new HashSet<>();
+	
+	private static final void updateChestWhiteList() {
+		chestWhitelist.clear();
+		String chests = Options.get("chests");
+		chestWhitelist.addAll(Arrays.asList(chests.substring(2, chests.length()-2).split("\",\"")));
+		chestWhitelist.addAll(Store.getCurrentEventChests(Manager.getServerTime()));
+	}
 	
 	public static void saveChestRewards(JsonObject sheets) {
 		JsonObject chests = sheets.getAsJsonObject("Chests");
@@ -117,6 +117,8 @@ public class GuideContent {
 		JsonObject chestRews = sheets.getAsJsonObject("ChestRewards");
 		
 		JsonObject complete = new JsonObject();
+		
+		updateChestWhiteList();
 		
 		for(String key : chests.keySet()) {
 			if(!chestWhitelist.contains(key))

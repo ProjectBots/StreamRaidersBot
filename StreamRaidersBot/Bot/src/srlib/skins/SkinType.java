@@ -3,7 +3,7 @@ package srlib.skins;
 import java.util.HashMap;
 
 public enum SkinType {
-	EPIC("Epic"),FULL("Full"), HEAD("Head"), FLAG_BEARER("Flag Bearer");
+	EPIC("Epic"), FULL("Full"), HEAD("Head"), FLAG_BEARER("Flag Bearer");
 	public final String str;
 	private SkinType(String str) {
 		this.str = str;
