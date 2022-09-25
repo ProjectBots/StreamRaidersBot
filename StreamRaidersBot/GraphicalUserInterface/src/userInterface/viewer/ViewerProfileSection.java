@@ -13,7 +13,6 @@ import include.GUI.Label;
 import otherlib.Configs;
 import otherlib.Logger;
 import run.Manager;
-import run.ProfileType;
 import userInterface.Colors;
 import userInterface.MainFrame;
 import userInterface.MapGUI;
