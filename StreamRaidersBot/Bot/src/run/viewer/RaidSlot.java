@@ -3,7 +3,6 @@ package run.viewer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Random;
 
@@ -653,27 +652,38 @@ public class RaidSlot extends Slot {
 		
 	}
 	
-	private Hashtable<String, Long> banned = new Hashtable<>();
-	
 	public static class NoCapMatchesException extends Exception {
 		private static final long serialVersionUID = 6502943388417577268L;
 	}
 	
 	
 	private void switchCap(ViewerBackEnd beh, boolean dungeon, Raid r, String disname, boolean noCap, boolean first) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
-		try {
-			switchCap(beh, dungeon, r, disname, noCap);
-		} catch (NoCapMatchesException e) {
-			if(!noCap) {
-				beh.updateCaps(true, dungeon);
-				captain(beh, first, true);
-			} else {
-				Logger.print("RaidSlot (viewer) -> switchCap: slot="+slot+", err=No Captain Matches Config", Logger.runerr, Logger.error, cid, slot, true);
-				throw e;
+		synchronized (v.switchCapsLock) {
+			try {
+				switchCap(beh, dungeon, r, disname, noCap);
+			} catch (NoCapMatchesException e) {
+				if(!noCap) {
+					beh.updateCaps(true, dungeon);
+					captain(beh, first, true);
+				} else {
+					Logger.print("RaidSlot (viewer) -> switchCap: slot="+slot+", err=No Captain Matches Config", Logger.runerr, Logger.error, cid, slot, true);
+					throw e;
+				}
 			}
 		}
 	}
 	
+	/**
+	 * not thread safe, do not call this directly, use {@link RaidSlot#switchCap(ViewerBackEnd, boolean, Raid, String, boolean, boolean)}
+	 * @param beh
+	 * @param dungeon
+	 * @param r
+	 * @param disname
+	 * @param noCap
+	 * @throws NoConnectionException
+	 * @throws NotAuthorizedException
+	 * @throws NoCapMatchesException
+	 */
 	private void switchCap(ViewerBackEnd beh, boolean dungeon, Raid r, String disname, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 
 		long now = Time.getServerTime();
@@ -681,18 +691,18 @@ public class RaidSlot extends Slot {
 		if(!(r == null || disname == null)) {
 			long start = Time.parse(r.get(SRC.Raid.creationDate));
 			if(now - (start + r.type.raidDuration - 120) > 0)
-				banned.put(disname, now + 3*60);
+				v.bannedCaps.put(disname, now + 3*60);
 			else
-				banned.put(disname, start + r.type.raidDuration + 3*60);
+				v.bannedCaps.put(disname, start + r.type.raidDuration + 3*60);
 			Logger.print("blocked " + disname, Logger.caps, Logger.info, cid, slot);
 		}
 		
 		
 		HashSet<String> removed = new HashSet<>();
-		for(String key : banned.keySet().toArray(new String[banned.size()])) {
-			if(now - banned.get(key) > 0) {
+		for(String key : v.bannedCaps.keySet().toArray(new String[v.bannedCaps.size()])) {
+			if(v.bannedCaps.get(key) < now) {
 				removed.add(key);
-				banned.remove(key);
+				v.bannedCaps.remove(key);
 			}
 		}
 		Logger.print("unblocked " + removed.toString(), Logger.caps, Logger.info, cid, slot);
@@ -726,7 +736,7 @@ public class RaidSlot extends Slot {
 			Integer fav = Configs.getCapInt(cid, currentLayer, tdn, list, Configs.fav);
 			fav = fav == null ? 0 : fav;
 			if(fav < 0 
-				|| banned.containsKey(tdn) 
+				|| v.bannedCaps.containsKey(tdn)
 				|| otherCaps.contains(tdn)
 				) {
 				skipped.add(tdn);

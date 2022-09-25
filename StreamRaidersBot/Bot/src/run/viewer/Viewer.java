@@ -178,6 +178,9 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 	}
 
 	
+	protected Hashtable<String, Long> bannedCaps = new Hashtable<>();
+	protected Object switchCapsLock = new Object();
+	
 	
 	public void switchChange(int slot) {
 		((RaidSlot) slots[slot]).switchChange();
