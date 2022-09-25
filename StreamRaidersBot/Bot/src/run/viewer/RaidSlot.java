@@ -100,23 +100,35 @@ public class RaidSlot extends Slot {
 		}
 		
 		Raid r = vbe.getRaid(slot, true);
-		if(r == null)
+		if(r == null) {
+			Logger.print("can not place, reason=r is null", Logger.place, Logger.info, cid, slot);
 			return;
+		}
+		
+		if(r.type == RaidType.VERSUS) {
+			Logger.print("can not place, reason=raid type is versus", Logger.place, Logger.info, cid, slot);
+			return;
+		}
 
-		if(r.type == RaidType.VERSUS)
-			return;
-		
 		String placeSer = r.get(SRC.Raid.placementsSerialized);
-		if(!r.canPlaceUnit(Time.getServerTime())
-			|| Configs.getInt(cid, currentLayer, Configs.maxUnitPerRaidViewer) < (placeSer == null 
-																					? 0 
-																					: placeSer.split(vbe.getViewerUserId()).length-1))
+		if(!r.canPlaceUnit(Time.getServerTime())) {
+			Logger.print("can not place, reason=can not place unit", Logger.place, Logger.info, cid, slot);
 			return;
+		}
 		
+		if(Configs.getInt(cid, currentLayer, Configs.maxUnitPerRaidViewer) < (placeSer == null 
+																					? 0 
+																					: placeSer.split(vbe.getViewerUserId()).length-1)) {
+			Logger.print("can not place, reason=max unit per raid reached", Logger.place, Logger.info, cid, slot);
+			return;
+		}
 		
 		final boolean dungeon = r.type == RaidType.DUNGEON;
 		
-		//	check place settings (eg.: min loy/room) before placement (bcs of locked slots)
+		if(dungeon ^ Configs.getStr(cid, currentLayer, Configs.dungeonSlotViewer).equals(""+slot)) {
+			Logger.print("can not place, reason=dungeon slot mismatch", Logger.place, Logger.info, cid, slot);
+			return;
+		}
 		
 		String tdn = r.get(SRC.Raid.twitchDisplayName);
 		Boolean ic = Configs.getCapBoo(cid, currentLayer, tdn, dungeon ? Configs.dungeon : Configs.campaign, Configs.ic);
@@ -124,15 +136,32 @@ public class RaidSlot extends Slot {
 			ic = false;
 		
 		String ct = r.getFromNode(SRC.MapNode.chestType);
-		if(ct == null)
+		if(ct == null) {
+			Logger.print("can not place, reason=ct is null", Logger.place, Logger.info, cid, slot);
 			return;
+		}
 		ct = Remaper.map(ct);
 		
-		//	check if epic is available
+
+		final boolean enabled = Configs.getChestBoolean(cid, currentLayer, ct, Configs.enabledViewer);
+		
+		if(!ic && !enabled) {
+			Logger.print("can not place, reason=chest not enabled", Logger.place, Logger.info, cid, slot);
+			return;
+		}
+		
+		int maxTimeLeft = Configs.getChestInt(cid, currentLayer, ct, Configs.maxTimeViewer);
+		int minTimeLeft = Configs.getChestInt(cid, currentLayer, ct, Configs.minTimeViewer);
+		
+		if(((!ic && Time.isAfterServerTime(Time.plus(r.get(SRC.Raid.creationDate), r.type.raidDuration - maxTimeLeft))))
+				|| (!ic && Time.isBeforeServerTime(Time.plus(r.get(SRC.Raid.creationDate), r.type.raidDuration - minTimeLeft)))){
+			Logger.print("can not place, reason=time mismatch", Logger.place, Logger.info, cid, slot);
+			return;
+		}
+		
 		boolean epic;
 		int dunLvl = -1;
 		final int loy;
-		final int length;
 		if(dungeon) {
 			vbe.addUserDungeonInfo(r);
 			JsonObject udi = r.getUserDungeonInfo();
@@ -140,33 +169,23 @@ public class RaidSlot extends Slot {
 			loy = udi.get("completedLevels").getAsInt() + 1;
 			if(epic)
 				dunLvl = loy % 3;
-			length = RaidType.DUNGEON.raidDuration;
 		} else {
 			Integer potionsc = vbe.getCurrency(Store.potions, true);
 			epic = potionsc == null ? false : (potionsc >= 45);
 			loy = Integer.parseInt(r.get(SRC.Raid.pveWins));
-			length = RaidType.DUNGEON.raidDuration;
 		}
-
-		final boolean enabled = Configs.getChestBoolean(cid, currentLayer, ct, Configs.enabledViewer);
+		
 		
 		int maxLoy = Configs.getChestInt(cid, currentLayer, ct, Configs.maxLoyViewer);
 		int minLoy = Configs.getChestInt(cid, currentLayer, ct, Configs.minLoyViewer);
 		if(maxLoy < 0)
 			maxLoy = Integer.MAX_VALUE;
 		
-		int maxTimeLeft = Configs.getChestInt(cid, currentLayer, ct, Configs.maxTimeViewer);
-		int minTimeLeft = Configs.getChestInt(cid, currentLayer, ct, Configs.minTimeViewer);
-		maxTimeLeft = length - maxTimeLeft;
-		
-		if((dungeon ^ Configs.getStr(cid, currentLayer, Configs.dungeonSlotViewer).equals(""+slot))
-				|| (!ic && Time.isAfterServerTime(Time.plus(r.get(SRC.Raid.creationDate), maxTimeLeft)))
-				|| (!ic && Time.isBeforeServerTime(Time.plus(r.get(SRC.Raid.creationDate), length - minTimeLeft)))
-				|| (!ic && !enabled)
-				|| (!ic && (loy < minLoy || loy > maxLoy))
-				) {
+		if(!ic && (loy < minLoy || loy > maxLoy)) {
+			Logger.print("can not place, reason=loyalty mismatch", Logger.place, Logger.info, cid, slot);
 			return;
 		}
+		
 		
 		Map map = vbe.getMap(slot, true);
 		

@@ -42,10 +42,10 @@ public class Manager {
 	 * 	get Donators from github source
 	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
 	 * 	when creating chest rewards for guide: exclude chest which aren't obtainable, compare to chests in Store
-	 * 	option to disable loading images
+	 * 	option to disable the loading images
 	 * 	optimize SkinSettings
 	 * 	when stopping wait for slots to finish
-	 * 	options to force close
+	 * 	option to force close
 	 * 	better ressource management
 	 * 	better config
 	 * 
