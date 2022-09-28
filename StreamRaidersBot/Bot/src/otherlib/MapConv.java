@@ -1,7 +1,7 @@
 package otherlib;
 
 
-import java.util.HashSet;
+import java.util.Set;
 
 import include.Maths.PointN;
 import include.Pathfinding.Field;
@@ -22,7 +22,7 @@ public class MapConv {
 		return fields;
 	}
 	
-	public MapConv createField2DArray(Map map, boolean canFly, HashSet<String> pts, int[] h, HashSet<String> banned) throws NoFinException {
+	public MapConv createField2DArray(Map map, boolean canFly, Set<String> pts, int[] h, Set<String> banned) throws NoFinException {
 		
 		int length = map.length;
 		int width = map.width;
@@ -56,7 +56,7 @@ public class MapConv {
 		return this;
 	}
 	
-	private void setFin(Field[][] ret, Map map, int x, int y, HashSet<String> banned) {
+	private void setFin(Field[][] ret, Map map, int x, int y, Set<String> banned) {
 		if(banned.contains(x+"-"+y))
 			return;
 		

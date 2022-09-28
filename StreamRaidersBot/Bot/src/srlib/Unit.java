@@ -1,7 +1,9 @@
 package srlib;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -132,8 +134,8 @@ public class Unit {
 	
 	private final JsonObject unit;
 	public final String unitId, unitType;
-	private String cool = null;
-	private final HashSet<String> ptags = new HashSet<>();
+	private final long cool;
+	private final Set<String> ptags;
 	
 	public final boolean dupe;
 	
@@ -141,18 +143,21 @@ public class Unit {
 		this.unit = unit;
 		JsonElement jcool = unit.get(SRC.Unit.cooldownTime);
 		if(jcool.isJsonPrimitive())
-			setCooldown(unit.get(SRC.Unit.cooldownTime).getAsString());
+			cool = Time.parse(jcool.getAsString());
+		else
+			cool = 0;
 		
 		unitType = unit.remove("unitType").getAsString();
 		unitId = unit.get("unitId").getAsString();
 		
-		JsonObject uType = uTypes.getAsJsonObject(unitType);
-		
 		dupe = false;
 		
-		JsonArray ptagsJArr = uType.getAsJsonArray("roles");
+		JsonArray ptagsJArr = uTypes.getAsJsonObject(unitType).getAsJsonArray("roles");
+		HashSet<String> ptags_tmp = new HashSet<>();
 		for(int i=0; i<ptagsJArr.size(); i++)
-			ptags.add(ptagsJArr.get(i).getAsString());
+			ptags_tmp.add(ptagsJArr.get(i).getAsString());
+		
+		ptags = Collections.unmodifiableSet(ptags_tmp);
 	}
 	
 	private Unit(String unitType, boolean dupe) {
@@ -160,6 +165,14 @@ public class Unit {
 		unit = null;
 		unitId = null;
 		this.unitType = unitType;
+		cool = 0;
+		
+		JsonArray ptagsJArr = uTypes.getAsJsonObject(unitType).getAsJsonArray("roles");
+		HashSet<String> ptags_tmp = new HashSet<>();
+		for(int i=0; i<ptagsJArr.size(); i++)
+			ptags_tmp.add(ptagsJArr.get(i).getAsString());
+		
+		ptags = Collections.unmodifiableSet(ptags_tmp);
 	}
 	
 	
@@ -199,8 +212,6 @@ public class Unit {
 	}
 	
 	public boolean isAvailable() {
-		if(cool == null)
-			return true;
 		return Time.isBeforeServerTime(cool);
 	}
 	
@@ -208,17 +219,15 @@ public class Unit {
 		return ptags.contains(tag);
 	}
 	
-	public HashSet<String> getPlanTypes() {
-		return new HashSet<>(ptags);
+	public Set<String> getPlanTypes() {
+		return ptags;
 	}
 	
-	private void setCooldown(String date) {
-		cool = date;
-	}
 	
 	public void setSkin(Skin skin) {
 		unit.addProperty(SRC.Unit.skin, skin==null?null:skin.uid);
 	}
+	
 
 	
 }

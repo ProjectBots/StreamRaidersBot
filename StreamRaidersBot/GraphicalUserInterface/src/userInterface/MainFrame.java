@@ -32,6 +32,8 @@ import otherlib.Logger;
 import otherlib.Options;
 import otherlib.Remaper;
 import include.Guide;
+import include.Http;
+import run.AbstractProfile;
 import run.Manager;
 import run.ProfileType;
 import run.viewer.Viewer;
@@ -452,31 +454,49 @@ public class MainFrame {
 				Logger.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
 		} else {
-			GUI.setText(pspre+cid+"::"+slot+"::capname", raid.get(SRC.Raid.twitchDisplayName));
-			Image img = new Image(raid.get(SRC.Raid.twitchUserImage));
+			GUI.setText(pspre+cid+"::"+slot+"::capname", raid.twitchDisplayName);
+			Image img = new Image(raid.twitchUserImage);
 			img.setUrl(true);
 			img.setSquare(100);
 			try {
 				GUI.setImage(pspre+cid+"::"+slot+"::img", img);
 			} catch (IOException e) {
-				Logger.print("MainFrame -> onUpdateSlot: err=couldnt set image, url="+raid.get(SRC.Raid.twitchUserImage), Logger.general, Logger.error, cid, slot, true);
+				Logger.print("MainFrame -> onUpdateSlot: err=couldnt set profile image, tdn="+raid.twitchDisplayName+", url="+raid.twitchUserImage, Logger.general, Logger.warn, cid, slot, true);
+				
+				//	extracting the image without streamraiders help
+				String link = extractTwitchImage(raid.twitchUserName);
+				if(link == null) {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e1) {}
+					link = extractTwitchImage(raid.twitchUserName);
+				}
+				
+				img = new Image(link);
+				img.setUrl(true);
+				img.setSquare(100);
 				try {
-					img = new Image("data/Other/icon.png");
 					GUI.setImage(pspre+cid+"::"+slot+"::img", img);
 				} catch (IOException e1) {
-					Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set default image", e, Logger.general, Logger.error, cid, slot, true);
+					Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set profile image 2, tdn="+raid.twitchDisplayName+", url1="+raid.twitchUserImage+", url2="+link, e1, Logger.general, Logger.warn, cid, slot, true);
+					try {
+						img = new Image("data/Other/icon.png");
+						img.setSquare(100);
+						GUI.setImage(pspre+cid+"::"+slot+"::img", img);
+					} catch (IOException e2) {
+						Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set default profile image", e, Logger.general, Logger.error, cid, slot, true);
+					}
 				}
 			}
-			GUI.setText(pspre+cid+"::"+slot+"::wins", raid.get(SRC.Raid.pveWins));
-			int loy = Integer.parseInt(raid.get(SRC.Raid.pveLoyaltyLevel));
-			img = new Image("data/LoyaltyPics/" + Viewer.pveloy[loy] + ".png");
+			GUI.setText(pspre+cid+"::"+slot+"::wins", ""+raid.pveWins);
+			img = new Image("data/LoyaltyPics/" + Viewer.pveloy[raid.pveLoyaltyLevel] + ".png");
 			img.setSquare(20);
 			try {
 				GUI.setImage(pspre+cid+"::"+slot+"::loy", img);
 			} catch (IOException e) {
-				Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
+				Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set loy image", e, Logger.general, Logger.error, cid, slot, true);
 			}
-			String cap = raid.get(SRC.Raid.twitchDisplayName);
+			String cap = raid.twitchDisplayName;
 			Integer val = Configs.getCapInt(cid, "(all)", cap, raid.type == RaidType.DUNGEON ? Configs.dungeon : Configs.campaign, Configs.fav);
 			String favPath;
 			String blockPath;
@@ -506,9 +526,10 @@ public class MainFrame {
 			JsonArray cts = Json.parseArr(Options.get("chests"));
 			cts.add("bonechest");
 			cts.add("dungeonchest");
-			String ct = Remaper.map(raid.getFromNode(SRC.MapNode.chestType));
+			cts.add("nochest");
+			String ct = Remaper.map(raid.chestType);
 			if(ct == null || !cts.contains(new JsonPrimitive(ct))) {
-				Logger.print("MainFrame -> updateSlot -> chest_img: err=nochest, ct="+ct, Logger.lowerr, Logger.error, cid, slot, true);
+				Logger.print("MainFrame -> updateSlot: err=couldnt set chest img, ct="+ct, Logger.lowerr, Logger.error, cid, slot, true);
 				ct = "nochest";
 			}
 			img = new Image("data/ChestPics/"+ct+".png");
@@ -573,8 +594,9 @@ public class MainFrame {
 					HashSet<String> loaded = Manager.getLoadedProfiles();
 					for(String cid : Configs.getConfigIds()) {
 						if(loaded.contains(cid)) {
-							for(int i=0; i<5; i++)
-								updateSlotRunning(cid, i, Manager.getViewer(cid).isRunning(i));
+							AbstractProfile<?, ?> p = Manager.getProfile(cid);
+							for(int i=0; i<p.getSlotSize(); i++)
+								updateSlotRunning(cid, i, p.isRunning(i));
 						} else {
 							addFailedProfile(cid, Manager.getProfilePos(cid), null);
 						}
@@ -600,4 +622,22 @@ public class MainFrame {
 		}
 	}
 	
+	
+	private static String extractTwitchImage(String tun) {
+		try {
+			Http get = new Http();
+			get.setUrl("https://www.twitch.tv/"+tun);
+			
+			String page = get.sendGet();
+			
+			int s = page.indexOf("https://static-cdn.jtvnw.net/jtv_user_pictures/");
+			int e = page.indexOf("\"", s);
+			
+			String link = page.substring(s, e);
+			
+			return link;
+		} catch (Exception e) {
+			return null;
+		}
+	}
 }

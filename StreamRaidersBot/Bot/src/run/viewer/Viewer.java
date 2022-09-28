@@ -245,11 +245,11 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 				cnames[i+4] = null;
 				cnames[i+8] = null;
 			} else {
-				cnames[i] = raids[i].get(SRC.Raid.twitchUserName);
-				cnames[i+4] = raids[i].get(SRC.Raid.twitchDisplayName);
+				cnames[i] = raids[i].twitchUserName;
+				cnames[i+4] = raids[i].twitchDisplayName;
 				cnames[i+8] = raids[i].type == RaidType.DUNGEON ? "d" : "c";
 			}
-			Manager.blis().onProfileUpdateSlot(cid, i, raids[i], Configs.isSlotLocked(cid, currentLayer, ""+i), ((RaidSlot) slots[i]).isChange());
+			Manager.blis().onProfileUpdateSlotViewer(cid, i, raids[i], Configs.isSlotLocked(cid, currentLayer, ""+i), ((RaidSlot) slots[i]).isChange());
 		}
 
 		if(vbe != null)
@@ -257,7 +257,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 
 		for(C key : sc) {
 			String k = key.get();
-			Manager.blis().onProfileUpdateCurrency(cid, k, curs.containsKey(k) ? curs.get(k) : 0);
+			Manager.blis().onProfileUpdateCurrency(cid, ProfileType.VIEWER, k, curs.containsKey(k) ? curs.get(k) : 0);
 		}
 		
 	}
@@ -266,7 +266,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 	public void updateVbe(ViewerBackEnd beh) {
 		String proxy = Configs.getStr(cid, currentLayer, Configs.proxyDomainViewer);
 		String user = Configs.getStr(cid, currentLayer, Configs.proxyUserViewer);
-		beh.setOptions(proxy.equals("") ? null : proxy, 
+		beh.setProxyAndUserAgent(proxy.equals("") ? null : proxy, 
 				Configs.getInt(cid, currentLayer, Configs.proxyPortViewer),
 				user.equals("") ? null : user,
 				Configs.getStr(cid, currentLayer, Configs.proxyPassViewer),

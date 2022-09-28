@@ -4,15 +4,19 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.Http.NoConnectionException;
+import include.Json;
+import otherlib.Logger;
 import srlib.SRC;
 import srlib.SRR;
 import srlib.SRR.NotAuthorizedException;
+import srlib.skins.Skins;
 import srlib.Time;
 
 public abstract class AbstractBackEnd<B extends AbstractBackEnd<B>> {
 	
 	protected final String cid;
 	protected final SRR req;
+	protected Skins skins;
 	
 	public SRR getSRR() {
 		return req;
@@ -52,8 +56,27 @@ public abstract class AbstractBackEnd<B extends AbstractBackEnd<B>> {
 		}
 	}
 	
-	
 	public String getViewerUserId() {
 		return req.getViewerUserId();
+	}
+	
+	public boolean redeemProductCode(String code) throws NoConnectionException {
+		JsonObject rpc = Json.parseObj(req.redeemProductCode(code));
+		JsonElement err = rpc.get(SRC.errorMessage);
+		if(err == null || !err.isJsonPrimitive()) {
+			String skin = rpc.getAsJsonObject("data").get("productId").getAsString();
+			try {
+				skins.addSkin(skin);
+			} catch (Exception e) {
+				Logger.printException("AbstractBackEnd -> redeemProductCode: err=failed to add skin, skin="+skin, e, Logger.runerr, Logger.error, cid, null, true);
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	public void setProxyAndUserAgent(String proxyDomain, int proxyPort, String username, String password, String userAgent, boolean mandatory) {
+		req.setProxy(proxyDomain, proxyPort, username, password, mandatory);
+		req.setUserAgent(userAgent);
 	}
 }

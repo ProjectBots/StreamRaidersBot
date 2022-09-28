@@ -71,7 +71,7 @@ public abstract class Slot {
 		new Thread(() -> {
 			while(queue.size() > 0) {
 				final boolean bb = queue.remove(0);
-				Manager.blis().onProfileChangedRunning(cid, slot, bb);
+				Manager.blis().onProfileChangedRunning(cid, p.getType(), slot, bb);
 				if(isRunning == bb)
 					continue;
 				isRunning = bb;
@@ -172,7 +172,7 @@ public abstract class Slot {
 			sleep(w, slot);
 		} else {
 			Logger.print("Viewer -> slotSequence: err=couldn't find wait time", Logger.runerr, Logger.fatal, cid, slot, true);
-			Manager.blis().onProfileChangedRunning(cid, slot, false);
+			Manager.blis().onProfileChangedRunning(cid, p.getType(), slot, false);
 			isRunning = false;
 			isActivelyRunning = false;
 		}
@@ -220,10 +220,10 @@ public abstract class Slot {
 				
 				ms += ss;
 				
-				Manager.blis().onProfileTimerUpdate(cid, slot, ms);
+				Manager.blis().onProfileTimerUpdate(cid, p.getType(), slot, ms);
 				for(int i=0; i<slots.length; i++)
 					if(slots[i].sync == slot)
-						Manager.blis().onProfileTimerUpdate(cid, i, ms);
+						Manager.blis().onProfileTimerUpdate(cid, p.getType(), i, ms);
 				
 				sleep--;
 				

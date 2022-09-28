@@ -2,6 +2,7 @@ package run.viewer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 
@@ -38,12 +39,11 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	private Map[] maps = new Map[4];
 	private Unit[] units;
 	private Store store;
-	private Skins skins;
 	private CaptainData[] caps;
 	private CaptainData[] dunCaps;
 	private Quests quests = new Quests();
 	private Event event = new Event();
-	private Hashtable<String, Long> rts = new Hashtable<>();
+	private HashMap<String, Long> rts = new HashMap<>();
 	private int[] updateTimes = new int[] {10, 1, 5, 30, 15, 10, 60};
 	
 	
@@ -59,10 +59,6 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		updateQuestEventRewards(true);
 	}
 	
-	public void setOptions(String proxyDomain, int proxyPort, String username, String password, String userAgent, boolean mandatory) {
-		req.setProxy(proxyDomain, proxyPort, username, password, mandatory);
-		req.setUserAgent(userAgent);
-	}
 	
 	public void setUpdateTimes(int units, int raids, int maps, int store, int qer, int caps, int skins) {
 		updateTimes[0] = units;
@@ -107,7 +103,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		boolean[] got = new boolean[4];
 		JsonArray rs = jo.getAsJsonArray("data");
 		for(int i=0; i<rs.size(); i++) {
-			final int index = rs.get(i).getAsJsonObject().get(SRC.Raid.userSortIndex).getAsInt();
+			final int index = rs.get(i).getAsJsonObject().get("userSortIndex").getAsInt();
 			raids[index] = new Raid(rs.get(i).getAsJsonObject(), cid, index);
 			got[index] = true;
 		}
@@ -133,12 +129,12 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		userIds.add(0, req.getViewerUserId());
 		
 			
-		JsonObject raidplan = Json.parseObj(req.getRaidPlan(raids[slot].get(SRC.Raid.raidId)));
+		JsonObject raidplan = Json.parseObj(req.getRaidPlan(raids[slot].raidId));
 		if(testUpdate(raidplan))
-			raidplan = Json.parseObj(req.getRaidPlan(raids[slot].get(SRC.Raid.raidId)));
+			raidplan = Json.parseObj(req.getRaidPlan(raids[slot].raidId));
 		
 		JsonElement je = raidplan.get("data");
-		String mapName = raids[slot].get(SRC.Raid.battleground);
+		String mapName = raids[slot].battleground;
 		maps[slot] = new Map(Json.parseObj(req.getMapData(mapName)),
 				raids[slot],
 				(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null),
@@ -282,8 +278,8 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 				loyalty.remove(j);
 				j--;
 			} else {
-				cap.getAsJsonObject().add(SRC.Raid.pveWins, loyalty.get(j).getAsJsonObject().get(SRC.Raid.pveWins));
-				cap.getAsJsonObject().add(SRC.Raid.pveLoyaltyLevel, loyalty.get(j).getAsJsonObject().get(SRC.Raid.pveLoyaltyLevel));
+				cap.getAsJsonObject().add("pveWins", loyalty.get(j).getAsJsonObject().get("pveWins"));
+				cap.getAsJsonObject().add("pveLoyaltyLevel", loyalty.get(j).getAsJsonObject().get("pveLoyaltyLevel"));
 			}
 		}
 		
@@ -336,9 +332,9 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		if(r.type != RaidType.DUNGEON)
 			return;
 		
-		JsonObject rdata = Json.parseObj(req.getUserDungeonInfoForRaid(r.get(SRC.Raid.raidId)));
+		JsonObject rdata = Json.parseObj(req.getUserDungeonInfoForRaid(r.raidId));
 		if(testUpdate(rdata))
-			rdata = Json.parseObj(req.getUserDungeonInfoForRaid(r.get(SRC.Raid.raidId)));
+			rdata = Json.parseObj(req.getUserDungeonInfoForRaid(r.raidId));
 		
 		r.addUserDungeonInfo(rdata.getAsJsonObject("data"));
 	}
@@ -353,13 +349,13 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	
 	public void switchRaid(CaptainData captain, int slot) throws NoConnectionException, NotAuthorizedException {
 		if(raids[slot] != null)
-			remRaid(raids[slot].get(SRC.Raid.captainId));
+			remRaid(raids[slot].captainId);
 		addRaid(captain, ""+slot);
 	}
 	
 	
 	public JsonObject getChest(int slot) throws NoConnectionException, NotAuthorizedException {
-		JsonElement data = Json.parseObj(req.getRaidStatsByUser(raids[slot].get(SRC.Raid.raidId))).get("data");
+		JsonElement data = Json.parseObj(req.getRaidStatsByUser(raids[slot].raidId)).get("data");
 		if(data == null || !data.isJsonObject())
 			return null;
 		return raids[slot].getChest(data.getAsJsonObject());
@@ -434,7 +430,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 				}
 			}
 			
-			JsonArray pmnt = Json.parseArr(r.get(SRC.Raid.placementsSerialized));
+			JsonArray pmnt = Json.parseArr(r.placementsSerialized);
 			if(pmnt != null) 
 				for(int i=0; i<pmnt.size(); i++) 
 					bnd.add(pmnt.get(i).getAsJsonObject().get(SRC.Unit.unitId).getAsString());
@@ -458,7 +454,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	public String placeUnit(int slot, Unit unit, boolean epic, int[] pos, boolean onPlanIcon, Skin overrideSkin) throws NoConnectionException {
-		String atr = req.addToRaid(raids[slot].get(SRC.Raid.raidId),
+		String atr = req.addToRaid(raids[slot].raidId,
 				createPlacementData(unit, epic, maps[slot].getAsSRCoords(epic, pos), onPlanIcon, overrideSkin));
 		
 		try {

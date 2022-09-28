@@ -19,10 +19,11 @@ import me.friwi.jcefmaven.UnsupportedPlatformException;
 import otherlib.Configs;
 import otherlib.Logger;
 import otherlib.Options;
-import otherlib.Logger.DebugEventHandler;
+import otherlib.Logger.LoggerEventHandler;
 import otherlib.Logger.Scope;
 import otherlib.Logger.Type;
 import userInterface.MainFrame;
+import userInterface.RedeemCodes;
 import userInterface.WaitScreen;
 import run.Manager;
 import run.BotListener;
@@ -111,12 +112,12 @@ public class StreamRaiders {
 	
 	public static void main(String[] args) {
 		
-		Logger.setDebugEventHandler(new DebugEventHandler() {
+		Logger.setDebugEventHandler(new LoggerEventHandler() {
 			@Override
 			public void onPrintLine(String pre, String msg, Scope scope, Type type, String cid, Integer slot, boolean forced) {
 				if(scope.equals(Logger.runerr))
 					log((cid == null ? "" : "["+Configs.getPStr(cid, Configs.pname)+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
-				DebugEventHandler.super.onPrintLine(pre, msg, scope, type, cid, slot, forced);
+				LoggerEventHandler.super.onPrintLine(pre, msg, scope, type, cid, slot, forced);
 			}
 			@Override
 			public void onWriteLine(String path, String pre, String msg, Scope scope, Type type, String cid, Integer slot, boolean forced) {
@@ -124,13 +125,13 @@ public class StreamRaiders {
 					log((cid == null ? "" : "["+Configs.getPStr(cid, Configs.pname)+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
 				if(Logger.getSevertyOf(type) > 1 && !msg.contains("couldnt set image"))
 					System.err.println(pre+msg);
-				DebugEventHandler.super.onWriteLine(path, pre, msg, scope, type, cid, slot, forced);
+				LoggerEventHandler.super.onWriteLine(path, pre, msg, scope, type, cid, slot, forced);
 			}
 			@Override
 			public void onPrintException(String pre, String msg, Exception e, Scope scope, Type type, String cid, Integer slot, boolean forced) {
 				if(scope.equals(Logger.runerr))
 					log((cid == null ? "" : "["+Configs.getPStr(cid, Configs.pname)+"] ") + (slot == null ? "" : "["+slot+"] ") + msg);
-				DebugEventHandler.super.onPrintException(pre, msg, e, scope, type, cid, slot, forced);
+				LoggerEventHandler.super.onPrintException(pre, msg, e, scope, type, cid, slot, forced);
 			}
 			@Override
 			public void onWriteException(String path, String pre, String msg, Exception e, Scope scope, Type type, String cid, Integer slot, boolean forced) {
@@ -140,7 +141,7 @@ public class StreamRaiders {
 					System.err.println(pre+msg);
 					e.printStackTrace();
 				}
-				DebugEventHandler.super.onWriteException(path, pre, msg, e, scope, type, cid, slot, forced);
+				LoggerEventHandler.super.onWriteException(path, pre, msg, e, scope, type, cid, slot, forced);
 			}
 		});
 		
@@ -164,8 +165,8 @@ public class StreamRaiders {
 					MainFrame.updateLoadStatus(loaded, failed, total);
 				}
 				@Override
-				public void onProfileLoadComplete(String cid, int pos, ProfileType type) {
-					MainFrame.addLoadedProfile(cid, pos, type);
+				public void onProfileLoadComplete(String cid, int pos, ProfileType pt) {
+					MainFrame.addLoadedProfile(cid, pos, pt);
 				}
 				@Override
 				public void onProfileLoadError(String cid, int pos, Exception e) {
@@ -176,32 +177,36 @@ public class StreamRaiders {
 					MainFrame.remProfile(cid);
 				}
 				@Override
-				public void onProfileSwitchedAccountType(String cid, ProfileType type) {
-					MainFrame.profileSwitchedAccountType(cid, type);
+				public void onProfileSwitchedAccountType(String cid, ProfileType pt) {
+					MainFrame.profileSwitchedAccountType(cid, pt);
 				}
 				@Override
-				public void onProfileChangedRunning(String cid, int slot, boolean run) {
+				public void onProfileChangedRunning(String cid, ProfileType pt, int slot, boolean run) {
 					MainFrame.updateSlotRunning(cid, slot, run);
 				}
 				@Override
-				public void onProfileTimerUpdate(String cid, int slot, String time) {
+				public void onProfileTimerUpdate(String cid, ProfileType pt, int slot, String time) {
 					MainFrame.updateTimer(cid, slot, time);
 				}
 				@Override
-				public void onProfileUpdateCurrency(String cid, String type, int amount) {
+				public void onProfileUpdateCurrency(String cid, ProfileType pt, String type, int amount) {
 					MainFrame.updateCurrency(cid, type, amount);
 				}
 				@Override
-				public void onProfileUpdateGeneral(String cid, String pn, String ln, Color lc) {
+				public void onProfileUpdateGeneral(String cid, ProfileType pt, String pn, String ln, Color lc) {
 					MainFrame.updateGeneral(cid, pn, ln, lc);
 				}
 				@Override
-				public void onProfileUpdateSlot(String cid, int slot, Raid raid, boolean locked, boolean change) {
+				public void onProfileUpdateSlotViewer(String cid, int slot, Raid raid, boolean locked, boolean change) {
 					MainFrame.updateSlot(cid, slot, raid, change);
 				}
 				@Override
-				public void onProfileUpdateSlotSync(String cid, int slot, int slotSyncedTo) {
+				public void onProfileUpdateSlotSync(String cid, ProfileType pt, int slot, int slotSyncedTo) {
 					MainFrame.updateSlotSync(cid, slot, slotSyncedTo != -1);
+				}
+				@Override
+				public void redeemCodesFinished() {
+					RedeemCodes.finished();
 				}
 			});
 		} catch (IniCanceledException e1) {

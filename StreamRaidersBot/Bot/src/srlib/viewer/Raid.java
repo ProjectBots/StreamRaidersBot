@@ -10,7 +10,6 @@ import include.Json;
 import otherlib.Logger;
 import otherlib.Options;
 import srlib.RaidType;
-import srlib.SRC;
 import srlib.Store;
 import srlib.Time;
 
@@ -18,11 +17,71 @@ public class Raid {
 	
 	@Override
 	public String toString() {
-		return get(SRC.Raid.twitchDisplayName);
+		return twitchDisplayName;
 	}
+	//"lastUnitPlacedTime";
+	public final String raidId, nodeType, captainId, chestType, twitchDisplayName, battleground, nodeId,
+						twitchUserImage, twitchUserName, allyBoons, placementsSerialized, users;
+	public final long creationDate, nextUnitPlaceTime;
+	public final boolean battleResult, hasViewedResults, isPlaying, isLive, postBattleComplete, hasRecievedRewards, placementEnded, placedUnit;
+	public final int pveWins, pveLoyaltyLevel, userSortIndex;
+	
+	
+	public Raid(JsonObject raid, String cid, int slot) {
+		this.cid = cid;
+		this.slot = slot;
+		
+		JsonElement je;
+		
+		type = RaidType.parseInt(raid.get("type").getAsInt());
+		
+		this.raidId = raid.get("raidId").getAsString();
+		this.captainId = raid.get("captainId").getAsString();
+		this.twitchDisplayName = raid.get("twitchDisplayName").getAsString();
+		this.battleground = raid.get("battleground").getAsString();
+		this.twitchUserImage = raid.get("twitchUserImage").getAsString();
+		this.twitchUserName = raid.get("twitchUserName").getAsString();
+		je = raid.get("allyBoons");
+		this.allyBoons = je.isJsonPrimitive() ? je.getAsString() : null;
+		je = raid.get("placementsSerialized");
+		this.placementsSerialized = je != null && je.isJsonPrimitive() ? je.getAsString() : null;
+		je = raid.get("users");
+		this.users = je != null && je.isJsonPrimitive() ? je.getAsString() : null;
+		
+		this.creationDate = Time.parse(raid.get("creationDate").getAsString());
+		je = raid.get("lastUnitPlacedTime");
+		this.nextUnitPlaceTime = je != null && je.isJsonPrimitive() ? Time.plus(je.getAsString(), type.placementCooldownDuration) : Time.getServerTime();
+		
+		this.hasViewedResults = raid.get("hasViewedResults").getAsInt() == 1;
+		this.isPlaying = raid.get("isPlaying").getAsInt() == 1;
+		this.isLive = raid.get("isLive").getAsInt() == 1;
+		this.postBattleComplete = raid.get("postBattleComplete").getAsInt() == 1;
+		je = raid.get("battleResult");
+		this.battleResult = je.isJsonPrimitive() && je.getAsBoolean();
 
-	private final JsonObject raid;
-	private final JsonObject node;
+		je = raid.get("hasRecievedRewards");
+		this.hasRecievedRewards = !je.isJsonPrimitive() || je.getAsInt() == 1;
+		this.placementEnded = raid.get("placementEndTime").isJsonPrimitive() || Time.isBeforeServerTime(creationDate + type.raidDuration);
+		this.placedUnit = je.isJsonPrimitive();
+		
+		this.pveWins = raid.get("pveWins").getAsInt();
+		this.pveLoyaltyLevel = raid.get("pveLoyaltyLevel").getAsInt();
+		this.userSortIndex = raid.get("userSortIndex").getAsInt();
+		
+
+		je = raid.get("nodeId");
+		if(je.isJsonPrimitive()) {
+			this.nodeId = je.getAsString();
+			JsonObject node = Json.parseObj(Options.get("mapNodes")).getAsJsonObject(nodeId);
+			this.nodeType = node.get("NodeType").getAsString();
+			this.chestType = node.get("ChestType").getAsString();
+		} else {
+			this.nodeId = null;
+			this.nodeType = null;
+			this.chestType = "nochest";
+		}
+		
+	}
 	
 	private final String cid;
 	private final int slot;
@@ -43,76 +102,24 @@ public class Raid {
 		return userDungeonInfo.deepCopy();
 	}
 	
-	public JsonObject getRaidJsonObject() {
-		return raid;
-	}
-	
-	public String getFromNode(String con) {
-		if(node == null) return null;
-		return node.get(con).getAsString();
-	}
-	
-	
-	public Raid(JsonObject raid, String cid, int slot) {
-		this.raid = raid;
-		this.slot = slot;
-		this.node = Json.parseObj(Options.get("mapNodes")).getAsJsonObject(get(SRC.Raid.nodeId));
-		this.cid = cid;
-
-		String nodeId = raid.get(SRC.Raid.nodeId).getAsString();
-		if(nodeId.contains("dungeon"))
-			type = RaidType.DUNGEON;
-		else if(nodeId.contains("pvp") || nodeId.contains("calibration"))
-			type = RaidType.VERSUS;
-		else
-			type = RaidType.CAMPAIGN;
-		
-	}
-	
-	public String get(String con) {
-		try {
-			if(con.equals(SRC.Raid.users)) 
-				return raid.getAsJsonArray(con).toString();
-			return raid.get(con).getAsString();
-		} catch (ClassCastException | NullPointerException | UnsupportedOperationException e) {
-			return null;
-		}
-	}
-	
 	public boolean isSwitchable(int treshold) {
-		JsonElement je = raid.get(SRC.Raid.lastUnitPlacedTime);
-		if(je.isJsonNull())
+		if(!placedUnit)
 			return true;
 		return isOffline(false, treshold);
 	}
 	
 	public boolean isOffline(boolean whenNotLive, int treshold) {
-		String hvr = get(SRC.Raid.hasViewedResults);
-		String hrr = get(SRC.Raid.hasRecievedRewards);
-		String ip = get(SRC.Raid.isPlaying);
-		String il = get(SRC.Raid.isLive);
-		ifc:
-		if(hvr != null && hrr != null && ip != null && il != null) {
-			if(!hvr.contains("1")) break ifc;
-			if(!hrr.contains("1")) break ifc;
-			if(!(ip.contains("0") || (whenNotLive && il.contains("0")))) break ifc;
+		if(hasRecievedRewards && (!isPlaying || (whenNotLive && !isLive)))
 			return true;
-		}
+		
 		if(treshold == -1) 
 			return false;
 		
-		return Time.isBeforeServerTime(Time.plus(get(SRC.Raid.creationDate), (get(SRC.Raid.nodeId).contains("dungeon") ? 6*60 : 30*60) + treshold));
+		return Time.isBeforeServerTime(creationDate + type.raidDuration + treshold);
 	}
 	
 	public boolean isReward() {
-		JsonElement pbc = raid.get("postBattleComplete");
-		JsonElement hrr = raid.get("hasRecievedRewards");
-		if(pbc == null || !pbc.isJsonPrimitive() || hrr == null || !hrr.isJsonPrimitive()) return false;
-		
-		if(!pbc.getAsString().contains("1")) return false;
-		if(!hrr.getAsString().contains("0")) return false;
-		
-		return true;
+		return battleResult && !hasRecievedRewards;
 	}
 	
 	private static final String[][] AWARDED_REWARDS = new String[][] {
@@ -205,22 +212,11 @@ public class Raid {
 	}
 	
 	
-	public boolean canPlaceUnit(long serverTime) {
-		if(raid.get(SRC.Raid.endTime).isJsonPrimitive()) return false;
-		if(raid.get(SRC.Raid.startTime).isJsonPrimitive()) return false;
-
-		JsonElement date = raid.get(SRC.Raid.lastUnitPlacedTime);
-		if(date.isJsonPrimitive()) 
-			if(Time.isAfterServerTime(Time.plus(date.getAsString(), type.placementCooldownDuration)))
-				return false;
-
-		if(Time.isBeforeServerTime(Time.plus(raid.get(SRC.Raid.creationDate).getAsString(), type.raidDuration))) 
-			return false;
-
-		if(Time.isAfterServerTime(Time.plus(raid.get(SRC.Raid.creationDate).getAsString(), type.planningPeriodDuration)))
-			return false;
-		
-		return true;
+	public boolean canPlaceUnit() {
+		return !placementEnded
+				&& Time.isBeforeServerTime(nextUnitPlaceTime)
+				&& Time.isAfterServerTime(creationDate + type.raidDuration)
+				&& Time.isBeforeServerTime(creationDate + type.planningPeriodDuration);
 	}
 	
 

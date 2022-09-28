@@ -440,6 +440,75 @@ public class Manager {
 	}
 	
 	
+	private static int redeemCodesAllRemaining;
+	private static Object redeemCodesAllRemainingLock = new Object();
+	
+	/**
+	 * redeems one or multiple codes<br>
+	 * this function is <b>NOT</b> multi thread safe<br>
+	 * do not use any other function while this one is running<br>
+	 * codes have to be in this format: XXXX-XXXX-XXXX
+	 * @param codes
+	 */
+	public static void redeemCodesAll(String... codes) {
+		synchronized(redeemCodesAllRemainingLock) {
+			redeemCodesAllRemaining = profiles.size();
+		}
+		for(String cid : profiles.keySet()) {
+			new Thread(() -> {
+				AbstractProfile<?, ?> p = getProfile(cid);
+				try {
+					redeemCodes(p, codes);
+					if(Configs.getPBoo(cid, Configs.canCaptain))
+						redeemCodesSwitchProfileType(p, codes);
+				} catch (Exception e) {
+					Logger.printException("Manager -> redeemCodeAll: err=failed to redeem code", e, Logger.runerr, Logger.error, p.cid, null, true);
+				}
+				synchronized(redeemCodesAllRemainingLock) {
+					if(--redeemCodesAllRemaining == 0)
+						blis.redeemCodesFinished();
+				}
+			}).start();
+		}
+	}
+	
+	private static void redeemCodes(AbstractProfile<?, ?> p, String[] codes) throws Exception {
+		switch (p.getType()) {
+		case CAPTAIN:
+			Captain c = p.getAsCaptain();
+			c.useBackEnd(cbe -> {
+				for(int i=0; i<codes.length; i++)
+					if(!cbe.redeemProductCode(codes[i]))
+						Logger.print("Manager -> redeemCodes: err=failed to redeem, code="+codes[i], Logger.runerr, Logger.error, p.cid, null, true);
+			});
+			break;
+		case VIEWER:
+			Viewer v = p.getAsViewer();
+			v.useBackEnd(vbe -> {
+				for(int i=0; i<codes.length; i++)
+					vbe.redeemProductCode(codes[i]);
+			});
+			break;
+		}
+	}
+	
+	private static void redeemCodesSwitchProfileType(AbstractProfile<?, ?> p, String[] codes) throws Exception {
+		boolean[] wereRunning = new boolean[p.slots.length];
+		for(int i=0; i<p.slots.length; i++)
+			wereRunning[i] = p.isRunning(i);
+		
+		switchProfileType(p.cid);
+		p = getProfile(p.cid);
+		
+		redeemCodes(p, codes);
+		
+		switchProfileType(p.cid);
+		p = getProfile(p.cid);
+		
+		for(int i=0; i<p.slots.length; i++)
+			p.setRunning(i, wereRunning[i]);
+	}
+	
 	
 	/**
 	 * updates every Profile

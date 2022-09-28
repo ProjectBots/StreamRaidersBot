@@ -81,7 +81,7 @@ public class Map {
 			}
 		}
 		
-		updateMap(mapData, Json.parseArr(raid.get(SRC.Raid.placementsSerialized)), Json.parseArr(raid.get(SRC.Raid.users)), plan, userIds);
+		updateMap(mapData, Json.parseArr(raid.placementsSerialized), Json.parseArr(raid.users), plan, userIds);
 	}
 	
 	public double[] getAsSRCoords(boolean epic, int[] coords) {

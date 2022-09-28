@@ -135,7 +135,7 @@ public class Logger {
 		}
 	}
 	
-	public static interface DebugEventHandler {
+	public static interface LoggerEventHandler {
 		public default void onPrintLine(String pre, String msg, Scope scope, Type type, String cid, Integer slot, boolean forced) {
 			System.out.println(concat(pre, msg));
 		};
@@ -158,9 +158,9 @@ public class Logger {
 		};
 	}
 	
-	private static DebugEventHandler deh = new DebugEventHandler() {};
+	private static LoggerEventHandler deh = new LoggerEventHandler() {};
 	
-	public static void setDebugEventHandler(DebugEventHandler deh) {
+	public static void setDebugEventHandler(LoggerEventHandler deh) {
 		Logger.deh = deh;
 	}
 	

@@ -3,6 +3,7 @@ package userInterface;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.time.LocalDateTime;
@@ -20,24 +21,42 @@ import include.GUI.Button;
 import include.GUI.Container;
 import include.GUI.Label;
 import include.GUI.TextField;
+import include.GUI.WinLis;
 import otherlib.Configs;
 import run.Manager;
 import run.ProfileType;
 
 public class GlobalOptions {
 
-	
-	public static final String pre = "GlobalOptions::";
-	
 	private final String uid = UUID.randomUUID().toString()+"::";
+	
+	private static GUI gui = null;
 	
 	public void open() {
 		
+		if(gui != null)
+			gui.close();
+		
 		int p = 0;
 		
-		GUI gui = new GUI("Global Settings", 400, 500, MainFrame.getGUI(), null);
-		
+		gui = new GUI("Global Settings", 400, 500, MainFrame.getGUI(), null);
 		gui.setBackgroundGradient(Colors.getGradient("stngs global background"));
+		
+		gui.addWinLis(new WinLis() {
+			@Override
+			public void onIconfied(WindowEvent e) {}
+			@Override
+			public void onFocusLost(WindowEvent e) {}
+			@Override
+			public void onFocusGained(WindowEvent e) {}
+			@Override
+			public void onDeIconfied(WindowEvent e) {}
+			@Override
+			public void onClose(WindowEvent e) {
+				gui = null;
+			}
+		});
+		
 		
 		Button bumr = new Button();
 		bumr.setPos(0, p++);
@@ -72,6 +91,19 @@ public class GlobalOptions {
 			}
 		});
 		gui.addBut(bncc, uid+"ncc");
+		
+		Button brc = new Button();
+		brc.setPos(0, p++);
+		brc.setText("Redeem Codes");
+		brc.setGradient(Colors.getGradient("stngs global buttons def"));
+		brc.setForeground(Colors.getColor("stngs global buttons def"));
+		brc.setAL(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new RedeemCodes().open();
+			}
+		});
+		gui.addBut(brc);
 		
 		
 		Button bfumbud = new Button();

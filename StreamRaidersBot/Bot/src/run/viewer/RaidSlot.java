@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -109,12 +110,12 @@ public class RaidSlot extends Slot {
 			return;
 		}
 
-		String placeSer = r.get(SRC.Raid.placementsSerialized);
-		if(!r.canPlaceUnit(Time.getServerTime())) {
+		if(!r.canPlaceUnit()) {
 			Logger.print("can not place, reason=can not place unit", Logger.place, Logger.info, cid, slot);
 			return;
 		}
-		
+
+		String placeSer = r.placementsSerialized;
 		if(Configs.getInt(cid, currentLayer, Configs.maxUnitPerRaidViewer) < (placeSer == null 
 																					? 0 
 																					: placeSer.split(vbe.getViewerUserId()).length-1)) {
@@ -129,12 +130,12 @@ public class RaidSlot extends Slot {
 			return;
 		}
 		
-		String tdn = r.get(SRC.Raid.twitchDisplayName);
+		String tdn = r.twitchDisplayName;
 		Boolean ic = Configs.getCapBoo(cid, currentLayer, tdn, dungeon ? Configs.dungeon : Configs.campaign, Configs.ic);
 		if(ic == null)
 			ic = false;
 		
-		String ct = r.getFromNode(SRC.MapNode.chestType);
+		String ct = r.chestType;
 		if(ct == null) {
 			Logger.print("can not place, reason=ct is null", Logger.place, Logger.info, cid, slot);
 			return;
@@ -152,8 +153,8 @@ public class RaidSlot extends Slot {
 		int maxTimeLeft = Configs.getChestInt(cid, currentLayer, ct, Configs.maxTimeViewer);
 		int minTimeLeft = Configs.getChestInt(cid, currentLayer, ct, Configs.minTimeViewer);
 		
-		if(((!ic && Time.isAfterServerTime(Time.plus(r.get(SRC.Raid.creationDate), r.type.raidDuration - maxTimeLeft))))
-				|| (!ic && Time.isBeforeServerTime(Time.plus(r.get(SRC.Raid.creationDate), r.type.raidDuration - minTimeLeft)))){
+		if(((!ic && Time.isAfterServerTime(r.creationDate + r.type.raidDuration - maxTimeLeft)))
+				|| (!ic && Time.isBeforeServerTime(r.creationDate + r.type.raidDuration - minTimeLeft))) {
 			Logger.print("can not place, reason=time mismatch", Logger.place, Logger.info, cid, slot);
 			return;
 		}
@@ -171,7 +172,7 @@ public class RaidSlot extends Slot {
 		} else {
 			Integer potionsc = vbe.getCurrency(Store.potions, true);
 			epic = potionsc == null ? false : (potionsc >= 45);
-			loy = Integer.parseInt(r.get(SRC.Raid.pveWins));
+			loy = r.pveWins;
 		}
 		
 		
@@ -194,10 +195,9 @@ public class RaidSlot extends Slot {
 		
 		boolean dunNeeded = false;
 		if(dungeon) {
-			long start = Time.plus(r.get(SRC.Raid.creationDate), 60);
 			long now = Time.getServerTime();
 			
-			long timeElapsed = now - start - RaidType.DUNGEON.planningPeriodDuration;
+			long timeElapsed = now - r.creationDate - RaidType.DUNGEON.planningPeriodDuration;
 			double timePercentage = (100.0 * timeElapsed) / (RaidType.DUNGEON.raidDuration - RaidType.DUNGEON.planningPeriodDuration);
 			
 			double mp = map.mapPower;
@@ -222,7 +222,7 @@ public class RaidSlot extends Slot {
 		ArrayList<String> neededUnits = vbe.getNeededUnitTypesForQuests();
 		
 		if(Configs.getBoolean(cid, currentLayer, Configs.preferRoguesOnTreasureMapsViewer) 
-			&& r.getFromNode(SRC.MapNode.nodeType).contains("treasure")
+			&& r.nodeType.contains("treasure")
 			) {
 			neededUnits.add("rogue");
 			neededUnits.add("flyingarcher");
@@ -236,8 +236,8 @@ public class RaidSlot extends Slot {
 			if(Options.is("exploits") && Configs.getBoolean(cid, currentLayer, Configs.useMultiPlaceExploitViewer)) {
 				goMultiPlace = false;
 				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
-					final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, r.getFromNode(SRC.MapNode.chestType),
-							Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.get(SRC.Raid.twitchDisplayName)), vbe.getSkins(), r.get(SRC.Raid.captainId));
+					final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, r.chestType,
+							Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.twitchDisplayName), vbe.getSkins(), r.captainId);
 					if(pla == null)
 						continue;
 					bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
@@ -262,9 +262,9 @@ public class RaidSlot extends Slot {
 				} catch (InterruptedException e) {}
 				break;
 			} else {
-				final String node = Remaper.map(r.getFromNode(SRC.MapNode.chestType));
+				final String node = Remaper.map(r.chestType);
 				final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, node,
-						Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.get(SRC.Raid.twitchDisplayName)), vbe.getSkins(), r.get(SRC.Raid.captainId));
+						Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.twitchDisplayName), vbe.getSkins(), r.captainId);
 				
 
 				if(pla == null) {
@@ -307,7 +307,7 @@ public class RaidSlot extends Slot {
 					continue;
 				}
 				
-				Logger.print("RaidSlot (viewer) -> place: tdn="+r.toString()+" err="+err, Logger.lowerr, Logger.error, cid, slot, true);
+				Logger.print("RaidSlot (viewer) -> place: tdn="+r.toString()+", pla="+pla.toString()+", err="+err, Logger.lowerr, Logger.error, cid, slot, true);
 				break;
 			}
 			
@@ -396,7 +396,7 @@ public class RaidSlot extends Slot {
 			int np = -1;
 			int ep = -1;
 			
-			HashSet<String> pts = units[i].getPlanTypes();
+			HashSet<String> pts = new HashSet<>(units[i].getPlanTypes());
 			pts.remove("vibe");
 			for(String pt : pts) {
 				if(eupts.contains(pt))
@@ -495,11 +495,13 @@ public class RaidSlot extends Slot {
 				
 				final Unit u = prios[p].unit;
 				
-				HashSet<String> pts = null;
+				Set<String> pts = null;
 				if(i<2) {
 					pts = u.getPlanTypes();
-					if(!prios[p].vs[i])
+					if(!prios[p].vs[i]) {
+						pts = new HashSet<>(pts);
 						pts.remove("vibe");
+					}
 				}
 
 				Logger.print("inner 2", Logger.place, Logger.info, cid, slot);
@@ -580,13 +582,13 @@ public class RaidSlot extends Slot {
 		if(!r.isSwitchable(Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer)))
 			return;
 
-		String tdn = r.get(SRC.Raid.twitchDisplayName);
+		String tdn = r.twitchDisplayName;
 		if(r.type == RaidType.VERSUS) {
 			switchCap(vbe, dungeon, r, tdn, noCap, first);
 			return;
 		}
 		
-		String ct = r.getFromNode(SRC.MapNode.chestType);
+		String ct = r.chestType;
 		if(ct == null) {
 			switchCap(vbe, dungeon, r, tdn, noCap, first);
 			return;
@@ -602,7 +604,7 @@ public class RaidSlot extends Slot {
 		Integer fav = Configs.getCapInt(cid, currentLayer, tdn, list, Configs.fav);
 		fav = fav == null ? 0 : fav;
 		
-		int loy = dungeon ? (r.get(SRC.Raid.allyBoons)+",").split(",").length : Integer.parseInt(r.get(SRC.Raid.pveWins));
+		int loy = dungeon ? (r.allyBoons+",").split(",").length : r.pveWins;
 		
 		Integer maxLoy = Configs.getChestInt(cid, currentLayer, ct, Configs.maxLoyViewer);
 		Integer minLoy = Configs.getChestInt(cid, currentLayer, ct, Configs.minLoyViewer);
@@ -621,7 +623,7 @@ public class RaidSlot extends Slot {
 			maxLoy = Integer.MAX_VALUE;
 			
 		
-		JsonArray users = Json.parseArr(r.get(SRC.Raid.users));
+		JsonArray users = Json.parseArr(r.users);
 		if(users != null) {
 			String vid = vbe.getViewerUserId();
 			for(int i=0; i<users.size(); i++)
@@ -633,8 +635,8 @@ public class RaidSlot extends Slot {
 		
 		if((dungeon ^ (r.type == RaidType.DUNGEON))
 			|| r.isOffline(il, Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer))
-			|| (!ic && Time.isBeforeServerTime(Time.plus(r.get(SRC.Raid.creationDate), r.type.raidDuration - minTimeLeft)))
-			|| (!ic && Time.isAfterServerTime(Time.plus(r.get(SRC.Raid.creationDate), r.type.raidDuration - maxTimeLeft)))
+			|| (!ic && Time.isBeforeServerTime(r.creationDate + r.type.raidDuration - minTimeLeft))
+			|| (!ic && Time.isAfterServerTime(r.creationDate + r.type.raidDuration - maxTimeLeft))
 			|| (!ic && !enabled)
 			|| (!ic && (loy < minLoy || loy > maxLoy))
 			|| fav < 0
@@ -689,11 +691,10 @@ public class RaidSlot extends Slot {
 		long now = Time.getServerTime();
 		
 		if(!(r == null || disname == null)) {
-			long start = Time.parse(r.get(SRC.Raid.creationDate));
-			if(now - (start + r.type.raidDuration - 120) > 0)
+			if(now - (r.creationDate + r.type.raidDuration - 120) > 0)
 				v.bannedCaps.put(disname, now + 3*60);
 			else
-				v.bannedCaps.put(disname, start + r.type.raidDuration + 3*60);
+				v.bannedCaps.put(disname, r.creationDate + r.type.raidDuration + 3*60);
 			Logger.print("blocked " + disname, Logger.caps, Logger.info, cid, slot);
 		}
 		
@@ -719,7 +720,7 @@ public class RaidSlot extends Slot {
 		for(Raid raid : all) {
 			if(raid == null)
 				continue;
-			otherCaps.add(raid.get(SRC.Raid.twitchDisplayName));
+			otherCaps.add(raid.twitchDisplayName);
 		}
 		
 		

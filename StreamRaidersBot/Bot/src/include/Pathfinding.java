@@ -65,11 +65,11 @@ public class Pathfinding {
 		
 		int[] last = null;
 		
-		int c = 1;
+		int c = 0;
 		
 		while(true) {
 			
-			if(++c % 500 == 0)
+			if(c++ % 500 == 0)
 				Logger.print("Pathfinding search " + c, Logger.loop, Logger.info, cid, slot);
 			
 			

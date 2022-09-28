@@ -38,6 +38,8 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 
 	public final String cid;
 	private B be_;
+	@SuppressWarnings("rawtypes")
+	private Class<? extends AbstractBackEnd> be_class;
 	private ProfileType ptype;
 	protected UpdateEventListener<B> uelis = null;
 	protected String currentLayer = "(default)";
@@ -57,8 +59,13 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 		return currentLayer;
 	}
 	
+	public int getSlotSize() {
+		return slots.length;
+	}
+	
 	public AbstractProfile(String cid, B be, ProfileType ptype, int slotSize) {
 		this.be_ = be;
+		this.be_class = be_.getClass();
 		this.cid = cid;
 		this.ptype = ptype;
 		slots = new Slot[slotSize];
@@ -92,7 +99,7 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 			currentBEUses++;
 			if(be_ == null) {
 				try {
-					be_ = (B) Json.toObj(Json.parseObj(NEF.read("data/temp/"+cid+".srb.json")), be_.getClass());
+					be_ = (B) Json.toObj(Json.parseObj(NEF.read("data/temp/"+cid+".srb.json")), be_class);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -145,8 +152,11 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 		try {
 			SRR req = be_.getSRR();
 			JsonElement status = Json.parseObj(req.switchUserAccountType()).get("status");
-			if(!status.isJsonPrimitive() && status.getAsString().equals("success"))
+			if(!status.isJsonPrimitive() || !status.getAsString().equals("success"))
 				return null;
+			
+			req.reload();
+			
 			switch(ptype) {
 			case CAPTAIN:
 				return (T) new Viewer(cid, req);
@@ -207,7 +217,7 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 			}
 		}
 		
-		Manager.blis().onProfileUpdateGeneral(cid,
+		Manager.blis().onProfileUpdateGeneral(cid, ptype,
 				Configs.getPStr(cid, Configs.pname),
 				Configs.getStr(cid, currentLayer, ptype == ProfileType.VIEWER ? Configs.lnameViewer : Configs.lnameCaptain),
 				new Color(Configs.getInt(cid, currentLayer, ptype == ProfileType.VIEWER ? Configs.colorViewer : Configs.colorCaptain)));
@@ -235,7 +245,7 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 				continue;
 
 			slots[s].sync(sync);
-			Manager.blis().onProfileUpdateSlotSync(cid, s, sync);
+			Manager.blis().onProfileUpdateSlotSync(cid, ptype, s, sync);
 			
 			if(sync == -1) {
 				//	starts the slot if the slot it was synced to was running
@@ -258,7 +268,4 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 			}
 		}
 	}
-	
-	
-	
 }

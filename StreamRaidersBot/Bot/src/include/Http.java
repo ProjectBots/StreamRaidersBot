@@ -16,6 +16,8 @@ import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -127,7 +129,8 @@ public class Http {
 	
 	
 	private CloseableHttpClient getClient() {
-		HttpClientBuilder builder = HttpClients.custom();
+		HttpClientBuilder builder = HttpClients.custom()
+				.setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build());
 		if(proxyDomain != null) {
 			builder.setProxy(new HttpHost(proxyDomain, proxyPort));
 			if(proxyUser != null) {

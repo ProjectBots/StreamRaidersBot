@@ -12,12 +12,13 @@ public class CaptainData {
 	public final RaidType type;
 
 	public CaptainData(JsonObject cap) {
+		
 		this.isLive = cap.get("isLive").getAsInt() == 1;
 		this.isPlaying = cap.get("isPlaying").getAsInt() == 1;
 		this.twitchDisplayName = cap.get("twitchDisplayName").getAsString();
 		this.twitchUserImage = cap.get("twitchUserImage").getAsString();
 		this.twitchUserName = cap.get("twitchUserName").getAsString();
-		this.captainId = cap.get("captainId").getAsString();
+		this.captainId = cap.get("userId").getAsString();
 		this.pveWins = cap.get("pveWins").getAsInt();
 		this.pveLoyaltyLevel = cap.get("pveLoyaltyLevel").getAsInt();
 		this.type = RaidType.parseInt(cap.get("type").getAsInt());

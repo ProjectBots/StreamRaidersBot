@@ -82,7 +82,7 @@ public class CapSearch {
 				for(int i=0; i<caps.size(); i++) {
 					JsonObject cap = caps.get(i).getAsJsonObject();
 					
-					String tdn = cap.get(SRC.Raid.twitchDisplayName).getAsString();
+					String tdn = cap.get("twitchDisplayName").getAsString();
 					Integer val = Configs.getCapInt(cid, lay, tdn, list, Configs.fav);
 					
 					Label sl = new Label();

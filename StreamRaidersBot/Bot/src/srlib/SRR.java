@@ -503,4 +503,11 @@ public class SRR {
 	public String getOpenCountTrackedChests() throws NoConnectionException {
 		return sendPost(getPost("getOpenCountTrackedChests"));
 	}
+	
+	public String redeemProductCode(String code) throws NoConnectionException {
+		Http post = getPost("redeemProductCode");
+		post.addEncArg("actionSource", "store_cta");
+		post.addEncArg("code", code);
+		return sendPost(post);
+	}
 }

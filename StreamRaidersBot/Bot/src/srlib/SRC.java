@@ -22,51 +22,11 @@ public class SRC {
 		public static final String isOther = "isOther";
 	}
 	
-	public static class MapNode {
-		public static final String chestType = "ChestType";
-		public static final String isMystery = "IsMystery";
-		public static final String nodeDifficulty = "NodeDifficulty";
-		public static final String nodeType = "NodeType";
-	}
-
 	public static class Store {
 		public static final String dungeon = "Dungeon";
 		public static final String event = "Event";
 		public static final String bones = "Bones";
 	}
-	
-	public static class Raid {
-		public static final String raidId = "raidId";
-		public static final String captainId = "captainId";
-		public static final String lastUnitPlacedTime = "lastUnitPlacedTime";
-		public static final String hasViewedResults = "hasViewedResults";
-		public static final String userSortIndex = "userSortIndex";
-		public static final String chestAwarded = "chestAwarded";
-		public static final String twitchDisplayName = "twitchDisplayName";
-		public static final String isPlaying = "isPlaying";
-		public static final String isLive = "isLive";
-		public static final String creationDate = "creationDate";
-		public static final String startTime = "startTime";
-		public static final String battleground = "battleground";
-		public static final String endTime = "endTime";
-		public static final String battleResult = "battleResult";
-		public static final String goldAwarded = "goldAwarded";
-		public static final String rewards = "rewards";
-		public static final String postBattleComplete = "postBattleComplete";
-		public static final String placementEndTime = "placementEndTime";
-		public static final String hasRecievedRewards = "hasRecievedRewards";
-		public static final String placementCount = "placementCount";
-		public static final String placementsSerialized = "placementsSerialized";
-		public static final String users = "users";
-		public static final String pveWins = "pveWins";
-		public static final String pveLoyaltyLevel = "pveLoyaltyLevel";
-		public static final String nodeId = "nodeId";
-		public static final String twitchUserImage = "twitchUserImage";
-		public static final String twitchUserName = "twitchUserName";
-		public static final String dungeonStreak = "dungeonStreak";
-		public static final String allyBoons = "allyBoons";
-	}
-	
 	
 	public static class Helper {
 		public static final int canPlaceUnit = 0;
