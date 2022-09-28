@@ -9,7 +9,6 @@ import java.awt.geom.AffineTransform;
 import java.util.Hashtable;
 import com.google.gson.JsonObject;
 
-import include.GUI;
 import include.GUI.Container;
 import include.GUI.Image;
 import include.GUI.Label;
@@ -18,6 +17,7 @@ import include.GUI.TextArea;
 import include.Http.NoConnectionException;
 import otherlib.Configs;
 import otherlib.Logger;
+import otherlib.Ressources;
 import run.viewer.Viewer;
 import run.viewer.ViewerBackEnd;
 import srlib.SRC;
@@ -187,7 +187,8 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.Vie
 				name.setForeground(Colors.getColor("VIEWER stats labels"));
 				uc.addLabel(name);
 				
-				Image img = new Image("data/UnitPics/" + type.replace("allies", "") + ".png");
+				Image img = null;
+				img = new Image(Ressources.get("UnitPics/" + type.replace("allies", ""), java.awt.Image.class));
 				img.setPos(0, 1);
 				img.setSquare(80);
 				img.setAnchor("c");

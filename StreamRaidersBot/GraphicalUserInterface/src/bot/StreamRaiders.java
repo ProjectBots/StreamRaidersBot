@@ -4,7 +4,11 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+
+import javax.imageio.ImageIO;
 
 import com.google.gson.JsonObject;
 
@@ -19,6 +23,8 @@ import me.friwi.jcefmaven.UnsupportedPlatformException;
 import otherlib.Configs;
 import otherlib.Logger;
 import otherlib.Options;
+import otherlib.Ressources;
+import otherlib.Ressources.Ressource;
 import otherlib.Logger.LoggerEventHandler;
 import otherlib.Logger.Scope;
 import otherlib.Logger.Type;
@@ -71,7 +77,7 @@ public class StreamRaiders {
 					error_count = 0;
 				}
 			});
-			err.addImage(new Image("data/Other/error.png"));
+			err.addImage(new Image(Ressources.get("Other/error", java.awt.Image.class)));
 			Label l = new Label();
 			l.setPos(1, error_count++);
 			l.setText("<html>see logs.txt for more informations</html>");
@@ -216,6 +222,40 @@ public class StreamRaiders {
 		}
 		configLoaded = true;
 		
+		
+		Ressources.addCategory(java.awt.Image.class, p -> {
+			try {
+				return new Ressource<java.awt.Image>(ImageIO.read(new URL(p)), System.currentTimeMillis()+5*60*1000);
+			} catch (IOException e) {
+				throw new RuntimeException("Couldn't get image", e);
+			}
+		});
+		
+		try {
+			for(String s : "ChestPics LoyaltyPics Other UnitPics".split(" ")) {
+				File folder = new File("data/"+s);
+				if(!folder.exists() || !folder.isDirectory())
+					continue;
+				File[] files = folder.listFiles((f) -> {
+					return f.getName().endsWith(".png");
+				});
+				
+				String[] paths = new String[files.length];
+				java.awt.Image[] items = new java.awt.Image[files.length];
+				long[] keepUntil = new long[files.length];
+				
+				for(int i=0; i<files.length; i++) {
+					String name = files[i].getName();
+					paths[i] = s+"/"+name.substring(0, name.lastIndexOf('.'));
+					items[i] = ImageIO.read(files[i]);
+					keepUntil[i] = -1;
+				}
+				
+				Ressources.addItems(java.awt.Image.class, paths, items, keepUntil);
+			}
+		} catch (IOException e) {
+			Logger.printException("err=Couldnt load images", e, Logger.runerr, Logger.error, null, null, true);
+		}
 		
 		if(!Options.is("no_browser")) {
 			WaitScreen.setText("Initialize Browser");

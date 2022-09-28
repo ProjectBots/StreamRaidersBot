@@ -30,6 +30,7 @@ import include.GUI.Label;
 import include.GUI.TextField;
 import otherlib.Configs;
 import otherlib.Options;
+import otherlib.Ressources;
 import otherlib.Configs.UniInt;
 import otherlib.Configs.UniStr;
 import run.ProfileType;
@@ -280,11 +281,11 @@ public class UnitSettings extends AbstractSettings {
 	
 	private int unitStartPos;
 	
-	//private void addUnit(final String uId, final String name, final String type, final boolean canSpec, final int g) {
 	private void addUnit(final U u, final int g) {
 		int p = 0;
 		
-		Image upic = new Image("data/UnitPics/"+u.type.replace("allies", "")+".png");
+		Image upic = null;
+		upic = new Image(Ressources.get("UnitPics/"+u.type.replace("allies", ""), java.awt.Image.class));
 		upic.setPos(p++, g);
 		upic.setSquare(18);
 		gui.addImage(upic);
@@ -481,9 +482,9 @@ public class UnitSettings extends AbstractSettings {
 			final String id = uid+u.uId+"::chests::"+s;
 			
 			int m = StringUtils.countMatches(val, s+",");
-			
 			Container cimg = new Container();
-			Image img = new Image("data/ChestPics/"+s+".png");
+			Image img = null;
+			img = new Image(Ressources.get("ChestPics/"+s, java.awt.Image.class));
 			img.setSquare(18);
 			cimg.addImage(img);
 			

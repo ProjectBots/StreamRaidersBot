@@ -31,6 +31,7 @@ import otherlib.Configs;
 import otherlib.Logger;
 import otherlib.Options;
 import otherlib.Remaper;
+import otherlib.Ressources;
 import include.Guide;
 import include.Http;
 import run.AbstractProfile;
@@ -427,42 +428,34 @@ public class MainFrame {
 
 		if(raid == null) {
 			GUI.setText(pspre+cid+"::"+slot+"::capname", "????????");
-			Image img = new Image("data/Other/icon.png");
-			img.setSquare(100);
 			try {
-				GUI.setImage(pspre+cid+"::"+slot+"::img", img);
+				setImage("Other/icon", 100, pspre+cid+"::"+slot+"::img");
 			} catch (IOException e) {
-				Logger.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
+				Logger.printException("MainFrame -> onUpdateSlot: raid=null, err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
 			GUI.setText(pspre+cid+"::"+slot+"::wins", "??");
-			img = new Image("data/LoyaltyPics/noloy.png");
-			img.setSquare(20);
 			try {
-				GUI.setImage(pspre+cid+"::"+slot+"::loy", img);
+				setImage("LoyaltyPics/noloy", 20, pspre+cid+"::"+slot+"::loy");
 			} catch (IOException e) {
-				Logger.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
+				Logger.printException("MainFrame -> onUpdateSlot: raid=null, err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
 			GUI.setGradient(pspre+cid+"::"+slot+"::block", Colors.getGradient("main buttons def"));
 			GUI.setForeground(pspre+cid+"::"+slot+"::block", Colors.getColor("main buttons def"));
 			GUI.setGradient(pspre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons def"));
 			GUI.setForeground(pspre+cid+"::"+slot+"::fav", Colors.getColor("main buttons def"));
-			img = new Image("data/ChestPics/nochest.png");
-			img.setSquare(25);
 			try {
-				GUI.setImage(pspre+cid+"::"+slot+"::chest", img);
+				setImage("ChestPics/nochest", 25, pspre+cid+"::"+slot+"::chest");
 			} catch (IOException e) {
-				Logger.printException("MainFrame -> onSlotEmpty: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
+				Logger.printException("MainFrame -> onUpdateSlot: raid=null, err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
 		} else {
 			GUI.setText(pspre+cid+"::"+slot+"::capname", raid.twitchDisplayName);
-			Image img = new Image(raid.twitchUserImage);
-			img.setUrl(true);
-			img.setSquare(100);
+			
 			try {
-				GUI.setImage(pspre+cid+"::"+slot+"::img", img);
-			} catch (IOException e) {
+				setImage(raid.twitchUserImage, 100, pspre+cid+"::"+slot+"::img");
+			} catch (IOException | RuntimeException e) {
 				Logger.print("MainFrame -> onUpdateSlot: err=couldnt set profile image, tdn="+raid.twitchDisplayName+", url="+raid.twitchUserImage, Logger.general, Logger.warn, cid, slot, true);
-				
+
 				//	extracting the image without streamraiders help
 				String link = extractTwitchImage(raid.twitchUserName);
 				if(link == null) {
@@ -472,27 +465,20 @@ public class MainFrame {
 					link = extractTwitchImage(raid.twitchUserName);
 				}
 				
-				img = new Image(link);
-				img.setUrl(true);
-				img.setSquare(100);
 				try {
-					GUI.setImage(pspre+cid+"::"+slot+"::img", img);
+					setImage(link, 100, pspre+cid+"::"+slot+"::img");
 				} catch (IOException e1) {
 					Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set profile image 2, tdn="+raid.twitchDisplayName+", url1="+raid.twitchUserImage+", url2="+link, e1, Logger.general, Logger.warn, cid, slot, true);
 					try {
-						img = new Image("data/Other/icon.png");
-						img.setSquare(100);
-						GUI.setImage(pspre+cid+"::"+slot+"::img", img);
+						setImage("Other/icon", 100, pspre+cid+"::"+slot+"::img");
 					} catch (IOException e2) {
-						Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set default profile image", e, Logger.general, Logger.error, cid, slot, true);
+						Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set default profile image", e2, Logger.general, Logger.error, cid, slot, true);
 					}
 				}
 			}
 			GUI.setText(pspre+cid+"::"+slot+"::wins", ""+raid.pveWins);
-			img = new Image("data/LoyaltyPics/" + Viewer.pveloy[raid.pveLoyaltyLevel] + ".png");
-			img.setSquare(20);
 			try {
-				GUI.setImage(pspre+cid+"::"+slot+"::loy", img);
+				setImage("LoyaltyPics/" + Viewer.pveloy[raid.pveLoyaltyLevel], 20, pspre+cid+"::"+slot+"::loy");
 			} catch (IOException e) {
 				Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set loy image", e, Logger.general, Logger.error, cid, slot, true);
 			}
@@ -532,10 +518,8 @@ public class MainFrame {
 				Logger.print("MainFrame -> updateSlot: err=couldnt set chest img, ct="+ct, Logger.lowerr, Logger.error, cid, slot, true);
 				ct = "nochest";
 			}
-			img = new Image("data/ChestPics/"+ct+".png");
-			img.setSquare(25);
 			try {
-				GUI.setImage(pspre+cid+"::"+slot+"::chest", img);
+				setImage("ChestPics/"+ct, 25, pspre+cid+"::"+slot+"::chest");
 			} catch (IOException e) {
 				Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
@@ -620,6 +604,12 @@ public class MainFrame {
 		} else {
 			Logger.print("MainFrame -> openBrowser: err=desktop not supported", Logger.runerr, Logger.error, null, null, true);
 		}
+	}
+	
+	private static void setImage(String path, int size, String id) throws IOException {
+		Image img = new Image(Ressources.get(path, java.awt.Image.class));
+		img.setSquare(size);
+		GUI.setImage(id, img);
 	}
 	
 	

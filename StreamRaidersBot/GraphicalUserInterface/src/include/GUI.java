@@ -2036,7 +2036,8 @@ public class GUI{
 	//	Image
 	public static class Image extends BlankForm {
 		
-		private String path;
+		private String path = null;
+		private java.awt.Image img = null;
 		private int[] size = new int[] {-1, -1};
 		private boolean square = false;
 		private Color squareBack = null;
@@ -2045,6 +2046,10 @@ public class GUI{
 		
 		public Image(String path) {
 			this.path = path;
+		}
+		
+		public Image(java.awt.Image img) {
+			this.img = img;
 		}
 		
 		public void setWidth(int x) {
@@ -2102,7 +2107,11 @@ public class GUI{
 		try {
 			//	new JLabel
 			JLabel imgl;
-			BufferedImage rawimg = opt.isUrl ? ImageIO.read(new URL(opt.getPath())) : ImageIO.read(new File(opt.getPath()));
+			BufferedImage rawimg = opt.img != null 
+										? (BufferedImage) opt.img 
+										: (opt.isUrl 
+											? ImageIO.read(new URL(opt.getPath())) 
+											: ImageIO.read(new File(opt.getPath())));
 			java.awt.Image img;
 			//	testing if it should be a square
 			if(opt.isSquare()) {
@@ -2167,9 +2176,9 @@ public class GUI{
 	public static void setImage(String id, Image opt) throws IOException {
 		//	new JLabel
 		JLabel imgl = (JLabel) getComp(id);
-		BufferedImage rawimg = opt.isUrl 
+		BufferedImage rawimg = opt.img != null ? (BufferedImage) opt.img : (opt.isUrl 
 				? ImageIO.read(new URL(opt.getPath())) 
-				: ImageIO.read(new File(opt.getPath()));
+				: ImageIO.read(new File(opt.getPath())));
 		java.awt.Image img;
 		//	testing if it should be a square
 		if(opt.isSquare()) {

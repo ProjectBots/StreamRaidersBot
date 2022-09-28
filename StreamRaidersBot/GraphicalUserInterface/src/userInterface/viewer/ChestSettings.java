@@ -19,6 +19,7 @@ import include.GUI.TextField;
 import otherlib.Configs;
 import otherlib.Logger;
 import otherlib.Options;
+import otherlib.Ressources;
 import include.Json;
 import run.ProfileType;
 import run.viewer.Viewer;
@@ -80,7 +81,9 @@ public class ChestSettings extends AbstractSettings {
 			p = 0;
 			String chest = cts.get(i).getAsString();
 			
-			Image ci = new Image("data/ChestPics/"+chest+".png");
+			
+			Image ci = null;
+			ci = new Image(Ressources.get("ChestPics/"+chest, java.awt.Image.class));
 			ci.setPos(p++, g);
 			ci.setSquare(22);
 			gui.addImage(ci);
@@ -164,7 +167,8 @@ public class ChestSettings extends AbstractSettings {
 				}
 				
 				Container cimg = new Container();
-				Image img = new Image("data/LoyaltyPics/" + Viewer.pveloy[w] +".png");
+				Image img = null;
+				img = new Image(Ressources.get("LoyaltyPics/" + Viewer.pveloy[w], java.awt.Image.class));
 				img.setSquare(18);
 				cimg.addImage(img, uid+chest+"::loyImg::"+s);
 				
@@ -319,7 +323,8 @@ public class ChestSettings extends AbstractSettings {
 		g++;
 		p = 0;
 		
-		Image ci = new Image("data/ChestPics/dungeonchest.png");
+		Image ci = null;
+		ci = new Image(Ressources.get("ChestPics/dungeonchest", java.awt.Image.class));
 		ci.setPos(p++, g);
 		ci.setSquare(22);
 		gui.addImage(ci);

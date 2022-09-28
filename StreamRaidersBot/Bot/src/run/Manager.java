@@ -16,6 +16,7 @@ import otherlib.Configs;
 import otherlib.Logger;
 import otherlib.Options;
 import otherlib.Remaper;
+import otherlib.Ressources;
 import otherlib.Configs.IllegalConfigTypeException;
 import otherlib.Configs.IllegalConfigVersionException;
 import otherlib.Configs.PStr;
@@ -122,6 +123,12 @@ public class Manager {
 				+ "\t ___/ / _, _/  / /_/ / /_/ / /_  \r\n"
 				+ "\t/____/_/ |_|  /_____/\\____/\\__/  \r\n"
 				+ "\r\n");
+		
+		try {
+			Ressources.load();
+		} catch (IOException e2) {
+			throw new IniCanceledException("Couldnt load Ressources");
+		}
 		
 		try {
 			Options.load();
