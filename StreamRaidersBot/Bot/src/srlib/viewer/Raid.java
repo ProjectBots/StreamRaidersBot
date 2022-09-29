@@ -46,11 +46,11 @@ public class Raid {
 		je = raid.get("placementsSerialized");
 		this.placementsSerialized = je != null && je.isJsonPrimitive() ? je.getAsString() : null;
 		je = raid.get("users");
-		this.users = je != null && je.isJsonPrimitive() ? je.getAsString() : null;
+		this.users = je != null && je.isJsonArray() ? je.toString() : null;
 		
 		this.creationDate = Time.parse(raid.get("creationDate").getAsString());
 		je = raid.get("lastUnitPlacedTime");
-		this.nextUnitPlaceTime = je != null && je.isJsonPrimitive() ? Time.plus(je.getAsString(), type.placementCooldownDuration) : Time.getServerTime();
+		this.nextUnitPlaceTime = (je != null && je.isJsonPrimitive() ? Time.plus(je.getAsString(), type.placementCooldownDuration) : 0);
 		
 		this.hasViewedResults = raid.get("hasViewedResults").getAsInt() == 1;
 		this.isPlaying = raid.get("isPlaying").getAsInt() == 1;

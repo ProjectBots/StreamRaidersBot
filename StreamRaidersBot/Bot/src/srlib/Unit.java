@@ -143,7 +143,7 @@ public class Unit {
 		this.unit = unit;
 		JsonElement jcool = unit.get(SRC.Unit.cooldownTime);
 		if(jcool.isJsonPrimitive())
-			cool = Time.parse(jcool.getAsString());
+			cool = Time.parse(jcool.getAsString()) + 5;
 		else
 			cool = 0;
 		

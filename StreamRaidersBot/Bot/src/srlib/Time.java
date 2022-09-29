@@ -8,7 +8,7 @@ public class Time {
 
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd [HH][H]:mm:ss").withZone(ZoneOffset.UTC);
 
-	private static long secsoff = Long.MIN_VALUE;
+	private static long secsoff = Long.MIN_VALUE/2;
 	
 	/**
 	 * parses the specified String and returns the amount of seconds since 1970-01-01 00:00:00<br>
@@ -44,11 +44,9 @@ public class Time {
 	}
 	
 	/**
-	 * @return the current StreamRaiders server time or 0 if not updated
+	 * @return the current StreamRaiders server time in seconds since 1970-01-01 00:00:00
 	 */
 	public static long getServerTime() {
-		if(secsoff == Long.MIN_VALUE)
-			return 0;
 		return System.currentTimeMillis() / 1000 - secsoff;
 	}
 	

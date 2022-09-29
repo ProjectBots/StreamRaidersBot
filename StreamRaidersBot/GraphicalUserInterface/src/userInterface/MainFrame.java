@@ -43,6 +43,7 @@ import srlib.SRC;
 import srlib.Time;
 import srlib.viewer.Raid;
 import userInterface.captain.CaptainProfileSection;
+import userInterface.globaloptions.GlobalOptions;
 import userInterface.viewer.ViewerProfileSection;
 
 public class MainFrame {
@@ -51,10 +52,12 @@ public class MainFrame {
 	public static final String pspre = "ProfileSection::";
 	
 	private static GUI gui = null;
+	private static boolean recieveMainFrameUpdates = false;
 	
 	public static GUI getGUI() {
 		return gui;
 	}
+	
 	
 	
 	public static void open() {
@@ -275,6 +278,7 @@ public class MainFrame {
 	
 	private static void frameReady() {
 		WaitScreen.setText("Refreshing Frame");
+		recieveMainFrameUpdates = true;
 		gui.refresh();
 		
 		if(!verWarnShown) {
@@ -299,8 +303,6 @@ public class MainFrame {
 	}
 	
 	synchronized public static void addLoadedProfile(String cid, int pos, ProfileType type) {
-		if(gui == null)
-			return;
 		Container c = null;
 		switch(type) {
 		case VIEWER:
@@ -321,7 +323,7 @@ public class MainFrame {
 	}
 	
 	private static void createFailedContainer(String cid, int pos) {
-		if(gui == null)
+		if(!recieveMainFrameUpdates)
 			return;
 		Container c = new Container();
 		c.setPos(0, pos);
@@ -382,14 +384,14 @@ public class MainFrame {
 	}
 	
 	public static void remProfile(String cid) {
-		if(gui == null)
+		if(!recieveMainFrameUpdates)
 			return;
 		gui.remove(pre+cid+"::profile");
 		gui.refresh();
 	}
 	
 	public static void profileSwitchedAccountType(String cid, ProfileType type) {
-		if(gui == null)
+		if(!recieveMainFrameUpdates)
 			return;
 		remProfile(cid);
 		addLoadedProfile(cid, Manager.getProfilePos(cid), type);
@@ -398,20 +400,20 @@ public class MainFrame {
 	}
 	
 	public static void updateSlotRunning(String cid, int slot, boolean run) {
-		if(gui == null)
+		if(!recieveMainFrameUpdates)
 			return;
 		GUI.setGradient(pspre+cid+"::"+slot+"::run", Colors.getGradient("main buttons " + (run?"on":"def")));
 		GUI.setForeground(pspre+cid+"::"+slot+"::run", Colors.getColor("main buttons " + (run?"on":"def")));
 	}
 	
 	public static void updateTimer(String cid, int slot, String time) {
-		if(gui == null)
+		if(!recieveMainFrameUpdates)
 			return;
 		GUI.setText(pspre+cid+"::"+slot+"::time", time);
 	}
 	
 	public static void updateSlot(String cid, int slot, Raid raid, boolean change) {
-		if(gui == null)
+		if(!recieveMainFrameUpdates)
 			return;
 		
 		GUI.setForeground(pspre+cid+"::"+slot+"::change", Colors.getColor("main buttons " + (change ? "on" : "def")));
@@ -458,7 +460,7 @@ public class MainFrame {
 
 				//	extracting the image without streamraiders help
 				String link = extractTwitchImage(raid.twitchUserName);
-				if(link == null) {
+				for(int i=0; link == null && i<5; i++) {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e1) {}
@@ -467,7 +469,7 @@ public class MainFrame {
 				
 				try {
 					setImage(link, 100, pspre+cid+"::"+slot+"::img");
-				} catch (IOException e1) {
+				} catch (IOException | RuntimeException e1) {
 					Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set profile image 2, tdn="+raid.twitchDisplayName+", url1="+raid.twitchUserImage+", url2="+link, e1, Logger.general, Logger.warn, cid, slot, true);
 					try {
 						setImage("Other/icon", 100, pspre+cid+"::"+slot+"::img");
@@ -528,20 +530,20 @@ public class MainFrame {
 	
 	
 	public static void updateSlotSync(String cid, int slot, boolean synced) {
-		if(gui == null)
+		if(!recieveMainFrameUpdates)
 			return;
 		GUI.setEnabled(pspre+cid+"::"+slot+"::run", !synced);
 		GUI.setEnabled(pspre+cid+"::"+slot+"::skip", !synced);
 	}
 	
 	public static void updateCurrency(String cid, String type, int amount) {
-		if(gui == null)
+		if(!recieveMainFrameUpdates)
 			return;
 		GUI.setText(pspre+cid+"::"+type, ""+amount);
 	}
 	
 	public static void updateGeneral(String cid, String pn, String ln, Color lc) {
-		if(gui == null)
+		if(!recieveMainFrameUpdates)
 			return;
 		GUI.setText(pspre+cid+"::pname", pn);
 		GUI.setText(pspre+cid+"::layer", ln);
@@ -554,6 +556,7 @@ public class MainFrame {
 	}
 	
 	private static void close(boolean dispose) {
+		recieveMainFrameUpdates = false;
 		try {
 			gui.close(false);
 		} catch (Exception e) {}
@@ -568,7 +571,6 @@ public class MainFrame {
 			Logger.print("System exit", Logger.general, Logger.info, null, null);
 			System.exit(0);
 		} else {
-			GUI.showErrors(false);
 			
 			WaitScreen.setText("reloading...");
 			Thread t = new Thread(new Runnable() {
@@ -578,6 +580,7 @@ public class MainFrame {
 					HashSet<String> loaded = Manager.getLoadedProfiles();
 					for(String cid : Configs.getConfigIds()) {
 						if(loaded.contains(cid)) {
+							addLoadedProfile(cid, Manager.getProfilePos(cid), Manager.getProfileType(cid));
 							AbstractProfile<?, ?> p = Manager.getProfile(cid);
 							for(int i=0; i<p.getSlotSize(); i++)
 								updateSlotRunning(cid, i, p.isRunning(i));
@@ -587,7 +590,8 @@ public class MainFrame {
 					}
 					Manager.updateAllProfiles();
 					
-					GUI.showErrors(true);
+					recieveMainFrameUpdates = true;
+					WaitScreen.close();
 				}
 			});
 			t.start();

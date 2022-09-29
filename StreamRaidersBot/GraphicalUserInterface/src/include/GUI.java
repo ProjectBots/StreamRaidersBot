@@ -482,17 +482,31 @@ public class GUI{
 	}
 	
 	public static void setText(String id, String text, boolean forceUpdate) {
-		try {
-			getComp(id).getClass().getMethod("setText", String.class).invoke(getComp(id), text);
-			if(forceUpdate)
-				((JComponent) getComp(id)).paintImmediately(((JComponent) getComp(id)).getVisibleRect());
-		} catch (Exception e) {
-			e(e);
+		Object ob = getComp(id);
+		if(ob == null)
+			throw new NullPointerException();
+		
+		if(ob instanceof JLabel) {
+			((JLabel) ob).setText(text);
+		} else if(ob instanceof AbstractButton) {
+			((AbstractButton) ob).setText(text);
 		}
+		
+		if(forceUpdate)
+			((JComponent) ob).paintImmediately(((JComponent) ob).getVisibleRect());
 	}
 	
 	public static String getText(String id) {
-		return ((JLabel) getComp(id)).getText();
+		Object jc = getComp(id);
+		if(jc == null)
+			throw new NullPointerException();
+		
+		if(jc instanceof JLabel)
+			return ((JLabel) jc).getText();
+		if(jc instanceof AbstractButton)
+			return ((AbstractButton) jc).getText();
+		
+		throw new RuntimeException("not label nor ab.button");
 	}
 	
 	public static Color getBackgroung(String id) {
@@ -2654,16 +2668,8 @@ public class GUI{
 	}
 	
 	
-	private static boolean showErrors = true;
-	
-	public static void showErrors(boolean b) {
-		showErrors = b;
-	}
 	
 	public static void e(Exception e) {
-		if(!showErrors)
-			return;
-		
 		System.out.println(e.getClass().getSimpleName() + " at Line: " + e.getStackTrace()[0].getLineNumber());
 		e.printStackTrace();
 	}

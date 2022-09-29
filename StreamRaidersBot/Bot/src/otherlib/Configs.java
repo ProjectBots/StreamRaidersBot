@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import include.Json;
@@ -71,6 +73,7 @@ public class Configs {
 
 	public static final GStr fontFile = new GStr("fontFile");
 	public static final GStr blocked_errors = new GStr("blocked_errors");
+	public static final GStr newOrder = new GStr("newOrder");
 	
 	public static String getGStr(GStr con) {
 		return config.getAsJsonObject("Global").get(con.con).getAsString();
@@ -122,6 +125,15 @@ public class Configs {
 		ArrayList<String> cids = new ArrayList<>(config.keySet());
 		cids.removeAll(Arrays.asList("Global version type".split(" ")));
 		return cids;
+	}
+	
+	public static String[] getConfigIdsArr() {
+		String[] ret = new String[config.size()-3];
+		int i=0;
+		for(String cid : config.keySet())
+			if(!(cid.equals("Global") || cid.equals("version") || cid.equals("type")))
+				ret[i++] = cid;
+		return ret;
 	}
 	
 	public static class PStr extends All {
@@ -1321,6 +1333,31 @@ public class Configs {
 		}
 		
 		checkAll();
+		
+		//	change order if requested
+		String no = getGStr(newOrder);
+		if(!no.equals("")) {
+			String[] noa = new String[StringUtils.countMatches(no, '/')+1+3];
+			System.arraycopy("type version Global".split(" "), 0, noa, 0, 3);
+			System.arraycopy(no.split("/"), 0, noa, 3, noa.length-3);
+			
+			HashMap<String, JsonElement> objs = new HashMap<>();
+			for(String key : config.keySet())
+				objs.put(key, config.get(key));
+			
+			//	reconstruct config with new order
+			config = new JsonObject();
+			for(int i=0; i<noa.length; i++)
+				config.add(noa[i], objs.remove(noa[i]));
+			
+			//	add the rest
+			for(String key : objs.keySet())
+				config.add(key, objs.get(key));
+			
+			checkAll();
+			setGStr(newOrder, "");
+		}
+		
 		
 		//	sync profiles
 		for(String cid : getConfigIds()) {

@@ -165,9 +165,10 @@ public class MapGUI {
 					return;
 				try {
 					run.useBackEnd(vbe -> {
-						if(!run.canUseSlot(vbe, slot))
+						if(!Viewer.canUseSlot(vbe, slot))
 							return;
-						Map map = run.getMap(vbe, slot);
+						
+						Map map = vbe.getMap(slot, false);
 						if(map == null)
 							return;
 						
@@ -270,7 +271,7 @@ public class MapGUI {
 										String ut = null;
 										if(uType != null)
 											l.setText(getShortenedUnitAndPlanType(ut = uType.getAsString()));
-										l.setTooltip(map.getUserName(x, y) + (ut==null?"":" - "+Unit.getName(ut)));
+										l.setTooltip(map.getDisplayName(x, y) + (ut==null?"":" - "+Unit.getName(ut)));
 									}
 									l.setFont(new Font(Font.SERIF, Font.PLAIN, 10));
 								}

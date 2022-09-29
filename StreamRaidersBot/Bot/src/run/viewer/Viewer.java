@@ -18,7 +18,6 @@ import run.AbstractProfile;
 import run.Manager;
 import run.ProfileType;
 import run.AbstractBackEnd.UpdateEventListener;
-import srlib.Map;
 import srlib.RaidType;
 import srlib.SRC;
 import srlib.SRR;
@@ -43,7 +42,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 	private static String[] rew_types;
 	
 	private static String[] genRewTypes() {
-		ArrayList<String> ret = new ArrayList<String>(Arrays.asList("gold potions token eventcurrency keys meat bones skin".split(" ")));
+		ArrayList<String> ret = new ArrayList<String>(Arrays.asList("gold potions token eventcurrency keys meat bones skin soulvessel".split(" ")));
 		ArrayList<String> utypes = Unit.getTypesList();
 		for(int i=0; i<utypes.size(); i++)
 			utypes.set(i, "scroll"+utypes.get(i).replace("allies", ""));
@@ -77,12 +76,12 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		}
 	}
 	
-	synchronized public void addRew(ViewerBackEnd beh, String con, String type, int amount) {
+	synchronized public void addRew(ViewerBackEnd vbe, String con, String type, int amount) {
 		type = Remaper.map(type).replace(Options.get("currentEventCurrency"), Store.eventcurrency.get());
 		try {
 			JsonObject r = rews.getAsJsonObject(con);
 			r.addProperty(type, r.get(type).getAsInt() + amount);
-			beh.addCurrency(type, amount);
+			vbe.addCurrency(type, amount);
 		} catch (NullPointerException e) {
 			Logger.printException("Viewer -> addRew: err=failed to add reward, con=" + con + ", type=" + type + ", amount=" + amount, e, Logger.runerr, Logger.error, cid, null, true);
 		}
@@ -202,8 +201,8 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 	}
 	
 	
-	public static boolean canUseSlot(ViewerBackEnd beh, int slot) throws NoConnectionException, NotAuthorizedException {
-		int uCount = beh.getUnits(SRC.BackEndHandler.all, false).length;
+	public static boolean canUseSlot(ViewerBackEnd vbe, int slot) throws NoConnectionException, NotAuthorizedException {
+		int uCount = vbe.getUnits(SRC.BackEndHandler.all, false).length;
 		switch (slot) {
 		case 0:
 			return true;
@@ -212,7 +211,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		case 2:
 			return uCount > 7;
 		case 3:
-			return beh.hasBattlePass();
+			return vbe.hasBattlePass();
 		default:
 			throw new IllegalArgumentException();
 		}
@@ -263,17 +262,17 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 	}
 	
 	
-	public void updateVbe(ViewerBackEnd beh) {
+	public void updateVbe(ViewerBackEnd vbe) {
 		String proxy = Configs.getStr(cid, currentLayer, Configs.proxyDomainViewer);
 		String user = Configs.getStr(cid, currentLayer, Configs.proxyUserViewer);
-		beh.setProxyAndUserAgent(proxy.equals("") ? null : proxy, 
+		vbe.setProxyAndUserAgent(proxy.equals("") ? null : proxy, 
 				Configs.getInt(cid, currentLayer, Configs.proxyPortViewer),
 				user.equals("") ? null : user,
 				Configs.getStr(cid, currentLayer, Configs.proxyPassViewer),
 				Configs.getStr(cid, currentLayer, Configs.userAgentViewer),
 				Configs.getBoolean(cid, currentLayer, Configs.proxyMandatoryViewer));
 		
-		beh.setUpdateTimes( Configs.getInt(cid, currentLayer, Configs.unitUpdateViewer),
+		vbe.setUpdateTimes( Configs.getInt(cid, currentLayer, Configs.unitUpdateViewer),
 							Configs.getInt(cid, currentLayer, Configs.raidUpdateViewer),
 							Configs.getInt(cid, currentLayer, Configs.mapUpdateViewer),
 							Configs.getInt(cid, currentLayer, Configs.storeUpdateViewer),
@@ -288,9 +287,6 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		return "https://twitch.tv/"+cnames[slot];
 	}
 	
-	public Map getMap(ViewerBackEnd beh, int slot) throws NoConnectionException, NotAuthorizedException {
-		return beh.getMap(slot, false);
-	}
 	
 	
 	

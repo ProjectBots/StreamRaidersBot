@@ -65,12 +65,10 @@ public class Pathfinding {
 		
 		int[] last = null;
 		
-		int c = 0;
-		
-		while(true) {
+		for(int c=0; true; c++) {
 			
-			if(c++ % 500 == 0)
-				Logger.print("Pathfinding search " + c, Logger.loop, Logger.info, cid, slot);
+			if(c % 500 == 0)
+				Logger.print("Pathfinding search c="+c+" in=0", Logger.loop, Logger.info, cid, slot);
 			
 			
 			boolean stuck = true;
@@ -82,6 +80,9 @@ public class Pathfinding {
 			ox = -1;
 			oy = -1;
 			omin = Integer.MAX_VALUE;
+			
+			if(c % 500 == 0)
+				Logger.print("Pathfinding search c="+c+" in=1", Logger.loop, Logger.info, cid, slot);
 			
 			for(int i=0; i<map.length; i++) {
 				for(int j=0; j<map[i].length; j++) {
@@ -107,6 +108,9 @@ public class Pathfinding {
 				}
 			}
 			
+			if(c % 500 == 0)
+				Logger.print("Pathfinding search c="+c+" in=2", Logger.loop, Logger.info, cid, slot);
+			
 			if(stuck)
 				return last;
 			
@@ -120,6 +124,10 @@ public class Pathfinding {
 				return last;
 			
 			map[x][y].explore();
+			
+
+			if(c % 500 == 0)
+				Logger.print("Pathfinding search c="+c+" in=3", Logger.loop, Logger.info, cid, slot);
 			
 			for(int i=-1; i<2; i++) {
 				for(int j=-1; j<2; j++) {
@@ -147,6 +155,10 @@ public class Pathfinding {
 					}
 				}
 			}
+			
+
+			if(c % 500 == 0)
+				Logger.print("Pathfinding search c="+c+" in=4", Logger.loop, Logger.info, cid, slot);
 			
 		}
 	}

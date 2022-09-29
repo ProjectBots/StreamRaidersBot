@@ -197,7 +197,7 @@ public class Map {
 					if(unitsData != null)
 						playerPower += unitsData.get(chaType).getAsInt();
 				} catch(Exception e) {
-					System.err.println(chaType);
+					Logger.printException("Map -> addEntities: err=unknown unit, chaType="+chaType, e, Logger.runerr, Logger.error, cid, slot, true);
 				}
 				
 				
@@ -230,7 +230,7 @@ public class Map {
 					for(int u=0; u<users.size(); u++) {
 						JsonObject user = users.get(u).getAsJsonObject();
 						if(userId.equals(user.get("userId").getAsString()))
-							set(x, y, "twitchUserName", user.get("twitchUserName").getAsString());
+							set(x, y, "twitchDisplayName", user.get("twitchDisplayName").getAsString());
 					}
 					String type = Unit.getUnitTypeFromCharacterType(chaType);
 					if(type != null)
@@ -312,9 +312,8 @@ public class Map {
 			break;
 		case SRC.Map.isPlayer:
 			if(!place.has("userId")) return false;
-			return !place.getAsJsonPrimitive("userId").getAsString().equals("");
+			return !place.get("userId").getAsString().equals("");
 		case SRC.Map.isCaptain:
-			if(!place.has(SRC.Map.isCaptain)) return false;
 			break;
 		case SRC.Map.isSelf:
 			break;
@@ -325,7 +324,7 @@ public class Map {
 		}
 		return (!place.has(con)) 
 				? false 
-				: place.getAsJsonPrimitive(con).getAsBoolean();
+				: place.get(con).getAsBoolean();
 	}
 	
 	public String getPlanType(int x, int y) {
@@ -375,8 +374,8 @@ public class Map {
 		return new HashSet<>(epic ? eupts : nupts);
 	}
 	
-	public String getUserName(int x, int y) {
-		JsonElement n = get(x, y).get("twitchUserName");
+	public String getDisplayName(int x, int y) {
+		JsonElement n = get(x, y).get("twitchDisplayName");
 		return n == null || !n.isJsonPrimitive() 
 				? null 
 				: n.getAsString();
