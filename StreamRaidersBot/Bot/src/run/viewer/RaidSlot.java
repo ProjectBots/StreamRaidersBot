@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.Set;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.Json;
@@ -51,8 +52,7 @@ public class RaidSlot extends Slot {
 	
 
 	@Override
-	public JsonObject dump() {
-		// TODO Auto-generated method stub
+	public JsonElement dump() {
 		return null;
 	}
 	

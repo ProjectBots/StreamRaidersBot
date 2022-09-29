@@ -38,7 +38,6 @@ public class Manager {
 	
 	/*	TODO
 	 * 	add tooltips (everywhere)
-	 * 	colors  error blocks (GlobalOptions)
 	 *	make epic slot dependent
 	 * 	get Donators from github source
 	 * 	split beh updates into parts (ex.: only update currencies instead of whole shop)
@@ -49,6 +48,7 @@ public class Manager {
 	 * 	option to force close
 	 * 	better ressource management
 	 * 	better config
+	 * 	viewerstats - the position of the same item should be the same on today and past
 	 * 
 	 * 	
 	 * 

@@ -6,14 +6,18 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import include.HeapDump;
 import include.Maths;
 import otherlib.Configs;
 import otherlib.Logger;
 
 
 public abstract class Slot {
+	
+	
 	
 	protected final String cid;
 	protected final int slot;
@@ -35,7 +39,7 @@ public abstract class Slot {
 	
 	public abstract boolean canManageItself();
 
-	protected abstract JsonObject dump();
+	protected abstract JsonElement dump();
 	
 	public boolean isRunning() {
 		return isRunning;
@@ -182,14 +186,22 @@ public abstract class Slot {
 		Logger.print("after MemoryReleaser", Logger.general, Logger.info, cid, slot);
 	}
 	
+
+	
 	private void exeSlotSequence() {
 		Timer t = new Timer();
 		t.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				Logger.print("Slot -> exeSlotSequence: err=slot seems to be stuck", Logger.runerr, Logger.error, cid, slot, true);
+				boolean dumped = true;
+				try {
+					HeapDump.dumpHeap("heapdump.hprof", false);
+				} catch (Exception e) {
+					dumped = false;
+				}Logger.print("Slot -> exeSlotSequence: err=slot seems to be stuck, heapdump created="+dumped, Logger.runerr, Logger.error, cid, slot, true);
+				
 			}
-		}, 120*1000);
+		}, 3*60*1000);
 		slotSequence();
 		t.cancel();
 	}
