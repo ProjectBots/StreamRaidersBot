@@ -22,9 +22,9 @@ import run.viewer.Viewer;
 import run.viewer.ViewerBackEnd;
 import srlib.SRC;
 import srlib.Store;
-import srlib.Unit;
-import srlib.UnitRarity;
 import srlib.SRR.NotAuthorizedException;
+import srlib.units.Unit;
+import srlib.units.UnitRarity;
 import userInterface.AbstractStats;
 import userInterface.Colors;
 
@@ -170,9 +170,8 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.Vie
 		
 		
 		for(Unit u : units) {
-			final String type = u.unitType;
+			final String type = u.type;
 			final UnitRarity ur = UnitRarity.parseType(type);
-			int level = Integer.parseInt(u.get(SRC.Unit.level));
 			
 			Container uc = new Container();
 			uc.setPos(pos[ur.rank]++, ur.rank+1);
@@ -182,7 +181,7 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.Vie
 				
 				Label name = new Label();
 				name.setPos(0, 0);
-				name.setText(u.get(SRC.Unit.disName) + " - " + level);
+				name.setText(u.getDisName() + " - " + u.level);
 				name.setAnchor("c");
 				name.setForeground(Colors.getColor("VIEWER stats labels"));
 				uc.addLabel(name);
@@ -199,8 +198,8 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.Vie
 				if(val == null)
 					val = 0;
 				
-				if(level != 30) {
-					int need = Store.getCost(type, level, false)[1];
+				if(u.level != 30) {
+					int need = Store.getCost(type, u.level, false)[1];
 					
 					
 					Label nums = new Label();

@@ -189,6 +189,8 @@ public abstract class Slot {
 
 	
 	private void exeSlotSequence() {
+		final String threadName = Thread.currentThread().getName();
+		
 		Timer t = new Timer();
 		t.schedule(new TimerTask() {
 			@Override
@@ -198,8 +200,8 @@ public abstract class Slot {
 					HeapDump.dumpHeap("heapdump.hprof", false);
 				} catch (Exception e) {
 					dumped = false;
-				}Logger.print("Slot -> exeSlotSequence: err=slot seems to be stuck, heapdump created="+dumped, Logger.runerr, Logger.error, cid, slot, true);
-				
+				}
+				Logger.print("Slot -> exeSlotSequence: err=slot seems to be stuck, threadName="+threadName+", heapdump_created="+dumped, Logger.runerr, Logger.error, cid, slot, true);
 			}
 		}, 3*60*1000);
 		slotSequence();

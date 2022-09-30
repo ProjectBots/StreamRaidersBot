@@ -43,16 +43,6 @@ public class SRC {
 		public static final String dungeons = "dungeons";
 	}
 	
-	public static class Unit {
-		public static final String level = "level";
-		public static final String skin = "skin";
-		public static final String cooldownTime = "cooldownTime";
-		public static final String unitId = "unitId";
-		public static final String specializationUid = "specializationUid";
-		public static final String specializationDisName = "specializationDisName";
-		public static final String disName = "disName";
-	}
-	
 	public static class BackEndHandler {
 		public static final int all = 0;
 		public static final int isRaidReward = 1;

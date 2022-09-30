@@ -13,6 +13,8 @@ import include.Json;
 import include.Http.NoConnectionException;
 import otherlib.Options;
 import srlib.skins.Skins;
+import srlib.units.Unit;
+import srlib.units.UnitRarity;
 
 public class Store {
 	
@@ -158,11 +160,9 @@ public class Store {
 	}
 	
 	public boolean canUpgradeUnit(Unit unit) {
-		int lvl = Integer.parseInt(unit.get(SRC.Unit.level));
-		String type = unit.unitType;
-		int[] cost = getCost(type, lvl, false);
+		int[] cost = getCost(unit.type, unit.level, false);
 		
-		if(getCurrency(gold) < cost[0] || getCurrency(type) < cost[1])
+		if(getCurrency(gold) < cost[0] || getCurrency(unit.type) < cost[1])
 			return false;
 		
 		return true;
@@ -172,8 +172,8 @@ public class Store {
 	public Unit[] getUpgradeableUnits(Unit[] units) {
 		LinkedList<Unit> ret = new LinkedList<>();
 		for(int i=0; i<units.length; i++) {
-			int lvl = Integer.parseInt(units[i].get(SRC.Unit.level));
-			String type = units[i].unitType;
+			int lvl = units[i].level;
+			String type = units[i].type;
 			if(lvl == 30) 
 				continue;
 			
@@ -187,22 +187,21 @@ public class Store {
 		if(!canUpgradeUnit(unit))
 			return "not enough gold";
 		
-		String lvl = unit.get(SRC.Unit.level);
 		JsonObject ret;
-		if(lvl.equals("19")) {
+		if(unit.level == 19) {
 			if(specUID == null || specUID.equals("null"))
 				return "no specUID";
-			ret = Json.parseObj(req.specializeUnit(unit.unitType, lvl, unit.get(SRC.Unit.unitId), specUID));
+			ret = Json.parseObj(req.specializeUnit(unit.type, ""+unit.level, ""+unit.unitId, specUID));
 		} else {
-			ret = Json.parseObj(req.upgradeUnit(unit.unitType, lvl, unit.get(SRC.Unit.unitId)));
+			ret = Json.parseObj(req.upgradeUnit(unit.type, ""+unit.level, ""+unit.unitId));
 		}
 		
 		JsonElement err = ret.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
 			return err.getAsString();
 		
-		String ut = unit.unitType;
-		int[] cost = getCost(ut, Integer.parseInt(lvl), false);
+		String ut = unit.type;
+		int[] cost = getCost(ut, unit.level, false);
 		decreaseCurrency(gold, cost[0]);
 		decreaseCurrency(ut, cost[1]);
 		return null;
@@ -224,12 +223,11 @@ public class Store {
 		
 		Hashtable<String, Boolean> gotTypes = new Hashtable<>();
 		for(int i=0; i<units.length; i++) {
-			String type = units[i].unitType;
-			int lvl = Integer.parseInt(units[i].get(SRC.Unit.level));
+			String type = units[i].type;
 			if(gotTypes.contains(type))
-				gotTypes.put(type, gotTypes.get(type) && lvl == 30);
+				gotTypes.put(type, gotTypes.get(type) && units[i].level == 30);
 			else
-				gotTypes.put(type, lvl == 30);
+				gotTypes.put(type, units[i].level == 30);
 		}
 		
 		LinkedList<Unit> ret = new LinkedList<>();

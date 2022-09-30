@@ -9,7 +9,7 @@ import otherlib.MapConv;
 import run.viewer.Viewer;
 import srlib.Map;
 import srlib.SRC;
-import srlib.Unit;
+import srlib.units.Unit;
 
 import java.awt.Color;
 import java.awt.Font;

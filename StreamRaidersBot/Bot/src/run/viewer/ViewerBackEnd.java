@@ -23,13 +23,13 @@ import srlib.RaidType;
 import srlib.SRC;
 import srlib.SRR;
 import srlib.Store;
-import srlib.Unit;
 import srlib.Quests.Quest;
 import srlib.SRR.NotAuthorizedException;
 import srlib.Store.C;
 import srlib.Store.Item;
 import srlib.skins.Skin;
 import srlib.skins.Skins;
+import srlib.units.Unit;
 import srlib.viewer.CaptainData;
 import srlib.viewer.Raid;
 
@@ -395,11 +395,11 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	public boolean canUnlockUnit(Unit unit) {
-		return store.canUnlockUnit(unit.unitType, unit.dupe);
+		return store.canUnlockUnit(unit.type, unit.dupe);
 	}
 	
 	public String unlockUnit(Unit unit) throws NoConnectionException {
-		return store.unlockUnit(unit.unitType, unit.dupe, req);
+		return store.unlockUnit(unit.type, unit.dupe, req);
 	}
 	
 	
@@ -431,13 +431,13 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 			}
 			
 			JsonArray pmnt = Json.parseArr(r.placementsSerialized);
-			if(pmnt != null) 
+			if(pmnt != null)
 				for(int i=0; i<pmnt.size(); i++) 
-					bnd.add(pmnt.get(i).getAsJsonObject().get(SRC.Unit.unitId).getAsString());
+					bnd.add(pmnt.get(i).getAsJsonObject().get("unitId").getAsString());
 			
 			
 			for(int i=0; i<units.length; i++) {
-				if(bnd.contains(units[i].get(SRC.Unit.unitId)))
+				if(bnd.contains(""+units[i].unitId))
 					continue;
 				
 				buffer[index++] = units[i];
@@ -455,7 +455,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	
 	public String placeUnit(int slot, Unit unit, boolean epic, int[] pos, boolean onPlanIcon, Skin overrideSkin) throws NoConnectionException {
 		String atr = req.addToRaid(raids[slot].raidId,
-				createPlacementData(unit, epic, maps[slot].getAsSRCoords(epic, pos), onPlanIcon, overrideSkin));
+				createPlacementData(unit, epic, maps[slot].getAsSRCoords(epic, pos), onPlanIcon, overrideSkin, unit.getSoulType().uid));
 		
 		try {
 			JsonElement je = Json.parseObj(atr).get(SRC.errorMessage);
@@ -468,23 +468,23 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		return null;
 	}
 	
-	public String createPlacementData(Unit unit, boolean epic, double[] pos, boolean onPlanIcon, Skin overrideSkin) {
+	public String createPlacementData(Unit unit, boolean epic, double[] pos, boolean onPlanIcon, Skin overrideSkin, String soulType) {
 		JsonObject ret = new JsonObject();
 		ret.addProperty("raidPlacementsId", "");
 		ret.addProperty("userId", req.getViewerUserId());
-		ret.addProperty("CharacterType", (epic?"epic":"")+unit.unitType+unit.get(SRC.Unit.level));
+		ret.addProperty("CharacterType", (epic?"epic":"")+unit.type+unit.level);
 		ret.addProperty("X", pos[0]);
 		ret.addProperty("Y", pos[1]);
-		String skin = overrideSkin == null ? unit.get(SRC.Unit.skin) : overrideSkin.uid;
+		String skin = overrideSkin == null ? unit.getSkin() : overrideSkin.uid;
 		ret.addProperty("skin", skin == null ? "" : skin);
-		ret.addProperty("unitId", unit.get(SRC.Unit.unitId));
-		String suid = unit.get(SRC.Unit.specializationUid);
+		ret.addProperty("unitId", ""+unit.unitId);
+		String suid = unit.specializationUid;
 		ret.addProperty("specializationUid", suid == null ? "" : suid);
 		ret.addProperty("team", "Ally");
 		ret.addProperty("onPlanIcon", onPlanIcon);
 		ret.addProperty("isSpell", false);
 		ret.addProperty("stackRaidPlacementsId", "0");
-		ret.addProperty("SoulType", "");
+		ret.addProperty("SoulType", soulType == null ? "" : soulType);
 		return ret.toString();
 	}
 	
@@ -564,8 +564,8 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	public String equipSkin(Unit unit, Skin skin) throws NoConnectionException {
-		JsonObject resp = Json.parseObj(req.equipSkin(unit.get(SRC.Unit.unitId),
-					skin == null ? unit.get(SRC.Unit.skin) : skin.uid,
+		JsonObject resp = Json.parseObj(req.equipSkin(""+unit.unitId,
+					skin == null ? unit.getSkin() : skin.uid,
 					skin == null ? "0" : "1"));
 		JsonElement err = resp.get(SRC.errorMessage);
 		

@@ -29,10 +29,10 @@ import srlib.RaidType;
 import srlib.SRC;
 import srlib.Store;
 import srlib.Time;
-import srlib.Unit;
 import srlib.SRR.NotAuthorizedException;
 import srlib.skins.Skin;
 import srlib.skins.Skins;
+import srlib.units.Unit;
 import srlib.viewer.CaptainData;
 import srlib.viewer.Raid;
 
@@ -282,9 +282,9 @@ public class RaidSlot extends Slot {
 						vbe.decreaseCurrency(Store.potions, 45);
 					
 					vbe.addCurrency(Store.potions, 1);
-					String ut = pla.unit.unitType;
+					String ut = pla.unit.type;
 					if(!Unit.isLegendary(ut))
-						vbe.addCurrency(pla.unit.unitType, 1);
+						vbe.addCurrency(pla.unit.type, 1);
 					placeTime = System.currentTimeMillis() 
 								+ Maths.ranInt(Configs.getInt(cid, currentLayer, Configs.unitPlaceDelayMinViewer),
 											Configs.getInt(cid, currentLayer, Configs.unitPlaceDelayMaxViewer));
@@ -334,7 +334,7 @@ public class RaidSlot extends Slot {
 		}
 		@Override
 		public String toString() {
-			return new StringBuilder(unit.unitType)
+			return new StringBuilder(unit.type)
 					.append("|").append(pos[0]).append("-")
 					.append(pos[1]).append(epic ? "|epic" : "").append(isOnPlan ? "|plan" : "")
 					.toString();
@@ -354,7 +354,7 @@ public class RaidSlot extends Slot {
 		}
 		@Override
 		public String toString() {
-			return "{" + unit.unitType + "|ps=" + Arrays.toString(ps) + "|vs=" + Arrays.toString(vs) + "}";
+			return "{" + unit.type + "|ps=" + Arrays.toString(ps) + "|vs=" + Arrays.toString(vs) + "}";
 		}
 	}
 	
@@ -364,8 +364,8 @@ public class RaidSlot extends Slot {
 		
 		Prio[] prios = new Prio[units.length];
 		for(int i=0; i<units.length; i++) {
-			final String uType = units[i].unitType;
-			final String uId = units[i].unitId;
+			final String uType = units[i].type;
+			final String uId = ""+units[i].unitId;
 			
 			int n = Configs.getUnitInt(cid, currentLayer, uId, dungeon ? Configs.placedunViewer : Configs.placeViewer);
 			int e = Configs.getUnitInt(cid, currentLayer, uId, dungeon ? Configs.epicdunViewer : Configs.epicViewer);
@@ -396,7 +396,7 @@ public class RaidSlot extends Slot {
 			int np = -1;
 			int ep = -1;
 			
-			HashSet<String> pts = new HashSet<>(units[i].getPlanTypes());
+			HashSet<String> pts = new HashSet<>(units[i].ptags);
 			pts.remove("vibe");
 			for(String pt : pts) {
 				if(eupts.contains(pt))
@@ -483,7 +483,7 @@ public class RaidSlot extends Slot {
 				for(int j=1; j<prios.length; j++) 
 					if(prios[j].ps[i] > prios[p].ps[i] 
 						|| ((prios[j].ps[i] == prios[p].ps[i])
-							&& (Integer.parseInt(prios[j].unit.get(SRC.Unit.level)) > Integer.parseInt(prios[p].unit.get(SRC.Unit.level)))))
+							&& (prios[j].unit.level > prios[p].unit.level)))
 						p = j;
 				
 				Logger.print("inner 1", Logger.place, Logger.info, cid, slot);
@@ -497,8 +497,9 @@ public class RaidSlot extends Slot {
 				
 				Set<String> pts = null;
 				if(i<2) {
-					pts = u.getPlanTypes();
+					pts = u.ptags;
 					if(!prios[p].vs[i]) {
+						//	(Unit).ptags is unmodifiable
 						pts = new HashSet<>(pts);
 						pts.remove("vibe");
 					}
@@ -515,7 +516,7 @@ public class RaidSlot extends Slot {
 
 				Logger.print("inner 3", Logger.place, Logger.info, cid, slot);
 				if(Configs.getBoolean(cid, currentLayer, Configs.useSkinFromCaptainViewer)) {
-					ArrayList<Skin> ss = skins.searchSkins(captainId, u.unitType);
+					ArrayList<Skin> ss = skins.searchSkins(captainId, u.type);
 					return new Place(u, pos, i%2==0, i<2, ss.size() == 0 ? null : ss.get(new Random().nextInt(ss.size())));
 				} else {
 					return new Place(u, pos, i%2==0, i<2, null);

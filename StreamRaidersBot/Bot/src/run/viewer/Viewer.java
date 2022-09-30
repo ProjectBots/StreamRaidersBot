@@ -22,9 +22,9 @@ import srlib.RaidType;
 import srlib.SRC;
 import srlib.SRR;
 import srlib.Store;
-import srlib.Unit;
 import srlib.SRR.NotAuthorizedException;
 import srlib.Store.C;
+import srlib.units.Unit;
 import srlib.viewer.CaptainData;
 import srlib.viewer.Raid;
 
@@ -152,7 +152,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 					try {
 						Unit[] units = vbe.getUnits(SRC.BackEndHandler.all, false);
 						for(Unit u : units)
-							Configs.addUnitId(cid, ProfileType.VIEWER, u.unitId, u.unitType, Integer.parseInt(u.get(SRC.Unit.level)));
+							Configs.addUnitId(cid, ProfileType.VIEWER, ""+u.unitId, u.type, u.level);
 					} catch (Exception e) {
 						Logger.printException("Viewer -> constructor -> uelis: err=unable to retrieve units", e, Logger.runerr, Logger.error, cid, null, true);
 					}

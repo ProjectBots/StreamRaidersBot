@@ -17,10 +17,10 @@ import run.Slot;
 import run.StreamRaidersException;
 import srlib.SRC;
 import srlib.Store;
-import srlib.Unit;
 import srlib.Quests.Quest;
 import srlib.SRR.NotAuthorizedException;
 import srlib.Store.Item;
+import srlib.units.Unit;
 import srlib.viewer.Raid.Reward;
 
 public class SpecialSlot extends Slot {
@@ -92,7 +92,7 @@ public class SpecialSlot extends Slot {
 		
 		int[] ps = new int[us.length];
 		for(int i=0; i<us.length; i++) 
-			ps[i] = Configs.getUnitInt(cid, currentLayer, us[i].unitId, Configs.upgradeViewer);
+			ps[i] = Configs.getUnitInt(cid, currentLayer, ""+us[i].unitId, Configs.upgradeViewer);
 		
 		while(true) {
 			int ind = 0;
@@ -103,9 +103,9 @@ public class SpecialSlot extends Slot {
 			if(ps[ind] < 0)
 				break;
 			
-			String err = vbe.upgradeUnit(us[ind], Configs.getUnitSpec(cid, ProfileType.VIEWER, currentLayer, us[ind].unitId));
+			String err = vbe.upgradeUnit(us[ind], Configs.getUnitSpec(cid, ProfileType.VIEWER, currentLayer, ""+us[ind].unitId));
 			if(err != null && (!(err.equals("no specUID") || err.equals("cant upgrade unit")))) {
-				Logger.print("SpecialSlot (viewer) -> upgradeUnits: type=" + us[ind].unitType + " err=" + err, Logger.lowerr, Logger.error, cid, 4, true);
+				Logger.print("SpecialSlot (viewer) -> upgradeUnits: type=" + us[ind].type + " err=" + err, Logger.lowerr, Logger.error, cid, 4, true);
 				break;
 			}
 			
@@ -126,7 +126,7 @@ public class SpecialSlot extends Slot {
 		
 		int[] ps = new int[unlockable.length];
 		for(int i=0; i<unlockable.length; i++)
-			ps[i] = Configs.getUnitInt(cid, currentLayer, unlockable[i].unitType, unlockable[i].dupe ? Configs.dupeViewer : Configs.unlockViewer);
+			ps[i] = Configs.getUnitInt(cid, currentLayer, unlockable[i].type, unlockable[i].dupe ? Configs.dupeViewer : Configs.unlockViewer);
 		
 		while(true) {
 			int ind = 0;
@@ -165,7 +165,7 @@ public class SpecialSlot extends Slot {
 			} else {
 				String err = vbe.unlockUnit(unlockable[ind]);
 				if(err != null && !err.equals("not enough gold")) 
-					Logger.print("SpecialSlot (viewer) -> unlock: type=" + unlockable[ind].unitType + ", err=" + err, Logger.lowerr, Logger.error, cid, 4, true);
+					Logger.print("SpecialSlot (viewer) -> unlock: type=" + unlockable[ind].type + ", err=" + err, Logger.lowerr, Logger.error, cid, 4, true);
 			}
 			
 			ps[ind] = -1;

@@ -17,10 +17,10 @@ import include.Http.NoConnectionException;
 import otherlib.Configs;
 import otherlib.Logger;
 import srlib.SRC;
-import srlib.Unit;
 import srlib.SRR.NotAuthorizedException;
 import srlib.skins.Skin;
 import srlib.skins.Skins;
+import srlib.units.Unit;
 import userInterface.AbstractSettings;
 import userInterface.Colors;
 import run.Manager;
@@ -105,7 +105,7 @@ public class SkinSettings extends AbstractSettings {
 		}
 		
 		for(Unit u : units_)
-			units_all.get(u.unitType).add(u);
+			units_all.get(u.type).add(u);
 		
 		ArrayList<String> skinUids = skins_.getSkinUids();
 		for(String suid : skinUids) {
@@ -128,7 +128,7 @@ public class SkinSettings extends AbstractSettings {
 					cu.setPos(x++, 0);
 					cu.setInsets(5, 10, 10, 10);
 						
-						final String gid = uid+u.get(SRC.Unit.unitId)+"::";
+						final String gid = uid+u.unitId+"::";
 						
 						Label lu = new Label();
 						lu.setPos(0, 0);
@@ -145,7 +145,7 @@ public class SkinSettings extends AbstractSettings {
 						 */
 						
 						ArrayList<String> list = new ArrayList<>(skinNames);
-						String suid = u.get(SRC.Unit.skin);
+						String suid = u.getSkin();
 						String sn = null;
 						if(suid != null) {
 							for(Skin s : skins) {
@@ -212,10 +212,10 @@ public class SkinSettings extends AbstractSettings {
 	
 	private static String getExtendedUnitName(Unit u) {
 		return concat("<html><center>",
-				u.get(SRC.Unit.disName),"<br>",
-				"Lvl: ",u.get(SRC.Unit.level)," ",u.unitType,"<br>",
-				u.get(SRC.Unit.specializationDisName),"<br>",
-				"(id=",u.get(SRC.Unit.unitId),")",
+				u.getDisName(),"<br>",
+				"Lvl: ",""+u.level," ",u.type,"<br>",
+				u.specializationDisName,"<br>",
+				"(id=",""+u.unitId,")",
 				"</center></html>");
 		
 	}

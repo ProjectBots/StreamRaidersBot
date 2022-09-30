@@ -25,7 +25,7 @@ import com.google.gson.JsonPrimitive;
 
 import include.GUI;
 import srlib.Store;
-import srlib.Unit;
+import srlib.units.Unit;
 import srlib.viewer.Raid;
 import include.Json;
 import include.NEF;

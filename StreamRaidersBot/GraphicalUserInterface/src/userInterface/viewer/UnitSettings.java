@@ -34,8 +34,8 @@ import otherlib.Ressources;
 import otherlib.Configs.UniInt;
 import otherlib.Configs.UniStr;
 import run.ProfileType;
-import srlib.Unit;
-import srlib.UnitRarity;
+import srlib.units.Unit;
+import srlib.units.UnitRarity;
 import userInterface.AbstractSettings;
 import userInterface.Colors;
 

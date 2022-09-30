@@ -1,4 +1,4 @@
-package srlib;
+package srlib.units;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +10,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import include.Json;
 import otherlib.Options;
+import srlib.Time;
 import srlib.skins.Skin;
+import srlib.souls.Soul;
+import srlib.souls.SoulType;
 
 public class Unit {
 	
@@ -121,51 +124,79 @@ public class Unit {
 	
 	
 	public boolean canFly() {
-		return uTypes.getAsJsonObject(unitType).get("canFly").getAsBoolean();
+		return uTypes.getAsJsonObject(type).get("canFly").getAsBoolean();
 	}
 	
 	
 	@Override
 	public String toString() {
-		return new StringBuilder().append("{").append(unitType)
-						.append(" ").append(get(SRC.Unit.level))
-						.append("}").toString();
+		StringBuilder sb = new StringBuilder()
+				.append("{").append(type)
+				.append(" ").append(level);
+		
+		if(soulType != null)
+			sb.append(" ").append(soulType.toString());
+		
+		return sb.append("}").toString();
 	}
 	
-	private final JsonObject unit;
-	public final String unitId, unitType;
-	private final long cool;
-	private final Set<String> ptags;
 	
+	public final String type, specializationUid, specializationDisName;
+	public final Set<String> ptags;
+	public final int unitId, level;
+	private final long cool;
 	public final boolean dupe;
+
+	private String skin;
+	private SoulType soulType;
+	private int soulId;
+	
 	
 	public Unit(JsonObject unit, String cid) throws ClassCastException {
-		this.unit = unit;
-		JsonElement jcool = unit.get(SRC.Unit.cooldownTime);
-		if(jcool.isJsonPrimitive())
-			cool = Time.parse(jcool.getAsString()) + 5;
-		else
-			cool = 0;
+		this.unitId = unit.get("unitId").getAsInt();
+		this.type = unit.get("unitType").getAsString();
+		this.level = unit.get("level").getAsInt();
+		this.dupe = false;
 		
-		unitType = unit.remove("unitType").getAsString();
-		unitId = unit.get("unitId").getAsString();
+		JsonElement je = unit.get("cooldownTime");
+		this.cool = je.isJsonPrimitive() ? Time.parse(je.getAsString()) + 5 : 0;
+		je = unit.get("soulId");
+		this.soulId = je.isJsonPrimitive() ? je.getAsInt() : -1;
+		je = unit.get("soulType");
+		this.soulType = je.isJsonPrimitive() ? SoulType.parseUID(je.getAsString()) : null;
+		je = unit.get("skin");
+		this.skin = je.isJsonPrimitive() ? je.getAsString() : null;
 		
-		dupe = false;
+		je = unit.get("specializationUid");
+		if(je.isJsonPrimitive()) {
+			this.specializationUid = je.getAsString();
+			JsonArray spc = uTypes.getAsJsonObject(type).getAsJsonArray("specs");
+			String tmp = null;
+			for(int i=0; i<spc.size(); i++) {
+				JsonObject sp = spc.get(i).getAsJsonObject();
+				if(specializationUid.equals(sp.get("uid").getAsString())) {
+					tmp = sp.get("name").getAsString();
+					break;
+				}
+			}
+			this.specializationDisName = tmp;
+		} else {
+			this.specializationUid = null;
+			this.specializationDisName = null;
+		}
 		
-		JsonArray ptagsJArr = uTypes.getAsJsonObject(unitType).getAsJsonArray("roles");
+		
+		JsonArray ptagsJArr = uTypes.getAsJsonObject(type).getAsJsonArray("roles");
 		HashSet<String> ptags_tmp = new HashSet<>();
 		for(int i=0; i<ptagsJArr.size(); i++)
 			ptags_tmp.add(ptagsJArr.get(i).getAsString());
 		
-		ptags = Collections.unmodifiableSet(ptags_tmp);
+		this.ptags = Collections.unmodifiableSet(ptags_tmp);
 	}
 	
 	private Unit(String unitType, boolean dupe) {
+		this.type = unitType;
 		this.dupe = dupe;
-		unit = null;
-		unitId = null;
-		this.unitType = unitType;
-		cool = 0;
 		
 		JsonArray ptagsJArr = uTypes.getAsJsonObject(unitType).getAsJsonArray("roles");
 		HashSet<String> ptags_tmp = new HashSet<>();
@@ -173,6 +204,15 @@ public class Unit {
 			ptags_tmp.add(ptagsJArr.get(i).getAsString());
 		
 		ptags = Collections.unmodifiableSet(ptags_tmp);
+
+		this.soulType = null;
+		this.skin = null;
+		this.specializationUid = null;
+		this.specializationDisName = null;
+		this.level = -1;
+		this.unitId = -1;
+		this.soulId = -1;
+		this.cool = -1;
 	}
 	
 	
@@ -180,54 +220,39 @@ public class Unit {
 		return new Unit(unitType, dupe);
 	}
 
-	public String get(String con) {
-		switch(con) {
-		case SRC.Unit.specializationDisName:
-			String spec = get(SRC.Unit.specializationUid);
-			if(spec != null) {
-				JsonArray spc = uTypes.getAsJsonObject(unitType).getAsJsonArray("specs");
-				for(int i=0; i<spc.size(); i++) {
-					JsonObject sp = spc.get(i).getAsJsonObject();
-					if(spec.equals(sp.get("uid").getAsString()))
-						return sp.get("name").getAsString();
-				}
-			}
-			return null;
-		case SRC.Unit.disName:
-			String skin = get(SRC.Unit.skin);
-			if(skin != null)
-				return Json.parseObj(Options.get("skins")).getAsJsonObject(skin).get("DisplayName").getAsString();
-			
-			String specname = get(SRC.Unit.specializationDisName);
-			return specname == null
-					? uTypes.getAsJsonObject(unitType)
-						.get("name").getAsString()
-					: specname;
-		default:
-			JsonElement el = unit.get(con);
-			if(el == null || !el.isJsonPrimitive()) 
-				return null;
-			return el.getAsString();
-		}
-	}
 	
 	public boolean isAvailable() {
 		return Time.isBeforeServerTime(cool);
 	}
 	
-	public boolean hasPlanType(String tag) {
-		return ptags.contains(tag);
+	public void setSoul(Soul soul) {
+		this.soulType = soul.type;
+		this.soulId = soul.soulId;
 	}
 	
-	public Set<String> getPlanTypes() {
-		return ptags;
+	public SoulType getSoulType() {
+		return soulType;
 	}
 	
+	public int getSoultId() {
+		return soulId;
+	}
 	
 	public void setSkin(Skin skin) {
-		unit.addProperty(SRC.Unit.skin, skin==null?null:skin.uid);
+		this.skin = skin==null?null:skin.uid;
 	}
 	
-
+	public String getSkin() {
+		return skin;
+	}
+	
+	public String getDisName() {
+		return skin != null 
+				//	TODO optimize, should not parse whole skins object for just one skin name
+				? Json.parseObj(Options.get("skins")).getAsJsonObject(skin).get("DisplayName").getAsString()
+				: (specializationDisName != null
+							? specializationDisName
+							: uTypes.getAsJsonObject(type).get("name").getAsString());
+	}
 	
 }
