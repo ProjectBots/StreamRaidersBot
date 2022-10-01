@@ -47,6 +47,13 @@ public class Event {
 		return currentTiers;
 	}
 	
+	public static String genEventBadgesFromData(JsonObject data) {
+		StringBuffer ret = new StringBuffer();
+		for(String b : data.getAsJsonObject("EventBadges").keySet())
+			ret.append(b).append(",");
+		return ret.deleteCharAt(ret.length()-1).toString();
+	}
+	
 	
 
 	public static String getCurrentEvent() {

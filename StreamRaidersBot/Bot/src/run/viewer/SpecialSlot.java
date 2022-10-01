@@ -361,6 +361,8 @@ public class SpecialSlot extends Slot {
 				item = Store.gold.get();
 			else if(item.contains("skin"))
 				item = "skin";
+			else if(Options.get("eventBadges").contains(item))
+				return;
 			
 			int a = dat.get("Amount").getAsInt();
 			v.addRew(vbe, SRC.Run.event, item, a);

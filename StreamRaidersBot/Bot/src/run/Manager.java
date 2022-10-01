@@ -581,6 +581,7 @@ public class Manager {
 				Options.set(catsToUpdateData[i], data.get(catsToUpdateData[i+1]).toString());
 			
 			Options.set("eventTiers", Event.genTiersFromData(data).toString());
+			Options.set("eventBadges", Event.genEventBadgesFromData(data));
 			Options.set("currentEventCurrency", data.getAsJsonObject("Items").getAsJsonObject("eventcurrency").get("CurrencyTypeAwarded").getAsString());
 			Options.set("unitCosts", Store.genUnitCostsFromData(data).toString());
 			Options.set("unitTypes", Unit.genUnitTypesFromData(data).toString());
