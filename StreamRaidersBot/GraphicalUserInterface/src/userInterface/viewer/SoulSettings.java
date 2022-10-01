@@ -22,6 +22,7 @@ import run.ProfileType;
 import run.viewer.ViewerBackEnd;
 import srlib.SRC;
 import srlib.SRR.NotAuthorizedException;
+import srlib.Store;
 import srlib.souls.Soul;
 import srlib.souls.SoulType;
 import srlib.units.Unit;
@@ -98,6 +99,7 @@ public class SoulSettings extends AbstractSettings {
 						try {
 							vbe.updateUnits(true);
 							vbe.updateSouls(true);
+							vbe.updateStore(true);
 							
 							openNewInstance(lid);
 						} catch (NoConnectionException | NotAuthorizedException e1) {
@@ -112,9 +114,11 @@ public class SoulSettings extends AbstractSettings {
 			}
 		});
 		
+		final int soulvessel;
 		try {
 			units = vbe.getUnits(SRC.BackEndHandler.all, false);
 			souls = vbe.getSouls(false);
+			soulvessel = vbe.getCurrency(Store.soulvessel, false);
 		} catch (NoConnectionException | NotAuthorizedException e) {
 			Logger.printException("SoulSettings -> open: err=unable to get units/souls", e, Logger.runerr, Logger.error, cid, null, true);
 			gui.close();
@@ -147,7 +151,8 @@ public class SoulSettings extends AbstractSettings {
 			for(SoulType st : SoulType.values()) {
 				Image ist = new Image(Ressources.get("SoulPics/"+st.toString().toLowerCase(), java.awt.Image.class));
 				ist.setPos(x++, g);
-				ist.setSquare(25);
+				ist.setSquare(50);
+				ist.setInsets(2, 10, 2, 2);
 				chead.addImage(ist);
 				
 				Label lc = new Label();
@@ -156,6 +161,18 @@ public class SoulSettings extends AbstractSettings {
 				lc.setForeground(Colors.getColor(fontPath+"labels"));
 				chead.addLabel(lc);
 			}
+			
+			Image ist = new Image(Ressources.get("SoulPics/graysoul", java.awt.Image.class));
+			ist.setPos(x++, g);
+			ist.setSquare(50);
+			ist.setInsets(2, 60, 2, 2);
+			chead.addImage(ist);
+			
+			Label lc = new Label();
+			lc.setPos(x++, g);
+			lc.setText(": "+soulvessel);
+			lc.setForeground(Colors.getColor(fontPath+"labels"));
+			chead.addLabel(lc);
 			
 		gui.addContainer(chead);
 		
@@ -181,7 +198,7 @@ public class SoulSettings extends AbstractSettings {
 				
 				for(final SoulType st : SoulType.values()) {
 					Container cist = new Container();
-					Image ist = new Image(Ressources.get("SoulPics/"+st.toString().toLowerCase(), java.awt.Image.class));
+					ist = new Image(Ressources.get("SoulPics/"+st.toString().toLowerCase(), java.awt.Image.class));
 					ist.setSquare(25);
 					cist.addImage(ist);
 					

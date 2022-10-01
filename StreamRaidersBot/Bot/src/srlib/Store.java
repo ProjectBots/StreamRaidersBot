@@ -86,6 +86,7 @@ public class Store {
 	public static final C eventcurrency = new C("eventcurrency");
 	public static final C bones = new C("bones");
 	public static final C meat = new C("meat");
+	public static final C soulvessel = new C("soulvessel");
 	
 	
 	private static final HashSet<String> currencyTypes = new HashSet<String>() {
@@ -99,6 +100,7 @@ public class Store {
 		add(eventcurrency.get());
 		add(bones.get());
 		add(meat.get());
+		add(soulvessel.get());
 	}};
 	
 	public int getCurrency(C con) {

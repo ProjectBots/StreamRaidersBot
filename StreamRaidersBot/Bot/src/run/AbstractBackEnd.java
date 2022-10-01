@@ -185,7 +185,7 @@ public abstract class AbstractBackEnd<B extends AbstractBackEnd<B>> {
 		if(store.getCurrency(Store.gold) < 2000)
 			return "not enough gold";
 		
-		if(store.getCurrency("soulvessel") < 1)
+		if(store.getCurrency(Store.soulvessel) < 1)
 			return "not enough soulvessel";
 		
 		JsonObject jo = Json.parseObj(req.extractSoul(""+u.unitId));
@@ -197,6 +197,9 @@ public abstract class AbstractBackEnd<B extends AbstractBackEnd<B>> {
 		
 		units = ArrayUtils.remove(units, ArrayUtils.indexOf(units, u));
 		souls = ArrayUtils.add(souls, new Soul(data));
+		
+		store.decreaseCurrency(Store.soulvessel, 1);
+		store.decreaseCurrency(Store.gold, 2000);
 		
 		return null;
 	}
