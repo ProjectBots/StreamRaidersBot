@@ -130,7 +130,7 @@ public class ChestSettings extends AbstractSettings {
 							else 
 								w = 3;
 							
-							Image img = new Image("data/LoyaltyPics/" + Viewer.pveloy[w] +".png");
+							Image img = new Image(Ressources.get("LoyaltyPics/"+Viewer.pveloy[w], java.awt.Image.class));
 							img.setSquare(18);
 							try {
 								GUI.setImage(uid+chest+"::loyImg::"+s, img);

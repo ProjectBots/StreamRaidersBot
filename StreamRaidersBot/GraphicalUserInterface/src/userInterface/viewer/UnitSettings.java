@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,10 +31,12 @@ import include.GUI.Image;
 import include.GUI.Label;
 import include.GUI.TextField;
 import otherlib.Configs;
+import otherlib.Logger;
 import otherlib.Options;
 import otherlib.Ressources;
 import otherlib.Configs.UniInt;
 import otherlib.Configs.UniStr;
+import run.Manager;
 import run.ProfileType;
 import srlib.units.Unit;
 import srlib.units.UnitRarity;
@@ -154,7 +158,37 @@ public class UnitSettings extends AbstractSettings {
 	
 	
 	public UnitSettings(String cid, String lid, GUI parrent) {
-		super(cid, lid, parrent, 500, 500, false, true);
+		super(cid, lid, parrent, 500, 500, true, true);
+		
+		gui.setGlobalKeyLis(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {}
+			@Override
+			public void keyReleased(KeyEvent e) {}
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) > 0 && (e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0) {
+					switch(e.getKeyCode()) {
+					}
+				} else if((e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0) {
+					switch(e.getKeyCode()) {
+					case KeyEvent.VK_R:
+						try {
+							Manager.getViewer(cid).useBackEnd(vbe -> vbe.updateUnits(true));
+							openNewInstance(lid);
+						} catch (Exception e1) {
+							Logger.printException("UnitSettings -> reload: err=unable to get units/souls", e1, Logger.runerr, Logger.error, cid, null, true);
+						}
+						break;
+					}
+				} else if((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) > 0) {
+					switch(e.getKeyCode()) {
+					}
+				}
+			}
+		});
+		
+		addLayerChooser();
 		
 		ArrayList<String> types = Unit.getTypesList();
 		
@@ -223,6 +257,8 @@ public class UnitSettings extends AbstractSettings {
 	
 	@Override
 	protected void addContent() {
+		
+		
 		gui.setFullScreen(true);
 		
 		int p = 1;

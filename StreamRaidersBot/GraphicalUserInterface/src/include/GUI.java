@@ -490,6 +490,8 @@ public class GUI{
 			((JLabel) ob).setText(text);
 		} else if(ob instanceof AbstractButton) {
 			((AbstractButton) ob).setText(text);
+		} else if(ob instanceof JTextComponent) {
+			((JTextComponent) ob).setText(text);
 		}
 		
 		if(forceUpdate)

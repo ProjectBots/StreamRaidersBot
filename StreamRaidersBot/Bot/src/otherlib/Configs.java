@@ -441,7 +441,6 @@ public class Configs {
 	}
 	
 	
-	
 	public static void addUnitId(String cid, ProfileType pt, String unitId, String unitType, int unitLevel) {
 		
 		JsonObject unitInfo = config.getAsJsonObject(cid)
@@ -453,26 +452,46 @@ public class Configs {
 		info.addProperty(typeViewer.con, unitType);
 		info.addProperty(fromViewer.con, cid);
 		
+		boolean hadBefore = unitInfo.has(unitId);
+		
 		unitInfo.add(unitId, info);
 		
 		checkUnit(cid, pt, unitId, true);
 		
+		if(!hadBefore)
+			syncUnit(cid, pt, "(all)", unitId, unitType);
+		
 	}
 	
+	
 	private static void remUnitId(String cid, ProfileType pt, String unitId) {
-		for(String lid : getLayerIds(cid, pt)) {
-			JsonObject units = getLayer(cid, pt, lid).getAsJsonObject("units");
-			for(String u : units.keySet()) {
-				String sync = units.getAsJsonObject(u).get("sync").getAsString();
-				if(sync.equals(unitId))
-					syncUnit(cid, pt, lid, u, null);
-			}
-			units.remove(unitId);
-		}
+		for(String lid : getLayerIds(cid, pt))
+			remUnit(cid, pt, lid, unitId);
+		
 		config.getAsJsonObject(cid)
 			.getAsJsonObject(pt.toString())
 			.getAsJsonObject("unitInfo")
 			.remove(unitId);
+	}
+	
+	private static void remUnit(String cid, ProfileType pt, String lid, String unitId) {
+		String sync = getUnitSync(cid, pt, lid, unitId);
+		if(!sync.equals("(none)"))
+			syncUnit(cid, pt, lid, unitId, null);
+		
+		for(String key : getUnitIds(cid, pt, true))
+			if(getUnitSync(cid, pt, lid, key).equals(unitId))
+				syncUnit(cid, pt, lid, key, null);
+		
+		
+		getLayer(cid, pt, lid)
+			.getAsJsonObject("units")
+			.remove(unitId);
+	}
+	
+	public static void clearUnitInfo(String cid, ProfileType pt) {
+		for(String key : getUnitIds(cid, pt, false))
+			remUnitId(cid, pt, key);
 	}
 	
 	
@@ -602,10 +621,15 @@ public class Configs {
 			}
 			return ret == null ? sel : ret.toString();
 		}
+		try {
 		return getLayer(cid, pt, lid)
 				.getAsJsonObject("units")
 				.getAsJsonObject(unitId)
 				.get("sync").getAsString();
+		} catch (NullPointerException e) {
+			System.out.println(unitId);
+			throw e;
+		}
 	}
 	
 	

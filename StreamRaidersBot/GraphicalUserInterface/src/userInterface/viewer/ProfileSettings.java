@@ -1000,9 +1000,25 @@ public class ProfileSettings extends AbstractSettings {
 		gui.addContainer(cproxy);
 		
 		
+		Button resUnits = new Button();
+		resUnits.setPos(0, g++);
+		resUnits.setText("Reset Units");
+		resUnits.setInsets(20, 10, 2, 2);
+		resUnits.setTooltip("Reset saved units for this profile");
+		resUnits.setGradient(Colors.getGradient(fontPath+"buttons def"));
+		resUnits.setForeground(Colors.getColor(fontPath+"buttons def"));
+		resUnits.setAL(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(gui.showConfirmationBox("Reset Units?"))
+					Configs.clearUnitInfo(cid, pt);
+			}
+		});
+		gui.addBut(resUnits);
+		
 		Button resStat = new Button();
 		resStat.setPos(0, g++);
-		resStat.setInsets(20, 10, 20, 2);
+		resStat.setInsets(2, 10, 20, 2);
 		resStat.setText("Reset Stats");
 		resStat.setTooltip("Reset the stats for this profile");
 		resStat.setGradient(Colors.getGradient(fontPath+"buttons def"));

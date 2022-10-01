@@ -117,6 +117,8 @@ public class SoulSettings extends AbstractSettings {
 				}
 			}
 		});
+		
+		
 		final Unit[] units;
 		final Soul[] souls;
 		final Raid[] raids;
@@ -280,7 +282,8 @@ public class SoulSettings extends AbstractSettings {
 						bex.setGradient(Colors.getGradient(fontPath+"buttons def"));
 						bex.setForeground(Colors.getColor(fontPath+"buttons def"));
 						bex.setAL(a -> {
-							gui.showConfirmationBox("Are you sure to sacrifice this unit\nfor a "+SoulType.parseUnit(units[yy].type).title+"?");
+							if(!gui.showConfirmationBox("Are you sure to sacrifice this unit\nfor a "+SoulType.parseUnit(units[yy].type).title+"?"))
+								return;
 							try {
 								String err = vbe.extractSoul(units[yy]);
 								if(err != null) {
