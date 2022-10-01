@@ -28,7 +28,7 @@ import srlib.Store.C;
 import srlib.Store.Item;
 import srlib.skins.Skin;
 import srlib.skins.Skins;
-import srlib.souls.Soul;
+import srlib.souls.SoulType;
 import srlib.units.Unit;
 import srlib.viewer.CaptainData;
 import srlib.viewer.Raid;
@@ -382,7 +382,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	
 	public String placeUnit(int slot, Unit unit, boolean epic, int[] pos, boolean onPlanIcon, Skin overrideSkin) throws NoConnectionException {
 		String atr = req.addToRaid(raids[slot].raidId,
-				createPlacementData(unit, epic, maps[slot].getAsSRCoords(epic, pos), onPlanIcon, overrideSkin, unit.getSoulType().uid));
+				createPlacementData(unit, epic, maps[slot].getAsSRCoords(epic, pos), onPlanIcon, overrideSkin, unit.getSoulType()));
 		
 		try {
 			JsonElement je = Json.parseObj(atr).get(SRC.errorMessage);
@@ -395,7 +395,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		return null;
 	}
 	
-	public String createPlacementData(Unit unit, boolean epic, double[] pos, boolean onPlanIcon, Skin overrideSkin, String soulType) {
+	public String createPlacementData(Unit unit, boolean epic, double[] pos, boolean onPlanIcon, Skin overrideSkin, SoulType st) {
 		JsonObject ret = new JsonObject();
 		ret.addProperty("raidPlacementsId", "");
 		ret.addProperty("userId", req.getViewerUserId());
@@ -411,7 +411,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		ret.addProperty("onPlanIcon", onPlanIcon);
 		ret.addProperty("isSpell", false);
 		ret.addProperty("stackRaidPlacementsId", "0");
-		ret.addProperty("SoulType", soulType == null ? "" : soulType);
+		ret.addProperty("SoulType", st == null ? "" : st.uid);
 		return ret.toString();
 	}
 	
@@ -548,43 +548,6 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		return req.grantEventQuestMilestoneReward();
 	}
 	
-	
-	@Override
-	public Soul[] getSouls(boolean force) throws NoConnectionException, NotAuthorizedException {
-		updateRaids(force);
-		updateUnits(force);
-		Soul[] souls = super.getSouls(force);
-		
-		HashMap<Integer, Soul> soulsByUnit = new HashMap<>();
-		for(int i=0; i<souls.length; i++) {
-			if(souls[i].getUnitId() == -1)
-				continue;
-			
-			soulsByUnit.put(souls[i].getUnitId(), souls[i]);
-		}
-		
-		for(int i=0; i<raids.length; i++) {
-			if(raids[i] == null || raids[i].placementsSerialized == null)
-				continue;
-			
-			JsonArray pser = Json.parseArr(raids[i].placementsSerialized);
-			for(int p=0; p<pser.size(); p++) {
-				JsonObject place = pser.get(p).getAsJsonObject();
-				
-				if(!place.get("userId").getAsString().equals(req.getViewerUserId()))
-					continue;
-				
-				int unitId = place.get("unitId").getAsInt();
-				if(soulsByUnit.containsKey(unitId))
-					soulsByUnit.get(unitId).setInBattle(true);
-				
-			}
-		}
-		
-		return souls;
-	}
-	
-
 	private static <T>T[] add(T[] arr, T item) {
 		return ArrayUtils.add(arr, item);
 	}

@@ -8,7 +8,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import include.GUI;
+import include.Json;
 import include.GUI.Button;
 import include.GUI.Image;
 import include.GUI.Label;
@@ -26,14 +30,14 @@ import srlib.Store;
 import srlib.souls.Soul;
 import srlib.souls.SoulType;
 import srlib.units.Unit;
+import srlib.viewer.Raid;
 import userInterface.AbstractSettings;
 import userInterface.Colors;
 
 public class SoulSettings extends AbstractSettings {
 	
 	private boolean closed = false;
-	private Unit[] units;
-	private Soul[] souls;
+	
 
 	protected SoulSettings(String cid, String lid, GUI parent) {
 		super(cid, lid, parent, 750, 750, true, false);
@@ -113,11 +117,14 @@ public class SoulSettings extends AbstractSettings {
 				}
 			}
 		});
-		
+		final Unit[] units;
+		final Soul[] souls;
+		final Raid[] raids;
 		final int soulvessel;
 		try {
 			units = vbe.getUnits(SRC.BackEndHandler.all, false);
 			souls = vbe.getSouls(false);
+			raids = vbe.getRaids(SRC.BackEndHandler.all);
 			soulvessel = vbe.getCurrency(Store.soulvessel, false);
 		} catch (NoConnectionException | NotAuthorizedException e) {
 			Logger.printException("SoulSettings -> open: err=unable to get units/souls", e, Logger.runerr, Logger.error, cid, null, true);
@@ -125,12 +132,25 @@ public class SoulSettings extends AbstractSettings {
 			return;
 		}
 		
+
 		Arrays.sort(units);
 		
 		HashSet<Integer> unitsInBattle = new HashSet<>();
-		for(int i=0; i<souls.length; i++)
-			if(souls[i].isInBattle())
-				unitsInBattle.add(souls[i].getUnitId());
+		
+		for(int i=0; i<raids.length; i++) {
+			if(raids[i] == null || raids[i].placementsSerialized == null)
+				continue;
+			
+			JsonArray pser = Json.parseArr(raids[i].placementsSerialized);
+			for(int p=0; p<pser.size(); p++) {
+				JsonObject place = pser.get(p).getAsJsonObject();
+				
+				if(!place.get("userId").getAsString().equals(vbe.getViewerUserId()))
+					continue;
+				
+				unitsInBattle.add(place.get("unitId").getAsInt());
+			}
+		}
 		
 		final HashMap<SoulType, ArrayList<Soul>> ss = new HashMap<>();
 		

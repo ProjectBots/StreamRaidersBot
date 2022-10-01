@@ -19,8 +19,6 @@ public class Soul {
 	
 	private int unitId;
 	
-	private boolean inBattle = false;
-	
 	public Soul(JsonObject soul) {
 		this.soulId = soul.get("soulId").getAsInt();
 		JsonElement je = soul.get("unitId");
@@ -36,13 +34,6 @@ public class Soul {
 		return unitId;
 	}
 
-	public void setInBattle(boolean b) {
-		inBattle = b;
-	}
-	
-	public boolean isInBattle() {
-		return inBattle;
-	}
 	
 	
 }

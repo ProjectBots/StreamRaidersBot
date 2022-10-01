@@ -19,11 +19,11 @@ public class Raid {
 	public String toString() {
 		return twitchDisplayName;
 	}
-	//"lastUnitPlacedTime";
+	
 	public final String raidId, nodeType, captainId, chestType, twitchDisplayName, battleground, nodeId,
 						twitchUserImage, twitchUserName, allyBoons, placementsSerialized, users;
 	public final long creationDate, nextUnitPlaceTime;
-	public final boolean battleResult, hasViewedResults, isPlaying, isLive, postBattleComplete, hasRecievedRewards, placementEnded, placedUnit;
+	public final boolean ended, battleResult, hasViewedResults, isPlaying, isLive, postBattleComplete, hasRecievedRewards, placementEnded, placedUnit;
 	public final int pveWins, pveLoyaltyLevel, userSortIndex;
 	
 	
@@ -63,6 +63,8 @@ public class Raid {
 		this.hasRecievedRewards = !je.isJsonPrimitive() || je.getAsInt() == 1;
 		this.placementEnded = raid.get("placementEndTime").isJsonPrimitive() || Time.isBeforeServerTime(creationDate + type.raidDuration);
 		this.placedUnit = je.isJsonPrimitive();
+		je = raid.get("endTime");
+		this.ended = je.isJsonPrimitive() ? true : false;
 		
 		this.pveWins = raid.get("pveWins").getAsInt();
 		this.pveLoyaltyLevel = raid.get("pveLoyaltyLevel").getAsInt();
@@ -119,7 +121,7 @@ public class Raid {
 	}
 	
 	public boolean isReward() {
-		return battleResult && !hasRecievedRewards;
+		return ended && !hasRecievedRewards;
 	}
 	
 	private static final String[][] AWARDED_REWARDS = new String[][] {
