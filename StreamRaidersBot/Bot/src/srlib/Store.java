@@ -25,9 +25,9 @@ public class Store {
 		return unitCosts;
 	}
 
-	public static int[] getCost(String type, int lvl, boolean dupe) {
+	public static int[] getCost(UnitRarity ur, int lvl, boolean dupe) {
 		lvl++;
-		String id = UnitRarity.parseType(type).toString().toLowerCase()+"_";
+		String id = ur.toString().toLowerCase()+"_";
 		if(dupe) 
 			id += "dupe1";
 		else if(lvl == 1)
@@ -160,7 +160,7 @@ public class Store {
 	}
 	
 	public boolean canUpgradeUnit(Unit unit) {
-		int[] cost = getCost(unit.type, unit.level, false);
+		int[] cost = getCost(unit.rarity, unit.level, false);
 		
 		if(getCurrency(gold) < cost[0] || getCurrency(unit.type) < cost[1])
 			return false;
@@ -177,7 +177,7 @@ public class Store {
 			if(lvl == 30) 
 				continue;
 			
-			if(getCost(type, lvl, false)[1] <= getCurrency(type))
+			if(getCost(units[i].rarity, lvl, false)[1] <= getCurrency(type))
 				ret.add(units[i]);
 		}
 		return ret.toArray(new Unit[ret.size()]);
@@ -200,15 +200,14 @@ public class Store {
 		if(err.isJsonPrimitive())
 			return err.getAsString();
 		
-		String ut = unit.type;
-		int[] cost = getCost(ut, unit.level, false);
+		int[] cost = getCost(unit.rarity, unit.level, false);
 		decreaseCurrency(gold, cost[0]);
-		decreaseCurrency(ut, cost[1]);
+		decreaseCurrency(unit.type, cost[1]);
 		return null;
 	}
 	
 	public boolean canUnlockUnit(String type, boolean dupe) {
-		int[] cost = getCost(type, 0, dupe);
+		int[] cost = getCost(UnitRarity.parseType(type), 0, dupe);
 		
 		if(getCurrency(gold) < cost[0] || getCurrency(type) < cost[1])
 			return false;
@@ -237,8 +236,8 @@ public class Store {
 			if(gotTypes.containsKey(type))
 				continue;
 			
-			if(getCost(type, 0, false)[1] <= getCurrency(type))
-				ret.add(Unit.createTypeOnly(type, false));
+			if(getCost(UnitRarity.parseType(type), 0, false)[1] <= getCurrency(type))
+				ret.add(Unit.getTypeOnly(type, false));
 		}
 		
 		//	dupe unlock
@@ -247,25 +246,22 @@ public class Store {
 			if(!gotTypes.get(type))
 				continue;
 			
-			if(getCost(type, 0, true)[1] <= getCurrency(type))
-				ret.add(Unit.createTypeOnly(type, true));
+			if(getCost(UnitRarity.parseType(type), 0, true)[1] <= getCurrency(type))
+				ret.add(Unit.getTypeOnly(type, true));
 		}
 		return ret.toArray(new Unit[ret.size()]);
 	}
 	
-	//	TODO handle request in BackEndHandler.java
-	public String unlockUnit(String type, boolean dupe, SRR req) throws NoConnectionException {
-		
-		String text = req.unlockUnit(type);
+	public String unlockUnit(String text, Unit type, boolean dupe, SRR req) {
 		
 		JsonObject res = Json.parseObj(text);
 		JsonElement err = res.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
 			return err.getAsString();
 		
-		int[] cost = getCost(type, 0, dupe);
+		int[] cost = getCost(type.rarity, 0, dupe);
 		decreaseCurrency(gold, cost[0]);
-		decreaseCurrency(type, cost[1]);
+		decreaseCurrency(type.type, cost[1]);
 		return null;
 	}
 	

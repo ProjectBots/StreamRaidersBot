@@ -45,7 +45,7 @@ public abstract class AbstractStats <P extends AbstractProfile<R, B>, B extends 
 			P p = (P) Manager.getProfile(cid);
 			open(p, be);
 		} catch (Exception e) {
-			Logger.printException("Stats -> open: err=unable to load stats", e, Logger.runerr, Logger.error, Configs.getPStr(cid, Configs.pname), null, true);
+			Logger.printException("Stats -> open: err=unable to load stats", e, Logger.runerr, Logger.error, cid, null, true);
 		}
 	}
 	

@@ -237,7 +237,7 @@ public class RaidSlot extends Slot {
 				goMultiPlace = false;
 				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
 					final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, r.chestType,
-							Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.twitchDisplayName), vbe.getSkins(), r.captainId);
+							Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.twitchDisplayName), vbe.getSkins(false), r.captainId);
 					if(pla == null)
 						continue;
 					bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
@@ -264,7 +264,7 @@ public class RaidSlot extends Slot {
 			} else {
 				final String node = Remaper.map(r.chestType);
 				final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, node,
-						Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.twitchDisplayName), vbe.getSkins(), r.captainId);
+						Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.twitchDisplayName), vbe.getSkins(false), r.captainId);
 				
 
 				if(pla == null) {

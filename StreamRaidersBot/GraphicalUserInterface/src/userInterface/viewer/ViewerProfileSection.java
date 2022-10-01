@@ -22,6 +22,7 @@ import userInterface.MapGUI;
 public class ViewerProfileSection {
 
 	private static String[] sc = "Gold Potions Meat EventCurrency Keys Bones".split(" ");
+	private static String[] stngsNames = "Profile Units Chests Layers Captains Skins Souls".split(" ");
 	
 	private final String cid;
 	
@@ -206,8 +207,7 @@ public class ViewerProfileSection {
 					cap.setForeground(Colors.getColor("main labels"));
 					raid.addLabel(cap, MainFrame.pspre+cid+"::"+i+"::capname");
 					
-					Image img = null;
-					img = new Image(Ressources.get("Other/icon", java.awt.Image.class));
+					Image img = new Image(Ressources.get("Other/icon", java.awt.Image.class));
 					img.setPos(0, p++);
 					img.setAnchor("c");
 					img.setSquare(100);
@@ -241,8 +241,7 @@ public class ViewerProfileSection {
 						wins.setForeground(Colors.getColor("main labels"));
 						cloy.addLabel(wins, MainFrame.pspre+cid+"::"+i+"::wins");
 						
-						Image loy = null;
-						loy = new Image(Ressources.get("LoyaltyPics/noloy", java.awt.Image.class));
+						Image loy = new Image(Ressources.get("LoyaltyPics/noloy", java.awt.Image.class));
 						loy.setPos(1, 0);
 						loy.setSquare(20);
 						loy.setInsets(2, 15, 2, 15);
@@ -323,8 +322,7 @@ public class ViewerProfileSection {
 					mapchest.setAnchor("c");
 					
 						Container cmapimg = new Container();
-						Image mapimg = null;
-						mapimg = new Image(Ressources.get("Other/map", java.awt.Image.class));
+						Image mapimg = new Image(Ressources.get("Other/map", java.awt.Image.class));
 						mapimg.setSquare(15);
 						cmapimg.addImage(mapimg);
 						
@@ -343,8 +341,7 @@ public class ViewerProfileSection {
 						});
 						mapchest.addBut(map);
 						
-						Image chest = null;
-						chest = new Image(Ressources.get("ChestPics/nochest", java.awt.Image.class));
+						Image chest = new Image(Ressources.get("ChestPics/nochest", java.awt.Image.class));
 						chest.setPos(1, 0);
 						chest.setAnchor("c");
 						chest.setSquare(25);
@@ -389,7 +386,6 @@ public class ViewerProfileSection {
 				stngsSymb.setTooltip("Just a Symbol that symbolises that the following Buttons open Windows with Settings");
 				stngs.addLabel(stngsSymb);
 				
-				String[] stngsNames = "Profile Units Chests Layers Captains Skins".split(" ");
 				
 				for(final String key : stngsNames) {
 					final String name = (key.equals("Profile") 

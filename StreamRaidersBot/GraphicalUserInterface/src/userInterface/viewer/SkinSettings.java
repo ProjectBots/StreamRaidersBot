@@ -1,6 +1,8 @@
 package userInterface.viewer;
 
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -14,7 +16,6 @@ import include.GUI.Container;
 import include.GUI.Label;
 import include.GUI.WinLis;
 import include.Http.NoConnectionException;
-import otherlib.Configs;
 import otherlib.Logger;
 import srlib.SRC;
 import srlib.SRR.NotAuthorizedException;
@@ -53,7 +54,7 @@ public class SkinSettings extends AbstractSettings {
 	@Override
 	protected void addContent() {
 		//	own thread bcs window is blocking until closed
-		Thread t = new Thread(() -> {
+		new Thread(() -> {
 			try {
 				Manager.getViewer(cid).useBackEnd(vbe -> {
 					addContent(vbe);
@@ -61,8 +62,7 @@ public class SkinSettings extends AbstractSettings {
 			} catch (Exception e) {
 				Logger.printException("SkinSettings -> open: err=unable to load skin settings", e, Logger.runerr, Logger.error, cid, null, true);
 			}
-		});
-		t.start();
+		}).start();
 	}
 	
 	private void addContent(ViewerBackEnd vbe) {
@@ -81,13 +81,45 @@ public class SkinSettings extends AbstractSettings {
 			}
 		});
 		
+		gui.setGlobalKeyLis(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {}
+			@Override
+			public void keyReleased(KeyEvent e) {}
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) > 0 && (e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0) {
+					switch(e.getKeyCode()) {
+					}
+				} else if((e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0) {
+					switch(e.getKeyCode()) {
+					case KeyEvent.VK_R:
+						try {
+							vbe.updateSkins(true);
+							vbe.updateUnits(true);
+							
+							openNewInstance(lid);
+						} catch (NoConnectionException | NotAuthorizedException e1) {
+							Logger.printException("SkinSettings -> reload: err=unable to get units/skins", e1, Logger.runerr, Logger.error, cid, null, true);
+						}
+						return;
+					}
+				} else if((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) > 0) {
+					switch(e.getKeyCode()) {
+					}
+				}
+			}
+		});
+		
+		
+		
 		Unit[] units_;
 		Skins skins_;
 		try {
 			units_ = vbe.getUnits(SRC.BackEndHandler.all, false);
-			skins_ = vbe.getSkins();
+			skins_ = vbe.getSkins(false);
 		} catch (NoConnectionException | NotAuthorizedException e) {
-			Logger.printException("SkinSettings -> open: err=unable to get units/skins", e, Logger.runerr, Logger.error, Configs.getPStr(cid, Configs.pname), null, true);
+			Logger.printException("SkinSettings -> open: err=unable to get units/skins", e, Logger.runerr, Logger.error, cid, null, true);
 			gui.close();
 			return;
 		}
@@ -184,7 +216,7 @@ public class SkinSettings extends AbstractSettings {
 									else
 										GUI.setText(gid+"l", getExtendedUnitName(u));
 								} catch (NoConnectionException e1) {
-									Logger.printException("SkinSettings -> open -> selected: err=No Connection", e1, Logger.runerr, Logger.error, Configs.getPStr(cid, Configs.pname), null, true);
+									Logger.printException("SkinSettings -> open -> selected: err=No Connection", e1, Logger.runerr, Logger.error, cid, null, true);
 								}
 							}
 							

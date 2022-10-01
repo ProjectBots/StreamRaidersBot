@@ -232,7 +232,7 @@ public class StreamRaiders {
 		});
 		
 		try {
-			for(String s : "ChestPics LoyaltyPics Other UnitPics".split(" ")) {
+			for(String s : "ChestPics LoyaltyPics Other SoulPics UnitPics".split(" ")) {
 				File folder = new File("data/"+s);
 				if(!folder.exists() || !folder.isDirectory())
 					continue;

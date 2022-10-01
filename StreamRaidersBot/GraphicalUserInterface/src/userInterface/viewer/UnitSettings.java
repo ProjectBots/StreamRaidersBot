@@ -284,8 +284,7 @@ public class UnitSettings extends AbstractSettings {
 	private void addUnit(final U u, final int g) {
 		int p = 0;
 		
-		Image upic = null;
-		upic = new Image(Ressources.get("UnitPics/"+u.type.replace("allies", ""), java.awt.Image.class));
+		Image upic = new Image(Ressources.get("UnitPics/"+u.type.replace("allies", ""), java.awt.Image.class));
 		upic.setPos(p++, g);
 		upic.setSquare(18);
 		gui.addImage(upic);
@@ -483,8 +482,7 @@ public class UnitSettings extends AbstractSettings {
 			
 			int m = StringUtils.countMatches(val, s+",");
 			Container cimg = new Container();
-			Image img = null;
-			img = new Image(Ressources.get("ChestPics/"+s, java.awt.Image.class));
+			Image img = new Image(Ressources.get("ChestPics/"+s, java.awt.Image.class));
 			img.setSquare(18);
 			cimg.addImage(img);
 			

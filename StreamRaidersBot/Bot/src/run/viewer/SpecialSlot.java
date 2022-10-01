@@ -357,10 +357,6 @@ public class SpecialSlot extends Slot {
 			dat = dat.getAsJsonObject("data").getAsJsonObject("rewardData");
 			String item = dat.get("ItemId").getAsString();
 			
-			//	TODO rem
-			if(item.equals("soulvessel"))
-				System.out.println(Configs.getPStr(cid, Configs.pname) + " got a soulvessel");
-			
 			if(item.equals("goldpiecebag"))
 				item = Store.gold.get();
 			else if(item.contains("skin"))

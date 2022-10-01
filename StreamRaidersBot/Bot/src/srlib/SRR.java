@@ -510,4 +510,27 @@ public class SRR {
 		post.addEncArg("code", code);
 		return sendPost(post);
 	}
+	
+	public String extractSoul(String unitId) throws NoConnectionException {
+		Http post = getPost("extractSoul");
+		post.addEncArg("unitId", unitId);
+		return sendPost(post);
+	}
+	
+	public String getUserSouls() throws NoConnectionException {
+		return sendPost(getPost("getUserSouls"));
+	}
+	
+	public String equipSoul(String soulId, String unitId) throws NoConnectionException {
+		Http post = getPost("equipSoul");
+		post.addEncArg("soulId", soulId);
+		post.addEncArg("unitId", unitId);
+		return sendPost(post);
+	}
+	
+	public String unequipSoul(String soulId) throws NoConnectionException {
+		Http post = getPost("unequipSoul");
+		post.addEncArg("soulId", soulId);
+		return sendPost(post);
+	}
 }

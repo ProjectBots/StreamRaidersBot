@@ -273,12 +273,13 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 				Configs.getBoolean(cid, currentLayer, Configs.proxyMandatoryViewer));
 		
 		vbe.setUpdateTimes( Configs.getInt(cid, currentLayer, Configs.unitUpdateViewer),
+							Configs.getInt(cid, currentLayer, Configs.skinUpdateViewer),
+							Configs.getInt(cid, currentLayer, Configs.soulsUpdateViewer),
+							Configs.getInt(cid, currentLayer, Configs.capsUpdateViewer),
 							Configs.getInt(cid, currentLayer, Configs.raidUpdateViewer),
 							Configs.getInt(cid, currentLayer, Configs.mapUpdateViewer),
 							Configs.getInt(cid, currentLayer, Configs.storeUpdateViewer),
-							Configs.getInt(cid, currentLayer, Configs.questEventRewardsUpdateViewer),
-							Configs.getInt(cid, currentLayer, Configs.capsUpdateViewer),
-							Configs.getInt(cid, currentLayer, Configs.skinUpdateViewer));
+							Configs.getInt(cid, currentLayer, Configs.questEventRewardsUpdateViewer));
 	}
 	
 	private String[] cnames = new String[12];

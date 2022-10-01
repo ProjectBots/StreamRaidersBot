@@ -15,7 +15,7 @@ import srlib.skins.Skin;
 import srlib.souls.Soul;
 import srlib.souls.SoulType;
 
-public class Unit {
+public class Unit implements Comparable<Unit> {
 	
 	private static JsonObject uTypes = Json.parseObj(Options.get("unitTypes"));
 	
@@ -140,22 +140,40 @@ public class Unit {
 		return sb.append("}").toString();
 	}
 	
+	@Override
+	public int compareTo(Unit u) {
+		int t = this.rarity.rank - u.rarity.rank;
+		if(t != 0)
+			return t;
+		
+		t = this.type.compareTo(u.type);
+		if(t != 0)
+			return t;
+		
+		return u.level - this.level;
+	}
 	
+	
+	public final UnitRarity rarity;
 	public final String type, specializationUid, specializationDisName;
 	public final Set<String> ptags;
 	public final int unitId, level;
-	private final long cool;
 	public final boolean dupe;
+	
+	private final long cool;
 
 	private String skin;
 	private SoulType soulType;
 	private int soulId;
 	
 	
-	public Unit(JsonObject unit, String cid) throws ClassCastException {
+	public Unit(JsonObject unit) {
 		this.unitId = unit.get("unitId").getAsInt();
 		this.type = unit.get("unitType").getAsString();
 		this.level = unit.get("level").getAsInt();
+		
+		rarity = UnitRarity.parseType(type);
+		
 		this.dupe = false;
 		
 		JsonElement je = unit.get("cooldownTime");
@@ -196,6 +214,7 @@ public class Unit {
 	
 	private Unit(String unitType, boolean dupe) {
 		this.type = unitType;
+		this.rarity = UnitRarity.parseType(unitType);
 		this.dupe = dupe;
 		
 		JsonArray ptagsJArr = uTypes.getAsJsonObject(unitType).getAsJsonArray("roles");
@@ -216,7 +235,7 @@ public class Unit {
 	}
 	
 	
-	public static Unit createTypeOnly(String unitType, boolean dupe) {
+	public static Unit getTypeOnly(String unitType, boolean dupe) {
 		return new Unit(unitType, dupe);
 	}
 
@@ -226,15 +245,15 @@ public class Unit {
 	}
 	
 	public void setSoul(Soul soul) {
-		this.soulType = soul.type;
-		this.soulId = soul.soulId;
+		this.soulType = soul != null ? soul.type : null;
+		this.soulId = soul != null ? soul.soulId : -1;
 	}
 	
 	public SoulType getSoulType() {
 		return soulType;
 	}
 	
-	public int getSoultId() {
+	public int getSoulId() {
 		return soulId;
 	}
 	

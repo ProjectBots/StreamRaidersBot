@@ -87,7 +87,7 @@ public class ProfileSettings extends AbstractSettings {
 						run.updateVbe(vbe);
 					});
 				} catch (Exception e1) {
-					Logger.printException("ProfileSettings -> open: err=failed to update proxy settings", e1, Logger.runerr, Logger.error, Configs.getPStr(cid, Configs.pname), null, true);
+					Logger.printException("ProfileSettings -> open: err=failed to update proxy settings", e1, Logger.runerr, Logger.error, cid, null, true);
 				}
 			}
 		});
@@ -491,7 +491,7 @@ public class ProfileSettings extends AbstractSettings {
 					items = vbe.getAvailableEventStoreItems(section, true);
 					items_ = vbe.getAvailableEventStoreItems(section, false);
 				} catch (NoConnectionException | NotAuthorizedException e3) {
-					Logger.printException("ProfileSettings -> open -> specialShop: err=unable to get items", e3, Logger.runerr, Logger.error, Configs.getPStr(cid, Configs.pname), null, true);
+					Logger.printException("ProfileSettings -> open -> specialShop: err=unable to get items", e3, Logger.runerr, Logger.error, cid, null, true);
 					gui.close();
 					return;
 				}
@@ -685,7 +685,7 @@ public class ProfileSettings extends AbstractSettings {
 		cstorem.setPos(0, g++);
 		cstorem.setInsets(10, 0, 0, 0);
 			
-			String[] smgs = "Store Min Gold  Store Min Keys  Store Min Eventcurrency  Upgrade Min Gold  Unlock Min Gold  Unit Place Retries  Map Reload After X Retries  Max Unit Per Raid  Cap Inactive Treshold  Unit Update  Raid Update  Map Update  Store Update  Skin Update  Quest Event Rewards Update  Caps Update".split("  ");
+			String[] smgs = "Store Min Gold  Store Min Keys  Store Min Eventcurrency  Upgrade Min Gold  Unlock Min Gold  Unit Place Retries  Map Reload After X Retries  Max Unit Per Raid  Cap Inactive Treshold  Unit Update  Raid Update  Map Update  Store Update  Skin Update  Quest Event Rewards Update  Caps Update  Souls Update".split("  ");
 			int l = 0;
 			for(String key : smgs) {
 				final Int con = new Int(key.substring(0, 1).toLowerCase() + key.substring(1).replace(" ", ""), ProfileType.VIEWER);

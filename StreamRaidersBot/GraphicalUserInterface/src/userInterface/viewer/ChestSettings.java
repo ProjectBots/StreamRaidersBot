@@ -82,8 +82,7 @@ public class ChestSettings extends AbstractSettings {
 			String chest = cts.get(i).getAsString();
 			
 			
-			Image ci = null;
-			ci = new Image(Ressources.get("ChestPics/"+chest, java.awt.Image.class));
+			Image ci = new Image(Ressources.get("ChestPics/"+chest, java.awt.Image.class));
 			ci.setPos(p++, g);
 			ci.setSquare(22);
 			gui.addImage(ci);
@@ -167,8 +166,7 @@ public class ChestSettings extends AbstractSettings {
 				}
 				
 				Container cimg = new Container();
-				Image img = null;
-				img = new Image(Ressources.get("LoyaltyPics/" + Viewer.pveloy[w], java.awt.Image.class));
+				Image img = new Image(Ressources.get("LoyaltyPics/" + Viewer.pveloy[w], java.awt.Image.class));
 				img.setSquare(18);
 				cimg.addImage(img, uid+chest+"::loyImg::"+s);
 				
@@ -323,8 +321,7 @@ public class ChestSettings extends AbstractSettings {
 		g++;
 		p = 0;
 		
-		Image ci = null;
-		ci = new Image(Ressources.get("ChestPics/dungeonchest", java.awt.Image.class));
+		Image ci = new Image(Ressources.get("ChestPics/dungeonchest", java.awt.Image.class));
 		ci.setPos(p++, g);
 		ci.setSquare(22);
 		gui.addImage(ci);

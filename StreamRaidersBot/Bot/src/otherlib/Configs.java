@@ -313,6 +313,7 @@ public class Configs {
 	public static final Int skinUpdateViewer = new Int("skinUpdate", ProfileType.VIEWER);
 	public static final Int questEventRewardsUpdateViewer = new Int("questEventRewardsUpdate", ProfileType.VIEWER);
 	public static final Int capsUpdateViewer = new Int("capsUpdate", ProfileType.VIEWER);
+	public static final Int soulsUpdateViewer = new Int("capsUpdate", ProfileType.VIEWER);
 	public static final Int proxyPortViewer = new Int("proxyPort", ProfileType.VIEWER);
 	public static final Int unitPlaceDelayMinViewer = new Int("unitPlaceDelayMin", ProfileType.VIEWER);
 	public static final Int unitPlaceDelayMaxViewer = new Int("unitPlaceDelayMax", ProfileType.VIEWER);
@@ -330,6 +331,7 @@ public class Configs {
 	public static final Int raidUpdateCaptain = new Int("raidUpdate", ProfileType.CAPTAIN);
 	public static final Int mapUpdateCaptain = new Int("mapUpdate", ProfileType.CAPTAIN);
 	public static final Int storeUpdateCaptain = new Int("storeUpdate", ProfileType.CAPTAIN);
+	public static final Int soulsUpdateCaptain = new Int("storeUpdate", ProfileType.CAPTAIN);
 	public static final Int skinUpdateCaptain = new Int("skinUpdate", ProfileType.CAPTAIN);
 	public static final Int questEventRewardsUpdateCaptain = new Int("questEventRewardsUpdate", ProfileType.CAPTAIN);
 	public static final Int capsUpdateCaptain = new Int("capsUpdate", ProfileType.CAPTAIN);

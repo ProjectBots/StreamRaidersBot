@@ -22,13 +22,13 @@ import srlib.Quests;
 import srlib.RaidType;
 import srlib.SRC;
 import srlib.SRR;
-import srlib.Store;
 import srlib.Quests.Quest;
 import srlib.SRR.NotAuthorizedException;
 import srlib.Store.C;
 import srlib.Store.Item;
 import srlib.skins.Skin;
 import srlib.skins.Skins;
+import srlib.souls.Soul;
 import srlib.units.Unit;
 import srlib.viewer.CaptainData;
 import srlib.viewer.Raid;
@@ -37,14 +37,12 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 
 	private Raid[] raids = new Raid[4];
 	private Map[] maps = new Map[4];
-	private Unit[] units;
-	private Store store;
 	private CaptainData[] caps;
 	private CaptainData[] dunCaps;
 	private Quests quests = new Quests();
 	private Event event = new Event();
 	private HashMap<String, Long> rts = new HashMap<>();
-	private int[] updateTimes = new int[] {10, 1, 5, 30, 15, 10, 60};
+	private int[] updateTimes = new int[] {10, 1, 5, 15};
 	
 	
 	public ViewerBackEnd(String cid, SRR req) {
@@ -60,34 +58,14 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	
-	public void setUpdateTimes(int units, int raids, int maps, int store, int qer, int caps, int skins) {
-		updateTimes[0] = units;
+	public void setUpdateTimes(int units, int skins, int souls, int caps, int raids, int maps, int store, int qer) {
+		super.setUpdateTimes(units, skins, souls, store);
+		updateTimes[0] = caps;
 		updateTimes[1] = raids;
 		updateTimes[2] = maps;
-		updateTimes[3] = store;
-		updateTimes[4] = qer;
-		updateTimes[5] = caps;
-		updateTimes[6] = skins;
+		updateTimes[3] = qer;
 	}
 	
-	synchronized public void updateUnits(boolean force) throws NoConnectionException, NotAuthorizedException {
-		Long wt = rts.get("units");
-		long now = System.currentTimeMillis();
-		if(!force && !(wt == null || now - wt > 0))
-			return;
-		
-		JsonObject jo = Json.parseObj(req.getUserUnits());
-		if(testUpdate(jo))
-			jo = Json.parseObj(req.getUserUnits());
-		
-		JsonArray u = jo.getAsJsonArray("data");
-		units = new Unit[u.size()];
-		for(int i=0; i<u.size(); i++)
-			units[i] = new Unit(u.get(i).getAsJsonObject(), cid);
-		
-		rts.put("units", now + updateTimes[0]*60*1000);
-		uelis.afterUpdate("units", this);
-	}
 	
 	synchronized public void updateRaids(boolean force) throws NoConnectionException, NotAuthorizedException {
 		Long wt = rts.get("raids");
@@ -146,57 +124,6 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		uelis.afterUpdate("map::"+slot, this);
 	}
 	
-	synchronized public void updateStore(boolean force) throws NoConnectionException, NotAuthorizedException {
-		Long wt = rts.get("store");
-		long now = System.currentTimeMillis();
-		if(!force && !(wt == null || now - wt > 0))
-			return;
-		
-		JsonObject user = Json.parseObj(req.getUser());
-		if(testUpdate(user))
-			user = Json.parseObj(req.getUser());
-		
-		JsonObject cur = Json.parseObj(req.getAvailableCurrencies());
-		JsonElement err = cur.get(SRC.errorMessage);
-		if(err.isJsonPrimitive())
-			Logger.print("BackEndHandler -> updateStore: cur, err="+err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
-
-		JsonObject items = Json.parseObj(req.getCurrentStoreItems());
-		err = items.get(SRC.errorMessage);
-		if(err.isJsonPrimitive())
-			Logger.print("BackEndHandler -> updateStore: items, err="+err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
-		
-		JsonObject openedChests = Json.parseObj(req.getOpenCountTrackedChests());
-		err = openedChests.get(SRC.errorMessage);
-		if(err.isJsonPrimitive())
-			Logger.print("BackEndHandler -> updateStore: openedChests, err="+err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
-		
-		
-		store = new Store(user.getAsJsonObject("data"),
-				cur.getAsJsonArray("data"),
-				items.getAsJsonArray("data"),
-				openedChests.getAsJsonArray("data"));
-		
-		rts.put("store", now + updateTimes[3]*60*1000);
-		uelis.afterUpdate("store", this);
-	}
-	
-	synchronized public void updateSkins(boolean force) throws NoConnectionException, NotAuthorizedException {
-		Long wt = rts.get("skins");
-		long now = System.currentTimeMillis();
-		if(!force && !(wt == null || now - wt > 0))
-			return;
-		
-		JsonObject skins = Json.parseObj(req.getUserItems());
-		if(testUpdate(skins))
-			skins = Json.parseObj(req.getUserItems());
-		
-		this.skins = new Skins(skins.get("data").isJsonArray() ? skins.getAsJsonArray("data") : null);
-		
-		rts.put("skins", now + updateTimes[6]*60*1000);
-		uelis.afterUpdate("skins", this);
-	}
-	
 	synchronized public void updateQuestEventRewards(boolean force) throws NoConnectionException, NotAuthorizedException {
 		Long wt = rts.get("qer");
 		long now = System.currentTimeMillis();
@@ -216,7 +143,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		//TODO split
 		quests.updateQuests(userQuests.getAsJsonArray("data"));
 		
-		rts.put("qer", now + updateTimes[4]*60*1000);
+		rts.put("qer", now + updateTimes[3]*60*1000);
 		uelis.afterUpdate("qer", this);
 	}
 	
@@ -238,7 +165,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		
 		setCaps(caps, dungeon);
 		
-		rts.put("caps::"+dungeon, now + updateTimes[5]*60*1000);
+		rts.put("caps::"+dungeon, now + updateTimes[0]*60*1000);
 		uelis.afterUpdate("caps::"+dungeon, this);
 	}
 	
@@ -399,7 +326,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	public String unlockUnit(Unit unit) throws NoConnectionException {
-		return store.unlockUnit(unit.type, unit.dupe, req);
+		return store.unlockUnit(req.unlockUnit(unit.type), unit, unit.dupe, req);
 	}
 	
 	
@@ -558,8 +485,8 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		return store.getStoreRefreshCount();
 	}
 	
-	public Skins getSkins() throws NoConnectionException, NotAuthorizedException {
-		updateSkins(false);
+	public Skins getSkins(boolean force) throws NoConnectionException, NotAuthorizedException {
+		updateSkins(force);
 		return skins;
 	}
 	
@@ -620,6 +547,43 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	public String grantEventQuestMilestoneReward() throws NoConnectionException {
 		return req.grantEventQuestMilestoneReward();
 	}
+	
+	
+	@Override
+	public Soul[] getSouls(boolean force) throws NoConnectionException, NotAuthorizedException {
+		updateRaids(force);
+		updateUnits(force);
+		Soul[] souls = super.getSouls(force);
+		
+		HashMap<Integer, Soul> soulsByUnit = new HashMap<>();
+		for(int i=0; i<souls.length; i++) {
+			if(souls[i].getUnitId() == -1)
+				continue;
+			
+			soulsByUnit.put(souls[i].getUnitId(), souls[i]);
+		}
+		
+		for(int i=0; i<raids.length; i++) {
+			if(raids[i] == null || raids[i].placementsSerialized == null)
+				continue;
+			
+			JsonArray pser = Json.parseArr(raids[i].placementsSerialized);
+			for(int p=0; p<pser.size(); p++) {
+				JsonObject place = pser.get(p).getAsJsonObject();
+				
+				if(!place.get("userId").getAsString().equals(req.getViewerUserId()))
+					continue;
+				
+				int unitId = place.get("unitId").getAsInt();
+				if(soulsByUnit.containsKey(unitId))
+					soulsByUnit.get(unitId).setInBattle(true);
+				
+			}
+		}
+		
+		return souls;
+	}
+	
 
 	private static <T>T[] add(T[] arr, T item) {
 		return ArrayUtils.add(arr, item);
