@@ -205,14 +205,14 @@ public class SoulSettings extends AbstractSettings {
 				final int yy = y;
 				x = 0;
 				
-				Image upic = new Image(Ressources.get("UnitPics/"+units[y].type.replace("allies", ""), java.awt.Image.class));
+				Image upic = new Image(Ressources.get("UnitPics/"+units[y].type.uid.replace("allies", ""), java.awt.Image.class));
 				upic.setPos(x++, y);
 				upic.setSquare(25);
 				cbody.addImage(upic);
 				
 				Label luname = new Label();
 				luname.setPos(x++, y);
-				luname.setText(concat(units[y].specializationDisName != null ? units[y].specializationDisName : Unit.getName(units[y].type), " "+units[y].level, " ("+units[y].unitId, ")"));
+				luname.setText(concat(units[y].specializationDisName != null ? units[y].specializationDisName : units[y].type.name, " "+units[y].level, " ("+units[y].unitId, ")"));
 				luname.setForeground(Colors.getColor(fontPath+"labels"));
 				cbody.addLabel(luname);
 				
@@ -270,7 +270,7 @@ public class SoulSettings extends AbstractSettings {
 					
 				}
 				
-				if(units[y].level == 30 && SoulType.parseUnit(units[y].type) != null) {
+				if(units[y].level == 30 && SoulType.parseUnit(units[y].type.uid) != null) {
 					Button bex = new Button();
 					bex.setPos(x++, y);
 					bex.setText("extract soul");
@@ -282,7 +282,7 @@ public class SoulSettings extends AbstractSettings {
 						bex.setGradient(Colors.getGradient(fontPath+"buttons def"));
 						bex.setForeground(Colors.getColor(fontPath+"buttons def"));
 						bex.setAL(a -> {
-							if(!gui.showConfirmationBox("Are you sure to sacrifice this unit\nfor a "+SoulType.parseUnit(units[yy].type).title+"?"))
+							if(!gui.showConfirmationBox("Are you sure to sacrifice this unit\nfor a "+SoulType.parseUnit(units[yy].type.uid).title+"?"))
 								return;
 							try {
 								String err = vbe.extractSoul(units[yy]);

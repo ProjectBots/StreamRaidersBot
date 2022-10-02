@@ -11,6 +11,7 @@ import com.google.gson.JsonObject;
 import include.Json;
 import otherlib.Logger;
 import otherlib.Options;
+import srlib.units.UnitType;
 
 public class Skins {
 	
@@ -46,11 +47,11 @@ public class Skins {
 		return skins.get(skinUid);
 	}
 	
-	public ArrayList<Skin> searchSkins(String captainId, String unit, SkinType... exclude) {
+	public ArrayList<Skin> searchSkins(String captainId, UnitType unitType, SkinType... exclude) {
 		ArrayList<Skin> ret = new ArrayList<>();
 		for(Skin skin : skins.values())
 			if((captainId == null || skin.captainId.equals(captainId))
-					&& (unit == null || skin.unit.equals(unit))
+					&& (unitType == null || skin.unitType.equals(unitType))
 					&& !ArrayUtils.contains(exclude, skin.type))
 				ret.add(skin);
 		return ret;

@@ -9,7 +9,7 @@ import otherlib.MapConv;
 import run.viewer.Viewer;
 import srlib.Map;
 import srlib.SRC;
-import srlib.units.Unit;
+import srlib.units.UnitType;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -271,7 +271,7 @@ public class MapGUI {
 										String ut = null;
 										if(uType != null)
 											l.setText(getShortenedUnitAndPlanType(ut = uType.getAsString()));
-										l.setTooltip(map.getDisplayName(x, y) + (ut==null?"":" - "+Unit.getName(ut)));
+										l.setTooltip(map.getDisplayName(x, y) + (ut==null?"":" - "+UnitType.types.get(ut).name));
 									}
 									l.setFont(new Font(Font.SERIF, Font.PLAIN, 10));
 								}

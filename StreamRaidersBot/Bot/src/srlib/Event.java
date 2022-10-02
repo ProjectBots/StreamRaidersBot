@@ -20,6 +20,7 @@ public class Event {
 			event = getNextEvent(data, data.getAsJsonObject("Events"));
 		
 		JsonArray currentTiers = new JsonArray();
+		currentTiers.add(0);
 		if_clause:
 		if(event != null) {
 			JsonObject tiers = data.getAsJsonObject("EventTiers");
@@ -66,7 +67,9 @@ public class Event {
 	
 	
 	private boolean hasBattlePass = false;
-	private JsonObject collected = new JsonObject();
+	private boolean[] collectedBasic = new boolean[61];
+	private boolean[] collectedPass = new boolean[61];
+	
 	private int tier = 0;
 	
 	
@@ -99,8 +102,6 @@ public class Event {
 		return null;
 	}
 	
-	
-	
 	public boolean hasBattlePass() {
 		return hasBattlePass;
 	}
@@ -120,26 +121,15 @@ public class Event {
 			JsonElement rbc = raw.get("basicRewardsCollected");
 			if(rbc.isJsonPrimitive()) {
 				String[] bc = rbc.getAsString().split(",");
-				for(String t : bc) {
-					JsonObject c = new JsonObject();
-					c.addProperty("basic", true);
-					collected.add(t, c);
-				}
+				for(int j=0; j<bc.length; j++)
+					collectedBasic[Integer.parseInt(bc[j])] = true;
 			}
 			
 			JsonElement rpc = raw.get("battlePassRewardsCollected");
 			if(rpc.isJsonPrimitive()) {
 				String[] pc = rpc.getAsString().split(",");
-				for(String t : pc) {
-					JsonElement je = collected.get(t);
-					if(je == null) {
-						JsonObject c = new JsonObject();
-						c.addProperty("pass", true);
-						collected.add(t, c);
-					} else {
-						je.getAsJsonObject().addProperty("pass", true);
-					}
-				}
+				for(int j=0; j<pc.length; j++)
+					collectedPass[Integer.parseInt(pc[j])] = true;
 			}
 			
 			return;
@@ -149,19 +139,11 @@ public class Event {
 	public boolean canCollectEvent(int p, boolean battlePass) {
 		if(p >= tier || p <= 0)
 			return false;
-		JsonElement je = collected.get(""+p);
-		if(je == null) return true;
-		JsonObject jo = je.getAsJsonObject();
-		JsonElement e;
-		if(battlePass) {
-			if(!hasBattlePass) return false;
-			e = jo.get("pass");
-		} else {
-			e = jo.get("basic");
-		}
-		if(e == null || !e.isJsonPrimitive()) 
-			return true;
-		return !e.getAsBoolean();
+		
+		if(battlePass && !hasBattlePass)
+			return false;
+		
+		return battlePass ? collectedPass[p] : collectedBasic[p];
 	}
 	
 	
@@ -190,16 +172,14 @@ public class Event {
 			return ret;
 		}
 		
-		if(collected.has(""+p)) {
-			collected.getAsJsonObject(""+p).addProperty(battlePass ? "pass" : "basic", true);
-		} else {
-			JsonObject tmp = new JsonObject();
-			tmp.addProperty(battlePass ? "pass" : "basic", true);
-			collected.add(""+p, tmp);
-		}
+		if(battlePass)
+			collectedPass[p] = true;
+		else
+			collectedBasic[p] = true;
+		
 		
 		JsonArray tiers = Json.parseArr(Options.get("eventTiers"));
-		JsonObject tier = tiers.get(p-1).getAsJsonObject();
+		JsonObject tier = tiers.get(p).getAsJsonObject();
 		String rew;
 		int qty;
 		if(battlePass) {

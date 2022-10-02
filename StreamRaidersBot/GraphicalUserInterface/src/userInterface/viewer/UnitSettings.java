@@ -38,8 +38,8 @@ import otherlib.Configs.UniInt;
 import otherlib.Configs.UniStr;
 import run.Manager;
 import run.ProfileType;
-import srlib.units.Unit;
 import srlib.units.UnitRarity;
+import srlib.units.UnitType;
 import userInterface.AbstractSettings;
 import userInterface.Colors;
 
@@ -70,13 +70,9 @@ public class UnitSettings extends AbstractSettings {
 	private static class U implements Comparable<U> {
 		@Override
 		public int compareTo(U u) {
-			int rd = this.ur.rank - u.ur.rank;
-			if(rd != 0)
-				return rd;
-			
-			int td = this.typeName.compareTo(u.typeName);
-			if(td != 0)
-				return td;
+			int t = this.type.compareTo(u.type);
+			if(t != 0)
+				return t;
 			
 			if(this.from == null)
 				return -1;
@@ -84,9 +80,9 @@ public class UnitSettings extends AbstractSettings {
 			if(u.from == null)
 				return 1;
 			
-			int fd = this.from.compareTo(u.from);
-			if(fd != 0)
-				return fd;
+			t = this.from.compareTo(u.from);
+			if(t != 0)
+				return t;
 			
 			return u.lvl - this.lvl;
 		}
@@ -104,49 +100,41 @@ public class UnitSettings extends AbstractSettings {
 		
 		final String uId;
 		final String from;
-		final String type;
-		private final String typeName;
-		final UnitRarity ur;
+		final UnitType type;
 		final int lvl;
 		final String name;
 		String sync;
 		boolean hasRow = false;
 		
-		U(String type, String sync) {
-			this.uId = type;
+		U(UnitType type, String sync) {
+			this.uId = type.uid;
 			this.from = null;
 			this.type = type;
-			this.typeName = Unit.getName(type);
-			this.ur = UnitRarity.parseType(type);
 			this.lvl = UNIT_TYPE_LEVEL;
-			this.name = typeName;
+			this.name = type.name;
 			this.sync = sync;
 		}
 		
-		U(String uId, String type, int lvl, String sync, String from) {
+		U(String uId, UnitType type, int lvl, String sync, String from) {
 			this.uId = uId;
 			this.from = from;
 			this.type = type;
-			this.typeName = Unit.getName(type);
-			this.ur = UnitRarity.parseType(type);
 			this.lvl = lvl;
 			this.name = genName_().toString();
 			this.sync = sync;
 		}
 		
-		U(String uId, String type, int lvl, String pname, String sync, String from) {
+		U(String uId, UnitType type, int lvl, String pname, String sync, String from) {
 			this.uId = uId;
 			this.from = from;
 			this.type = type;
-			this.typeName = Unit.getName(type);
-			this.ur = UnitRarity.parseType(type);
 			this.lvl = lvl;
 			this.name = genName_().append(" (").append(pname).append(")").toString();
 			this.sync = sync;
 		}
 		
 		private StringBuilder genName_() {
-			return new StringBuilder(typeName).append(" ").append(lvl).append(" (").append(uId).append(")");
+			return new StringBuilder(type.name).append(" ").append(lvl).append(" (").append(uId).append(")");
 		}
 
 		
@@ -190,10 +178,8 @@ public class UnitSettings extends AbstractSettings {
 		
 		addLayerChooser();
 		
-		ArrayList<String> types = Unit.getTypesList();
-		
 		String[] unitIDs_raw = Configs.getUnitIdsArray(cid, pt);
-		units = new U[unitIDs_raw.length + types.size()];
+		units = new U[unitIDs_raw.length + UnitType.types.size()];
 		String[] froms = new String[unitIDs_raw.length];
 		boolean containsOther = false;
 		int i = 0;
@@ -210,7 +196,7 @@ public class UnitSettings extends AbstractSettings {
 			
 			for(i=0; i<unitIDs_raw.length; i++) {
 				final String type = Configs.getUnitInfoStr(cid, unitIDs_raw[i], Configs.typeViewer);
-				units[i] = new U(unitIDs_raw[i], type, 
+				units[i] = new U(unitIDs_raw[i], UnitType.types.get(type), 
 							Configs.getUnitInfoInt(cid, unitIDs_raw[i], Configs.levelViewer),
 							cidNameConv.get(Configs.getUnitInfoStr(cid, unitIDs_raw[i], Configs.fromViewer)),
 							Configs.getUnitSync(cid, pt, lid, unitIDs_raw[i]), froms[i]);
@@ -218,7 +204,7 @@ public class UnitSettings extends AbstractSettings {
 		} else {
 			for(i=0; i<unitIDs_raw.length; i++) {
 				final String type = Configs.getUnitInfoStr(cid, unitIDs_raw[i], Configs.typeViewer);
-				units[i] = new U(unitIDs_raw[i], type,
+				units[i] = new U(unitIDs_raw[i], UnitType.types.get(type),
 							Configs.getUnitInfoInt(cid, unitIDs_raw[i], Configs.levelViewer),
 							Configs.getUnitSync(cid, pt, lid, unitIDs_raw[i]), froms[i]);
 			}
@@ -226,8 +212,10 @@ public class UnitSettings extends AbstractSettings {
 		
 		
 		
-		for(int j=0; j<types.size(); j++)
-			units[i++] = new U(types.get(j), Configs.getUnitSync(cid, pt, lid, types.get(j)));
+		for(int j=0; j<UnitType.types.size(); j++) {
+			String type = UnitType.typeUids.get(j);
+			units[i++] = new U(UnitType.types.get(type), Configs.getUnitSync(cid, pt, lid, type));
+		}
 		
 		Arrays.sort(units);
 		
@@ -320,7 +308,7 @@ public class UnitSettings extends AbstractSettings {
 	private void addUnit(final U u, final int g) {
 		int p = 0;
 		
-		Image upic = new Image(Ressources.get("UnitPics/"+u.type.replace("allies", ""), java.awt.Image.class));
+		Image upic = new Image(Ressources.get("UnitPics/"+u.type.uid.replace("allies", ""), java.awt.Image.class));
 		upic.setPos(p++, g);
 		upic.setSquare(18);
 		gui.addImage(upic);
@@ -467,7 +455,7 @@ public class UnitSettings extends AbstractSettings {
 			}
 			
 			//	legendary unit scrolls can't be bought
-			if(key.equals("buy") && Unit.isLegendary(u.type)) {
+			if(key.equals("buy") && u.type.rarity == UnitRarity.LEGENDARY) {
 				p++;
 				continue;
 			}
@@ -715,20 +703,18 @@ public class UnitSettings extends AbstractSettings {
 		u.hasRow = false;
 	}
 	
-	private void addSpecs(final String type, final String unitId, final int g) {
-		final JsonArray specs = Unit.getSpecs(type);
-		
+	private void addSpecs(final UnitType type, final String unitId, final int g) {
 		String old = Configs.getUnitSpec(cid, pt, lid, unitId);
 		
 		int p = 12;
 		
 		for(int i=0; i<3; i++) {
-			final String u = specs.get(i).getAsJsonObject().get("uid").getAsString();
+			final String u = type.getSpecUid(i);
 			final String id1 = uid+unitId+"::spec::";
 			final int ii = i;
 			Button buid = new Button();
 			buid.setPos(p++, g);
-			buid.setText(specs.get(i).getAsJsonObject().get("name").getAsString());
+			buid.setText(type.getSpecName(i));
 			if(old.equals(u)) {
 				buid.setGradient(Colors.getGradient(fontPath+"buttons on"));
 				buid.setForeground(Colors.getColor(fontPath+"buttons on"));

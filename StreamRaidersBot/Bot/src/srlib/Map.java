@@ -11,7 +11,7 @@ import com.google.gson.JsonPrimitive;
 import include.Json;
 import otherlib.Logger;
 import otherlib.Options;
-import srlib.units.Unit;
+import srlib.units.UnitType;
 import srlib.viewer.Raid;
 
 public class Map {
@@ -233,7 +233,7 @@ public class Map {
 						if(userId.equals(user.get("userId").getAsString()))
 							set(x, y, "twitchDisplayName", user.get("twitchDisplayName").getAsString());
 					}
-					String type = Unit.getUnitTypeFromCharacterType(chaType);
+					String type = UnitType.getUnitTypeFromCharacterType(chaType);
 					if(type != null)
 						set(x, y, "unitType", type);
 				}

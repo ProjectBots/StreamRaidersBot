@@ -126,7 +126,7 @@ public class SpecialSlot extends Slot {
 		
 		int[] ps = new int[unlockable.length];
 		for(int i=0; i<unlockable.length; i++)
-			ps[i] = Configs.getUnitInt(cid, currentLayer, unlockable[i].type, unlockable[i].dupe ? Configs.dupeViewer : Configs.unlockViewer);
+			ps[i] = Configs.getUnitInt(cid, currentLayer, unlockable[i].type.uid, unlockable[i].dupe ? Configs.dupeViewer : Configs.unlockViewer);
 		
 		while(true) {
 			int ind = 0;

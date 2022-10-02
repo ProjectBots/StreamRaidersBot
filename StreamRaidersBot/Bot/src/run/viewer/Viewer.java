@@ -25,6 +25,7 @@ import srlib.Store;
 import srlib.SRR.NotAuthorizedException;
 import srlib.Store.C;
 import srlib.units.Unit;
+import srlib.units.UnitType;
 import srlib.viewer.CaptainData;
 import srlib.viewer.Raid;
 
@@ -43,9 +44,9 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 	
 	private static String[] genRewTypes() {
 		ArrayList<String> ret = new ArrayList<String>(Arrays.asList("gold potions token eventcurrency keys meat bones skin soulvessel".split(" ")));
-		ArrayList<String> utypes = Unit.getTypesList();
-		for(int i=0; i<utypes.size(); i++)
-			utypes.set(i, "scroll"+utypes.get(i).replace("allies", ""));
+		ArrayList<String> utypes = new ArrayList<>(UnitType.typeUids.size());
+		for(int i=0; i<UnitType.typeUids.size(); i++)
+			utypes.add("scroll"+UnitType.typeUids.get(i).replace("allies", ""));
 		ret.addAll(utypes);
 		return ret.toArray(new String[ret.size()]);
 	}
@@ -152,7 +153,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 					try {
 						Unit[] units = vbe.getUnits(SRC.BackEndHandler.all, false);
 						for(Unit u : units)
-							Configs.addUnitId(cid, ProfileType.VIEWER, ""+u.unitId, u.type, u.level);
+							Configs.addUnitId(cid, ProfileType.VIEWER, ""+u.unitId, u.type.uid, u.level);
 					} catch (Exception e) {
 						Logger.printException("Viewer -> constructor -> uelis: err=unable to retrieve units", e, Logger.runerr, Logger.error, cid, null, true);
 					}

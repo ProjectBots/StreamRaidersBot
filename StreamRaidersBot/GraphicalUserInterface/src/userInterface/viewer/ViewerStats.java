@@ -24,6 +24,7 @@ import srlib.SRC;
 import srlib.Store;
 import srlib.SRR.NotAuthorizedException;
 import srlib.units.Unit;
+import srlib.units.UnitType;
 import userInterface.AbstractStats;
 import userInterface.Colors;
 
@@ -169,10 +170,10 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.Vie
 		
 		
 		for(final Unit u : units) {
-			final String type = u.type;
+			final UnitType type = u.type;
 			
 			Container uc = new Container();
-			uc.setPos(pos[u.rarity.rank]++, u.rarity.rank+1);
+			uc.setPos(pos[type.rarity.rank]++, type.rarity.rank+1);
 			uc.setBorder(Colors.getColor("VIEWER stats borders"), 2, 25);
 			uc.setFill('b');
 			uc.setInsets(5, 5, 5, 5);
@@ -184,19 +185,19 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.Vie
 				name.setForeground(Colors.getColor("VIEWER stats labels"));
 				uc.addLabel(name);
 				
-				Image img = new Image(Ressources.get("UnitPics/" + type.replace("allies", ""), java.awt.Image.class));
+				Image img = new Image(Ressources.get("UnitPics/" + type.uid.replace("allies", ""), java.awt.Image.class));
 				img.setPos(0, 1);
 				img.setSquare(80);
 				img.setAnchor("c");
 				img.setInsets(10, 2, 5, 2);
 				uc.addImage(img);
 				
-				Integer val = curs.get(type.replace("allies", ""));
+				Integer val = curs.get(type.uid.replace("allies", ""));
 				if(val == null)
 					val = 0;
 				
 				if(u.level != 30) {
-					int need = Store.getCost(u.rarity, u.level, false)[1];
+					int need = Store.getCost(type.rarity, u.level, false)[1];
 					
 					
 					Label nums = new Label();

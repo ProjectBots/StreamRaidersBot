@@ -30,7 +30,7 @@ import srlib.Store;
 import srlib.Time;
 import srlib.SRR.NotAuthorizedException;
 import srlib.SRR.OutdatedDataException;
-import srlib.units.Unit;
+import srlib.units.UnitType;
 import srlib.viewer.Raid;
 import include.Json;
 
@@ -140,6 +140,8 @@ public class Manager {
 				+ "Version: " + Options.get("botVersion") + "\r\n");
 		
 		Remaper.load();
+		
+		UnitType.ini();
 		
 		try {
 			Configs.load();
@@ -584,8 +586,8 @@ public class Manager {
 			Options.set("eventBadges", Event.genEventBadgesFromData(data));
 			Options.set("currentEventCurrency", data.getAsJsonObject("Items").getAsJsonObject("eventcurrency").get("CurrencyTypeAwarded").getAsString());
 			Options.set("unitCosts", Store.genUnitCostsFromData(data).toString());
-			Options.set("unitTypes", Unit.genUnitTypesFromData(data).toString());
-			Options.set("unitPower", Unit.genUnitPowerFromData(data).toString());
+			Options.set("unitTypes", UnitType.genUnitTypesFromData(data).toString());
+			Options.set("unitPower", UnitType.genUnitPowerFromData(data).toString());
 			Options.set("rewards", Raid.updateChestRews(data).toString());
 			Options.set("data", dataPathUrl);
 			Options.save();

@@ -15,6 +15,7 @@ import otherlib.Options;
 import srlib.skins.Skins;
 import srlib.units.Unit;
 import srlib.units.UnitRarity;
+import srlib.units.UnitType;
 
 public class Store {
 	
@@ -92,7 +93,7 @@ public class Store {
 	private static final HashSet<String> currencyTypes = new HashSet<String>() {
 		private static final long serialVersionUID = 1L;
 		{
-		for(String ut : Unit.getTypesList())
+		for(String ut : UnitType.typeUids)
 			add(ut.replace("allies", ""));
 		add(potions.get());
 		add(gold.get());
@@ -162,9 +163,9 @@ public class Store {
 	}
 	
 	public boolean canUpgradeUnit(Unit unit) {
-		int[] cost = getCost(unit.rarity, unit.level, false);
+		int[] cost = getCost(unit.type.rarity, unit.level, false);
 		
-		if(getCurrency(gold) < cost[0] || getCurrency(unit.type) < cost[1])
+		if(getCurrency(gold) < cost[0] || getCurrency(unit.type.uid) < cost[1])
 			return false;
 		
 		return true;
@@ -175,11 +176,11 @@ public class Store {
 		LinkedList<Unit> ret = new LinkedList<>();
 		for(int i=0; i<units.length; i++) {
 			int lvl = units[i].level;
-			String type = units[i].type;
+			UnitType type = units[i].type;
 			if(lvl == 30) 
 				continue;
 			
-			if(getCost(units[i].rarity, lvl, false)[1] <= getCurrency(type))
+			if(getCost(type.rarity, lvl, false)[1] <= getCurrency(type.uid))
 				ret.add(units[i]);
 		}
 		return ret.toArray(new Unit[ret.size()]);
@@ -193,25 +194,25 @@ public class Store {
 		if(unit.level == 19) {
 			if(specUID == null || specUID.equals("null"))
 				return "no specUID";
-			ret = Json.parseObj(req.specializeUnit(unit.type, ""+unit.level, ""+unit.unitId, specUID));
+			ret = Json.parseObj(req.specializeUnit(unit.type.uid, ""+unit.level, ""+unit.unitId, specUID));
 		} else {
-			ret = Json.parseObj(req.upgradeUnit(unit.type, ""+unit.level, ""+unit.unitId));
+			ret = Json.parseObj(req.upgradeUnit(unit.type.uid, ""+unit.level, ""+unit.unitId));
 		}
 		
 		JsonElement err = ret.get(SRC.errorMessage);
 		if(err.isJsonPrimitive())
 			return err.getAsString();
 		
-		int[] cost = getCost(unit.rarity, unit.level, false);
+		int[] cost = getCost(unit.type.rarity, unit.level, false);
 		decreaseCurrency(gold, cost[0]);
-		decreaseCurrency(unit.type, cost[1]);
+		decreaseCurrency(unit.type.uid, cost[1]);
 		return null;
 	}
 	
-	public boolean canUnlockUnit(String type, boolean dupe) {
-		int[] cost = getCost(UnitRarity.parseType(type), 0, dupe);
+	public boolean canUnlockUnit(UnitType type, boolean dupe) {
+		int[] cost = getCost(type.rarity, 0, dupe);
 		
-		if(getCurrency(gold) < cost[0] || getCurrency(type) < cost[1])
+		if(getCurrency(gold) < cost[0] || getCurrency(type.uid) < cost[1])
 			return false;
 		
 		return true;
@@ -220,11 +221,10 @@ public class Store {
 	
 	public Unit[] getUnlockableUnits(Unit[] units) {
 		
-		ArrayList<String> allTypes = Unit.getTypesList();
 		
-		Hashtable<String, Boolean> gotTypes = new Hashtable<>();
+		Hashtable<UnitType, Boolean> gotTypes = new Hashtable<>();
 		for(int i=0; i<units.length; i++) {
-			String type = units[i].type;
+			UnitType type = units[i].type;
 			if(gotTypes.contains(type))
 				gotTypes.put(type, gotTypes.get(type) && units[i].level == 30);
 			else
@@ -234,27 +234,27 @@ public class Store {
 		LinkedList<Unit> ret = new LinkedList<>();
 		
 		//	normal unlock
-		for(String type : allTypes) {
+		for(UnitType type : UnitType.types.values()) {
 			if(gotTypes.containsKey(type))
 				continue;
 			
-			if(getCost(UnitRarity.parseType(type), 0, false)[1] <= getCurrency(type))
+			if(getCost(type.rarity, 0, false)[1] <= getCurrency(type.uid))
 				ret.add(Unit.getTypeOnly(type, false));
 		}
 		
 		//	dupe unlock
-		for(String type : gotTypes.keySet()) {
+		for(UnitType type : gotTypes.keySet()) {
 			//	only !true if every unit of this type is lvl 30
 			if(!gotTypes.get(type))
 				continue;
 			
-			if(getCost(UnitRarity.parseType(type), 0, true)[1] <= getCurrency(type))
+			if(getCost(type.rarity, 0, true)[1] <= getCurrency(type.uid))
 				ret.add(Unit.getTypeOnly(type, true));
 		}
 		return ret.toArray(new Unit[ret.size()]);
 	}
 	
-	public String unlockUnit(String text, Unit type, boolean dupe, SRR req) {
+	public String unlockUnit(String text, UnitType type, boolean dupe, SRR req) {
 		
 		JsonObject res = Json.parseObj(text);
 		JsonElement err = res.get(SRC.errorMessage);
@@ -263,7 +263,7 @@ public class Store {
 		
 		int[] cost = getCost(type.rarity, 0, dupe);
 		decreaseCurrency(gold, cost[0]);
-		decreaseCurrency(type.type, cost[1]);
+		decreaseCurrency(type.uid, cost[1]);
 		return null;
 	}
 	

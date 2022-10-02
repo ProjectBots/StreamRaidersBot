@@ -33,6 +33,8 @@ import srlib.SRR.NotAuthorizedException;
 import srlib.skins.Skin;
 import srlib.skins.Skins;
 import srlib.units.Unit;
+import srlib.units.UnitRarity;
+import srlib.units.UnitType;
 import srlib.viewer.CaptainData;
 import srlib.viewer.Raid;
 
@@ -282,9 +284,9 @@ public class RaidSlot extends Slot {
 						vbe.decreaseCurrency(Store.potions, 45);
 					
 					vbe.addCurrency(Store.potions, 1);
-					String ut = pla.unit.type;
-					if(!Unit.isLegendary(ut))
-						vbe.addCurrency(pla.unit.type, 1);
+					UnitType ut = pla.unit.type;
+					if(ut.rarity != UnitRarity.LEGENDARY)
+						vbe.addCurrency(pla.unit.type.uid, 1);
 					placeTime = System.currentTimeMillis() 
 								+ Maths.ranInt(Configs.getInt(cid, currentLayer, Configs.unitPlaceDelayMinViewer),
 											Configs.getInt(cid, currentLayer, Configs.unitPlaceDelayMaxViewer));
@@ -334,7 +336,7 @@ public class RaidSlot extends Slot {
 		}
 		@Override
 		public String toString() {
-			return new StringBuilder(unit.type)
+			return new StringBuilder(unit.type.uid)
 					.append("|").append(pos[0]).append("-")
 					.append(pos[1]).append(epic ? "|epic" : "").append(isOnPlan ? "|plan" : "")
 					.toString();
@@ -364,7 +366,7 @@ public class RaidSlot extends Slot {
 		
 		Prio[] prios = new Prio[units.length];
 		for(int i=0; i<units.length; i++) {
-			final String uType = units[i].type;
+			final UnitType ut = units[i].type;
 			final String uId = ""+units[i].unitId;
 			
 			int n = Configs.getUnitInt(cid, currentLayer, uId, dungeon ? Configs.placedunViewer : Configs.placeViewer);
@@ -389,32 +391,28 @@ public class RaidSlot extends Slot {
 				e = -1;
 			}
 			
-			if(neededUnits.contains(uType))
+			if(neededUnits.contains(ut.uid))
 				n = Integer.MAX_VALUE;
 			
 			
-			int np = -1;
 			int ep = -1;
+			if(eupts.contains(ut.ptag) || eupts.contains(ut.role.uid))
+				ep = e;
 			
-			HashSet<String> pts = new HashSet<>(units[i].ptags);
-			pts.remove("vibe");
-			for(String pt : pts) {
-				if(eupts.contains(pt))
-					ep = e;
-				if(nupts.contains(pt))
-					np = n;
-			}
+
+			int np = -1;
+			if(nupts.contains(ut.ptag) || nupts.contains(ut.role.uid))
+				np = n;
 			
 
 			boolean vn = false;
-			boolean ve = false;
-			
-
 			if(np < 0 && nupts.contains("vibe") && canVibe.contains(nx)) {
 				np = n;
 				vn = true;
 			}
 			
+
+			boolean ve = false;
 			if(ep < 0 && eupts.contains("vibe") && canVibe.contains(ex)) {
 				ep = e;
 				ve = true;
@@ -497,19 +495,19 @@ public class RaidSlot extends Slot {
 				
 				Set<String> pts = null;
 				if(i<2) {
-					pts = u.ptags;
-					if(!prios[p].vs[i]) {
-						//	(Unit).ptags is unmodifiable
-						pts = new HashSet<>(pts);
-						pts.remove("vibe");
-					}
+					pts = new HashSet<>();
+					pts.add(u.type.ptag);
+					pts.add(u.type.role.uid);
+					if(prios[p].vs[i])
+						pts.add("vibe");
+					
 				}
 
 				Logger.print("inner 2", Logger.place, Logger.info, cid, slot);
 				
 				int[] pos = null;
 				try {
-					pos = new Pathfinding().search(new MapConv().createField2DArray(map, u.canFly(), pts, mh, bannedPos).getField2DArray(), cid, slot, i%2==0);
+					pos = new Pathfinding().search(new MapConv().createField2DArray(map, u.type.canFly, pts, mh, bannedPos).getField2DArray(), cid, slot, i%2==0);
 				} catch (NoFinException e) {}
 				if(pos == null)
 					continue;

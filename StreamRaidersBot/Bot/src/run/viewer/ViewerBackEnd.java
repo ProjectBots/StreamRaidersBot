@@ -326,7 +326,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	public String unlockUnit(Unit unit) throws NoConnectionException {
-		return store.unlockUnit(req.unlockUnit(unit.type), unit, unit.dupe, req);
+		return store.unlockUnit(req.unlockUnit(unit.type.uid), unit.type, unit.dupe, req);
 	}
 	
 	
@@ -399,7 +399,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		JsonObject ret = new JsonObject();
 		ret.addProperty("raidPlacementsId", "");
 		ret.addProperty("userId", req.getViewerUserId());
-		ret.addProperty("CharacterType", (epic?"epic":"")+unit.type+unit.level);
+		ret.addProperty("CharacterType", (epic?"epic":"")+unit.type.uid+unit.level);
 		ret.addProperty("X", pos[0]);
 		ret.addProperty("Y", pos[1]);
 		String skin = overrideSkin == null ? unit.getSkin() : overrideSkin.uid;

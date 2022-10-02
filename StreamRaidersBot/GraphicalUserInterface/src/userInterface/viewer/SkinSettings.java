@@ -22,6 +22,7 @@ import srlib.SRR.NotAuthorizedException;
 import srlib.skins.Skin;
 import srlib.skins.Skins;
 import srlib.units.Unit;
+import srlib.units.UnitType;
 import userInterface.AbstractSettings;
 import userInterface.Colors;
 import run.Manager;
@@ -124,16 +125,14 @@ public class SkinSettings extends AbstractSettings {
 			return;
 		}
 		
-		Hashtable<String, ArrayList<Unit>> units_all = new Hashtable<>();
-		Hashtable<String, ArrayList<Skin>> skins_all = new Hashtable<>();
-		Hashtable<String, ArrayList<String>> skinNames_all = new Hashtable<>();
+		Hashtable<UnitType, ArrayList<Unit>> units_all = new Hashtable<>();
+		Hashtable<UnitType, ArrayList<Skin>> skins_all = new Hashtable<>();
+		Hashtable<UnitType, ArrayList<String>> skinNames_all = new Hashtable<>();
 		
-		ArrayList<String> types = Unit.getTypesList();
-		
-		for(String key : types) {
-			units_all.put(key, new ArrayList<>());
-			skins_all.put(key, new ArrayList<>());
-			skinNames_all.put(key, new ArrayList<>());
+		for(UnitType type : UnitType.types.values()) {
+			units_all.put(type, new ArrayList<>());
+			skins_all.put(type, new ArrayList<>());
+			skinNames_all.put(type, new ArrayList<>());
 		}
 		
 		for(Unit u : units_)
@@ -142,11 +141,11 @@ public class SkinSettings extends AbstractSettings {
 		ArrayList<String> skinUids = skins_.getSkinUids();
 		for(String suid : skinUids) {
 			Skin s = skins_.getSkin(suid);
-			skins_all.get(s.unit).add(s);
-			skinNames_all.get(s.unit).add(s.disname+" ("+s.type+")");
+			skins_all.get(s.unitType).add(s);
+			skinNames_all.get(s.unitType).add(s.disname+" ("+s.type+")");
 		}
 		
-		for(String key : types) {
+		for(UnitType key : UnitType.types.values()) {
 			Container ct = new Container();
 			ct.setPos(0, g++);
 			
@@ -245,7 +244,7 @@ public class SkinSettings extends AbstractSettings {
 	private static String getExtendedUnitName(Unit u) {
 		return concat("<html><center>",
 				u.getDisName(),"<br>",
-				"Lvl: ",""+u.level," ",u.type,"<br>",
+				"Lvl: ",""+u.level," ",u.type.name,"<br>",
 				u.specializationDisName,"<br>",
 				"(id=",""+u.unitId,")",
 				"</center></html>");

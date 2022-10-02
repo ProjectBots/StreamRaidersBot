@@ -25,7 +25,7 @@ import com.google.gson.JsonPrimitive;
 
 import include.GUI;
 import srlib.Store;
-import srlib.units.Unit;
+import srlib.units.UnitType;
 import srlib.viewer.Raid;
 import include.Json;
 import include.NEF;
@@ -269,10 +269,10 @@ public class GuideContent {
 		});
 		c.addComboBox(level);
 		
-		JsonArray ss = Unit.getSpecs("archer");
+		UnitType ar = UnitType.types.get("archer");
 		String[] list = new String[3];
 		for(int j=0; j<3; j++) 
-			list[j] = ss.get(j).getAsJsonObject().getAsJsonPrimitive("name").getAsString();
+			list[j] = ar.getSpecName(j);
 		
 		ComboBox speccb = new ComboBox("guide::spec");
 		speccb.setPos(0, 1);
@@ -355,10 +355,10 @@ public class GuideContent {
 		
 		if(lvl >= 19) {
 			GUI.setEnabled("guide::spec", true);
-			JsonArray ss = Unit.getSpecs(uid);
+			UnitType type = UnitType.types.get(uid);
 			String[] list = new String[3];
 			for(int i=0; i<3; i++) 
-				list[i] = ss.get(i).getAsJsonObject().getAsJsonPrimitive("name").getAsString();
+				list[i] = type.getSpecName(i);
 			
 			GUI.setCombList("guide::spec", list);
 			
@@ -400,13 +400,10 @@ public class GuideContent {
 
 
 	private static String getSpec(String unitUID, String name) {
-		JsonArray specs = Unit.getSpecs(unitUID);
-		for(int i=0; i<3; i++) {
-			JsonObject jo = specs.get(i).getAsJsonObject();
-			if(jo.getAsJsonPrimitive("name").getAsString().equals(name)) {
-				return jo.getAsJsonPrimitive("uid").getAsString();
-			}
-		}
+		UnitType type = UnitType.types.get(unitUID);
+		for(int i=0; i<3; i++)
+			if(type.getSpecName(i).equals(name))
+				return type.getSpecUid(i);
 		return null;
 	}
 	

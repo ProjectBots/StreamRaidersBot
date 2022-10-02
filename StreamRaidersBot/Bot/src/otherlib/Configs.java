@@ -24,7 +24,7 @@ import include.Json;
 import include.Maths;
 import include.NEF;
 import run.ProfileType;
-import srlib.units.Unit;
+import srlib.units.UnitType;
 
 
 public class Configs {
@@ -421,7 +421,7 @@ public class Configs {
 									.getAsJsonObject("unitInfo")
 									.keySet());
 		if(includeTypes)
-			ret.addAll(Unit.getTypesList());
+			ret.addAll(UnitType.typeUids);
 		
 		return ret;
 	}
@@ -1502,8 +1502,6 @@ public class Configs {
 		JsonObject profile = config.getAsJsonObject(cid);
 		Json.check(profile, cprofile.deepCopy(), true, cprofilespare.deepCopy());
 		
-		JsonObject unitTypes = Unit.getTypes();
-		
 		JsonObject acc = profile.getAsJsonObject(ProfileType.VIEWER.toString());
 		
 		JsonObject unitInfos = acc.getAsJsonObject("unitInfo");
@@ -1517,9 +1515,9 @@ public class Configs {
 
 			//	make sure all unit types are present
 			JsonObject units = layer.getAsJsonObject("units");
-			for(String type : unitTypes.keySet())
+			for(String type : UnitType.typeUids)
 				if(!units.has(type))
-					units.add(type, units.get(unitTypes.getAsJsonObject(type).get("rarity").getAsString()).deepCopy());
+					units.add(type, units.get(UnitType.types.get(type).rarity.toString()).deepCopy());
 			
 			for(String u : units.keySet())
 				Json.check(units.getAsJsonObject(u), cunitviewer.deepCopy(), true, null);
@@ -2081,7 +2079,7 @@ public class Configs {
 			//	easiest way to copy and unsync
 			JsonObject source = Json.parseObj(config.toString());
 			
-			HashSet<String> unitTypes = new HashSet<>(Unit.getTypesList());
+			HashSet<String> unitTypes = new HashSet<>(UnitType.typeUids);
 			
 			for(String k1 : source.keySet()) {
 				if(k1.equals("type") || k1.equals("version"))
