@@ -455,5 +455,113 @@
       "1 uncommonscrolls": 40,
       "2 uncommonscrolls": 10
     }
+  },
+  "pvpbonecommonchest3": {
+    "V0": {
+      "skinfullwarriorbonepvp": 99999,
+      "skinfullflagbearepvpbone": 99999,
+      "skinfulltankbones": 99999,
+      "skinfullrougepvpbone": 99999,
+      "skinfullarcherbonepvp": 99999,
+      "5 gold": 1
+    },
+    "B0": {
+      "3 commonscrolls": 35,
+      "10 gold": 10,
+      "15 gold": 20,
+      "20 gold": 5,
+      "1 uncommonscrolls": 30
+    },
+    "C0": {
+      "skinfullwarriorbonepvp": 99999,
+      "skinfullflagbearepvpbone": 99999,
+      "skinfulltankbones": 99999,
+      "skinfullrougepvpbone": 99999,
+      "skinfullarcherbonepvp": 99999,
+      "5 gold": 1
+    }
+  },
+  "pvpbonelegendarychest3": {
+    "V0": {
+      "skinfullorcslayerbonepvp": 99999,
+      "skinfullwarbeastpvpbone": 99999,
+      "skinfullmagepvpbone": 99999,
+      "skinfulltemplarpvpbone": 99999,
+      "skinfullballoonbusterbones": 99999,
+      "skinfullartillerypvpbone": 99999,
+      "skinfullnecromancerbone": 99999,
+      "50 gold": 1
+    },
+    "B0": {
+      "3 commonscrolls": 35,
+      "10 gold": 10,
+      "15 gold": 20,
+      "20 gold": 5,
+      "1 uncommonscrolls": 30
+    },
+    "C0": {
+      "skinfullorcslayerbonepvp": 99999,
+      "skinfullwarbeastpvpbone": 99999,
+      "skinfullmagepvpbone": 99999,
+      "skinfulltemplarpvpbone": 99999,
+      "skinfullballoonbusterbones": 99999,
+      "skinfullartillerypvpbone": 99999,
+      "skinfullnecromancerbone": 99999,
+      "50 gold": 1
+    }
+  },
+  "pvpbonerarechest3": {
+    "V0": {
+      "skinfullberserkepvpbone": 99999,
+      "skinfullflyingroguepvpbone": 99999,
+      "skinfullmusketeerbones": 99999,
+      "skinfullcenturionpvpbone": 99999,
+      "skinfullmonkpvpbone": 99999,
+      "25 gold": 1
+    },
+    "B0": {
+      "3 commonscrolls": 35,
+      "10 gold": 10,
+      "15 gold": 20,
+      "20 gold": 5,
+      "1 uncommonscrolls": 30
+    },
+    "C0": {
+      "skinfullberserkepvpbone": 99999,
+      "skinfullflyingroguepvpbone": 99999,
+      "skinfullmusketeerbones": 99999,
+      "skinfullcenturionpvpbone": 99999,
+      "skinfullmonkpvpbone": 99999,
+      "25 gold": 1
+    }
+  },
+  "pvpboneuncommonchest3": {
+    "V0": {
+      "skinfullbarbarianbones": 99999,
+      "skinfullbusterbonepvp": 99999,
+      "skinfullpaladinpvpbone": 99999,
+      "skinfullbomberbonepvp": 99999,
+      "skinfullhealerpvpbone": 99999,
+      "skinfullvampirebone": 99999,
+      "skinfullsaintbone": 99999,
+      "10 gold": 1
+    },
+    "B0": {
+      "3 commonscrolls": 35,
+      "10 gold": 10,
+      "15 gold": 20,
+      "20 gold": 5,
+      "1 uncommonscrolls": 30
+    },
+    "C0": {
+      "skinfullbarbarianbones": 99999,
+      "skinfullbusterbonepvp": 99999,
+      "skinfullpaladinpvpbone": 99999,
+      "skinfullbomberbonepvp": 99999,
+      "skinfullhealerpvpbone": 99999,
+      "skinfullvampirebone": 99999,
+      "skinfullsaintbone": 99999,
+      "10 gold": 1
+    }
   }
 }
