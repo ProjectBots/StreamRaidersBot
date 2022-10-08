@@ -5,6 +5,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import javax.swing.SwingConstants;
 
@@ -145,7 +146,11 @@ public class SkinSettings extends AbstractSettings {
 			skinNames_all.get(s.unitType).add(s.disname+" ("+s.type+")");
 		}
 		
-		for(UnitType key : UnitType.types.values()) {
+		UnitType[] tps = UnitType.types.values().toArray(new UnitType[UnitType.types.size()]);
+		
+		Arrays.sort(tps);
+		
+		for(UnitType key : tps) {
 			Container ct = new Container();
 			ct.setPos(0, g++);
 			

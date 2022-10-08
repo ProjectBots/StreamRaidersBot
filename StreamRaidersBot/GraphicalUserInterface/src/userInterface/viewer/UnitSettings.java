@@ -327,7 +327,16 @@ public class UnitSettings extends AbstractSettings {
 			public void unselected(String id, ItemEvent e) {}
 			@Override
 			public void selected(String id, ItemEvent e) {
-				Configs.syncUnit(cid, pt, lid, u.uId, GUI.getSelected(id));
+				String sel = GUI.getSelected(id);
+				if(!sel.equals("(none)")) {
+					for(int i=0; i<units.length; i++) {
+						if(units[i].name.equals(sel)) {
+							sel = units[i].uId;
+							break;
+						}
+					}
+				}
+				Configs.syncUnit(cid, pt, lid, u.uId, sel);
 				updateUnitSync();
 			}
 		});
