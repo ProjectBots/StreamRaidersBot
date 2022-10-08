@@ -67,11 +67,10 @@ public class Event {
 	
 	
 	private boolean hasBattlePass = false;
-	private boolean[] collectedBasic = new boolean[61];
-	private boolean[] collectedPass = new boolean[61];
+	private boolean[] collectedBasic = new boolean[101];
+	private boolean[] collectedPass = new boolean[101];
 	
 	private int tier = 0;
-	
 	
 	public int getEventTier() {
 		return tier;
