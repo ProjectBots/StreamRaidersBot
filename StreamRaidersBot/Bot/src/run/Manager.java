@@ -44,11 +44,9 @@ public class Manager {
 	 * 	when creating chest rewards for guide: exclude chest which aren't obtainable, compare to chests in Store
 	 * 	option to disable the loading images
 	 * 	optimize SkinSettings
-	 * 	when stopping wait for slots to finish
-	 * 	option to force close
+	 * 	when stopping wait for slots to finish + option to force close
 	 * 	better ressource management
 	 * 	better config
-	 * 	viewerstats - the position of the same item should be the same on today and past
 	 * 
 	 * 	
 	 * 

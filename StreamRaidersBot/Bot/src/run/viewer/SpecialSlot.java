@@ -231,10 +231,10 @@ public class SpecialSlot extends Slot {
 			JsonElement err = resp.get(SRC.errorMessage);
 			if(err == null || !err.isJsonPrimitive()) {
 				switch(resp.get("buyType").getAsString()) {
-				case "item":
+				case "ITEM":
 					v.addRew(vbe, SRC.Run.bought, best.name, best.quantity);
 					break;
-				case "chest":
+				case "CHEST":
 					v.addRew(vbe, SRC.Run.bought, sec==0?"dungeonchests":"eventchests", 1);
 					JsonArray data = resp.getAsJsonObject("data").getAsJsonArray("rewards");
 					for(int i=0; i<data.size(); i++) {
@@ -242,7 +242,7 @@ public class SpecialSlot extends Slot {
 						v.addRew(vbe, SRC.Run.bought, rew.name, rew.quantity);
 					}
 					break;
-				case "skin":
+				case "SKIN":
 					v.addRew(vbe, SRC.Run.bought, "skin", 1);
 					break;
 				default:
