@@ -188,7 +188,7 @@ public class SRR {
 		Http post = getPurePost(cn);
 		
 		if(viewerUserId != null && addUser) {
-			post.addEncArg("userId", playsAsCaptain ? viewerUserId : captainUserId);
+			post.addEncArg("userId", playsAsCaptain ? captainUserId : viewerUserId);
 			post.addEncArg("isCaptain", playsAsCaptain ? "1" : "0");
 		}
 		post.addEncArg("gameDataVersion", gameDataVersion);

@@ -45,10 +45,8 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	protected void ini() throws NoConnectionException, NotAuthorizedException {
+		super.ini();
 		updateRaids(true);
-		updateUnits(true);
-		updateStore(true);
-		updateSkins(true);
 		updateQuestEventRewards(true);
 	}
 	

@@ -54,7 +54,11 @@ public abstract class AbstractBackEnd<B extends AbstractBackEnd<B>> {
 		this.cid = cid;
 	}
 
-	protected abstract void ini() throws NoConnectionException, NotAuthorizedException;
+	protected void ini() throws NoConnectionException, NotAuthorizedException {
+		updateUnits(true);
+		updateStore(true);
+		updateSkins(true);
+	}
 	
 	public static interface UpdateEventListener<B extends AbstractBackEnd<B>> {
 		public default void afterUpdate(String obj, B be) {};
@@ -115,14 +119,17 @@ public abstract class AbstractBackEnd<B extends AbstractBackEnd<B>> {
 	synchronized public void updateSkins(boolean force) throws NoConnectionException, NotAuthorizedException {
 		Long wt = rts.get("skins");
 		long now = System.currentTimeMillis();
-		if(!force && !(wt == null || now - wt > 0))
+		if(!force && !(wt == null || now > wt))
 			return;
 		
 		JsonObject skins = Json.parseObj(req.getUserItems());
 		if(testUpdate(skins))
 			skins = Json.parseObj(req.getUserItems());
 		
-		this.skins = new Skins(skins.get("data").isJsonArray() ? skins.getAsJsonArray("data") : null);
+		JsonElement data = skins.get("data");
+		this.skins = new Skins(data.isJsonArray() ? data.getAsJsonArray() : null);
+		
+		System.out.println(this.skins.toString());
 		
 		rts.put("skins", now + updateTimes[1]*60*1000);
 		afterUpdate("skins");

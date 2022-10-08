@@ -5,6 +5,10 @@ import com.google.gson.JsonObject;
 import srlib.units.UnitType;
 
 public class Skin {
+	@Override
+	public String toString() {
+		return "{uid="+uid+", captainId="+captainId+", disname="+disname+", unit="+unitType.uid+", type="+type+"}";
+	}
 	public final String uid;
 	public final UnitType unitType;
 	public final String disname;
@@ -16,9 +20,5 @@ public class Skin {
 		disname = pack.get("DisplayName").getAsString();
 		type = SkinType.parseString(pack.get("Type").getAsString());
 		captainId = pack.get("StreamerId").getAsString();
-	}
-	@Override
-	public String toString() {
-		return "{uid="+uid+", captainId="+captainId+", disname="+disname+", unit="+unitType.uid+", type="+type+"}";
 	}
 }

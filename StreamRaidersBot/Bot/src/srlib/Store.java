@@ -271,17 +271,18 @@ public class Store {
 	public static class Item {
 		@Override
 		public String toString() {
-			return new StringBuffer(uid)
-					.append(":{")
+			return new StringBuffer("{")
+					.append(uid)
+					.append(" ")
 					.append(name)
 					.append(" ")
 					.append(quantity)
 					.append("@")
 					.append(price)
-					.append("")
-					.append(purchased ? "purchased " : "")
+					.append(" ")
+					.append(purchased ? "purchased (" : "(")
 					.append(section)
-					.append("}")
+					.append(")}")
 					.toString();
 		}
 		@Override
@@ -297,34 +298,14 @@ public class Store {
 		public final boolean purchased;
 		public final String section;
 		public final String uid;
-		//public final String startTime;
-		//public final String endTime;
-		
 		
 		public Item(JsonObject pack, boolean purchased) {
-
 			name = pack.get("Item").getAsString();
 			price = pack.get("BasePrice").getAsInt();
 			quantity = pack.get("Quantity").getAsInt();
 			this.purchased = purchased;
 			section = pack.get("Section").getAsString();
 			uid = pack.get("Uid").getAsString();
-			
-			/*
-			String lt = pack.get("LiveStartTime").getAsString();
-			if(lt.equals(""))
-				lt = pack.get("BonesStartTime").getAsString();
-			startTime = lt.equals("")
-							? Time.parse(LocalDateTime.now().plusYears(-100))
-							: lt;
-			
-			lt = pack.get("LiveEndTime").getAsString();
-			if(lt.equals(""))
-				lt = pack.get("BonesEndTime").getAsString();
-			endTime = lt.equals("")
-							? Time.parse(LocalDateTime.now().plusYears(100))
-							: lt;
-			*/
 		}
 	}
 	
@@ -371,7 +352,7 @@ public class Store {
 		HashSet<String> purchasedItems = new HashSet<>();
 		for(int i=0; i<shopItems.size(); i++) {
 			JsonObject item = shopItems.get(i).getAsJsonObject();
-			if(item.get("purchased").getAsString().equals("1"))
+			if(item.get("purchased").getAsInt() == 1)
 				purchasedItems.add(item.get("itemId").getAsString());
 		}
 		
@@ -476,13 +457,11 @@ public class Store {
 			return ret;
 		}
 		
-		String itype = item.name.replace("scroll", "").replace("cooldown", meat.get());
-		String itemId = item.uid;
-		switch(itype) {
+		switch(item.name) {
 		case "chest":
 			ret.addProperty("buyType", BuyType.CHEST.toString());
 			
-			Json.override(ret, Json.parseObj(req.purchaseChestItem(itemId)));
+			Json.override(ret, Json.parseObj(req.purchaseChestItem(item.uid)));
 			
 			if(ret.get(SRC.errorMessage).isJsonPrimitive())
 				return ret;
@@ -490,7 +469,7 @@ public class Store {
 		case "skin":
 			ret.addProperty("buyType", BuyType.SKIN.toString());
 			
-			Json.override(ret, Json.parseObj(req.purchaseStoreSkin(itemId)));
+			Json.override(ret, Json.parseObj(req.purchaseStoreSkin(item.uid)));
 			
 			if(ret.get(SRC.errorMessage).isJsonPrimitive())
 				return ret;
@@ -498,13 +477,13 @@ public class Store {
 			skins.addSkin(item.uid);
 			break;
 		default:
-			if(itemId.equals("dailydrop")) {
+			if(item.uid.equals("dailydrop")) {
 				ret.addProperty("buyType", BuyType.DAILY.toString());
 				Json.override(ret, Json.parseObj(req.grantDailyDrop()));
 			} else {
 				ret.addProperty("buyType", BuyType.ITEM.toString());
 				
-				Json.override(ret, Json.parseObj(req.purchaseStoreItem(itemId)));
+				Json.override(ret, Json.parseObj(req.purchaseStoreItem(item.uid)));
 				
 				if(ret.get(SRC.errorMessage).isJsonPrimitive())
 					return ret;

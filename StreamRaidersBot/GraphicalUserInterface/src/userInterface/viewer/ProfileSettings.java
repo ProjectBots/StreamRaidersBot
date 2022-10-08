@@ -486,10 +486,8 @@ public class ProfileSettings extends AbstractSettings {
 				}
 				
 				ArrayList<Item> items;
-				ArrayList<Item> items_;
 				try {
 					items = vbe.getAvailableEventStoreItems(section, true);
-					items_ = vbe.getAvailableEventStoreItems(section, false);
 				} catch (NoConnectionException | NotAuthorizedException e3) {
 					Logger.printException("ProfileSettings -> open -> specialShop: err=unable to get items", e3, Logger.runerr, Logger.error, cid, null, true);
 					gui.close();
@@ -536,9 +534,11 @@ public class ProfileSettings extends AbstractSettings {
 					});;
 					csi.addTextField(tfsi, uid+"storePrios::tf::"+iuid);
 					
+					
+					
 					Label lsip = new Label();
 					lsip.setPos(2, y);
-					lsip.setText(items_.contains(item) ? "" : "a.b.");
+					lsip.setText(item.purchased ? "a.b." : "");
 					lsip.setForeground(Colors.getColor(fontPath+"labels"));
 					csi.addLabel(lsip);
 					

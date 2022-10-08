@@ -15,6 +15,11 @@ import srlib.units.UnitType;
 
 public class Skins {
 	
+	@Override
+	public String toString() {
+		return skins.toString();
+	}
+	
 	private HashMap<String, Skin> skins = new HashMap<>();
 	
 	public Skins(JsonArray skins) {

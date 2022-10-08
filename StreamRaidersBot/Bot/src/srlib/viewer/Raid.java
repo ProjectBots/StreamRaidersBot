@@ -143,7 +143,7 @@ public class Raid {
 				return ret;
 			
 			JsonElement chest = raidStats.get("chestAwarded");
-			if(chest != null && chest.isJsonPrimitive())
+			if(chest != null && chest.isJsonPrimitive() && !chest.getAsString().equals(""))
 				ret.addProperty(chest.getAsString(), 1);
 			else
 				ret.addProperty("chestsalvage", 1);
@@ -167,9 +167,8 @@ public class Raid {
 					
 					if(ret.has(r.name))
 						ret.addProperty(r.name, ret.get(r.name).getAsInt() + r.quantity);
-					else {
+					else
 						ret.addProperty(r.name, r.quantity);
-					}
 				}
 			}
 		} catch (UnsupportedOperationException e) {

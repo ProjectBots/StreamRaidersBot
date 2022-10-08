@@ -200,7 +200,7 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 			r.addProperty(type, r.get(type).getAsInt() + amount);
 			be.addCurrency(type, amount);
 		} catch (NullPointerException e) {
-			Logger.printException("Viewer -> addRew: err=failed to add reward, con=" + con + ", type=" + type + ", amount=" + amount, e, Logger.runerr, Logger.error, cid, null, true);
+			Logger.printException("AbstractProfile -> addRew: err=failed to add reward, con=" + con + ", type=" + type + ", amount=" + amount, e, Logger.runerr, Logger.error, cid, null, true);
 		}
 	}
 	
