@@ -456,112 +456,63 @@
       "2 uncommonscrolls": 10
     }
   },
-  "pvpbonecommonchest3": {
+  "dungeons10chest": {
     "V0": {
-      "skinfullwarriorbonepvp": 99999,
-      "skinfullflagbearepvpbone": 99999,
-      "skinfulltankbones": 99999,
-      "skinfullrougepvpbone": 99999,
-      "skinfullarcherbonepvp": 99999,
-      "5 gold": 1
+      "1 scrollgladiator": 80,
+      "3 scrollgladiator": 19,
+      "5 scrollgladiator": 1
+    },
+    "V1": {
+      "1 potions": 50,
+      "2 potions": 10,
+      "3 potions": 5,
+      "1 scrollgladiator": 20,
+      "3 scrollgladiator": 10
+    },
+    "V2": {
+      "1 meat": 3,
+      "3 meat": 1,
+      "1 scrollgladiator": 80,
+      "3 scrollgladiator": 13
+    },
+    "V3": {
+      "2 token": 50,
+      "25 gold": 25,
+      "50 gold": 15,
+      "75 gold": 5,
+      "skinfullgladiatorjuliusfreezer": 3,
+      "skinfullgladiatorcauliseum": 2
     },
     "B0": {
-      "3 commonscrolls": 35,
-      "10 gold": 10,
-      "15 gold": 20,
-      "20 gold": 5,
-      "1 uncommonscrolls": 30
+      "10 gold": 50,
+      "15 gold": 30,
+      "20 gold": 20
     },
     "C0": {
-      "skinfullwarriorbonepvp": 99999,
-      "skinfullflagbearepvpbone": 99999,
-      "skinfulltankbones": 99999,
-      "skinfullrougepvpbone": 99999,
-      "skinfullarcherbonepvp": 99999,
-      "5 gold": 1
-    }
-  },
-  "pvpbonelegendarychest3": {
-    "V0": {
-      "skinfullorcslayerbonepvp": 99999,
-      "skinfullwarbeastpvpbone": 99999,
-      "skinfullmagepvpbone": 99999,
-      "skinfulltemplarpvpbone": 99999,
-      "skinfullballoonbusterbones": 99999,
-      "skinfullartillerypvpbone": 99999,
-      "skinfullnecromancerbone": 99999,
-      "50 gold": 1
+      "1 scrollgladiator": 94,
+      "3 scrollgladiator": 5,
+      "5 scrollgladiator": 1
     },
-    "B0": {
-      "3 commonscrolls": 35,
-      "10 gold": 10,
-      "15 gold": 20,
+    "C1": {
+      "10 gold": 50,
+      "15 gold": 10,
       "20 gold": 5,
-      "1 uncommonscrolls": 30
+      "1 scrollgladiator": 20,
+      "3 scrollgladiator": 10
     },
-    "C0": {
-      "skinfullorcslayerbonepvp": 99999,
-      "skinfullwarbeastpvpbone": 99999,
-      "skinfullmagepvpbone": 99999,
-      "skinfulltemplarpvpbone": 99999,
-      "skinfullballoonbusterbones": 99999,
-      "skinfullartillerypvpbone": 99999,
-      "skinfullnecromancerbone": 99999,
-      "50 gold": 1
-    }
-  },
-  "pvpbonerarechest3": {
-    "V0": {
-      "skinfullberserkepvpbone": 99999,
-      "skinfullflyingroguepvpbone": 99999,
-      "skinfullmusketeerbones": 99999,
-      "skinfullcenturionpvpbone": 99999,
-      "skinfullmonkpvpbone": 99999,
-      "25 gold": 1
+    "C2": {
+      "1 meat": 3,
+      "3 meat": 1,
+      "1 scrollgladiator": 80,
+      "3 scrollgladiator": 13
     },
-    "B0": {
-      "3 commonscrolls": 35,
-      "10 gold": 10,
-      "15 gold": 20,
-      "20 gold": 5,
-      "1 uncommonscrolls": 30
-    },
-    "C0": {
-      "skinfullberserkepvpbone": 99999,
-      "skinfullflyingroguepvpbone": 99999,
-      "skinfullmusketeerbones": 99999,
-      "skinfullcenturionpvpbone": 99999,
-      "skinfullmonkpvpbone": 99999,
-      "25 gold": 1
-    }
-  },
-  "pvpboneuncommonchest3": {
-    "V0": {
-      "skinfullbarbarianbones": 99999,
-      "skinfullbusterbonepvp": 99999,
-      "skinfullpaladinpvpbone": 99999,
-      "skinfullbomberbonepvp": 99999,
-      "skinfullhealerpvpbone": 99999,
-      "skinfullvampirebone": 99999,
-      "skinfullsaintbone": 99999,
-      "10 gold": 1
-    },
-    "B0": {
-      "3 commonscrolls": 35,
-      "10 gold": 10,
-      "15 gold": 20,
-      "20 gold": 5,
-      "1 uncommonscrolls": 30
-    },
-    "C0": {
-      "skinfullbarbarianbones": 99999,
-      "skinfullbusterbonepvp": 99999,
-      "skinfullpaladinpvpbone": 99999,
-      "skinfullbomberbonepvp": 99999,
-      "skinfullhealerpvpbone": 99999,
-      "skinfullvampirebone": 99999,
-      "skinfullsaintbone": 99999,
-      "10 gold": 1
+    "C3": {
+      "2 token": 50,
+      "25 gold": 25,
+      "50 gold": 15,
+      "75 gold": 5,
+      "skinfullgladiatorjuliusfreezer": 3,
+      "skinfullgladiatorcauliseum": 2
     }
   }
 }

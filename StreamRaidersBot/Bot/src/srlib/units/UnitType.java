@@ -2,6 +2,8 @@ package srlib.units;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -40,12 +42,18 @@ public class UnitType implements Comparable<UnitType> {
 		
 		for(String uid : jo.keySet()) {
 			JsonObject u = jo.getAsJsonObject(uid);
-			types.put(uid, new UnitType(uid,
+			UnitType ut = new UnitType(uid,
 					u.get("name").getAsString(),
 					u.get("canFly").getAsBoolean(),
 					UnitRole.valueOf(u.get("role").getAsString()),
-					UnitRarity.parseString(u.get("rarity").getAsString())));
+					UnitRarity.parseString(u.get("rarity").getAsString()));
 			
+			JsonArray specUids = u.getAsJsonArray("specUids");
+			JsonArray specNames = u.getAsJsonArray("specNames");
+			for(int i=0; i<3; i++)
+				ut.addSpec(specUids.get(i).getAsString(), specNames.get(i).getAsString());
+			
+			types.put(uid, ut);
 		}
 		
 		UnitType.typeUids = new ArrayList<>(types.keySet());

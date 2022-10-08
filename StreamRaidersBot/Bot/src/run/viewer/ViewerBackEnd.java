@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
-
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.gson.JsonArray;
@@ -24,10 +22,7 @@ import srlib.SRC;
 import srlib.SRR;
 import srlib.Quests.Quest;
 import srlib.SRR.NotAuthorizedException;
-import srlib.Store.C;
-import srlib.Store.Item;
 import srlib.skins.Skin;
-import srlib.skins.Skins;
 import srlib.souls.SoulType;
 import srlib.units.Unit;
 import srlib.viewer.CaptainData;
@@ -418,89 +413,6 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	public Map getMap(int slot, boolean force) throws NoConnectionException, NotAuthorizedException {
 		updateMap(slot, force);
 		return maps[slot];
-	}
-	
-	public int getCurrency(C con, boolean force) throws NotAuthorizedException, NoConnectionException {
-		updateStore(false);
-		return store.getCurrency(con);
-	}
-	
-	public void decreaseCurrency(C con, int amount) {
-		store.decreaseCurrency(con, amount);
-	}
-	
-	public void addCurrency(C con, int amount) {
-		store.addCurrency(con, amount);
-	}
-	
-	public void addCurrency(String type, int amount) {
-		store.addCurrency(type, amount);
-	}
-	
-	public void setCurrency(C con, int amount) {
-		store.setCurrency(con, amount);
-	}
-	
-	public Hashtable<String, Integer> getCurrencies() throws NotAuthorizedException, NoConnectionException {
-		updateStore(false);
-		return store.getCurrencies();
-	}
-	
-	
-	public JsonObject buyItem(Item item) throws NoConnectionException, NotAuthorizedException {
-		updateStore(false);
-		return store.buyItem(item, req, skins);
-	}
-	
-	public ArrayList<Item> getPurchasableScrolls() throws NoConnectionException, NotAuthorizedException {
-		updateStore(false);
-		return store.getPurchasableScrolls();
-	}
-	
-	public ArrayList<Item> getAvailableEventStoreItems(String section, boolean includePurchased) throws NoConnectionException, NotAuthorizedException {
-		updateSkins(false);
-		updateStore(false);
-		return store.getAvailableEventStoreItems(section, includePurchased, skins);
-	}
-	
-	public Item getDaily() throws NoConnectionException, NotAuthorizedException {
-		updateStore(false);
-		return store.getDaily();
-	}
-	
-	public String refreshStore() throws NoConnectionException, NotAuthorizedException {
-		JsonObject rdata = Json.parseObj(req.purchaseStoreRefresh());
-		if(testUpdate(rdata))
-			rdata = Json.parseObj(req.purchaseStoreRefresh());
-		
-		JsonElement err = rdata.get(SRC.errorMessage);
-		if(err.isJsonPrimitive())
-			return err.getAsString();
-		
-		store.refreshStore(rdata.getAsJsonArray("data"));
-		return null;
-	}
-	
-	public int getStoreRefreshCount() {
-		return store.getStoreRefreshCount();
-	}
-	
-	public Skins getSkins(boolean force) throws NoConnectionException, NotAuthorizedException {
-		updateSkins(force);
-		return skins;
-	}
-	
-	public String equipSkin(Unit unit, Skin skin) throws NoConnectionException {
-		JsonObject resp = Json.parseObj(req.equipSkin(""+unit.unitId,
-					skin == null ? unit.getSkin() : skin.uid,
-					skin == null ? "0" : "1"));
-		JsonElement err = resp.get(SRC.errorMessage);
-		
-		if(err == null || !err.isJsonPrimitive()) {
-			unit.setSkin(skin);
-			return null;
-		} else
-			return err.getAsString();
 	}
 	
 	public boolean isEvent() throws NoConnectionException, NotAuthorizedException {

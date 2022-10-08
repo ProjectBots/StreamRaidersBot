@@ -40,17 +40,21 @@ public class Captain extends AbstractProfile<Captain.CaptainBackEndRunnable,Capt
 		slots[4] = new TelegramSlot(this, slots);
 	}
 
+	
 	@Override
-	public void saveStats() {
+	public void updateRews() {
 		// TODO Auto-generated method stub
 		
 	}
+
 
 	@Override
 	public void updateFrame(CaptainBackEnd be) throws NoConnectionException, NotAuthorizedException {
 		// TODO Auto-generated method stub
 		
 	}
+
+	
 
 	
 	

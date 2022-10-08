@@ -370,7 +370,7 @@ public class ViewerProfileSection {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						try {
-							Manager.getViewer(cid).useBackEnd(vbe -> new ViewerStats(cid, vbe));
+							Manager.getViewer(cid).useBackEnd(vbe -> new ViewerStats(cid, vbe, MainFrame.getGUI()));
 						} catch (Exception e1) {
 							Logger.printException("ViewerProfileSection -> openStats: err=failed to load stats", e1, Logger.runerr, Logger.error, cid, null, true);
 						}

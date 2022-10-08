@@ -9,6 +9,7 @@ import java.awt.geom.AffineTransform;
 import java.util.Hashtable;
 import com.google.gson.JsonObject;
 
+import include.GUI;
 import include.GUI.Container;
 import include.GUI.Image;
 import include.GUI.Label;
@@ -35,8 +36,8 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.Vie
 	private static final FontRenderContext frc = new FontRenderContext(affinetransform,true,true);     
 	private static final Font font = new Font("Arial", Font.PLAIN, 12);
 	
-	public ViewerStats(String cid, ViewerBackEnd vbe) {
-		super(cid, vbe);
+	public ViewerStats(String cid, ViewerBackEnd vbe, GUI parent) {
+		super(cid, vbe, parent);
 	}
 	
 	@Override
@@ -75,12 +76,11 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.Vie
 				} else if((e.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0) {
 					switch(e.getKeyCode()) {
 					case KeyEvent.VK_R:
-						gui.close();
 						try {
-							run.useBackEnd(beh -> {
-								beh.updateUnits(true);
-								beh.updateStore(true);
-								open(run, beh);
+							run.useBackEnd(vbe_ -> {
+								vbe_.updateUnits(true);
+								vbe_.updateStore(true);
+								new ViewerStats(cid, vbe_, gui);
 							});
 						} catch (Exception e1) {
 							Logger.printException("Stats -> open -> reload: err=failed to update Units/Store", e1, Logger.runerr, Logger.error, run.cid, null, true);
@@ -105,32 +105,6 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.Vie
 			today.setForeground(Colors.getColor("VIEWER stats labels"));
 			crews.addLabel(today);
 			
-			Container fields = new Container();
-			fields.setPos(0, 1);
-				
-				int p = 0;
-				for(String key : rews.keySet()) {
-					StringBuilder sb = new StringBuilder();
-					sb.append("--- " + key + " ---");
-					
-					JsonObject jo = rews.getAsJsonObject(key);
-					for(String r : jo.keySet()) {
-						int w = (int) font.getStringBounds(r, frc).getWidth();
-						sb.append("\n" + r + "\u0009" + (w < 106 ? "\u0009" : "") + (w < 53 ? "\u0009" : "") + jo.get(r).getAsInt());
-					}
-						
-					
-					TextArea ta = new TextArea();
-					ta.setMargin(new Insets(10, 10, 10, 40));
-					ta.setPos(p++, 0);
-					ta.setText(sb.toString());
-					ta.setEditable(false);
-					ta.setTabSize(5);
-					fields.addTextArea(ta);
-				}
-				
-			crews.addContainer(fields);
-			
 			Label past = new Label();
 			past.setPos(1, 0);
 			past.setText("Past");
@@ -138,33 +112,53 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.Vie
 			past.setInsets(2, 20, 2, 2);
 			crews.addLabel(past);
 			
-			fields = new Container();
-			fields.setPos(1, 1);
-			fields.setInsets(2, 20, 2, 2);
+			Container cft = new Container();
+			cft.setPos(0, 1);
+			
+			Container cfp = new Container();
+			cfp.setPos(1, 1);
+			cfp.setInsets(2, 20, 2, 2);
 				
-				p = 0;
-				for(String key : stats.keySet()) {
+				int p = 0;
+				for(String key : rews.keySet()) {
+					StringBuffer sbt = new StringBuffer();
+					sbt.append("--- ").append(key).append(" ---");
 					
+					StringBuffer sbp = new StringBuffer();
+					sbp.append("--- ").append(key).append(" ---");
 					
-					StringBuilder sb = new StringBuilder();
-					sb.append("--- " + key + " ---");
-					
-					JsonObject jo = stats.getAsJsonObject(key);
-					for(String r : jo.keySet()) {
+					JsonObject rews_ = rews.getAsJsonObject(key);
+					JsonObject stats_ = stats.getAsJsonObject(key);
+					for(String r : rews_.keySet()) {
 						int w = (int) font.getStringBounds(r, frc).getWidth();
-						sb.append("\n" + r + "\u0009" + (w < 106 ? "\u0009" : "") + (w < 53 ? "\u0009" : "") + jo.get(r).getAsInt());
+						String b = "\n" + r + "\u0009" + (w < 106 ? "\u0009" : "") + (w < 53 ? "\u0009" : "");
+						sbt.append(b).append(rews_.get(r).getAsInt());
+						sbp.append(b).append(stats_.has(r) ? stats_.get(r).getAsInt() : 0);
 					}
+						
 					
 					TextArea ta = new TextArea();
 					ta.setMargin(new Insets(10, 10, 10, 40));
-					ta.setPos(p++, 0);
-					ta.setText(sb.toString());
-					ta.setTabSize(5);
+					ta.setPos(p, 0);
+					ta.setText(sbt.toString());
 					ta.setEditable(false);
-					fields.addTextArea(ta);
+					ta.setTabSize(5);
+					cft.addTextArea(ta);
+					
+					ta = new TextArea();
+					ta.setMargin(new Insets(10, 10, 10, 40));
+					ta.setPos(p++, 0);
+					ta.setText(sbp.toString());
+					ta.setEditable(false);
+					ta.setTabSize(5);
+					cfp.addTextArea(ta);
+					
+					p++;
 				}
 				
-			crews.addContainer(fields);
+			crews.addContainer(cft);
+			
+			crews.addContainer(cfp);
 			
 		gui.addContainer(crews);
 		

@@ -224,6 +224,16 @@ public class StreamRaiders {
 		
 		
 		Ressources.addCategory(java.awt.Image.class, p -> {
+			if(p.startsWith("UnitPics/"))
+				return new Ressource<java.awt.Image>(Ressources.get("UnitPics/unknow.png", java.awt.Image.class), -1);
+			
+			if(p.startsWith("SoulPics/"))
+				return new Ressource<java.awt.Image>(Ressources.get("SoulPics/graysoul.png", java.awt.Image.class), -1);
+			
+			if(p.startsWith("ChestPics/"))
+				return new Ressource<java.awt.Image>(Ressources.get("ChestPics/nochest.png", java.awt.Image.class), -1);
+			
+			
 			try {
 				return new Ressource<java.awt.Image>(ImageIO.read(new URL(p)), System.currentTimeMillis()+5*60*1000);
 			} catch (IOException e) {
@@ -232,7 +242,7 @@ public class StreamRaiders {
 		});
 		
 		try {
-			for(String s : "ChestPics LoyaltyPics Other SoulPics UnitPics".split(" ")) {
+			for(String s : "ChestPics LoyaltyPics Other SoulPics UnitPics CurrencyPics".split(" ")) {
 				File folder = new File("data/"+s);
 				if(!folder.exists() || !folder.isDirectory())
 					continue;

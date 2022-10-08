@@ -479,7 +479,7 @@ public class ProfileSettings extends AbstractSettings {
 					cur = Options.get("currentEventCurrency");
 					break;
 				default:
-					//	to lazy to handle properly bcs can never happen
+					//	can not happen
 					section = null;
 					spt = null;
 					cur = null;

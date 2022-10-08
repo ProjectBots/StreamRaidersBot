@@ -582,7 +582,7 @@ public class RaidSlot extends Slot {
 			return;
 
 		String tdn = r.twitchDisplayName;
-		if(r.type == RaidType.VERSUS) {
+		if(r.type == RaidType.VERSUS || r.isCodeLocked) {
 			switchCap(vbe, dungeon, r, tdn, noCap, first);
 			return;
 		}
@@ -633,7 +633,7 @@ public class RaidSlot extends Slot {
 		}
 		
 		if((dungeon ^ (r.type == RaidType.DUNGEON))
-			|| r.isOffline(il, Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer))
+			|| r.isOffline(il, Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer)*60)
 			|| (!ic && Time.isBeforeServerTime(r.creationDate + r.type.raidDuration - minTimeLeft))
 			|| (!ic && Time.isAfterServerTime(r.creationDate + r.type.raidDuration - maxTimeLeft))
 			|| (!ic && !enabled)

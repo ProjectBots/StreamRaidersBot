@@ -12,11 +12,15 @@ import include.Json;
 import include.NEF;
 import include.Http.NoConnectionException;
 import otherlib.Configs;
+import otherlib.Logger;
+import otherlib.Options;
+import otherlib.Remaper;
 import run.AbstractBackEnd.UpdateEventListener;
 import run.captain.Captain;
 import run.captain.CaptainBackEnd;
 import run.viewer.Viewer;
 import srlib.SRR;
+import srlib.Store;
 import srlib.SRR.NotAuthorizedException;
 
 
@@ -46,6 +50,7 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 	protected String currentLayerId = null;
 	protected boolean isSwitching = false;
 	protected final Slot[] slots;
+	protected JsonObject rews = new JsonObject();
 	
 	public ProfileType getType() {
 		return ptype;
@@ -170,7 +175,39 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 	}
 	
 	protected abstract void iniSlots();
-	public abstract void saveStats();
+	public abstract void updateRews();
+	
+	public void saveRews() {
+		JsonObject astats = Configs.getUObj(cid, ptype == ProfileType.VIEWER ? Configs.statsViewer : Configs.statsCaptain);
+		for(String s : rews.keySet()) {
+			JsonObject stats = astats.getAsJsonObject(s);
+			JsonObject rew = rews.getAsJsonObject(s);
+			for(String v : rew.keySet()) {
+				if(stats.has(v))
+					stats.addProperty(v, stats.get(v).getAsInt() + rew.get(v).getAsInt());
+				else
+					stats.addProperty(v, rew.get(v).getAsInt());
+				
+				rew.addProperty(v, 0);
+			}
+		}
+	}
+	
+	public void addRew(B be, String con, String type, int amount) {
+		type = Remaper.map(type).replace(Options.get("currentEventCurrency"), Store.eventcurrency.get());
+		try {
+			JsonObject r = rews.getAsJsonObject(con);
+			r.addProperty(type, r.get(type).getAsInt() + amount);
+			be.addCurrency(type, amount);
+		} catch (NullPointerException e) {
+			Logger.printException("Viewer -> addRew: err=failed to add reward, con=" + con + ", type=" + type + ", amount=" + amount, e, Logger.runerr, Logger.error, cid, null, true);
+		}
+	}
+	
+	public JsonObject getRews() {
+		return rews;
+	}
+	
 	public void setRunning(int slot, boolean b) {
 		slots[slot].setRunning(b);
 	}
@@ -268,4 +305,5 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 			}
 		}
 	}
+
 }

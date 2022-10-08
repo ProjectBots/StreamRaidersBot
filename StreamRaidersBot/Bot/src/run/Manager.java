@@ -316,7 +316,7 @@ public class Manager {
 	public static void stop() {
 		setClockRunning(false);
 		for(String key : profiles.keySet())
-			profiles.get(key).saveStats();
+			profiles.get(key).saveRews();
 		for(String cid : getLoadedProfiles())
 			unloadProfile(cid);
 		Configs.save();
@@ -591,6 +591,10 @@ public class Manager {
 			Options.set("rewards", Raid.updateChestRews(data).toString());
 			Options.set("data", dataPathUrl);
 			Options.save();
+			
+			for(String key : profiles.keySet())
+				profiles.get(key).updateRews();
+			
 			Manager.blis.onSRDataUpdate(dataPathUrl, data);
 		}
 

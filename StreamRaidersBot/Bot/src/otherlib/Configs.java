@@ -461,6 +461,7 @@ public class Configs {
 		if(!hadBefore)
 			syncUnit(cid, pt, "(all)", unitId, unitType);
 		
+		
 	}
 	
 	
@@ -594,13 +595,28 @@ public class Configs {
 		JsonObject units = getLayer(cid, pt, lid)
 				.getAsJsonObject("units");
 
+		
 		JsonObject u = units.getAsJsonObject(unitId);
 		if(defUnitId == null || defUnitId.equals("(none)")) {
 			u.add("opt", u.get("opt").deepCopy());
 			u.addProperty("sync", "(none)");
 		} else {
-			u.add("opt", units.getAsJsonObject(defUnitId).get("opt"));
-			u.addProperty("sync", defUnitId);
+			JsonObject du = units.getAsJsonObject(defUnitId);
+			String dus = du.get("sync").getAsString();
+			if(!dus.equals("(none)"))
+				du = units.getAsJsonObject(dus);
+			else
+				dus = defUnitId;
+			
+			for(String uid : units.keySet()) {
+				JsonObject u_ = units.getAsJsonObject(uid);
+				if(u_.get("sync").getAsString().equals(unitId)) {
+					u_.add("opt", du.get("opt"));
+					u_.addProperty("sync", dus);
+				}
+			}
+			u.add("opt", du.get("opt"));
+			u.addProperty("sync", dus);
 		}
 	}
 	

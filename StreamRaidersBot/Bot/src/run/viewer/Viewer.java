@@ -12,8 +12,6 @@ import com.google.gson.JsonObject;
 import include.Http.NoConnectionException;
 import otherlib.Configs;
 import otherlib.Logger;
-import otherlib.Options;
-import otherlib.Remaper;
 import run.AbstractProfile;
 import run.Manager;
 import run.ProfileType;
@@ -35,7 +33,6 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 	
 	public static final int slotSize = 5;
 	
-	private JsonObject rews = null;
 	
 	private static final String[] rew_sources = "chests bought event".split(" ");
 	private static final String[] rew_chests_chests = "chestboostedgold chestbosssuper chestboostedskin chestboss chestboostedtoken chestboostedscroll chestgold chestsilver chestbronze chestsalvage".split(" ");
@@ -51,10 +48,9 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		return ret.toArray(new String[ret.size()]);
 	}
 	
+	@Override
 	public void updateRews() {
 		rew_types = genRewTypes();
-		if(rews == null)
-			rews = new JsonObject();
 		for(String s : rew_sources) {
 			if(!rews.has(s))
 				rews.add(s, new JsonObject());
@@ -76,40 +72,6 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 					source.addProperty(t, 0);
 		}
 	}
-	
-	synchronized public void addRew(ViewerBackEnd vbe, String con, String type, int amount) {
-		type = Remaper.map(type).replace(Options.get("currentEventCurrency"), Store.eventcurrency.get());
-		try {
-			JsonObject r = rews.getAsJsonObject(con);
-			r.addProperty(type, r.get(type).getAsInt() + amount);
-			vbe.addCurrency(type, amount);
-		} catch (NullPointerException e) {
-			Logger.printException("Viewer -> addRew: err=failed to add reward, con=" + con + ", type=" + type + ", amount=" + amount, e, Logger.runerr, Logger.error, cid, null, true);
-		}
-	}
-	
-	public JsonObject getRews() {
-		return rews;
-	}
-	
-	@Override
-	public void saveStats() {
-		JsonObject astats = Configs.getUObj(cid, Configs.statsViewer);
-		for(String s : rews.keySet()) {
-			JsonObject stats = astats.getAsJsonObject(s);
-			JsonObject rew = rews.getAsJsonObject(s);
-			for(String v : rew.keySet()) {
-				try {
-					stats.addProperty(v, stats.get(v).getAsInt() + rew.get(v).getAsInt());
-				} catch (NullPointerException e) {
-					Logger.print("Viewer -> saveStats: err=unknown stat, v="+v+", s="+s, Logger.general, Logger.error, cid, null, true);
-					stats.addProperty(v, rew.get(v).getAsInt());
-				}
-				rew.addProperty(v, 0);
-			}
-		}
-	}
-	
 	
 	public Viewer(String cid, SRR req) throws Exception {
 		super(cid, new ViewerBackEnd(cid, req), ProfileType.VIEWER, slotSize);

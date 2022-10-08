@@ -175,7 +175,7 @@ public class CaptainProfileSection {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						try {
-							Manager.getCaptain(cid).useBackEnd(cbe -> new CaptainStats(cid, cbe));
+							Manager.getCaptain(cid).useBackEnd(cbe -> new CaptainStats(cid, cbe, MainFrame.getGUI()));
 						} catch (Exception e1) {
 							Logger.printException("CaptainProfileSection -> openStats: err=failed to load stats", e1, Logger.runerr, Logger.error, cid, null, true);
 						}

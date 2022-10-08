@@ -478,12 +478,38 @@ public class MainFrame {
 					}
 				}
 			}
-			GUI.setText(pspre+cid+"::"+slot+"::wins", ""+raid.pveWins);
-			try {
-				setImage("LoyaltyPics/" + Viewer.pveloy[raid.pveLoyaltyLevel], 20, pspre+cid+"::"+slot+"::loy");
-			} catch (IOException e) {
-				Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set loy image", e, Logger.general, Logger.error, cid, slot, true);
+			switch(raid.type) {
+			case CAMPAIGN:
+				GUI.setText(pspre+cid+"::"+slot+"::wins", ""+raid.pveWins);
+				try {
+					setImage("LoyaltyPics/" + Viewer.pveloy[raid.pveLoyaltyLevel], 20, pspre+cid+"::"+slot+"::loy");
+				} catch (IOException e) {
+					Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set loy image", e, Logger.general, Logger.error, cid, slot, true);
+				}
+				break;
+			case DUNGEON:
+				int keys = raid.dungeonStreak + 2;
+				if(keys > 10)
+					keys = 10;
+				GUI.setText(pspre+cid+"::"+slot+"::wins", ""+keys);
+				try {
+					setImage("CurrencyPics/key", 20, pspre+cid+"::"+slot+"::loy");
+				} catch (IOException e) {
+					Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set key image", e, Logger.general, Logger.error, cid, slot, true);
+				}
+				break;
+			case VERSUS:
+				//	TODO
+				GUI.setText(pspre+cid+"::"+slot+"::wins", "¯\\_(ツ)_/¯");
+				try {
+					setImage("CurrencyPics/bone", 20, pspre+cid+"::"+slot+"::loy");
+				} catch (IOException e) {
+					Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set bone image", e, Logger.general, Logger.error, cid, slot, true);
+				}
+				break;
 			}
+			
+			
 			String cap = raid.twitchDisplayName;
 			Integer val = Configs.getCapInt(cid, "(all)", cap, raid.type == RaidType.DUNGEON ? Configs.dungeon : Configs.campaign, Configs.fav);
 			String favPath;

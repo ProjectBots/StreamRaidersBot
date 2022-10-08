@@ -327,61 +327,7 @@ public class UnitSettings extends AbstractSettings {
 			public void unselected(String id, ItemEvent e) {}
 			@Override
 			public void selected(String id, ItemEvent e) {
-				String sel = GUI.getSelected(id);
-				//	if sel equals none, it means that it was synced before,
-				//	therefore no other unit should be synced with this unit atm
-				unsync:
-				if(!sel.equals(SYNC_NONE)) {
-					//	name to uId
-					for(int i=0; i<units.length; i++) {
-						if(units[i].name.equals(sel)) {
-							sel = units[i].uId;
-							break;
-						}
-					}
-					
-					if(lid.equals("(all)")) {
-						//	most likely the majority of units won't be synced with this.
-						//	to save time we make a list of units that are synced to this on at least one layer
-						ArrayList<String> unitIdsToTest = new ArrayList<>();
-						for(int i=0; i<units.length; i++) {
-							if(units[i].sync.contains(u.uId)) {
-								unitIdsToTest.add(units[i].uId);
-								//	replace uId from this unit with sel if not already present
-								//	:: is the separator between uIds if lid equals "(all)"
-								units[i].sync = units[i].sync.replace(u.uId, "").replace("::::", "::");
-								if(!units[i].sync.contains(sel))
-									units[i].sync += "::" + sel;
-							}
-						}
-						
-						if(unitIdsToTest.size() == 0)
-							//	there are no units synced to this on any layer
-							break unsync;
-						
-						//	go through each layer and sync units that have been synced with this unit to sel
-						for(String l : Configs.getLayerIds(cid, pt)) {
-							//boolean selUnsync = !Configs.getUnitSync(cid, pt, l, sel).equals(SYNC_NONE);
-							for(int i=0; i<unitIdsToTest.size(); i++) {
-								if(Configs.getUnitSync(cid, pt, l, unitIdsToTest.get(i)).equals(u.uId)) {
-									//if(selUnsync)
-									//	Configs.syncUnit(cid, pt, l, sel, null);
-									Configs.syncUnit(cid, pt, l, unitIdsToTest.get(i), sel);
-								}
-							}
-						}
-					} else {
-						for(int i=0; i<units.length; i++) {
-							if(units[i].sync.equals(u.uId)) {
-								Configs.syncUnit(cid, pt, lid, units[i].uId, sel);
-								units[i].sync = sel;
-							}
-						}
-					}
-				}
-				Configs.syncUnit(cid, pt, lid, u.uId, sel);
-				u.sync = sel;
-				
+				Configs.syncUnit(cid, pt, lid, u.uId, GUI.getSelected(id));
 				updateUnitSync();
 			}
 		});
@@ -396,10 +342,13 @@ public class UnitSettings extends AbstractSettings {
 	private static final String SYNC_NONE = "(none)";
 	
 	private void updateUnitSync() {
+		
 		ArrayList<U> syncList = new ArrayList<>(units.length);
-		for(int i=0; i<units.length; i++)
-				if(units[i].sync.equals(SYNC_NONE))
-					syncList.add(units[i]);
+		for(int i=0; i<units.length; i++) {
+			units[i].sync = Configs.getUnitSync(cid, pt, lid, units[i].uId);
+			if(units[i].sync.equals(SYNC_NONE))
+				syncList.add(units[i]);
+		}
 		
 		for(int i=0; i<units.length; i++) {
 			GUI.setCombList(uid+units[i].uId+"::sync", genUnitSyncArray(syncList, units[i]));
@@ -704,12 +653,15 @@ public class UnitSettings extends AbstractSettings {
 	}
 	
 	private void addSpecs(final UnitType type, final String unitId, final int g) {
-		String old = Configs.getUnitSpec(cid, pt, lid, unitId);
+		final String old = Configs.getUnitSpec(cid, pt, lid, unitId);
 		
 		int p = 12;
 		
 		for(int i=0; i<3; i++) {
 			final String u = type.getSpecUid(i);
+			if(u == null)
+				System.err.println(type.name);
+			
 			final String id1 = uid+unitId+"::spec::";
 			final int ii = i;
 			Button buid = new Button();

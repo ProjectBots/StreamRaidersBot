@@ -37,6 +37,7 @@ public class CaptainData {
 				.append(pveWins)
 				.append(" ")
 				.append(type.toString())
+				.append("}")
 				.toString();
 	}
 	

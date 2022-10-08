@@ -16,14 +16,14 @@ public abstract class AbstractStats <P extends AbstractProfile<R, B>, B extends 
 	protected final String uid = UUID.randomUUID().toString()+"::", cid;
 	
 	protected static GUI gui = null;
-	public AbstractStats(String cid, B be) {
+	public AbstractStats(String cid, B be, GUI parent) {
 		this.cid = cid;
 		
+		GUI tmp = null;
 		if(gui != null)
-			gui.close();
+			tmp = gui;
 		
-
-		gui = new GUI("Stats for " + Configs.getPStr(cid, Configs.pname), 1400, 900, MainFrame.getGUI(), null);
+		gui = new GUI("Stats for " + Configs.getPStr(cid, Configs.pname), 1400, 900, parent, null);
 		gui.addWinLis(new WinLis() {
 			@Override
 			public void onIconfied(WindowEvent e) {}
@@ -38,6 +38,9 @@ public abstract class AbstractStats <P extends AbstractProfile<R, B>, B extends 
 				gui = null;
 			}
 		});
+		
+		if(tmp != null)
+			tmp.close(false);
 		
 		
 		try {
