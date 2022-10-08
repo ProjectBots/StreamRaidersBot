@@ -90,14 +90,14 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 						caps = vbe.getCaps(dungeon);
 						HashSet<String> got = new HashSet<>();
 						for(CaptainData c : caps)
-							got.add(c.twitchDisplayName);
+							got.add(c.twitchUserName);
 						
 						HashSet<String> favs = Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign);
-						for(String tdn : favs) {
-							if(got.contains(tdn) || !Configs.getCapBoo(cid, currentLayer, tdn, dungeon ? Configs.dungeon : Configs.campaign, Configs.il))
+						for(String tun : favs) {
+							if(got.contains(tun) || !Configs.getCapBoo(cid, currentLayer, tun, dungeon ? Configs.dungeon : Configs.campaign, Configs.il))
 								continue;
 							
-							JsonArray results = vbe.searchCap(1, null, false, false, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, true, tdn);
+							JsonArray results = vbe.searchCap(1, null, false, false, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, true, tun);
 							if(results.size() == 0)
 								continue;
 							
@@ -141,26 +141,23 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 
 	
 	protected Hashtable<String, Long> bannedCaps = new Hashtable<>();
-	protected Object switchCapsLock = new Object();
-	
 	
 	public void switchChange(int slot) {
 		((RaidSlot) slots[slot]).switchChange();
 	}
 	
 	public void fav(int slot, int val) {
-		String cap = cnames[slot+4];
-		if(cap == null)
+		if(raids[slot] == null)
 			return;
 		
-		Integer v = Configs.getCapInt(cid, "(all)", cap, cnames[slot+8].equals("d") ? Configs.dungeon : Configs.campaign, Configs.fav);
+		Integer v = Configs.getCapInt(cid, "(all)", raids[slot].twitchUserName, raids[slot].type == RaidType.DUNGEON ? Configs.dungeon : Configs.campaign, Configs.fav);
 		if(v == null 
 				|| v == Integer.MAX_VALUE-1
 				|| v == Integer.MIN_VALUE+1
 				|| Math.signum(val)*Math.signum(v) <= 0)
-			Configs.favCap(cid, "(all)", cap, Configs.all, val);
+			Configs.favCap(cid, "(all)", raids[slot].twitchUserName, Configs.all, val);
 		else 
-			Configs.favCap(cid, "(all)", cap, Configs.all, null);
+			Configs.favCap(cid, "(all)", raids[slot].twitchUserName, Configs.all, null);
 	}
 	
 	
@@ -188,7 +185,6 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 	private Raid[] raids = null;
 	private Hashtable<String, Integer> curs = null;
 	
-	
 	@Override
 	synchronized public void updateFrame(ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
 		if(!ready)
@@ -201,18 +197,9 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 		if(vbe != null)
 			raids = vbe.getRaids(SRC.BackEndHandler.all);
 
-		for(int i=0; i<4; i++) {
-			if(raids[i] == null) {
-				cnames[i] = null;
-				cnames[i+4] = null;
-				cnames[i+8] = null;
-			} else {
-				cnames[i] = raids[i].twitchUserName;
-				cnames[i+4] = raids[i].twitchDisplayName;
-				cnames[i+8] = raids[i].type == RaidType.DUNGEON ? "d" : "c";
-			}
+		for(int i=0; i<4; i++)
 			Manager.blis().onProfileUpdateSlotViewer(cid, i, raids[i], Configs.isSlotLocked(cid, currentLayer, ""+i), ((RaidSlot) slots[i]).isChange());
-		}
+		
 
 		if(vbe != null)
 			curs = vbe.getCurrencies();
@@ -245,10 +232,8 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 							Configs.getInt(cid, currentLayer, Configs.questEventRewardsUpdateViewer));
 	}
 	
-	private String[] cnames = new String[12];
-	
 	public String getTwitchLink(int slot) {
-		return "https://twitch.tv/"+cnames[slot];
+		return "https://twitch.tv/"+raids[slot].twitchUserName;
 	}
 	
 	

@@ -82,12 +82,12 @@ public class CapSearch {
 				for(int i=0; i<caps.size(); i++) {
 					JsonObject cap = caps.get(i).getAsJsonObject();
 					
-					String tdn = cap.get("twitchDisplayName").getAsString();
-					Integer val = Configs.getCapInt(cid, lay, tdn, list, Configs.fav);
+					final String tun = cap.get("twitchUserName").getAsString();
+					Integer val = Configs.getCapInt(cid, lay, tun, list, Configs.fav);
 					
 					Label sl = new Label();
 					sl.setPos(0, i);
-					sl.setText(tdn);
+					sl.setText(cap.get("twitchDisplayName").getAsString());
 					sl.setForeground(Colors.getColor("VIEWER stngs captain search names"));
 					gui.addLabel(sl);
 					
@@ -107,21 +107,21 @@ public class CapSearch {
 					fav.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							Integer val = Configs.getCapInt(cid, lay, tdn, list, Configs.fav);
+							Integer val = Configs.getCapInt(cid, lay, tun, list, Configs.fav);
 							if(val == null || val <= 0 || val == Integer.MAX_VALUE-1) {
-								Configs.favCap(cid, lay, tdn, list, 1);
-								GUI.setForeground(uid+"::search::fav::"+tdn, Colors.getColor("VIEWER stngs captain search buttons heart"));
-								GUI.setGradient(uid+"::search::fav::"+tdn, Colors.getGradient("VIEWER stngs captain search buttons heart"));
-								GUI.setForeground(uid+"::search::block::"+tdn, Colors.getColor("VIEWER stngs captain search buttons def"));
-								GUI.setGradient(uid+"::search::block::"+tdn, Colors.getGradient("VIEWER stngs captain search buttons def"));
+								Configs.favCap(cid, lay, tun, list, 1);
+								GUI.setForeground(uid+"::search::fav::"+tun, Colors.getColor("VIEWER stngs captain search buttons heart"));
+								GUI.setGradient(uid+"::search::fav::"+tun, Colors.getGradient("VIEWER stngs captain search buttons heart"));
+								GUI.setForeground(uid+"::search::block::"+tun, Colors.getColor("VIEWER stngs captain search buttons def"));
+								GUI.setGradient(uid+"::search::block::"+tun, Colors.getGradient("VIEWER stngs captain search buttons def"));
 							} else {
-								Configs.favCap(cid, lay, tdn, list, null);
-								GUI.setForeground(uid+"::search::fav::"+tdn, Colors.getColor("VIEWER stngs captain search buttons def"));
-								GUI.setGradient(uid+"::search::fav::"+tdn, Colors.getGradient("VIEWER stngs captain search buttons def"));
+								Configs.favCap(cid, lay, tun, list, null);
+								GUI.setForeground(uid+"::search::fav::"+tun, Colors.getColor("VIEWER stngs captain search buttons def"));
+								GUI.setGradient(uid+"::search::fav::"+tun, Colors.getGradient("VIEWER stngs captain search buttons def"));
 							}
 						}
 					});
-					gui.addBut(fav, uid+"::search::fav::"+tdn);
+					gui.addBut(fav, uid+"::search::fav::"+tun);
 					
 					
 					Button block = new Button();
@@ -140,21 +140,21 @@ public class CapSearch {
 					block.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							Integer val = Configs.getCapInt(cid, lay, tdn, list, Configs.fav);
+							Integer val = Configs.getCapInt(cid, lay, tun, list, Configs.fav);
 							if(val == null || val >= 0 || val == Integer.MIN_VALUE+1) {
-								Configs.favCap(cid, lay, tdn, list, -1);
-								GUI.setForeground(uid+"::search::block::"+tdn, Colors.getColor("VIEWER stngs captain search buttons cross"));
-								GUI.setGradient(uid+"::search::block::"+tdn, Colors.getGradient("VIEWER stngs captain search buttons cross"));
-								GUI.setForeground(uid+"::search::fav::"+tdn, Colors.getColor("VIEWER stngs captain search buttons def"));
-								GUI.setGradient(uid+"::search::fav::"+tdn, Colors.getGradient("VIEWER stngs captain search buttons def"));
+								Configs.favCap(cid, lay, tun, list, -1);
+								GUI.setForeground(uid+"::search::block::"+tun, Colors.getColor("VIEWER stngs captain search buttons cross"));
+								GUI.setGradient(uid+"::search::block::"+tun, Colors.getGradient("VIEWER stngs captain search buttons cross"));
+								GUI.setForeground(uid+"::search::fav::"+tun, Colors.getColor("VIEWER stngs captain search buttons def"));
+								GUI.setGradient(uid+"::search::fav::"+tun, Colors.getGradient("VIEWER stngs captain search buttons def"));
 							} else {
-								Configs.favCap(cid, lay, tdn, list, null);
-								GUI.setForeground(uid+"::search::block::"+tdn, Colors.getColor("VIEWER stngs captain search buttons def"));
-								GUI.setGradient(uid+"::search::block::"+tdn, Colors.getGradient("VIEWER stngs captain search buttons def"));
+								Configs.favCap(cid, lay, tun, list, null);
+								GUI.setForeground(uid+"::search::block::"+tun, Colors.getColor("VIEWER stngs captain search buttons def"));
+								GUI.setGradient(uid+"::search::block::"+tun, Colors.getGradient("VIEWER stngs captain search buttons def"));
 							}
 						}
 					});
-					gui.addBut(block, uid+"::search::block::"+tdn);
+					gui.addBut(block, uid+"::search::block::"+tun);
 					
 				}
 				gui.refresh();

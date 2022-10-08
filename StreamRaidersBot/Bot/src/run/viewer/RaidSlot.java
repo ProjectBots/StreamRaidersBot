@@ -132,8 +132,7 @@ public class RaidSlot extends Slot {
 			return;
 		}
 		
-		String tdn = r.twitchDisplayName;
-		Boolean ic = Configs.getCapBoo(cid, currentLayer, tdn, dungeon ? Configs.dungeon : Configs.campaign, Configs.ic);
+		Boolean ic = Configs.getCapBoo(cid, currentLayer, r.twitchUserName, dungeon ? Configs.dungeon : Configs.campaign, Configs.ic);
 		if(ic == null)
 			ic = false;
 		
@@ -581,26 +580,26 @@ public class RaidSlot extends Slot {
 		if(!r.isSwitchable(Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer)))
 			return;
 
-		String tdn = r.twitchDisplayName;
+		String tun = r.twitchUserName;
 		if(r.type == RaidType.VERSUS || r.isCodeLocked) {
-			switchCap(vbe, dungeon, r, tdn, noCap, first);
+			switchCap(vbe, dungeon, r, tun, noCap, first);
 			return;
 		}
 		
 		String ct = r.chestType;
 		if(ct == null) {
-			switchCap(vbe, dungeon, r, tdn, noCap, first);
+			switchCap(vbe, dungeon, r, tun, noCap, first);
 			return;
 		}
 		ct = Remaper.map(ct);
 
 		ListType list = dungeon ? Configs.dungeon : Configs.campaign;
 		
-		Boolean ic = Configs.getCapBoo(cid, currentLayer, tdn, list, Configs.ic);
+		Boolean ic = Configs.getCapBoo(cid, currentLayer, tun, list, Configs.ic);
 		ic = ic == null ? false : ic;
-		Boolean il = Configs.getCapBoo(cid, currentLayer, tdn, list, Configs.il);
+		Boolean il = Configs.getCapBoo(cid, currentLayer, tun, list, Configs.il);
 		il = il == null ? false : il;
-		Integer fav = Configs.getCapInt(cid, currentLayer, tdn, list, Configs.fav);
+		Integer fav = Configs.getCapInt(cid, currentLayer, tun, list, Configs.fav);
 		fav = fav == null ? 0 : fav;
 		
 		int loy = dungeon ? (r.allyBoons+",").split(",").length : r.pveWins;
@@ -620,7 +619,7 @@ public class RaidSlot extends Slot {
 			minTimeLeft = 20;
 		} else if(maxLoy < 0)
 			maxLoy = Integer.MAX_VALUE;
-			
+		
 		
 		JsonArray users = Json.parseArr(r.users);
 		if(users != null) {
@@ -633,20 +632,20 @@ public class RaidSlot extends Slot {
 		}
 		
 		if((dungeon ^ (r.type == RaidType.DUNGEON))
-			|| r.isOffline(il, Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer)*60)
+			|| r.isOffline(!il, Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer)*60)
 			|| (!ic && Time.isBeforeServerTime(r.creationDate + r.type.raidDuration - minTimeLeft))
 			|| (!ic && Time.isAfterServerTime(r.creationDate + r.type.raidDuration - maxTimeLeft))
 			|| (!ic && !enabled)
 			|| (!ic && (loy < minLoy || loy > maxLoy))
 			|| fav < 0
 			) {
-			switchCap(vbe, dungeon, r, tdn, noCap, first);
+			switchCap(vbe, dungeon, r, tun, noCap, first);
 			return;
 		}
 		
 		if(change) {
 			if(first)
-				switchCap(vbe, dungeon, r, tdn, noCap, first);
+				switchCap(vbe, dungeon, r, tun, noCap, first);
 			else
 				change = false;
 		}
@@ -658,43 +657,30 @@ public class RaidSlot extends Slot {
 	}
 	
 	
-	private void switchCap(ViewerBackEnd beh, boolean dungeon, Raid r, String disname, boolean noCap, boolean first) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
-		synchronized (v.switchCapsLock) {
-			try {
-				switchCap(beh, dungeon, r, disname, noCap);
-			} catch (NoCapMatchesException e) {
-				if(!noCap) {
-					beh.updateCaps(true, dungeon);
-					captain(beh, first, true);
-				} else {
-					Logger.print("RaidSlot (viewer) -> switchCap: slot="+slot+", err=No Captain Matches Config", Logger.runerr, Logger.error, cid, slot, true);
-					throw e;
-				}
+	private void switchCap(ViewerBackEnd beh, boolean dungeon, Raid r, String cap, boolean noCap, boolean first) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+		try {
+			switchCap(beh, dungeon, r, cap, noCap);
+		} catch (NoCapMatchesException e) {
+			if(!noCap) {
+				beh.updateCaps(true, dungeon);
+				captain(beh, first, true);
+			} else {
+				Logger.print("RaidSlot (viewer) -> switchCap: slot="+slot+", err=No Captain Matches Config", Logger.runerr, Logger.error, cid, slot, true);
+				throw e;
 			}
 		}
 	}
 	
-	/**
-	 * not thread safe, do not call this directly, use {@link RaidSlot#switchCap(ViewerBackEnd, boolean, Raid, String, boolean, boolean)}
-	 * @param beh
-	 * @param dungeon
-	 * @param r
-	 * @param disname
-	 * @param noCap
-	 * @throws NoConnectionException
-	 * @throws NotAuthorizedException
-	 * @throws NoCapMatchesException
-	 */
-	private void switchCap(ViewerBackEnd beh, boolean dungeon, Raid r, String disname, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void switchCap(ViewerBackEnd vbe, boolean dungeon, Raid r, String cap, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 
 		long now = Time.getServerTime();
 		
-		if(!(r == null || disname == null)) {
+		if(!(r == null || cap == null)) {
 			if(now - (r.creationDate + r.type.raidDuration - 120) > 0)
-				v.bannedCaps.put(disname, now + 3*60);
+				v.bannedCaps.put(cap, now + 3*60);
 			else
-				v.bannedCaps.put(disname, r.creationDate + r.type.raidDuration + 3*60);
-			Logger.print("blocked " + disname, Logger.caps, Logger.info, cid, slot);
+				v.bannedCaps.put(cap, r.creationDate + r.type.raidDuration + 3*60);
+			Logger.print("blocked " + cap, Logger.caps, Logger.info, cid, slot);
 		}
 		
 		
@@ -707,19 +693,19 @@ public class RaidSlot extends Slot {
 		}
 		Logger.print("unblocked " + removed.toString(), Logger.caps, Logger.info, cid, slot);
 
-		CaptainData[] caps = beh.getCaps(dungeon);
+		CaptainData[] caps = vbe.getCaps(dungeon);
 		Logger.print("got caps " + Arrays.toString(caps), Logger.caps, Logger.info, cid, slot);
 		
 		ListType list = dungeon
 				? Configs.dungeon 
 				: Configs.campaign;
 
-		Raid[] all = beh.getRaids(SRC.BackEndHandler.all);
-		ArrayList<String> otherCaps = new ArrayList<>();
+		Raid[] all = vbe.getRaids(SRC.BackEndHandler.all);
+		HashSet<String> otherCaps = new HashSet<>();
 		for(Raid raid : all) {
 			if(raid == null)
 				continue;
-			otherCaps.add(raid.twitchDisplayName);
+			otherCaps.add(raid.twitchUserName);
 		}
 		
 		
@@ -731,15 +717,15 @@ public class RaidSlot extends Slot {
 		
 		
 		for(int i=0; i<caps.length; i++) {
-			String tdn = caps[i].twitchDisplayName;
+			String tun = caps[i].twitchUserName;
 
-			Integer fav = Configs.getCapInt(cid, currentLayer, tdn, list, Configs.fav);
+			Integer fav = Configs.getCapInt(cid, currentLayer, tun, list, Configs.fav);
 			fav = fav == null ? 0 : fav;
 			if(fav < 0 
-				|| v.bannedCaps.containsKey(tdn)
-				|| otherCaps.contains(tdn)
+				|| v.bannedCaps.containsKey(tun)
+				|| otherCaps.contains(tun)
 				) {
-				skipped.add(tdn);
+				skipped.add(tun);
 				continue;
 			}
 			int nloy = caps[i].pveWins;
@@ -756,11 +742,14 @@ public class RaidSlot extends Slot {
 		if(best == null) 
 			throw new NoCapMatchesException();
 		
-		beh.switchRaid(best, slot);
+		String err = vbe.switchRaid(best, slot);
 		
-		Logger.print("switched to " + best.twitchDisplayName, Logger.caps, Logger.info, cid, slot);
+		if(err == null)
+			Logger.print("switched to " + best.twitchDisplayName, Logger.caps, Logger.info, cid, slot);
+		else
+			Logger.print("RaidSlot -> switchCap: err="+err, Logger.lowerr, Logger.error, cid, slot, true);
 		
-		captain(beh, false, noCap);
+		captain(vbe, false, noCap);
 	}
 
 	

@@ -2,6 +2,8 @@ package srlib;
 
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.regex.Pattern;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -20,9 +22,12 @@ public class Event {
 			event = getNextEvent(data, data.getAsJsonObject("Events"));
 		
 		JsonArray currentTiers = new JsonArray();
+		if(event == null)
+			return currentTiers;
+		
 		currentTiers.add(0);
-		if_clause:
-		if(event != null) {
+		outer:
+		{
 			JsonObject tiers = data.getAsJsonObject("EventTiers");
 
 			//	sr seems to not have a constant naming convention here
@@ -38,10 +43,15 @@ public class Event {
 				//	remove the last numbers
 				event = key.replaceFirst("[0-9]+$", "");
 				
-				for(int i=1; i<=60; i++)
-					currentTiers.add(tiers.getAsJsonObject(event+i));
+				int count = 0;
+				for(String n : tiers.keySet())
+					if(n.matches(Pattern.quote(event)+"\\d+"))
+						count++;
 				
-				break if_clause;
+				for(int i=1; i<=count; i++)
+					currentTiers.add(tiers.get(event+i));
+				
+				break outer;
 			}
 			Logger.print("Event -> genTiersFromData: err=failed to find tiers, event="+event, Logger.runerr, Logger.error, null, null, true);
 		}
@@ -53,6 +63,10 @@ public class Event {
 		for(String b : data.getAsJsonObject("EventBadges").keySet())
 			ret.append(b).append(",");
 		return ret.deleteCharAt(ret.length()-1).toString();
+	}
+	
+	public static int getEventTierSize() {
+		return Json.parseArr(Options.get("eventTiers")).size();
 	}
 	
 	
@@ -67,8 +81,8 @@ public class Event {
 	
 	
 	private boolean hasBattlePass = false;
-	private boolean[] collectedBasic = new boolean[101];
-	private boolean[] collectedPass = new boolean[101];
+	private boolean[] collectedBasic = new boolean[0];
+	private boolean[] collectedPass = new boolean[0];
 	
 	private int tier = 0;
 	
@@ -107,6 +121,13 @@ public class Event {
 	
 	
 	public void updateEventProgression(JsonArray userEventProgression) {
+		
+		int size = Integer.parseInt(Options.get("eventTiersSize"));
+		if(size != collectedBasic.length) {
+			collectedBasic = new boolean[size];
+			collectedPass = new boolean[size];
+		}
+		
 		updateCurrentEvent(Json.parseObj(Options.get("events")));
 		for(int i=0; i<userEventProgression.size(); i++) {
 			JsonObject raw = userEventProgression.get(i).getAsJsonObject();

@@ -1194,7 +1194,6 @@ public class Configs {
 	}
 	
 	
-	
 	public static Boolean isSlotLocked(String cid, String lid, String slot) {
 		if(lid.equals("(all)")) {
 			ArrayList<String> lays = getLayerIds(cid, ProfileType.VIEWER);
@@ -1543,9 +1542,11 @@ public class Configs {
 			JsonObject lists = layer.getAsJsonObject("caps");
 			for(String l : lists.keySet()) {
 				JsonObject caps = lists.getAsJsonObject(l);
-				for(String c : caps.keySet()) {
-					JsonObject cap = caps.getAsJsonObject(c);
+				//	TODO rem
+				for(String c : new ArrayList<>(caps.keySet())) {
+					JsonObject cap = caps.remove(c).getAsJsonObject();
 					Json.check(cap, ccap.deepCopy());
+					caps.add(c.toLowerCase(), cap);
 				}
 			}
 		}

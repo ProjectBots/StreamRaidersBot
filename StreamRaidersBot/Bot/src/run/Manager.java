@@ -9,6 +9,7 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import include.Http.NoConnectionException;
@@ -580,7 +581,9 @@ public class Manager {
 			for(int i=0; i<catsToUpdateData.length; i+=2)
 				Options.set(catsToUpdateData[i], data.get(catsToUpdateData[i+1]).toString());
 			
-			Options.set("eventTiers", Event.genTiersFromData(data).toString());
+			JsonArray ets = Event.genTiersFromData(data);
+			Options.set("eventTiers", ets.toString());
+			Options.set("eventTiersSize", ""+ets.size());
 			Options.set("eventBadges", Event.genEventBadgesFromData(data));
 			Options.set("currentEventCurrency", data.getAsJsonObject("Items").getAsJsonObject("eventcurrency").get("CurrencyTypeAwarded").getAsString());
 			Options.set("unitCosts", Store.genUnitCostsFromData(data).toString());

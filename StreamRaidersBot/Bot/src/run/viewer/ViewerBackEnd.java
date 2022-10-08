@@ -164,9 +164,9 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		uelis.afterUpdate("caps::"+dungeon, this);
 	}
 	
-	synchronized public void setCaps(CaptainData[] caps, boolean dungeon) {
+	public void setCaps(CaptainData[] caps, boolean dungeon) {
 		if(dungeon)
-			dunCaps = caps;
+			this.dunCaps = caps;
 		else
 			this.caps = caps;
 	}
@@ -261,18 +261,23 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		r.addUserDungeonInfo(rdata.getAsJsonObject("data"));
 	}
 	
-	public void remRaid(String captainId) throws NoConnectionException {
-		req.leaveCaptain(captainId);
+	public String remRaid(String captainId) throws NoConnectionException {
+		JsonElement err = Json.parseObj(req.leaveCaptain(captainId)).get(SRC.errorMessage);
+		return err.isJsonPrimitive() ? err.getAsString() : null;
 	}
 	
-	public void addRaid(CaptainData captain, String slot) throws NoConnectionException {
-		req.addPlayerToRaid(captain.captainId, slot);
+	public String addRaid(CaptainData captain, String slot) throws NoConnectionException {
+		JsonElement err = Json.parseObj(req.addPlayerToRaid(captain.captainId, slot)).get(SRC.errorMessage);
+		return err.isJsonPrimitive() ? err.getAsString() : null;
 	}
 	
-	public void switchRaid(CaptainData captain, int slot) throws NoConnectionException, NotAuthorizedException {
-		if(raids[slot] != null)
-			remRaid(raids[slot].captainId);
-		addRaid(captain, ""+slot);
+	public String switchRaid(CaptainData captain, int slot) throws NoConnectionException, NotAuthorizedException {
+		if(raids[slot] != null) {
+			String err = remRaid(raids[slot].captainId);
+			if(err != null)
+				return err;
+		}
+		return addRaid(captain, ""+slot);
 	}
 	
 	

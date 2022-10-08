@@ -50,7 +50,9 @@ public class Raid {
 		
 		this.creationDate = Time.parse(raid.get("creationDate").getAsString());
 		je = raid.get("lastUnitPlacedTime");
-		this.nextUnitPlaceTime = (je != null && je.isJsonPrimitive() ? Time.plus(je.getAsString(), type.placementCooldownDuration) : 0);
+		this.placedUnit = je != null && je.isJsonPrimitive();
+		this.nextUnitPlaceTime = placedUnit ? Time.plus(je.getAsString(), type.placementCooldownDuration+10) : 0;
+		
 		
 		this.hasViewedResults = raid.get("hasViewedResults").getAsInt() == 1;
 		this.isPlaying = raid.get("isPlaying").getAsInt() == 1;
@@ -60,9 +62,8 @@ public class Raid {
 		this.battleResult = je.isJsonPrimitive() && je.getAsBoolean();
 
 		je = raid.get("hasRecievedRewards");
-		this.hasRecievedRewards = !je.isJsonPrimitive() || je.getAsInt() == 1;
+		this.hasRecievedRewards = je.isJsonPrimitive() && je.getAsInt() == 1;
 		this.placementEnded = raid.get("placementEndTime").isJsonPrimitive() || Time.isBeforeServerTime(creationDate + type.raidDuration);
-		this.placedUnit = raid.get("hasRecievedRewards").isJsonPrimitive();
 		this.ended = raid.get("endTime").isJsonPrimitive();
 		this.isCodeLocked = raid.get("isCodeLocked").getAsBoolean();
 		

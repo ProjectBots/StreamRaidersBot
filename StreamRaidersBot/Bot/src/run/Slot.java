@@ -186,26 +186,29 @@ public abstract class Slot {
 		Logger.print("after MemoryReleaser", Logger.general, Logger.info, cid, slot);
 	}
 	
-
 	
 	private void exeSlotSequence() {
-		final String threadName = Thread.currentThread().getName();
-		
-		Timer t = new Timer();
-		t.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				boolean dumped = true;
-				try {
-					HeapDump.dumpHeap("heapdump.hprof", false);
-				} catch (Exception e) {
-					dumped = false;
+		synchronized (p.getSlotLock()) {
+			final String threadName = Thread.currentThread().getName();
+			
+			Timer t = new Timer();
+			t.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					boolean dumped = true;
+					try {
+						HeapDump.dumpHeap("heapdump.hprof", false);
+					} catch (Exception e) {
+						dumped = false;
+					}
+					Logger.print("Slot -> exeSlotSequence: err=slot seems to be stuck, threadName="+threadName+", heapdump_created="+dumped, Logger.runerr, Logger.error, cid, slot, true);
 				}
-				Logger.print("Slot -> exeSlotSequence: err=slot seems to be stuck, threadName="+threadName+", heapdump_created="+dumped, Logger.runerr, Logger.error, cid, slot, true);
-			}
-		}, 3*60*1000);
-		slotSequence();
-		t.cancel();
+			}, 3*60*1000);
+			
+			slotSequence();
+			
+			t.cancel();
+		}
 	}
 	
 	

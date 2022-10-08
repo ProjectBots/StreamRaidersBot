@@ -266,6 +266,11 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 		ready = b;
 	}
 	
+	private Object slotLock = new Object();
+	public Object getSlotLock() {
+		return slotLock;
+	}
+	
 	public void updateSlotSync() {
 		boolean[] wasRunning = new boolean[slots.length];
 		for(int s=0; s<slots.length; s++)
@@ -276,13 +281,14 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 				continue;
 			
 			final int sync = Configs.getSleepInt(cid, currentLayer, ""+s, ptype == ProfileType.VIEWER ? Configs.syncSlotViewer : Configs.syncSlotCaptain);
+
+			Manager.blis().onProfileUpdateSlotSync(cid, ptype, s, sync);
 			
 			int before = slots[s].getSync();
 			if(before == sync)
 				continue;
 
 			slots[s].sync(sync);
-			Manager.blis().onProfileUpdateSlotSync(cid, ptype, s, sync);
 			
 			if(sync == -1) {
 				//	starts the slot if the slot it was synced to was running

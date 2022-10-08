@@ -146,8 +146,8 @@ public class CaptainSettings extends AbstractSettings {
 		
 	}
 	
-	private void addCap(String tdn, int pos) {
-		Integer val = Configs.getCapInt(cid, lid, tdn, list, Configs.fav);
+	private void addCap(final String tun, int pos) {
+		Integer val = Configs.getCapInt(cid, lid, tun, list, Configs.fav);
 		boolean fav = val >= 0;
 		
 		Container ccap = new Container();
@@ -158,7 +158,7 @@ public class CaptainSettings extends AbstractSettings {
 			
 			Label lname = new Label();
 			lname.setPos(x++, 0);
-			lname.setText(tdn);
+			lname.setText(tun);
 			lname.setForeground(Colors.getColor(fontPath+"labels"));
 			lname.setWeightX(1);
 			ccap.addLabel(lname);
@@ -184,26 +184,26 @@ public class CaptainSettings extends AbstractSettings {
 					}
 					private void update() {
 						try {
-							int val = Integer.parseInt(GUI.getInputText(uid+"val::"+tdn));
+							int val = Integer.parseInt(GUI.getInputText(uid+"val::"+tun));
 							if(val <= 0 || val >= Integer.MAX_VALUE-1)
 								throw new NumberFormatException();
-							Configs.setCapInt(cid, lid, tdn, list, Configs.fav, val);
-							GUI.setBackground(uid+"val::"+tdn, Color.white);
-							GUI.setForeground(uid+"heart::"+tdn, Colors.getColor(fontPath+"buttons heart on"));
-							GUI.setForeground(uid+"cross::"+tdn, Colors.getColor(fontPath+"buttons cross def"));
-							GUI.setGradient(uid+"heart::"+tdn, Colors.getGradient(fontPath+"buttons heart on"));
-							GUI.setGradient(uid+"cross::"+tdn, Colors.getGradient(fontPath+"buttons cross def"));
+							Configs.setCapInt(cid, lid, tun, list, Configs.fav, val);
+							GUI.setBackground(uid+"val::"+tun, Color.white);
+							GUI.setForeground(uid+"heart::"+tun, Colors.getColor(fontPath+"buttons heart on"));
+							GUI.setForeground(uid+"cross::"+tun, Colors.getColor(fontPath+"buttons cross def"));
+							GUI.setGradient(uid+"heart::"+tun, Colors.getGradient(fontPath+"buttons heart on"));
+							GUI.setGradient(uid+"cross::"+tun, Colors.getGradient(fontPath+"buttons cross def"));
 						} catch (NumberFormatException e) {
-							GUI.setBackground(uid+"val::"+tdn, new Color(255, 122, 122));
+							GUI.setBackground(uid+"val::"+tun, new Color(255, 122, 122));
 						}
 					}
 				});
-				ccap.addTextField(tf, uid+"val::"+tdn);
+				ccap.addTextField(tf, uid+"val::"+tun);
 				
 				for(String key : "ic il".split(" ")) {
 					final CapBoo con = new CapBoo(key);
 					
-					Integer b = Configs.getCapBooTend(cid, lid, tdn, list, con);
+					Integer b = Configs.getCapBooTend(cid, lid, tun, list, con);
 					
 					Button but = new Button();
 					but.setPos(x++, 0);
@@ -221,19 +221,19 @@ public class CaptainSettings extends AbstractSettings {
 					but.setAL(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							Integer b = Configs.getCapBooTend(cid, lid, tdn, list, con);
+							Integer b = Configs.getCapBooTend(cid, lid, tun, list, con);
 							if(b == 2) {
-								Configs.setCapBoo(cid, lid, tdn, list, con, false);
-								GUI.setForeground(uid+key+"::"+tdn, Colors.getColor(fontPath+"buttons icil def"));
-								GUI.setGradient(uid+key+"::"+tdn, Colors.getGradient(fontPath+"buttons icil def"));
+								Configs.setCapBoo(cid, lid, tun, list, con, false);
+								GUI.setForeground(uid+key+"::"+tun, Colors.getColor(fontPath+"buttons icil def"));
+								GUI.setGradient(uid+key+"::"+tun, Colors.getGradient(fontPath+"buttons icil def"));
 							} else {
-								Configs.setCapBoo(cid, lid, tdn, list, con, true);
-								GUI.setForeground(uid+key+"::"+tdn, Colors.getColor(fontPath+"buttons icil on"));
-								GUI.setGradient(uid+key+"::"+tdn, Colors.getGradient(fontPath+"buttons icil on"));
+								Configs.setCapBoo(cid, lid, tun, list, con, true);
+								GUI.setForeground(uid+key+"::"+tun, Colors.getColor(fontPath+"buttons icil on"));
+								GUI.setGradient(uid+key+"::"+tun, Colors.getGradient(fontPath+"buttons icil on"));
 							}
 						}
 					});
-					ccap.addBut(but, uid+key+"::"+tdn);
+					ccap.addBut(but, uid+key+"::"+tun);
 				}
 			}
 			
@@ -268,30 +268,30 @@ public class CaptainSettings extends AbstractSettings {
 				but.setAL(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						Integer val = Configs.getCapInt(cid, lid, tdn, list, Configs.fav);
-						GUI.removeFromContainer(uid + (fav ? "fav" : "block"), uid+"cap::"+tdn);
+						Integer val = Configs.getCapInt(cid, lid, tun, list, Configs.fav);
+						GUI.removeFromContainer(uid + (fav ? "fav" : "block"), uid+"cap::"+tun);
 						if(ii == 0) {
 							if(val > 0 && val != Integer.MAX_VALUE-1) {
-								Configs.favCap(cid, lid, tdn, list, null);
+								Configs.favCap(cid, lid, tun, list, null);
 							} else {
-								Configs.favCap(cid, lid, tdn, list, 1);
-								addCap(tdn, pos);
+								Configs.favCap(cid, lid, tun, list, 1);
+								addCap(tun, pos);
 							}
 						} else {
 							if(val < 0 && val != Integer.MIN_VALUE+1) {
-								Configs.favCap(cid, lid, tdn, list, null);
+								Configs.favCap(cid, lid, tun, list, null);
 							} else {
-								Configs.favCap(cid, lid, tdn, list, -1);
-								addCap(tdn, pos);
+								Configs.favCap(cid, lid, tun, list, -1);
+								addCap(tun, pos);
 							}
 						}
 						gui.refresh();
 					}
 				});
-				ccap.addBut(but, uid+(i==0 ? "heart::" : "cross::")+tdn);
+				ccap.addBut(but, uid+(i==0 ? "heart::" : "cross::")+tun);
 			}
 			
-		gui.addToContainer(uid + (fav ? "fav" : "block"), ccap, uid+"cap::"+tdn);
+		gui.addToContainer(uid + (fav ? "fav" : "block"), ccap, uid+"cap::"+tun);
 		
 	}
 	

@@ -509,9 +509,7 @@ public class MainFrame {
 				break;
 			}
 			
-			
-			String cap = raid.twitchDisplayName;
-			Integer val = Configs.getCapInt(cid, "(all)", cap, raid.type == RaidType.DUNGEON ? Configs.dungeon : Configs.campaign, Configs.fav);
+			Integer val = Configs.getCapInt(cid, "(all)", raid.twitchUserName, raid.type == RaidType.DUNGEON ? Configs.dungeon : Configs.campaign, Configs.fav);
 			String favPath;
 			String blockPath;
 			if(val == null) {
