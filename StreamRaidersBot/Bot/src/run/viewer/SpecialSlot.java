@@ -82,7 +82,10 @@ public class SpecialSlot extends Slot {
 	}
 
 	private void upgrade(ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
-		
+		/**	TODO change min gold
+		 * create a own class for unlockable/upgradable units with final int price.
+		 * compare cost, min gold to not spend and price of unlocking the unit
+		 */
 		if(vbe.getCurrency(Store.gold, false) < Configs.getInt(cid, currentLayer, Configs.upgradeMinGoldViewer))
 			return;
 		
@@ -116,7 +119,10 @@ public class SpecialSlot extends Slot {
 	private boolean goMultiUnit;
 	
 	private void unlock(ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
-		
+		/**	TODO change min gold
+		 * create a own class for unlockable/upgradable units with final int price.
+		 * compare cost, min gold to not spend and price of unlocking the unit
+		 */
 		if(vbe.getCurrency(Store.gold, false) < Configs.getInt(cid, currentLayer, Configs.unlockMinGoldViewer))
 			return;
 		
@@ -190,16 +196,19 @@ public class SpecialSlot extends Slot {
 		for(final int sec : new int[] {0,1}) {
 			final String section;
 			final StorePrioType spt;
-			switch(sec) {
+			final int maxPrice;
+			switch(sec) {//TODO rem
 			case 0:
-				if(vbe.getCurrency(Store.keys, false) < Configs.getInt(cid, currentLayer, Configs.storeMinKeysViewer))
-					continue;
+				maxPrice = vbe.getCurrency(Store.keys, false) - Configs.getInt(cid, currentLayer, Configs.storeMinKeysViewer);
+				//if(vbe.getCurrency(Store.keys, false) < Configs.getInt(cid, currentLayer, Configs.storeMinKeysViewer))
+				//	continue;
 				section = SRC.Store.dungeon;
 				spt = Configs.keysViewer;
 				break;
 			case 1:
-				if(vbe.getCurrency(Store.eventcurrency, false) < Configs.getInt(cid, currentLayer, Configs.storeMinEventcurrencyViewer))
-					continue;
+				maxPrice = vbe.getCurrency(Store.eventcurrency, false) - Configs.getInt(cid, currentLayer, Configs.storeMinEventcurrencyViewer);
+				//if(vbe.getCurrency(Store.eventcurrency, false) < Configs.getInt(cid, currentLayer, Configs.storeMinEventcurrencyViewer))
+				//	continue;
 				section = SRC.Store.event;
 				spt = Configs.eventViewer;
 				break;
@@ -207,12 +216,19 @@ public class SpecialSlot extends Slot {
 				//	not gonna happen but important for compiler
 				section = null;
 				spt = null;
+				maxPrice = 0;
 			}
+			
+			if(maxPrice <= 0)
+				continue;
 			
 			ArrayList<Item> items = vbe.getAvailableEventStoreItems(section, false);
 			Item best = null;
 			int p = -1;
 			for(Item item : items) {
+				if(item.price > maxPrice)
+					continue;
+				
 				Integer p_ = Configs.getStorePrioInt(cid, currentLayer, spt, item.uid);
 				if(p_ == null) {
 					p_ = Configs.getBoolean(cid, currentLayer, Configs.storePriceAsDefaultPrioViewer) ? item.price : -1;
@@ -254,64 +270,73 @@ public class SpecialSlot extends Slot {
 		
 		
 		//	buying scrolls
-		if(vbe.getCurrency(Store.gold, false) >= Configs.getInt(cid, currentLayer, Configs.storeMinGoldViewer)) {
-			ArrayList<Item> items = vbe.getPurchasableScrolls();
-			if(items.size() != 0) {
-				int[] ps = new int[items.size()];
-				for(int i=0; i<items.size(); i++) {
-					Item item = items.get(i);
-					String type = item.name.replace("scroll", "");
-					
-					//	switch if sr decides to add more units with allies
-					switch(type) {
-					case "paladin":
-						type = "allies" + type;
-						break;
-					}
-					
-					try {
-						ps[i] = Configs.getUnitInt(cid, currentLayer, type, Configs.buyViewer);
-					} catch (NullPointerException e) {
-						Logger.printException("SpecialSlot (viewer) -> store: err=item is not correct, item=" + item.toString(), e, Logger.runerr, Logger.error, cid, 4, true);
-						ps[i] = -1;
-					}
+		
+		//	TODO rem
+		//if(vbe.getCurrency(Store.gold, false) >= Configs.getInt(cid, currentLayer, Configs.storeMinGoldViewer)) {
+		//}
+		
+		ArrayList<Item> items = vbe.getPurchasableScrolls();
+		if(items.size() != 0) {
+			int[] ps = new int[items.size()];
+			for(int i=0; i<items.size(); i++) {
+				final Item item = items.get(i);
+				
+				String type = item.name.replace("scroll", "");
+				
+				//	switch if sr decides to add more units with allies
+				switch(type) {
+				case "paladin":
+					type = "allies" + type;
+					break;
 				}
 				
-				
-				while(true) {
-					int ind = 0;
-					for(int i=1; i<ps.length; i++)
-						if(ps[i] > ps[ind]) 
-							ind = i;
-					
-					if(ps[ind] < 0)
-						break;
-					
-					Item item = items.get(ind);
-					
-					JsonElement err = vbe.buyItem(item).get(SRC.errorMessage);
-					if(err != null && err.isJsonPrimitive()) {
-						if(!err.getAsString().startsWith("not enough"))
-							Logger.print("SpecialSlot (viewer) -> store: err=" + err.getAsString() + ", item=" + item.toString(), Logger.lowerr, Logger.error, cid, 4, true);
-					} else
-						v.addRew(vbe, SRC.Run.bought, item.name, item.quantity);
-					
-					ps[ind] = -1;
+				try {
+					ps[i] = Configs.getUnitInt(cid, currentLayer, type, Configs.buyViewer);
+				} catch (NullPointerException e) {
+					Logger.printException("SpecialSlot (viewer) -> store: err=item is not correct, item=" + item.toString(), e, Logger.runerr, Logger.error, cid, 4, true);
+					ps[i] = -1;
 				}
 			}
 			
-			Integer gold = vbe.getCurrency(Store.gold, false);
-			if(gold != null) {
-				int src = vbe.getStoreRefreshCount();
-				int min = Configs.getStoreRefreshInt(cid, ProfileType.VIEWER, currentLayer, src > 3 ? 3 : src);
-				if(min > -1 && min < gold) {
-					String err = vbe.refreshStore();
-					if(err != null)
-						Logger.print("SpecialSlot (viewer) -> Store: err="+err, Logger.runerr, Logger.error, cid, 4, true);
-					store(vbe);
-				}
-			}
+			int maxPrice = vbe.getCurrency(Store.gold, false) - Configs.getInt(cid, currentLayer, Configs.storeMinGoldViewer);
 			
+			while(true) {
+				int ind = 0;
+				for(int i=1; i<ps.length; i++)
+					if(ps[i] > ps[ind]) 
+						ind = i;
+				
+				if(ps[ind] < 0)
+					break;
+				
+				Item item = items.get(ind);
+				
+				if(item.price > maxPrice)
+					break;
+				
+				JsonElement err = vbe.buyItem(item).get(SRC.errorMessage);
+				if(err != null && err.isJsonPrimitive()) {
+					if(!err.getAsString().startsWith("not enough"))
+						Logger.print("SpecialSlot (viewer) -> store: err=" + err.getAsString() + ", item=" + item.toString(), Logger.lowerr, Logger.error, cid, 4, true);
+				} else {
+					v.addRew(vbe, SRC.Run.bought, item.name, item.quantity);
+					maxPrice -= item.price;
+				}
+				
+				ps[ind] = -1;
+			}
+		}
+		
+		Integer gold = vbe.getCurrency(Store.gold, false);
+		if(gold != null) {
+			int src = vbe.getStoreRefreshCount();
+			int min = Configs.getStoreRefreshInt(cid, ProfileType.VIEWER, currentLayer, src > 3 ? 3 : src);
+			if(min > -1 && min < gold) {
+				String err = vbe.refreshStore();
+				if(err != null)
+					Logger.print("SpecialSlot (viewer) -> Store: err="+err, Logger.runerr, Logger.error, cid, 4, true);
+				store(vbe);
+			}
 		}
 	}
 
@@ -421,7 +446,7 @@ public class SpecialSlot extends Slot {
 	private void collectEventInner(ViewerBackEnd vbe, int tier, boolean bp, boolean skipError) throws NoConnectionException {
 		JsonObject ce = vbe.collectEvent(tier, bp);
 		JsonElement err = ce.get(SRC.errorMessage);
-		boolean isErr = err.isJsonPrimitive();
+		boolean isErr = err != null && err.isJsonPrimitive();
 		
 		if(isErr && !skipError)
 			Logger.print("SpecialSlot (viewer) -> event -> collectEvent: tier="+tier+", bp="+bp+", err=" + err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);

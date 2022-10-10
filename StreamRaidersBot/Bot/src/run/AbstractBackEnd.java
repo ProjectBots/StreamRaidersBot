@@ -129,8 +129,6 @@ public abstract class AbstractBackEnd<B extends AbstractBackEnd<B>> {
 		JsonElement data = skins.get("data");
 		this.skins = new Skins(data.isJsonArray() ? data.getAsJsonArray() : null);
 		
-		System.out.println(this.skins.toString());
-		
 		rts.put("skins", now + updateTimes[1]*60*1000);
 		afterUpdate("skins");
 	}

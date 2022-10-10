@@ -15,7 +15,7 @@ public class Unit implements Comparable<Unit> {
 	
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder()
+		StringBuffer sb = new StringBuffer()
 				.append("{").append(type)
 				.append(" ").append(level);
 		

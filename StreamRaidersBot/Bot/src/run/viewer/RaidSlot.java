@@ -348,14 +348,17 @@ public class RaidSlot extends Slot {
 		public final Unit unit;
 		public final int[] ps;
 		public final boolean[] vs;
-		public Prio(Unit unit, int np, int ep, int n, int e, boolean vn, boolean ve) {
+		public Prio(Unit unit, int np, int ep, int n, int e, boolean nv, boolean ev) {
 			this.unit = unit;
 			ps = new int[] {ep, np, e, n};
-			vs = new boolean[] {ve, vn};
+			vs = new boolean[] {ev, nv};
 		}
 		@Override
 		public String toString() {
-			return "{" + unit.type + "|ps=" + Arrays.toString(ps) + "|vs=" + Arrays.toString(vs) + "}";
+			return new StringBuffer("{unit=").append(unit.toString())
+					.append(", ps=").append(Arrays.toString(ps))
+					.append(", vs=").append(Arrays.toString(vs))
+					.append("}").toString();
 		}
 	}
 	
@@ -370,7 +373,7 @@ public class RaidSlot extends Slot {
 			
 			int n = Configs.getUnitInt(cid, currentLayer, uId, dungeon ? Configs.placedunViewer : Configs.placeViewer);
 			int e = Configs.getUnitInt(cid, currentLayer, uId, dungeon ? Configs.epicdunViewer : Configs.epicViewer);
-			final String chests = Configs.getUnitString(cid, currentLayer, uId, Configs.chestsViewer);
+			final String chests = Configs.getUnitString(cid, currentLayer, uId, Configs.chestsViewer) + ",";
 			final String favOnly = Configs.getUnitString(cid, currentLayer, uId, Configs.favOnlyViewer);
 			final String markerOnly = Configs.getUnitString(cid, currentLayer, uId, Configs.markerOnlyViewer);
 			final String canVibe = Configs.getUnitString(cid, currentLayer, uId, Configs.canVibeViewer);
@@ -404,17 +407,17 @@ public class RaidSlot extends Slot {
 				np = n;
 			
 
-			boolean vn = false;
+			boolean nv = false;
 			if(np < 0 && nupts.contains("vibe") && canVibe.contains(nx)) {
 				np = n;
-				vn = true;
+				nv = true;
 			}
 			
 
-			boolean ve = false;
+			boolean ev = false;
 			if(ep < 0 && eupts.contains("vibe") && canVibe.contains(ex)) {
 				ep = e;
-				ve = true;
+				ev = true;
 			}
 			
 			if(markerOnly.contains(nx))
@@ -452,7 +455,7 @@ public class RaidSlot extends Slot {
 				}
 			}
 			
-			prios[i] = new Prio(units[i], np, ep, n, e, vn, ve);
+			prios[i] = new Prio(units[i], np, ep, n, e, nv, ev);
 		}
 		
 		//	Fisher-Yates shuffle

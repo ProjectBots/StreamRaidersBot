@@ -163,7 +163,7 @@ public class Event {
 		if(battlePass && !hasBattlePass)
 			return false;
 		
-		return battlePass ? collectedPass[p] : collectedBasic[p];
+		return battlePass ? !collectedPass[p] : !collectedBasic[p];
 	}
 	
 	
