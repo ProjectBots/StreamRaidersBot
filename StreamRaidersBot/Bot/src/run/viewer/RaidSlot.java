@@ -230,15 +230,16 @@ public class RaidSlot extends Slot {
 		}
 		
 		Logger.print("neededUnits="+neededUnits, Logger.units, Logger.info, cid, slot);
-		
+		final boolean isFav = Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.twitchUserName);
+
+
 		while(true) {
 			Logger.print("place "+re, Logger.loop, Logger.info, cid, slot);
 			
 			if(Options.is("exploits") && Configs.getBoolean(cid, currentLayer, Configs.useMultiPlaceExploitViewer)) {
 				goMultiPlace = false;
 				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
-					final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, r.chestType,
-							Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.twitchDisplayName), vbe.getSkins(false), r.captainId);
+					final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, r.chestType, isFav, vbe.getSkins(false), r.captainId);
 					if(pla == null)
 						continue;
 					bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
@@ -264,8 +265,7 @@ public class RaidSlot extends Slot {
 				break;
 			} else {
 				final String node = Remaper.map(r.chestType);
-				final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, node,
-						Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.twitchDisplayName), vbe.getSkins(false), r.captainId);
+				final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, node, isFav, vbe.getSkins(false), r.captainId);
 				
 
 				if(pla == null) {
