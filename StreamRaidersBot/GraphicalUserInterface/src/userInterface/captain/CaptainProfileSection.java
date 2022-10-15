@@ -12,7 +12,6 @@ import include.GUI.Label;
 import otherlib.Configs;
 import otherlib.Logger;
 import run.Manager;
-import run.ProfileType;
 import userInterface.Colors;
 import userInterface.MainFrame;
 
@@ -171,16 +170,7 @@ public class CaptainProfileSection {
 				stats.setTooltip("Opens your Stats");
 				stats.setGradient(Colors.getGradient("main buttons def"));
 				stats.setForeground(Colors.getColor("main buttons def"));
-				stats.setAL(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						try {
-							Manager.getCaptain(cid).useBackEnd(cbe -> new CaptainStats(cid, cbe, MainFrame.getGUI()));
-						} catch (Exception e1) {
-							Logger.printException("CaptainProfileSection -> openStats: err=failed to load stats", e1, Logger.runerr, Logger.error, cid, null, true);
-						}
-					}
-				});
+				stats.setAL(ae -> new CaptainStats(cid, MainFrame.getGUI()));
 				stngs.addBut(stats);
 				
 				Label stngsSymb = new Label();

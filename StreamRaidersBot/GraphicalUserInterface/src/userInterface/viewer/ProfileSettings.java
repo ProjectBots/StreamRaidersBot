@@ -33,11 +33,10 @@ import otherlib.Configs.Int;
 import otherlib.Configs.SleInt;
 import otherlib.Configs.StorePrioType;
 import run.viewer.Viewer;
-import run.viewer.ViewerBackEnd;
 import srlib.SRC;
-import srlib.Store;
 import srlib.SRR.NotAuthorizedException;
-import srlib.Store.Item;
+import srlib.store.Item;
+import srlib.store.Store;
 import userInterface.AbstractSettings;
 import userInterface.Colors;
 import run.Manager;
@@ -45,13 +44,14 @@ import run.ProfileType;
 
 public class ProfileSettings extends AbstractSettings {
 	
-	private final Viewer run;
+	private final Viewer v;
 
 	protected ProfileSettings(String cid, String lid, GUI parent) {
 		super(cid, lid, parent, 500, 500, true, true);
 
-		run = Manager.getViewer(cid);
+		v = Manager.getViewer(cid);
 		addHead();
+		addLayerChooser();
 		addContent();
 	}
 
@@ -82,13 +82,7 @@ public class ProfileSettings extends AbstractSettings {
 			public void onDeIconfied(WindowEvent e) {}
 			@Override
 			public void onClose(WindowEvent e) {
-				try {
-					run.useBackEnd(vbe -> {
-						run.updateVbe(vbe);
-					});
-				} catch (Exception e1) {
-					Logger.printException("ProfileSettings -> open: err=failed to update proxy settings", e1, Logger.runerr, Logger.error, cid, null, true);
-				}
+				v.updateVbe();
 			}
 		});
 		
@@ -195,18 +189,9 @@ public class ProfileSettings extends AbstractSettings {
 		gui.addContainer(csync);
 	}
 
+	
 	@Override
 	protected void addContent() {
-		try {
-			run.useBackEnd(vbe -> {
-				addBody(vbe);
-			});
-		} catch (Exception e) {
-			Logger.printException("ProfileSettings -> open: err=failed to load", e, Logger.runerr, Logger.error, cid, null, true);
-		}
-	}
-
-	private void addBody(ViewerBackEnd vbe) {
 		Container cdslot = new Container();
 		cdslot.setPos(0, g++);
 		cdslot.setInsets(10, 2, 2, 2);
@@ -487,7 +472,7 @@ public class ProfileSettings extends AbstractSettings {
 				
 				ArrayList<Item> items;
 				try {
-					items = vbe.getAvailableEventStoreItems(section, true);
+					items = v.getBackEnd().getAvailableEventStoreItems(section, true);
 				} catch (NoConnectionException | NotAuthorizedException e3) {
 					Logger.printException("ProfileSettings -> open -> specialShop: err=unable to get items", e3, Logger.runerr, Logger.error, cid, null, true);
 					gui.close();

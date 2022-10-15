@@ -333,12 +333,7 @@ public class ViewerProfileSection {
 						map.setInsets(2, 2, 2, 10);
 						map.setGradient(Colors.getGradient("main buttons def"));
 						map.setForeground(Colors.getColor("main buttons def"));
-						map.setAL(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								MapGUI.asGui(MainFrame.getGUI(), Manager.getViewer(cid), ii);
-							}
-						});
+						map.setAL(ae -> new Thread(() -> MapGUI.asGui(MainFrame.getGUI(), Manager.getViewer(cid), ii)).start());
 						mapchest.addBut(map);
 						
 						Image chest = new Image(Ressources.get("ChestPics/nochest", java.awt.Image.class));
@@ -366,16 +361,7 @@ public class ViewerProfileSection {
 				stats.setTooltip("Opens your Stats");
 				stats.setGradient(Colors.getGradient("main buttons def"));
 				stats.setForeground(Colors.getColor("main buttons def"));
-				stats.setAL(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						try {
-							Manager.getViewer(cid).useBackEnd(vbe -> new ViewerStats(cid, vbe, MainFrame.getGUI()));
-						} catch (Exception e1) {
-							Logger.printException("ViewerProfileSection -> openStats: err=failed to load stats", e1, Logger.runerr, Logger.error, cid, null, true);
-						}
-					}
-				});
+				stats.setAL(ae -> new ViewerStats(cid, MainFrame.getGUI()));
 				stngs.addBut(stats);
 				
 				Label stngsSymb = new Label();

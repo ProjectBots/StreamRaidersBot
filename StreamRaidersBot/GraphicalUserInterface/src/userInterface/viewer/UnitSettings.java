@@ -162,7 +162,7 @@ public class UnitSettings extends AbstractSettings {
 					switch(e.getKeyCode()) {
 					case KeyEvent.VK_R:
 						try {
-							Manager.getViewer(cid).useBackEnd(vbe -> vbe.updateUnits(true));
+							Manager.getViewer(cid).getBackEnd().updateUnits(true);
 							openNewInstance(lid);
 						} catch (Exception e1) {
 							Logger.printException("UnitSettings -> reload: err=unable to get units/souls", e1, Logger.runerr, Logger.error, cid, null, true);

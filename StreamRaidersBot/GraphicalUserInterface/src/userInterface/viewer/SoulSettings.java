@@ -26,9 +26,9 @@ import run.ProfileType;
 import run.viewer.ViewerBackEnd;
 import srlib.SRC;
 import srlib.SRR.NotAuthorizedException;
-import srlib.Store;
 import srlib.souls.Soul;
 import srlib.souls.SoulType;
+import srlib.store.Store;
 import srlib.units.Unit;
 import srlib.viewer.Raid;
 import userInterface.AbstractSettings;
@@ -60,18 +60,8 @@ public class SoulSettings extends AbstractSettings {
 
 	@Override
 	protected void addContent() {
-		new Thread(() -> {
-			try {
-				Manager.getViewer(cid).useBackEnd(vbe -> {
-					addContent(vbe);
-				});
-			} catch (Exception e) {
-				Logger.printException("SkinSettings -> open: err=unable to load skin settings", e, Logger.runerr, Logger.error, cid, null, true);
-			}
-		}).start();
-	}
-
-	private void addContent(final ViewerBackEnd vbe) {
+		ViewerBackEnd vbe = Manager.getViewer(cid).getBackEnd();
+		
 		gui.addWinLis(new WinLis() {
 			@Override
 			public void onIconfied(WindowEvent e) {}
@@ -124,9 +114,9 @@ public class SoulSettings extends AbstractSettings {
 		final Raid[] raids;
 		final int soulvessel;
 		try {
-			units = vbe.getUnits(SRC.BackEndHandler.all, false);
+			units = vbe.getUnits(false);
 			souls = vbe.getSouls(false);
-			raids = vbe.getRaids(SRC.BackEndHandler.all);
+			raids = vbe.getRaids(SRC.BackEnd.all);
 			soulvessel = vbe.getCurrency(Store.soulvessel, false);
 		} catch (NoConnectionException | NotAuthorizedException e) {
 			Logger.printException("SoulSettings -> open: err=unable to get units/souls", e, Logger.runerr, Logger.error, cid, null, true);

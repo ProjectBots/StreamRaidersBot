@@ -15,8 +15,7 @@ public class Captain extends AbstractProfile<Captain.CaptainBackEndRunnable,Capt
 	public static final int slotSize = 5;
 	
 	public Captain(String cid, SRR req) throws Exception {
-		super(cid, new CaptainBackEnd(cid, req), ProfileType.CAPTAIN, slotSize);
-		uelis = new UpdateEventListener<CaptainBackEnd>() {
+		super(cid, new CaptainBackEnd(cid, req, new UpdateEventListener<CaptainBackEnd>() {
 			@Override
 			public void afterUpdate(String obj, CaptainBackEnd vbe) {
 				Logger.print("updated "+obj, Logger.general, Logger.info, cid, null);
@@ -24,11 +23,7 @@ public class Captain extends AbstractProfile<Captain.CaptainBackEndRunnable,Capt
 				
 				}
 			}
-		};
-		useBackEnd(cbe -> {
-			cbe.setUpdateEventListener(uelis);
-			cbe.ini();
-		});
+		}), ProfileType.CAPTAIN, slotSize);
 	}
 
 	@Override
@@ -49,7 +44,7 @@ public class Captain extends AbstractProfile<Captain.CaptainBackEndRunnable,Capt
 
 
 	@Override
-	public void updateFrame(CaptainBackEnd be) throws NoConnectionException, NotAuthorizedException {
+	public void updateFrame() throws NoConnectionException, NotAuthorizedException {
 		// TODO Auto-generated method stub
 		
 	}

@@ -167,7 +167,7 @@ public class Logger {
 	private static String getPre(Scope scope, Type type, String cid, Integer slot) {
 		LocalDateTime now = LocalDateTime.now();
 		return concat("[", type.con, "] [", now.getHour(), ":", now.getMinute(), ":", now.getSecond(), "] [", scope.getScopes()[0], "] ",
-				(cid == null ? "[none]" : concat("[", cid, "@", Configs.getPStr(cid, Configs.pname), "] ")), (slot == null ? "[n] " : concat("[", slot, "] ")));
+				(cid == null ? "[none] " : concat("[", cid, "@", Configs.getPStr(cid, Configs.pname), "] ")), (slot == null ? "[n] " : concat("[", slot, "] ")));
 	}
 	
 	public static String print(String in, Scope scope, Type type, String cid, Integer slot) {

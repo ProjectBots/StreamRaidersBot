@@ -1,7 +1,5 @@
 package run.captain;
 
-import com.google.gson.JsonObject;
-
 import run.AbstractProfile;
 import run.Slot;
 
@@ -15,12 +13,6 @@ public class RaidSlot extends Slot {
 	@Override
 	public boolean canManageItself() {
 		return true;
-	}
-
-	@Override
-	protected JsonObject dump() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

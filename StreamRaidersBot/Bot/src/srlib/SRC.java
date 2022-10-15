@@ -28,14 +28,6 @@ public class SRC {
 		public static final String bones = "Bones";
 	}
 	
-	public static class Helper {
-		public static final int canPlaceUnit = 0;
-		public static final int canUpgradeUnit = 4;
-		public static final int canUnlockUnit = 5;
-		public static final int isReward = 1;
-		public static final int isOffline = 2;
-		public static final int all = 3;
-	}
 	
 	public static class Search {
 		public static final String all = "";
@@ -43,12 +35,9 @@ public class SRC {
 		public static final String dungeons = "dungeons";
 	}
 	
-	public static class BackEndHandler {
+	public static class BackEnd {
 		public static final int all = 0;
 		public static final int isRaidReward = 1;
-		public static final int isUnitPlaceable = 3;
-		public static final int isUnitUpgradeable = 4;
-		public static final int isUnitUnlockable = 5;
 	}
 	
 	public static class Run {

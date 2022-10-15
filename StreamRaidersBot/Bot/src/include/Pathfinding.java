@@ -8,18 +8,18 @@ public class Pathfinding {
 	public static class Field {
 		
 		private boolean isExplored = false;
-		
-		private boolean isFinish = false;
 		private boolean isObstacle = false;
 		
 		private int cost = Integer.MAX_VALUE;
+		private short finish = -1;
+		
 		
 		public void setHome() {
 			cost = 0;
 		}
 		
-		public void setFinish(boolean isFinish) {
-			this.isFinish = isFinish;
+		public void setFinish(short val) {
+			this.finish = val;
 		}
 		
 		public void setObstacle(boolean isObstacle) {
@@ -31,19 +31,19 @@ public class Pathfinding {
 		}
 		
 		public boolean isFinish() {
-			return isFinish;
+			return finish >= 0;
 		}
 		
 		public boolean isObstacle() {
 			return isObstacle;
 		}
 		
-		public boolean setCost(int cost) {
+		public short setCost(int cost) {
 			if(this.cost > cost && !isObstacle) {
 				this.cost = cost;
 				isExplored = false;
 			}
-			return isFinish;
+			return finish;
 		}
 		
 		public void explore() {
@@ -64,6 +64,7 @@ public class Pathfinding {
 		int x, y, min, ox, oy, omin;
 		
 		int[] last = null;
+		short lastf = 0;
 		
 		for(int c=0; true; c++) {
 			
@@ -140,14 +141,17 @@ public class Pathfinding {
 						else 
 							ran = Maths.ranInt(10, 15);
 						
-						if(map[x+i][y+j].setCost(min+ran)) {
-							if(!big || (
+						short f = map[x+i][y+j].setCost(min+ran);
+						
+						if(f >= 0) {
+							if((lastf == -1 || f > 0) && (!big || (
 									(check(x+i-1, y+j) && map[x+i-1][y+j].isFinish()) &&
 									(check(x+i-1, y+j+1) && map[x+i-1][y+j+1].isFinish()) &&
 									(check(x+i, y+j+1) && map[x+i][y+j+1].isFinish())
-									)) {
+									))) {
 								last = new int[] {x+i, y+j};
-								if(Maths.ranInt(0, big ? 5 : 20) == 0)
+								lastf = f;
+								if(f != 0 && Maths.ranInt(0, big ? 5 : 20) == 0)
 									return last;
 							}
 							

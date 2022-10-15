@@ -17,8 +17,9 @@ public class CaptainBackEnd extends AbstractBackEnd<CaptainBackEnd> {
 	private HashMap<String, Long> rts = new HashMap<>();
 	private int[] updateTimes = new int[] {60};
 
-	public CaptainBackEnd(String cid, SRR req) {
-		super(cid, req);
+	public CaptainBackEnd(String cid, SRR req, UpdateEventListener<CaptainBackEnd> uelis) throws NoConnectionException, NotAuthorizedException {
+		super(cid, req, uelis);
+		ini();
 	}
 	
 	@Override

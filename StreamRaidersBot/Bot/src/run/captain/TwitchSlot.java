@@ -1,7 +1,5 @@
 package run.captain;
 
-import com.google.gson.JsonObject;
-
 import run.AbstractProfile;
 import run.Slot;
 
@@ -17,11 +15,6 @@ public class TwitchSlot extends Slot {
 		return false;
 	}
 	
-	@Override
-	protected JsonObject dump() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	protected void slotSequence() {

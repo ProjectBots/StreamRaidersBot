@@ -24,6 +24,7 @@ import srlib.Quests.Quest;
 import srlib.SRR.NotAuthorizedException;
 import srlib.skins.Skin;
 import srlib.souls.SoulType;
+import srlib.store.BuyableUnit;
 import srlib.units.Unit;
 import srlib.viewer.CaptainData;
 import srlib.viewer.Raid;
@@ -40,8 +41,9 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	private int[] updateTimes = new int[] {10, 1, 5, 15};
 	
 	
-	public ViewerBackEnd(String cid, SRR req) {
-		super(cid, req);
+	public ViewerBackEnd(String cid, SRR req, UpdateEventListener<ViewerBackEnd> uelis) throws NoConnectionException, NotAuthorizedException {
+		super(cid, req, uelis);
+		ini();
 	}
 	
 	protected void ini() throws NoConnectionException, NotAuthorizedException {
@@ -146,17 +148,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		if(!force && !(wt == null || now - wt > 0))
 			return;
 		
-		JsonArray rawCaps = new JsonArray();
-		SeedAndLastPage sap = new SeedAndLastPage();
-		for(int i=1; i<=sap.lastPage; i++)
-			rawCaps.addAll(searchCap(i, sap, false, true, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, false, null));
-		
-		CaptainData[] caps = new CaptainData[rawCaps.size()];
-		
-		for(int i=0; i<caps.length; i++)
-			caps[i] = new CaptainData(rawCaps.get(i).getAsJsonObject());
-		
-		setCaps(caps, dungeon);
+		setCaps(searchCaptains(false, true, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, false, null, 100), dungeon);
 		
 		rts.put("caps::"+dungeon, now + updateTimes[0]*60*1000);
 		uelis.afterUpdate("caps::"+dungeon, this);
@@ -169,7 +161,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 			this.caps = caps;
 	}
 	
-	private static class SeedAndLastPage {
+	public static class SeedAndLastPage {
 		public String seed = "0";
 		public int lastPage = 10;
 		public SeedAndLastPage() {}
@@ -178,37 +170,46 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		}
 	}
 	
-	private JsonArray searchCap(int page, SeedAndLastPage sap, boolean fav, boolean live, String mode, boolean searchForCaptain, String name) throws NoConnectionException, NotAuthorizedException {
-		JsonObject raw = Json.parseObj(req.getCaptainsForSearch(""+page, "24", sap.seed, fav, live, mode, searchForCaptain, name));
-		if(testUpdate(raw))
-			raw = Json.parseObj(req.getCaptainsForSearch(""+page, "24", sap.seed, fav, live, mode, searchForCaptain, name));
+	public CaptainData[] searchCaptains(boolean fav, boolean live, String mode, boolean searchForCaptain, String name, int maxPage) throws NoConnectionException, NotAuthorizedException {
+		JsonArray rawCaps = new JsonArray();
 		
-		JsonObject data = raw.getAsJsonObject("data");
+		SeedAndLastPage sap = new SeedAndLastPage();
 		
-		sap.seed = data.get("seed").getAsString();
-		sap.lastPage = (int) Math.ceil(data.get("total").getAsInt() / 24);
-		
-		JsonArray loyalty = data.getAsJsonArray("pveLoyalty");
-		JsonArray captains = data.getAsJsonArray("captains");
-		
-		for(int j=0; j<loyalty.size(); j++) {
-			JsonElement cap = captains.get(j);
-			if(!cap.isJsonObject()) {
-				captains.remove(j);
-				loyalty.remove(j);
-				j--;
-			} else {
-				cap.getAsJsonObject().add("pveWins", loyalty.get(j).getAsJsonObject().get("pveWins"));
-				cap.getAsJsonObject().add("pveLoyaltyLevel", loyalty.get(j).getAsJsonObject().get("pveLoyaltyLevel"));
+		for(int i=1; i<=sap.lastPage && i<=maxPage; i++) {
+			JsonObject raw = Json.parseObj(req.getCaptainsForSearch(""+i, "24", sap.seed, fav, live, mode, searchForCaptain, name));
+			if(testUpdate(raw))
+				raw = Json.parseObj(req.getCaptainsForSearch(""+i, "24", sap.seed, fav, live, mode, searchForCaptain, name));
+			
+			JsonObject data = raw.getAsJsonObject("data");
+			
+			sap.seed = data.get("seed").getAsString();
+			sap.lastPage = data.get("lastPage").getAsInt();
+			
+			JsonArray loyalty = data.getAsJsonArray("pveLoyalty");
+			JsonArray captains = data.getAsJsonArray("captains");
+			
+			for(int j=0; j<loyalty.size(); j++) {
+				JsonElement cap = captains.get(j);
+				if(!cap.isJsonObject()) {
+					captains.remove(j);
+					loyalty.remove(j);
+					j--;
+				} else {
+					cap.getAsJsonObject().add("pveWins", loyalty.get(j).getAsJsonObject().get("pveWins"));
+					cap.getAsJsonObject().add("pveLoyaltyLevel", loyalty.get(j).getAsJsonObject().get("pveLoyaltyLevel"));
+				}
 			}
+			rawCaps.addAll(captains);
 		}
 		
-		return captains;
+		
+		CaptainData[] ret = new CaptainData[rawCaps.size()];
+		for(int i=0; i<ret.length; i++)
+			ret[i] = new CaptainData(rawCaps.get(i).getAsJsonObject());
+		
+		return ret;
 	}
 	
-	public JsonArray searchCap(int page, String seed, boolean fav, boolean live, String mode, boolean searchForCaptain, String name) throws NoConnectionException, NotAuthorizedException {
-		return searchCap(page, new SeedAndLastPage(seed), fav, live, mode, searchForCaptain, name);
-	}
 	
 	public CaptainData[] getCaps(boolean dungeon) throws NoConnectionException, NotAuthorizedException {
 		updateCaps(false, dungeon);
@@ -217,15 +218,23 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 				: caps;
 	}
 	
+	public String updateFavoriteCaptain(CaptainData cap, boolean fav) throws NoConnectionException {
+		JsonElement err = Json.parseObj(req.updateFavoriteCaptains(cap.captainId, fav)).get(SRC.errorMessage);
+		if(err == null != !err.isJsonPrimitive())
+			return null;
+		
+		return err.getAsString();
+	}
+	
 	
 	public Raid[] getRaids(int con) throws NoConnectionException, NotAuthorizedException {
 		updateRaids(false);
 		Raid[] ret = new Raid[0];
 		for(int i=0; i<raids.length; i++) {
 			switch(con) {
-			case SRC.BackEndHandler.all:
+			case SRC.BackEnd.all:
 				return raids.clone();
-			case SRC.BackEndHandler.isRaidReward:
+			case SRC.BackEnd.isRaidReward:
 				if(raids[i].isReward())
 					ret = add(ret, raids[i]);
 				break;
@@ -289,42 +298,40 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	public boolean isReward(int slot) throws NoConnectionException, NotAuthorizedException {
 		updateRaids(false);
 		return raids[slot] != null && raids[slot].isReward();
-			
 	}
 	
-	public Unit[] getUnits(int con, boolean force) throws NoConnectionException, NotAuthorizedException {
+	public Unit[] getUnits(boolean force) throws NoConnectionException, NotAuthorizedException {
 		updateUnits(force);
-		Unit[] ret = new Unit[0];
-		for(int i=0; i<units.length; i++) {
-			switch(con) {
-			case SRC.BackEndHandler.all:
-				ret = add(ret, units[i]);
-				break;
-			case SRC.BackEndHandler.isUnitPlaceable:
-				if(units[i].isAvailable())
-					ret = add(ret, units[i]);
-				break;
-			case SRC.BackEndHandler.isUnitUnlockable:
-				updateStore(true);
-				return store.getUnlockableUnits(units);
-			case SRC.BackEndHandler.isUnitUpgradeable:
-				updateStore(true);
-				return store.getUpgradeableUnits(units);
-			}
-		}
-		return ret;
+		return units;
+	}
+	
+	public Unit[] getPlaceableUnits(boolean force) {
+		ArrayList<Unit> ret = new ArrayList<>(units.length);
+		for(int i=0; i<units.length; i++)
+			if(units[i].isAvailable())
+				ret.add(units[i]);
+		return ret.toArray(new Unit[ret.size()]);
+	}
+	
+	public BuyableUnit[] getUnlockableUnits(boolean force) throws NoConnectionException, NotAuthorizedException {
+		updateUnits(force);
+		updateStore(force);
+		return store.getUnlockableUnits(units);
+	}
+	
+	public BuyableUnit[] getUpgradeableUnits(boolean force) throws NoConnectionException, NotAuthorizedException {
+		updateUnits(force);
+		updateStore(force);
+		return store.getUpgradeableUnits(units);
 	}
 	
 	public String upgradeUnit(Unit unit, String specUID) throws NoConnectionException {
 		return store.canUpgradeUnit(unit) ? store.upgradeUnit(unit, req, specUID) : "cant upgrade unit";
 	}
 	
-	public boolean canUnlockUnit(Unit unit) {
-		return store.canUnlockUnit(unit.type, unit.dupe);
-	}
 	
-	public String unlockUnit(Unit unit) throws NoConnectionException {
-		return store.unlockUnit(req.unlockUnit(unit.type.uid), unit.type, unit.dupe, req);
+	public String unlockUnit(BuyableUnit unit) throws NoConnectionException {
+		return store.unlockUnit(req.unlockUnit(unit.type.uid), unit.type, unit.dupe);
 	}
 	
 	

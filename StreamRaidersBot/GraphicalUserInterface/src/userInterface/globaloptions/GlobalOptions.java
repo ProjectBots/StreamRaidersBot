@@ -110,23 +110,6 @@ public class GlobalOptions {
 		gui.addBut(bcpo);
 		
 		
-		Button bfumbud = new Button();
-		bfumbud.setPos(0, p++);
-		bfumbud.setText("free up memory by using drive");
-		boolean fumbud = Configs.getGBoo(Configs.freeUpMemoryByUsingDrive);
-		bfumbud.setGradient(Colors.getGradient("stngs global buttons "+(fumbud?"on":"def")));
-		bfumbud.setForeground(Colors.getColor("stngs global buttons "+(fumbud?"on":"def")));
-		bfumbud.setAL(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				boolean fumbud = Configs.getGBoo(Configs.freeUpMemoryByUsingDrive);
-				Configs.setGBoo(Configs.freeUpMemoryByUsingDrive, !fumbud);
-				GUI.setGradient(uid+"fumbud", Colors.getGradient("stngs global buttons "+(fumbud?"def":"on")));
-				GUI.setForeground(uid+"fumbud", Colors.getColor("stngs global buttons "+(fumbud?"def":"on")));
-			}
-		});
-		gui.addBut(bfumbud, uid+"fumbud");
-		
 		Container cmca = new Container();
 		cmca.setPos(0, p++);
 		

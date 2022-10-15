@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.HeapDump;
@@ -39,8 +38,6 @@ public abstract class Slot {
 	
 	public abstract boolean canManageItself();
 
-	protected abstract JsonElement dump();
-	
 	public boolean isRunning() {
 		return isRunning;
 	}

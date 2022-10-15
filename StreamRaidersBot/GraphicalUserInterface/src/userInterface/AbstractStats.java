@@ -16,7 +16,7 @@ public abstract class AbstractStats <P extends AbstractProfile<R, B>, B extends 
 	protected final String uid = UUID.randomUUID().toString()+"::", cid;
 	
 	protected static GUI gui = null;
-	public AbstractStats(String cid, B be, GUI parent) {
+	public AbstractStats(String cid, GUI parent) {
 		this.cid = cid;
 		
 		GUI tmp = null;
@@ -46,7 +46,7 @@ public abstract class AbstractStats <P extends AbstractProfile<R, B>, B extends 
 		try {
 			@SuppressWarnings("unchecked")
 			P p = (P) Manager.getProfile(cid);
-			open(p, be);
+			open(p, p.getBackEnd());
 		} catch (Exception e) {
 			Logger.printException("Stats -> open: err=unable to load stats", e, Logger.runerr, Logger.error, cid, null, true);
 		}

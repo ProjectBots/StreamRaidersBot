@@ -18,16 +18,25 @@ import include.GUI.ComboBox;
 import include.GUI.Container;
 import include.GUI.Label;
 import include.GUI.TextField;
+import include.Http.NoConnectionException;
 import otherlib.Configs;
 import otherlib.Configs.CapBoo;
 import otherlib.Configs.ListType;
+import otherlib.Logger;
+import run.Manager;
 import run.ProfileType;
+import run.viewer.ViewerBackEnd;
+import srlib.SRC;
+import srlib.SRR.NotAuthorizedException;
+import srlib.viewer.CaptainData;
 import userInterface.AbstractSettings;
 import userInterface.Colors;
 
 public class CaptainSettings extends AbstractSettings {
 
 	private ListType list;
+	private boolean searchFav = false;
+	private boolean exportCaps = false;
 	
 	public CaptainSettings(String cid, String lid, GUI parrent) {
 		super(cid, lid, parrent, 800, 500, false, true);
@@ -89,8 +98,8 @@ public class CaptainSettings extends AbstractSettings {
 		gui.addContainer(clist);
 		
 		
-		Container search = new Container();
-		search.setPos(0, g++);
+		Container csrcaps = new Container();
+		csrcaps.setPos(0, g++);
 		
 			final CaptainSettings capStngs = this;
 		
@@ -98,26 +107,83 @@ public class CaptainSettings extends AbstractSettings {
 			stf.setPos(0, 0);
 			stf.setSize(100, 28);
 			stf.setText("");
-			stf.setAL(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					new CapSearch(cid, lid).open(gui, list, GUI.getInputText(uid+"search::cap"), capStngs);
-				}
+			stf.setAL(ae -> new CapSearch(cid, lid).open(gui, list, GUI.getInputText(uid+"search::cap"), searchFav, capStngs));
+			csrcaps.addTextField(stf, uid+"search::cap");
+			
+			Button bfav = new Button();
+			bfav.setPos(1, 0);
+			bfav.setText("\u2764");
+			bfav.setForeground(Colors.getColor(fontPath+"buttons heart def"));
+			bfav.setGradient(Colors.getGradient(fontPath+"buttons heart def"));
+			bfav.setAL(ae -> {
+				searchFav = !searchFav;
+				GUI.setForeground(uid+"search::fav", Colors.getColor(fontPath+"buttons heart "+(searchFav?"on":"def")));
+				GUI.setGradient(uid+"search::fav", Colors.getGradient(fontPath+"buttons heart "+(searchFav?"on":"def")));
 			});
-			search.addTextField(stf, uid+"search::cap");
+			csrcaps.addBut(bfav, uid+"search::fav");
 			
 			Button sbut = new Button();
 			sbut.setText("search captain");
-			sbut.setPos(1, 0);
-			sbut.setAL(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					new CapSearch(cid, lid).open(gui, list, GUI.getInputText(uid+"search::cap"), capStngs);
-				}
+			sbut.setPos(2, 0);
+			sbut.setForeground(Colors.getColor(fontPath+"buttons def"));
+			sbut.setGradient(Colors.getGradient(fontPath+"buttons def"));
+			sbut.setAL(ae -> new CapSearch(cid, lid).open(gui, list, GUI.getInputText(uid+"search::cap"), searchFav, capStngs));
+			csrcaps.addBut(sbut);
+			
+			Button bex = new Button();
+			bex.setPos(3, 0);
+			bex.setInsets(2, 20, 2, 2);
+			bex.setText("export");
+			bex.setTooltip("override sr favs with current view");
+			bex.setForeground(Colors.getColor(fontPath+"buttons def"));
+			bex.setGradient(Colors.getGradient(fontPath+"buttons def"));
+			bex.setAL(ae -> {
+				if(exportCaps)
+					return;
+				
+				exportCaps = true;
+				new Thread(() -> {
+					GUI.setForeground(uid+"search::export", Colors.getColor(fontPath+"buttons on"));
+					GUI.setGradient(uid+"search::export", Colors.getGradient(fontPath+"buttons on"));
+					try {
+						ViewerBackEnd vbe = Manager.getViewer(cid).getBackEnd();
+						CaptainData[] srfavs = vbe.searchCaptains(true, false, SRC.Search.all, false, null, 10);
+						HashSet<String> srfavnames = new HashSet<>();
+						HashSet<String> bfavs = Configs.getFavCaps(cid, lid, list);
+						
+						for(int i=0; i<srfavs.length; i++) {
+							srfavnames.add(srfavs[i].twitchUserName);
+							if(bfavs.contains(srfavs[i].twitchUserName))
+								continue;
+							String err = vbe.updateFavoriteCaptain(srfavs[i], false);
+							if(err != null)
+								Logger.print("CaptainSettings -> addContent -> export: err="+err+", part=unfav, tun="+srfavs[i].twitchUserName, Logger.runerr, Logger.error, cid, null, true);
+						}
+						
+						for(String cap : bfavs) {
+							if(srfavnames.contains(cap))
+								continue;
+							CaptainData[] s = vbe.searchCaptains(false, false, SRC.Search.all, true, cap, 1);
+							if(s.length == 0) {
+								Logger.print("CaptainSettings -> addContent -> export: err=failed to get captain, part=fav, tun="+cap, Logger.runerr, Logger.error, cid, null, true);
+								continue;
+							}
+							String err = vbe.updateFavoriteCaptain(s[0], true);
+							if(err != null)
+								Logger.print("CaptainSettings -> addContent -> export: err="+err+", part=fav, tun="+cap, Logger.runerr, Logger.error, cid, null, true);
+						}
+					} catch (NoConnectionException | NotAuthorizedException e1) {
+						Logger.printException("CaptainSettings -> addContent -> export: err=failed to export", e1, Logger.runerr, Logger.error, cid, null, true);
+					}
+					exportCaps = false;
+					GUI.setForeground(uid+"search::export", Colors.getColor(fontPath+"buttons def"));
+					GUI.setGradient(uid+"search::export", Colors.getGradient(fontPath+"buttons def"));
+				}).start();
 			});
-			search.addBut(sbut);
+			csrcaps.addBut(bex, uid+"search::export");
+			
 		
-		gui.addContainer(search);
+		gui.addContainer(csrcaps);
 		
 		Container ccaps = new Container();
 		ccaps.setPos(0, g++);

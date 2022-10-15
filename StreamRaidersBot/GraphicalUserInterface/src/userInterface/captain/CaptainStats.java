@@ -8,8 +8,8 @@ import userInterface.AbstractStats;
 
 public class CaptainStats extends AbstractStats<Captain, CaptainBackEnd, Captain.CaptainBackEndRunnable> {
 
-	public CaptainStats(String cid, CaptainBackEnd be, GUI parent) {
-		super(cid, be, parent);
+	public CaptainStats(String cid, GUI parent) {
+		super(cid, parent);
 	}
 
 	@Override

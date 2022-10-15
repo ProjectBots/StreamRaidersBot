@@ -15,13 +15,13 @@ import include.Json;
 import otherlib.Logger;
 import srlib.SRC;
 import srlib.SRR;
-import srlib.Store;
 import srlib.SRR.NotAuthorizedException;
-import srlib.Store.C;
-import srlib.Store.Item;
 import srlib.skins.Skin;
 import srlib.skins.Skins;
 import srlib.souls.Soul;
+import srlib.store.Item;
+import srlib.store.Store;
+import srlib.store.Store.C;
 import srlib.units.Unit;
 import srlib.Time;
 
@@ -29,6 +29,7 @@ public abstract class AbstractBackEnd<B extends AbstractBackEnd<B>> {
 	
 	protected final String cid;
 	protected final SRR req;
+	protected final UpdateEventListener<B> uelis;
 	protected Unit[] units;
 	protected Soul[] souls;
 	protected Skins skins;
@@ -49,9 +50,10 @@ public abstract class AbstractBackEnd<B extends AbstractBackEnd<B>> {
 		return req;
 	}
 	
-	public AbstractBackEnd(String cid, SRR req) {
+	public AbstractBackEnd(String cid, SRR req, UpdateEventListener<B> uelis) {
 		this.req = req;
 		this.cid = cid;
+		this.uelis = uelis;
 	}
 
 	protected void ini() throws NoConnectionException, NotAuthorizedException {
@@ -62,12 +64,6 @@ public abstract class AbstractBackEnd<B extends AbstractBackEnd<B>> {
 	
 	public static interface UpdateEventListener<B extends AbstractBackEnd<B>> {
 		public default void afterUpdate(String obj, B be) {};
-	}
-	
-	protected UpdateEventListener<B> uelis = null;
-	
-	public void setUpdateEventListener(UpdateEventListener<B> uelis) {
-		this.uelis = uelis;
 	}
 	
 	public String getViewerUserId() {

@@ -3,7 +3,6 @@ package userInterface.viewer;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -15,10 +14,8 @@ import include.GUI.CombListener;
 import include.GUI.ComboBox;
 import include.GUI.Container;
 import include.GUI.Label;
-import include.GUI.WinLis;
 import include.Http.NoConnectionException;
 import otherlib.Logger;
-import srlib.SRC;
 import srlib.SRR.NotAuthorizedException;
 import srlib.skins.Skin;
 import srlib.skins.Skins;
@@ -31,8 +28,6 @@ import run.ProfileType;
 import run.viewer.ViewerBackEnd;
 
 public class SkinSettings extends AbstractSettings {
-
-	private boolean closed = false;
 
 	protected SkinSettings(String cid, String lid, GUI parent) {
 		super(cid, lid, parent, 500, 500, true, false);
@@ -53,35 +48,10 @@ public class SkinSettings extends AbstractSettings {
 		new SkinSettings(cid, lid, gui);
 	}
 
+	
 	@Override
 	protected void addContent() {
-		//	own thread bcs window is blocking until closed
-		new Thread(() -> {
-			try {
-				Manager.getViewer(cid).useBackEnd(vbe -> {
-					addContent(vbe);
-				});
-			} catch (Exception e) {
-				Logger.printException("SkinSettings -> open: err=unable to load skin settings", e, Logger.runerr, Logger.error, cid, null, true);
-			}
-		}).start();
-	}
-	
-	private void addContent(ViewerBackEnd vbe) {
-		gui.addWinLis(new WinLis() {
-			@Override
-			public void onIconfied(WindowEvent e) {}
-			@Override
-			public void onFocusLost(WindowEvent e) {}
-			@Override
-			public void onFocusGained(WindowEvent e) {}
-			@Override
-			public void onDeIconfied(WindowEvent e) {}
-			@Override
-			public void onClose(WindowEvent e) {
-				closed = true;
-			}
-		});
+		ViewerBackEnd vbe = Manager.getViewer(cid).getBackEnd();
 		
 		gui.setGlobalKeyLis(new KeyListener() {
 			@Override
@@ -118,7 +88,7 @@ public class SkinSettings extends AbstractSettings {
 		Unit[] units_;
 		Skins skins_;
 		try {
-			units_ = vbe.getUnits(SRC.BackEndHandler.all, false);
+			units_ = vbe.getUnits(false);
 			skins_ = vbe.getSkins(false);
 		} catch (NoConnectionException | NotAuthorizedException e) {
 			Logger.printException("SkinSettings -> open: err=unable to get units/skins", e, Logger.runerr, Logger.error, cid, null, true);
@@ -235,14 +205,6 @@ public class SkinSettings extends AbstractSettings {
 		}
 		
 		gui.refresh();
-		
-		//	block until window closed
-		//	that way vbe won't be unloaded until finished
-		while(!closed) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e1) {}
-		}
 	}
 
 	

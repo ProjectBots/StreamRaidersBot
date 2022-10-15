@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import include.Http.NoConnectionException;
@@ -19,9 +18,9 @@ import run.AbstractBackEnd.UpdateEventListener;
 import srlib.RaidType;
 import srlib.SRC;
 import srlib.SRR;
-import srlib.Store;
 import srlib.SRR.NotAuthorizedException;
-import srlib.Store.C;
+import srlib.store.Store;
+import srlib.store.Store.C;
 import srlib.units.Unit;
 import srlib.units.UnitType;
 import srlib.viewer.CaptainData;
@@ -74,8 +73,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 	}
 	
 	public Viewer(String cid, SRR req) throws Exception {
-		super(cid, new ViewerBackEnd(cid, req), ProfileType.VIEWER, slotSize);
-		uelis = new UpdateEventListener<ViewerBackEnd>() {
+		super(cid, new ViewerBackEnd(cid, req, new UpdateEventListener<ViewerBackEnd>() {
 			@Override
 			public void afterUpdate(String obj, ViewerBackEnd vbe) {
 				Logger.print("updated "+obj, Logger.general, Logger.info, cid, null);
@@ -86,6 +84,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 					//$FALL-THROUGH$
 				case "caps::false":
 					try {
+						final String currentLayer = Manager.getCurrentLayer(cid);
 						CaptainData[] caps;
 						caps = vbe.getCaps(dungeon);
 						HashSet<String> got = new HashSet<>();
@@ -97,14 +96,12 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 							if(got.contains(tun) || !Configs.getCapBoo(cid, currentLayer, tun, dungeon ? Configs.dungeon : Configs.campaign, Configs.il))
 								continue;
 							
-							JsonArray results = vbe.searchCap(1, null, false, false, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, true, tun);
-							if(results.size() == 0)
+							CaptainData[] results = vbe.searchCaptains(false, false, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, true, tun, 1);
+							if(results.length == 0)
 								continue;
 							
-							CaptainData n = new CaptainData(results.get(0).getAsJsonObject());
-							
-							if(n.isPlaying)
-								caps = add(caps, n);
+							if(results[0].isPlaying)
+								caps = add(caps, results[0]);
 						}
 						vbe.setCaps(caps, dungeon);
 					} catch(Exception e) {
@@ -113,7 +110,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 					break;
 				case "units":
 					try {
-						Unit[] units = vbe.getUnits(SRC.BackEndHandler.all, false);
+						Unit[] units = vbe.getUnits(false);
 						for(Unit u : units)
 							Configs.addUnitId(cid, ProfileType.VIEWER, ""+u.unitId, u.type.uid, u.level);
 					} catch (Exception e) {
@@ -122,13 +119,7 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 					break;
 				}
 			}
-		};
-		useBackEnd(vbe -> {
-			vbe.setUpdateEventListener(uelis);
-			vbe.ini();
-			raids = vbe.getRaids(SRC.BackEndHandler.all);
-			curs = vbe.getCurrencies();
-		});
+		}), ProfileType.VIEWER, slotSize);
 		updateRews();
 	}
 	
@@ -147,22 +138,29 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 	}
 	
 	public void fav(int slot, int val) {
-		if(raids[slot] == null)
+		Raid r;
+		try {
+			r = be.getRaid(slot, false);
+		} catch (NoConnectionException | NotAuthorizedException e) {
+			Logger.printException("Viewer -> fav: err=failed to get raid", e, Logger.runerr, Logger.error, cid, slot, true);
+			return;
+		}
+		if(r == null)
 			return;
 		
-		Integer v = Configs.getCapInt(cid, "(all)", raids[slot].twitchUserName, raids[slot].type == RaidType.DUNGEON ? Configs.dungeon : Configs.campaign, Configs.fav);
+		Integer v = Configs.getCapInt(cid, "(all)", r.twitchUserName, r.type == RaidType.DUNGEON ? Configs.dungeon : Configs.campaign, Configs.fav);
 		if(v == null 
 				|| v == Integer.MAX_VALUE-1
 				|| v == Integer.MIN_VALUE+1
 				|| Math.signum(val)*Math.signum(v) <= 0)
-			Configs.favCap(cid, "(all)", raids[slot].twitchUserName, Configs.all, val);
+			Configs.favCap(cid, "(all)", r.twitchUserName, Configs.all, val);
 		else 
-			Configs.favCap(cid, "(all)", raids[slot].twitchUserName, Configs.all, null);
+			Configs.favCap(cid, "(all)", r.twitchUserName, Configs.all, null);
 	}
 	
 	
 	public static boolean canUseSlot(ViewerBackEnd vbe, int slot) throws NoConnectionException, NotAuthorizedException {
-		int uCount = vbe.getUnits(SRC.BackEndHandler.all, false).length;
+		int uCount = vbe.getUnits(false).length;
 		switch (slot) {
 		case 0:
 			return true;
@@ -182,27 +180,21 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 	private static final C[] sc = new C[] {Store.gold, Store.potions, Store.meat, Store.eventcurrency, Store.keys, Store.bones};
 	public static final String[] pveloy = "noloy bronze silver gold".split(" ");
 	
-	private Raid[] raids = null;
-	private Hashtable<String, Integer> curs = null;
-	
 	@Override
-	synchronized public void updateFrame(ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
+	synchronized public void updateFrame() throws NoConnectionException, NotAuthorizedException {
 		if(!ready)
 			return;
+
+		updateLayer();
 		
 		updateSlotSync();
 		
-		updateLayer();
-		
-		if(vbe != null)
-			raids = vbe.getRaids(SRC.BackEndHandler.all);
+		Raid[] raids = be.getRaids(SRC.BackEnd.all);
 
 		for(int i=0; i<4; i++)
 			Manager.blis().onProfileUpdateSlotViewer(cid, i, raids[i], Configs.isSlotLocked(cid, currentLayer, ""+i), ((RaidSlot) slots[i]).isChange());
 		
-
-		if(vbe != null)
-			curs = vbe.getCurrencies();
+		Hashtable<String, Integer> curs = be.getCurrencies();
 
 		for(C key : sc) {
 			String k = key.get();
@@ -212,17 +204,17 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 	}
 	
 	
-	public void updateVbe(ViewerBackEnd vbe) {
+	public void updateVbe() {
 		String proxy = Configs.getStr(cid, currentLayer, Configs.proxyDomainViewer);
 		String user = Configs.getStr(cid, currentLayer, Configs.proxyUserViewer);
-		vbe.setProxyAndUserAgent(proxy.equals("") ? null : proxy, 
+		be.setProxyAndUserAgent(proxy.equals("") ? null : proxy, 
 				Configs.getInt(cid, currentLayer, Configs.proxyPortViewer),
 				user.equals("") ? null : user,
 				Configs.getStr(cid, currentLayer, Configs.proxyPassViewer),
 				Configs.getStr(cid, currentLayer, Configs.userAgentViewer),
 				Configs.getBoolean(cid, currentLayer, Configs.proxyMandatoryViewer));
 		
-		vbe.setUpdateTimes( Configs.getInt(cid, currentLayer, Configs.unitUpdateViewer),
+		be.setUpdateTimes( Configs.getInt(cid, currentLayer, Configs.unitUpdateViewer),
 							Configs.getInt(cid, currentLayer, Configs.skinUpdateViewer),
 							Configs.getInt(cid, currentLayer, Configs.soulsUpdateViewer),
 							Configs.getInt(cid, currentLayer, Configs.capsUpdateViewer),
@@ -233,7 +225,12 @@ public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerB
 	}
 	
 	public String getTwitchLink(int slot) {
-		return "https://twitch.tv/"+raids[slot].twitchUserName;
+		try {
+			return "https://twitch.tv/"+be.getRaid(slot, false).twitchUserName;
+		} catch (NoConnectionException | NotAuthorizedException e) {
+			Logger.printException("Viewer -> getTwitchLink: err=failed to get raid", e, Logger.runerr, Logger.error, cid, slot, true);
+		}
+		return null;
 	}
 	
 	

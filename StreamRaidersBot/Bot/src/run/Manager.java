@@ -27,10 +27,10 @@ import run.viewer.Viewer;
 import srlib.Event;
 import srlib.SRC;
 import srlib.SRR;
-import srlib.Store;
 import srlib.Time;
 import srlib.SRR.NotAuthorizedException;
 import srlib.SRR.OutdatedDataException;
+import srlib.store.Store;
 import srlib.units.UnitType;
 import srlib.viewer.Raid;
 import include.Json;
@@ -481,23 +481,10 @@ public class Manager {
 	}
 	
 	private static void redeemCodes(AbstractProfile<?, ?> p, String[] codes) throws Exception {
-		switch (p.getType()) {
-		case CAPTAIN:
-			Captain c = p.getAsCaptain();
-			c.useBackEnd(cbe -> {
-				for(int i=0; i<codes.length; i++)
-					if(!cbe.redeemProductCode(codes[i]))
-						Logger.print("Manager -> redeemCodes: err=failed to redeem, code="+codes[i], Logger.runerr, Logger.error, p.cid, null, true);
-			});
-			break;
-		case VIEWER:
-			Viewer v = p.getAsViewer();
-			v.useBackEnd(vbe -> {
-				for(int i=0; i<codes.length; i++)
-					vbe.redeemProductCode(codes[i]);
-			});
-			break;
-		}
+		AbstractBackEnd<?> be = p.getBackEnd();
+		for(int i=0; i<codes.length; i++)
+			if(!be.redeemProductCode(codes[i]))
+				Logger.print("Manager -> redeemCodes: err=failed to redeem, code="+codes[i], Logger.runerr, Logger.error, p.cid, null, true);
 	}
 	
 	private static void redeemCodesSwitchProfileType(AbstractProfile<?, ?> p, String[] codes) throws Exception {
@@ -534,7 +521,7 @@ public class Manager {
 	public static void updateProfile(String cid) {
 		new Thread(() -> {
 			try {
-				profiles.get(cid).updateFrame(null);
+				profiles.get(cid).updateFrame();
 			} catch (NoConnectionException | NotAuthorizedException e1) {
 				Logger.printException("Manager -> updateProfile: err=failed to update frame", e1, Logger.general, Logger.error, cid, null, true);
 			}

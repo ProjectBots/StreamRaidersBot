@@ -1,4 +1,4 @@
-package srlib;
+package srlib.store;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,6 +12,9 @@ import com.google.gson.JsonObject;
 import include.Json;
 import include.Http.NoConnectionException;
 import otherlib.Options;
+import srlib.SRC;
+import srlib.SRR;
+import srlib.Time;
 import srlib.skins.Skins;
 import srlib.units.Unit;
 import srlib.units.UnitRarity;
@@ -172,18 +175,20 @@ public class Store {
 	}
 	
 
-	public Unit[] getUpgradeableUnits(Unit[] units) {
-		LinkedList<Unit> ret = new LinkedList<>();
+	public BuyableUnit[] getUpgradeableUnits(Unit[] units) {
+		LinkedList<BuyableUnit> ret = new LinkedList<>();
 		for(int i=0; i<units.length; i++) {
 			int lvl = units[i].level;
 			UnitType type = units[i].type;
 			if(lvl == 30) 
 				continue;
 			
-			if(getCost(type.rarity, lvl, false)[1] <= getCurrency(type.uid))
-				ret.add(units[i]);
+			int[] cost = getCost(type.rarity, lvl, false);
+			
+			if(cost[1] <= getCurrency(type.uid))
+				ret.add(new BuyableUnit(units[i], cost[0]));
 		}
-		return ret.toArray(new Unit[ret.size()]);
+		return ret.toArray(new BuyableUnit[ret.size()]);
 	}
 	
 	public String upgradeUnit(Unit unit, SRR req, String specUID) throws NoConnectionException {
@@ -209,18 +214,8 @@ public class Store {
 		return null;
 	}
 	
-	public boolean canUnlockUnit(UnitType type, boolean dupe) {
-		int[] cost = getCost(type.rarity, 0, dupe);
-		
-		if(getCurrency(gold) < cost[0] || getCurrency(type.uid) < cost[1])
-			return false;
-		
-		return true;
-	}
 	
-	
-	public Unit[] getUnlockableUnits(Unit[] units) {
-		
+	public BuyableUnit[] getUnlockableUnits(Unit[] units) {
 		
 		Hashtable<UnitType, Boolean> gotTypes = new Hashtable<>();
 		for(int i=0; i<units.length; i++) {
@@ -231,15 +226,16 @@ public class Store {
 				gotTypes.put(type, units[i].level == 30);
 		}
 		
-		LinkedList<Unit> ret = new LinkedList<>();
+		LinkedList<BuyableUnit> ret = new LinkedList<>();
 		
 		//	normal unlock
 		for(UnitType type : UnitType.types.values()) {
 			if(gotTypes.containsKey(type))
 				continue;
 			
-			if(getCost(type.rarity, 0, false)[1] <= getCurrency(type.uid))
-				ret.add(Unit.getTypeOnly(type, false));
+			int[] cost = getCost(type.rarity, 0, false);
+			if(cost[1] <= getCurrency(type.uid))
+				ret.add(new BuyableUnit(type, cost[0], false));
 		}
 		
 		//	dupe unlock
@@ -248,13 +244,14 @@ public class Store {
 			if(!gotTypes.get(type))
 				continue;
 			
-			if(getCost(type.rarity, 0, true)[1] <= getCurrency(type.uid))
-				ret.add(Unit.getTypeOnly(type, true));
+			int[] cost = getCost(type.rarity, 0, true);
+			if(cost[1] <= getCurrency(type.uid))
+				ret.add(new BuyableUnit(type, cost[0], true));
 		}
-		return ret.toArray(new Unit[ret.size()]);
+		return ret.toArray(new BuyableUnit[ret.size()]);
 	}
 	
-	public String unlockUnit(String text, UnitType type, boolean dupe, SRR req) {
+	public String unlockUnit(String text, UnitType type, boolean dupe) {
 		
 		JsonObject res = Json.parseObj(text);
 		JsonElement err = res.get(SRC.errorMessage);
@@ -267,47 +264,6 @@ public class Store {
 		return null;
 	}
 	
-	
-	public static class Item {
-		@Override
-		public String toString() {
-			return new StringBuffer("{")
-					.append(uid)
-					.append(" ")
-					.append(name)
-					.append(" ")
-					.append(quantity)
-					.append("@")
-					.append(price)
-					.append(" ")
-					.append(purchased ? "purchased (" : "(")
-					.append(section)
-					.append(")}")
-					.toString();
-		}
-		@Override
-		public boolean equals(Object obj) {
-			if(!(obj instanceof Item))
-				return false;
-			return ((Item) obj).uid.equals(uid);
-		}
-		
-		public final String name;
-		public final int price;
-		public final int quantity;
-		public final boolean purchased;
-		public final String section;
-		public final String uid;
-		
-		public Item(JsonObject pack, boolean purchased) {
-			name = pack.get("Item").getAsString();
-			price = pack.get("BasePrice").getAsInt();
-			quantity = pack.get("Quantity").getAsInt();
-			this.purchased = purchased;
-			section = pack.get("Section").getAsString();
-			uid = pack.get("Uid").getAsString();
-		}
-	}
 	
 	public ArrayList<Item> getPurchasableScrolls() {
 		JsonObject packs = Json.parseObj(Options.get("store"));
@@ -488,7 +444,11 @@ public class Store {
 				if(ret.get(SRC.errorMessage).isJsonPrimitive())
 					return ret;
 				
-				shopItems = ret.getAsJsonArray("data").deepCopy();
+				for(int i=0; i<shopItems.size(); i++) {
+					JsonObject item_ = shopItems.get(i).getAsJsonObject();
+					if(item_.get("itemId").getAsString().equals(item.uid))
+						item_.addProperty("purchased", 1);
+				}
 			}
 			break;
 		}

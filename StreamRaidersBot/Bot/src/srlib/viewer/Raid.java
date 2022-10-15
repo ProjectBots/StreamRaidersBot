@@ -10,8 +10,8 @@ import include.Json;
 import otherlib.Logger;
 import otherlib.Options;
 import srlib.RaidType;
-import srlib.Store;
 import srlib.Time;
+import srlib.store.Store;
 
 public class Raid {
 	
@@ -143,11 +143,12 @@ public class Raid {
 				return ret;
 			
 			JsonElement chest = raidStats.get("chestAwarded");
-			if(chest != null && chest.isJsonPrimitive() && !chest.getAsString().equals(""))
-				ret.addProperty(chest.getAsString(), 1);
-			else
-				ret.addProperty("chestsalvage", 1);
-			
+			if(type != RaidType.DUNGEON) {
+				if(chest != null && chest.isJsonPrimitive() && !chest.getAsString().equals(""))
+					ret.addProperty(chest.getAsString(), 1);
+				else
+					ret.addProperty("chestsalvage", 1);
+			}
 			
 			for(int i=0; i<AWARDED_REWARDS.length; i++) {
 				int ityp = raidStats.get(AWARDED_REWARDS[i][1]).getAsInt();

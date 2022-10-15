@@ -1,7 +1,6 @@
 package run;
 
 import java.awt.Color;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.WeekFields;
 
@@ -9,19 +8,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.Json;
-import include.NEF;
 import include.Http.NoConnectionException;
 import otherlib.Configs;
 import otherlib.Logger;
 import otherlib.Options;
 import otherlib.Remaper;
-import run.AbstractBackEnd.UpdateEventListener;
 import run.captain.Captain;
 import run.captain.CaptainBackEnd;
 import run.viewer.Viewer;
 import srlib.SRR;
-import srlib.Store;
 import srlib.SRR.NotAuthorizedException;
+import srlib.store.Store;
 
 
 /**
@@ -41,11 +38,8 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 
 
 	public final String cid;
-	private B be_;
-	@SuppressWarnings("rawtypes")
-	private Class<? extends AbstractBackEnd> be_class;
 	private ProfileType ptype;
-	protected UpdateEventListener<B> uelis = null;
+	protected B be;
 	protected String currentLayer = "(default)";
 	protected String currentLayerId = null;
 	protected boolean isSwitching = false;
@@ -69,13 +63,11 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 	}
 	
 	public AbstractProfile(String cid, B be, ProfileType ptype, int slotSize) {
-		this.be_ = be;
-		this.be_class = be_.getClass();
+		this.be = be;
 		this.cid = cid;
 		this.ptype = ptype;
 		slots = new Slot[slotSize];
 		iniSlots();
-		unloadBE();
 	}
 	
 	public Viewer getAsViewer() {
@@ -90,57 +82,15 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 		return (AbstractProfile<R, B>) this;
 	}
 	
+	public B getBackEnd() {
+		return be;
+	}
 	
-	private final Object be_lock = new Object();
-	private int currentBEUses = 1;
 	
 	public static interface CBERunnable {
 		public void run(CaptainBackEnd vbe);
 	}
 	
-	@SuppressWarnings("unchecked")
-	private void loadBE() {
-		synchronized(be_lock) {
-			currentBEUses++;
-			if(be_ == null) {
-				try {
-					be_ = (B) Json.toObj(Json.parseObj(NEF.read("data/temp/"+cid+".srb.json")), be_class);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				if(uelis != null) {
-					be_.setUpdateEventListener(uelis);
-				}
-				System.gc();
-			}
-		}
-	}
-	
-	private void unloadBE() {
-		synchronized(be_lock) {
-			currentBEUses--;
-			if(currentBEUses == 0 && Configs.getGBoo(Configs.freeUpMemoryByUsingDrive)) {
-				try {
-					NEF.save("data/temp/"+cid+".srb.json", Json.fromObj(be_).toString());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				be_ = null;
-				System.gc();
-			}
-		}
-	}
-	
-	public void useBackEnd(R ber) throws Exception {
-		loadBE();
-		try {
-			ber.run(be_);
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			unloadBE();
-		}
-	};
 	
 	@SuppressWarnings("unchecked")
 	public <T extends AbstractProfile<?,?>>T switchProfileType() throws Exception {
@@ -153,25 +103,20 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 		for(int i=0; i<slots.length; i++)
 			slots[i] = null;
 		
-		loadBE();
-		try {
-			SRR req = be_.getSRR();
-			JsonElement status = Json.parseObj(req.switchUserAccountType()).get("status");
-			if(!status.isJsonPrimitive() || !status.getAsString().equals("success"))
-				return null;
-			
-			req.reload();
-			
-			switch(ptype) {
-			case CAPTAIN:
-				return (T) new Viewer(cid, req);
-			case VIEWER:
-				return (T) new Captain(cid, req);
-			}
+		SRR req = be.getSRR();
+		JsonElement status = Json.parseObj(req.switchUserAccountType()).get("status");
+		if(!status.isJsonPrimitive() || !status.getAsString().equals("success"))
 			return null;
-		} finally {
-			unloadBE();
+		
+		req.reload();
+		
+		switch(ptype) {
+		case CAPTAIN:
+			return (T) new Viewer(cid, req);
+		case VIEWER:
+			return (T) new Captain(cid, req);
 		}
+		return null;
 	}
 	
 	protected abstract void iniSlots();
@@ -232,7 +177,7 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 			slots[i].skipSleep();
 	}
 	
-	public abstract void updateFrame(B be) throws NoConnectionException, NotAuthorizedException;
+	public abstract void updateFrame() throws NoConnectionException, NotAuthorizedException;
 	
 	public synchronized void updateLayer() {
 		LocalDateTime now = LocalDateTime.now();

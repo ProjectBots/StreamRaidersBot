@@ -8,7 +8,6 @@ import java.util.Random;
 import java.util.Set;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.Json;
@@ -27,11 +26,11 @@ import run.StreamRaidersException;
 import srlib.Map;
 import srlib.RaidType;
 import srlib.SRC;
-import srlib.Store;
 import srlib.Time;
 import srlib.SRR.NotAuthorizedException;
 import srlib.skins.Skin;
 import srlib.skins.Skins;
+import srlib.store.Store;
 import srlib.units.Unit;
 import srlib.units.UnitRarity;
 import srlib.units.UnitType;
@@ -52,34 +51,27 @@ public class RaidSlot extends Slot {
 		return true;
 	}
 	
-
-	@Override
-	public JsonElement dump() {
-		return null;
-	}
-	
-	
 	@Override
 	protected void slotSequence() {
 		try {
-			v.useBackEnd(vbe -> {
-				v.updateVbe(vbe);
-				
-				if(!Viewer.canUseSlot(vbe, slot))
-					return;
+			v.updateVbe();
+			
+			ViewerBackEnd vbe = v.getBackEnd();
+			
+			if(!Viewer.canUseSlot(vbe, slot))
+				return;
 
-				Logger.print("chest", Logger.general, Logger.info, cid, slot);
-				chest(vbe);
+			Logger.print("chest", Logger.general, Logger.info, cid, slot);
+			chest(vbe);
 
-				Logger.print("captain", Logger.general, Logger.info, cid, slot);
-				captain(vbe);
+			Logger.print("captain", Logger.general, Logger.info, cid, slot);
+			captain(vbe);
 
-				Logger.print("place", Logger.general, Logger.info, cid, slot);
-				place(vbe);
+			Logger.print("place", Logger.general, Logger.info, cid, slot);
+			place(vbe);
 
-				Logger.print("updateFrame", Logger.general, Logger.info, cid, slot);
-				v.updateFrame(vbe);
-			});
+			Logger.print("updateFrame", Logger.general, Logger.info, cid, slot);
+			v.updateFrame();
 		} catch (NoConnectionException | NotAuthorizedException e) {
 			Logger.printException("RaidSlot (viewer) -> slotSequence: slot=" + slot + " err=No stable Internet Connection", e, Logger.runerr, Logger.fatal, cid, slot, true);
 		} catch (StreamRaidersException | NoCapMatchesException e) {
@@ -233,13 +225,14 @@ public class RaidSlot extends Slot {
 		final boolean isFav = Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign).contains(r.twitchUserName);
 
 
+		final String chest = Remaper.map(r.chestType);
 		while(true) {
 			Logger.print("place "+re, Logger.loop, Logger.info, cid, slot);
 			
 			if(Options.is("exploits") && Configs.getBoolean(cid, currentLayer, Configs.useMultiPlaceExploitViewer)) {
 				goMultiPlace = false;
 				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
-					final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, r.chestType, isFav, vbe.getSkins(false), r.captainId);
+					final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, chest, isFav, vbe.getSkins(false), r.captainId);
 					if(pla == null)
 						continue;
 					bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
@@ -264,8 +257,7 @@ public class RaidSlot extends Slot {
 				} catch (InterruptedException e) {}
 				break;
 			} else {
-				final String node = Remaper.map(r.chestType);
-				final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, node, isFav, vbe.getSkins(false), r.captainId);
+				final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, chest, isFav, vbe.getSkins(false), r.captainId);
 				
 
 				if(pla == null) {
@@ -532,7 +524,7 @@ public class RaidSlot extends Slot {
 	public void switchChange() {
 		change = !change;
 		try {
-			v.updateFrame(null);
+			v.updateFrame();
 		} catch (NoConnectionException | NotAuthorizedException e) {
 			Logger.printException(cid+": Viewer -> change: slot="+slot+", err=failed to update Frame", e, Logger.runerr, Logger.error, cid, slot, true);
 		}
@@ -548,29 +540,9 @@ public class RaidSlot extends Slot {
 
 	private void captain(ViewerBackEnd vbe, boolean first, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 		
-		boolean dungeon = Configs.getStr(cid, currentLayer, Configs.dungeonSlotViewer).equals(""+slot);
-		
 		Raid r = vbe.getRaid(slot, true);
 		
-		if(r != null && Configs.isSlotLocked(cid, currentLayer, ""+slot)) {
-			if(r.type == RaidType.DUNGEON && !dungeon) {
-				Raid[] all = vbe.getRaids(SRC.BackEndHandler.all);
-				boolean change = true;
-				for(int i=0; i<all.length; i++) {
-					if(i == slot || all[i] == null)
-						continue;
-					if(all[i].type == RaidType.DUNGEON && Configs.isSlotLocked(cid, currentLayer, ""+i))
-						change = false;
-				}
-				if(change) {
-					Configs.setStr(cid, currentLayer, Configs.dungeonSlotViewer, ""+slot);
-					dungeon = true;
-				}
-			} else if(r.type != RaidType.DUNGEON && dungeon) {
-				Configs.setStr(cid, currentLayer, Configs.dungeonSlotViewer, "(none)");
-				dungeon = false;
-			}
-		}
+		final boolean dungeon = isDungeonCheckLockedSlot(vbe, r);
 		
 		if(Configs.isSlotLocked(cid, currentLayer, ""+slot) && !change)
 			return;
@@ -583,25 +555,24 @@ public class RaidSlot extends Slot {
 		if(!r.isSwitchable(Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer)))
 			return;
 
-		String tun = r.twitchUserName;
+		final String tun = r.twitchUserName;
+		
 		if(r.type == RaidType.VERSUS || r.isCodeLocked) {
 			switchCap(vbe, dungeon, r, tun, noCap, first);
 			return;
 		}
 		
-		String ct = r.chestType;
-		if(ct == null) {
+		String ct = Remaper.map(r.chestType);
+		if(ct.equals("nochest")) {
 			switchCap(vbe, dungeon, r, tun, noCap, first);
 			return;
 		}
-		ct = Remaper.map(ct);
 
 		ListType list = dungeon ? Configs.dungeon : Configs.campaign;
-		
-		Boolean ic = Configs.getCapBoo(cid, currentLayer, tun, list, Configs.ic);
-		ic = ic == null ? false : ic;
 		Boolean il = Configs.getCapBoo(cid, currentLayer, tun, list, Configs.il);
 		il = il == null ? false : il;
+		Boolean ic = Configs.getCapBoo(cid, currentLayer, tun, list, Configs.ic);
+		ic = ic == null ? false : ic;
 		Integer fav = Configs.getCapInt(cid, currentLayer, tun, list, Configs.fav);
 		fav = fav == null ? 0 : fav;
 		
@@ -636,8 +607,8 @@ public class RaidSlot extends Slot {
 		
 		if((dungeon ^ (r.type == RaidType.DUNGEON))
 			|| r.isOffline(!il, Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer)*60)
-			|| (!ic && Time.isBeforeServerTime(r.creationDate + r.type.raidDuration - minTimeLeft))
-			|| (!ic && Time.isAfterServerTime(r.creationDate + r.type.raidDuration - maxTimeLeft))
+			|| (!ic && !dungeon && Time.isBeforeServerTime(r.creationDate + r.type.raidDuration - minTimeLeft))
+			|| (!ic && !dungeon && Time.isAfterServerTime(r.creationDate + r.type.raidDuration - maxTimeLeft))
 			|| (!ic && !enabled)
 			|| (!ic && (loy < minLoy || loy > maxLoy))
 			|| fav < 0
@@ -653,6 +624,32 @@ public class RaidSlot extends Slot {
 				change = false;
 		}
 		
+	}
+	
+	private boolean isDungeonCheckLockedSlot(ViewerBackEnd vbe, Raid r) throws NoConnectionException, NotAuthorizedException {
+		boolean dungeon = Configs.getStr(cid, currentLayer, Configs.dungeonSlotViewer).equals(""+slot);
+		
+		if(r != null && Configs.isSlotLocked(cid, currentLayer, ""+slot)) {
+			if(r.type == RaidType.DUNGEON && !dungeon) {
+				Raid[] all = vbe.getRaids(SRC.BackEnd.all);
+				boolean change = true;
+				for(int i=0; i<all.length; i++) {
+					if(i == slot || all[i] == null)
+						continue;
+					if(all[i].type == RaidType.DUNGEON && Configs.isSlotLocked(cid, currentLayer, ""+i))
+						change = false;
+				}
+				if(change) {
+					Configs.setStr(cid, currentLayer, Configs.dungeonSlotViewer, ""+slot);
+					dungeon = true;
+				}
+			} else if(r.type != RaidType.DUNGEON && dungeon) {
+				Configs.setStr(cid, currentLayer, Configs.dungeonSlotViewer, "(none)");
+				dungeon = false;
+			}
+		}
+		
+		return dungeon;
 	}
 	
 	public static class NoCapMatchesException extends Exception {
@@ -703,7 +700,7 @@ public class RaidSlot extends Slot {
 				? Configs.dungeon 
 				: Configs.campaign;
 
-		Raid[] all = vbe.getRaids(SRC.BackEndHandler.all);
+		Raid[] all = vbe.getRaids(SRC.BackEnd.all);
 		HashSet<String> otherCaps = new HashSet<>();
 		for(Raid raid : all) {
 			if(raid == null)

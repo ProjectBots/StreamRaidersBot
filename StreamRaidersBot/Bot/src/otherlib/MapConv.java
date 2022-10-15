@@ -68,7 +68,9 @@ public class MapConv {
 				if(map.is(x+i, y+j, SRC.Map.isEnemy)) 
 					return;
 		
-		ret[x][y].setFinish(true);
+		String plan = map.getPlanType(x, y);
+		
+		ret[x][y].setFinish((short) (plan != null && plan.equals("noplacement") ? 0 : 1));
 		found = true;
 	}
 

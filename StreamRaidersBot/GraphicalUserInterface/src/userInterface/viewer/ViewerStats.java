@@ -21,9 +21,8 @@ import otherlib.Logger;
 import otherlib.Ressources;
 import run.viewer.Viewer;
 import run.viewer.ViewerBackEnd;
-import srlib.SRC;
-import srlib.Store;
 import srlib.SRR.NotAuthorizedException;
+import srlib.store.Store;
 import srlib.units.Unit;
 import srlib.units.UnitType;
 import userInterface.AbstractStats;
@@ -36,8 +35,8 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.Vie
 	private static final FontRenderContext frc = new FontRenderContext(affinetransform,true,true);     
 	private static final Font font = new Font("Arial", Font.PLAIN, 12);
 	
-	public ViewerStats(String cid, ViewerBackEnd vbe, GUI parent) {
-		super(cid, vbe, parent);
+	public ViewerStats(String cid, GUI parent) {
+		super(cid, parent);
 	}
 	
 	@Override
@@ -48,7 +47,7 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.Vie
 		Unit[] units;
 		Hashtable<String, Integer> curs;
 		try {
-			units = vbe.getUnits(SRC.BackEndHandler.all, false);
+			units = vbe.getUnits(false);
 			curs = vbe.getCurrencies();
 		} catch (NoConnectionException | NotAuthorizedException e) {
 			Logger.printException("Stats -> open: err=failed to get infos", e, Logger.general, Logger.error, run.cid, null, true);
@@ -77,11 +76,9 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.Vie
 					switch(e.getKeyCode()) {
 					case KeyEvent.VK_R:
 						try {
-							run.useBackEnd(vbe_ -> {
-								vbe_.updateUnits(true);
-								vbe_.updateStore(true);
-								new ViewerStats(cid, vbe_, gui);
-							});
+							vbe.updateUnits(true);
+							vbe.updateStore(true);
+							new ViewerStats(cid, gui);
 						} catch (Exception e1) {
 							Logger.printException("Stats -> open -> reload: err=failed to update Units/Store", e1, Logger.runerr, Logger.error, run.cid, null, true);
 						}

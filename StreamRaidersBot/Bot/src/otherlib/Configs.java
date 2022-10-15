@@ -93,7 +93,6 @@ public class Configs {
 
 	public static final GBoo useMemoryReleaser = new GBoo("useMemoryReleaser");
 	public static final GBoo needCloseConfirm = new GBoo("needCloseConfirm");
-	public static final GBoo freeUpMemoryByUsingDrive = new GBoo("freeUpMemoryByUsingDrive");
 	
 	public static boolean getGBoo(GBoo con) {
 		return config.getAsJsonObject("Global").get(con.con).getAsBoolean();
@@ -1966,7 +1965,6 @@ public class Configs {
 			{
 				addAll(Arrays.asList(("needCloseConfirm "
 									+ "useMemoryReleaser "
-									+ "freeUpMemoryByUsingDrive "
 									+ "maxProfileActions"
 									).split(" ")));
 			}
@@ -1981,8 +1979,7 @@ public class Configs {
 		private static final HashSet<String> userConfs = new HashSet<String>() {
 			private static final long serialVersionUID = 1L;
 			{
-				addAll(Arrays.asList(("stats "
-						+ "times"
+				addAll(Arrays.asList(("stats"
 						).split(" ")));
 			}
 		};
@@ -2137,6 +2134,9 @@ public class Configs {
 				if(userConfs.contains(k3))
 					c2.addItem(k3, new Item(user.get(k3)));
 			
+			
+			
+			
 			JsonObject unitInfo = user.getAsJsonObject("unitInfo");
 			Category cuinfos = new Category("unitInfo", true);
 			for(String key : unitInfo.keySet()) {
@@ -2152,6 +2152,12 @@ public class Configs {
 			
 			Category c3 = new Category("layers");
 			JsonObject lays = user.getAsJsonObject("layers");
+
+			//	replacing layer ids with layer names (layer id will be lost during export, lnames are the new referrences)
+			JsonObject times = user.getAsJsonObject(ptimesViewer.con);
+			for(String key : times.keySet())
+				times.add(key, lays.getAsJsonObject(times.get(key).getAsString()).get(lnameViewer.con).deepCopy());
+			c2.addItem(ptimesViewer.con, new Item(times));
 			
 			for(String k3 : lays.keySet()) {
 				JsonObject lay = lays.getAsJsonObject(k3);
@@ -2280,12 +2286,15 @@ public class Configs {
 					if(lids == null || lids.size() == 0)
 						continue;
 					
-					Hashtable<String, Layer> uLays = lays.get(pt);
+					HashMap<String, Layer> uLays = lays.get(pt);
+					HashMap<String, String> lname2lid = new HashMap<>();
 					JsonObject layers = new JsonObject();
 					
 					while(lids.size() > 0) {
 						Layer l = uLays.get(lids.pop());
-						layers.add(l.name.equals("(default)")?"(default)":UUID.randomUUID().toString(), convertUnitObject(pt, l.getContentFull(false, null, null), null));
+						String uuid = l.name.equals("(default)")?"(default)":UUID.randomUUID().toString();
+						layers.add(uuid, convertUnitObject(pt, l.getContentFull(false, null, null), null));
+						lname2lid.put(l.name, uuid);
 					}
 						
 					JsonObject acc = pro.getAsJsonObject(pt.toString());
@@ -2296,6 +2305,10 @@ public class Configs {
 						for(String u : unitInfo.keySet())
 							unitInfo.getAsJsonObject(u).addProperty(fromViewer.con, ncid);
 					}
+					
+					JsonObject times = acc.getAsJsonObject(ptimesViewer.con);
+					for(String key : times.keySet())
+						times.addProperty(key, lname2lid.get(times.get(key).getAsString()));
 					
 					pro.add(pt.toString(), acc);
 				}
@@ -2401,7 +2414,7 @@ public class Configs {
 			StringBuilder sb = new StringBuilder("{\n  layIds: {");
 			for(ProfileType pt : ProfileType.values()) {
 				sb.append("\n    "+pt.toString()+": {");
-				Hashtable<String, Layer> ht = lays.get(pt);
+				HashMap<String, Layer> ht = lays.get(pt);
 				for(String key : ht.keySet())
 					sb.append("\n      "+key);
 				sb.append("\n    }");
@@ -2418,7 +2431,7 @@ public class Configs {
 		//	profiles
 		private HashMap<String, Profile> pros = new HashMap<>();
 		//	layers
-		private Hashtable<ProfileType, Hashtable<String, Layer>> lays = new Hashtable<>();
+		private HashMap<ProfileType, HashMap<String, Layer>> lays = new HashMap<>();
 		
 		public final boolean isCompatibleOldConfig;
 		
@@ -2462,7 +2475,7 @@ public class Configs {
 			JsonElement jeglob = source.remove("Global");
 			glob = jeglob == null ? null : jeglob.getAsJsonObject();
 			for(ProfileType pt : ProfileType.values())
-				lays.put(pt, new Hashtable<>());
+				lays.put(pt, new HashMap<>());
 			
 			for(String key : source.keySet())
 				try {
@@ -2574,7 +2587,7 @@ public class Configs {
 				}
 				
 				for(ProfileType pt : ProfileType.values()) {
-					Hashtable<String, Layer> ls = lays.get(pt);
+					HashMap<String, Layer> ls = lays.get(pt);
 					ls.forEach((key, l) -> {
 						l.forEachMerge((cid, lid, content) -> Json.override(Json.get(config, new ArrayList<>(Arrays.asList(cid, pt.toString(), "layers", lid))).getAsJsonObject(), content));
 						l.forEachAdd((cid, content) -> Json.get(config, new ArrayList<>(Arrays.asList(cid, pt.toString(), "layers"))).getAsJsonObject().add(ranUUIDLayer(cid, pt), content));

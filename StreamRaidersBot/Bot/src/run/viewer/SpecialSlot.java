@@ -16,11 +16,11 @@ import run.ProfileType;
 import run.Slot;
 import run.StreamRaidersException;
 import srlib.SRC;
-import srlib.Store;
 import srlib.Quests.Quest;
 import srlib.SRR.NotAuthorizedException;
-import srlib.Store.Item;
-import srlib.units.Unit;
+import srlib.store.BuyableUnit;
+import srlib.store.Item;
+import srlib.store.Store;
 import srlib.viewer.Raid.Reward;
 
 public class SpecialSlot extends Slot {
@@ -37,41 +37,35 @@ public class SpecialSlot extends Slot {
 		return true;
 	}
 
-	
-	@Override
-	protected JsonObject dump() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	protected void slotSequence() {
 		try {
-			v.useBackEnd(vbe -> {
-				v.updateVbe(vbe);
-				
-				Logger.print("event", Logger.general, Logger.info, cid, slot);
-				event(vbe);
+			v.updateVbe();
+			
+			ViewerBackEnd vbe = v.getBackEnd();
+			
+			Logger.print("event", Logger.general, Logger.info, cid, slot);
+			event(vbe);
 
-				Logger.print("quest", Logger.general, Logger.info, cid, slot);
-				quest(vbe);
+			Logger.print("quest", Logger.general, Logger.info, cid, slot);
+			quest(vbe);
 
-				Logger.print("store", Logger.general, Logger.info, cid, slot);
-				store(vbe);
+			Logger.print("store", Logger.general, Logger.info, cid, slot);
+			store(vbe);
 
-				Logger.print("unlock", Logger.general, Logger.info, cid, slot);
-				unlock(vbe);
+			Logger.print("unlock", Logger.general, Logger.info, cid, slot);
+			unlock(vbe);
 
-				Logger.print("upgrade", Logger.general, Logger.info, cid, slot);
-				upgrade(vbe);
-				
-				Logger.print("grantExtraRewards", Logger.general, Logger.info, cid, slot);
-				vbe.grantTeamReward();
-				vbe.grantEventQuestMilestoneReward();
+			Logger.print("upgrade", Logger.general, Logger.info, cid, slot);
+			upgrade(vbe);
+			
+			Logger.print("grantExtraRewards", Logger.general, Logger.info, cid, slot);
+			vbe.grantTeamReward();
+			vbe.grantEventQuestMilestoneReward();
 
-				Logger.print("updateFrame", Logger.general, Logger.info, cid, slot);
-				v.updateFrame(vbe);
-			});
+			Logger.print("updateFrame", Logger.general, Logger.info, cid, slot);
+			v.updateFrame();
 		} catch (NoConnectionException | NotAuthorizedException e) {
 			Logger.printException("SpecialSlot (viewer) -> slotSequence: slot=" + slot + " err=No stable Internet Connection", e, Logger.runerr, Logger.fatal, cid, slot, true);
 		} catch (StreamRaidersException e) {
@@ -82,20 +76,17 @@ public class SpecialSlot extends Slot {
 	}
 
 	private void upgrade(ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
-		/**	TODO change min gold
-		 * create a own class for unlockable/upgradable units with final int price.
-		 * compare cost, min gold to not spend and price of unlocking the unit
-		 */
-		if(vbe.getCurrency(Store.gold, false) < Configs.getInt(cid, currentLayer, Configs.upgradeMinGoldViewer))
+		int maxPrice = vbe.getCurrency(Store.gold, false) - Configs.getInt(cid, currentLayer, Configs.upgradeMinGoldViewer);
+		if(maxPrice <= 0)
 			return;
 		
-		Unit[] us = vbe.getUnits(SRC.BackEndHandler.isUnitUpgradeable, false);
+		BuyableUnit[] us = vbe.getUpgradeableUnits(false);
 		if(us.length == 0)
 			return;
 		
 		int[] ps = new int[us.length];
 		for(int i=0; i<us.length; i++) 
-			ps[i] = Configs.getUnitInt(cid, currentLayer, ""+us[i].unitId, Configs.upgradeViewer);
+			ps[i] = Configs.getUnitInt(cid, currentLayer, ""+us[i].unit.unitId, Configs.upgradeViewer);
 		
 		while(true) {
 			int ind = 0;
@@ -103,36 +94,34 @@ public class SpecialSlot extends Slot {
 				if(ps[i] > ps[ind]) 
 					ind = i;
 			
-			if(ps[ind] < 0)
+			if(ps[ind] < 0 || maxPrice < us[ind].price)
 				break;
 			
-			String err = vbe.upgradeUnit(us[ind], Configs.getUnitSpec(cid, ProfileType.VIEWER, currentLayer, ""+us[ind].unitId));
+			String err = vbe.upgradeUnit(us[ind].unit, Configs.getUnitSpec(cid, ProfileType.VIEWER, currentLayer, ""+us[ind].unit.unitId));
 			if(err != null && (!(err.equals("no specUID") || err.equals("cant upgrade unit")))) {
 				Logger.print("SpecialSlot (viewer) -> upgradeUnits: type=" + us[ind].type + " err=" + err, Logger.lowerr, Logger.error, cid, 4, true);
 				break;
 			}
 			
 			ps[ind] = -1;
+			maxPrice -= us[ind].price;
 		}
 	}
 
 	private boolean goMultiUnit;
 	
 	private void unlock(ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
-		/**	TODO change min gold
-		 * create a own class for unlockable/upgradable units with final int price.
-		 * compare cost, min gold to not spend and price of unlocking the unit
-		 */
-		if(vbe.getCurrency(Store.gold, false) < Configs.getInt(cid, currentLayer, Configs.unlockMinGoldViewer))
+		int maxPrice = vbe.getCurrency(Store.gold, false) - Configs.getInt(cid, currentLayer, Configs.unlockMinGoldViewer);
+		if(maxPrice <= 0)
 			return;
 		
-		Unit[] unlockable = vbe.getUnits(SRC.BackEndHandler.isUnitUnlockable, true);
-		if(unlockable.length == 0)
+		BuyableUnit[] us = vbe.getUnlockableUnits(false);
+		if(us.length == 0)
 			return;
 		
-		int[] ps = new int[unlockable.length];
-		for(int i=0; i<unlockable.length; i++)
-			ps[i] = Configs.getUnitInt(cid, currentLayer, unlockable[i].type.uid, unlockable[i].dupe ? Configs.dupeViewer : Configs.unlockViewer);
+		int[] ps = new int[us.length];
+		for(int i=0; i<us.length; i++)
+			ps[i] = Configs.getUnitInt(cid, currentLayer, us[i].type.uid, us[i].dupe ? Configs.dupeViewer : Configs.unlockViewer);
 		
 		while(true) {
 			int ind = 0;
@@ -140,17 +129,12 @@ public class SpecialSlot extends Slot {
 				if(ps[i] > ps[ind])
 					ind = i;
 			
-			if(ps[ind] < 0)
+			if(ps[ind] < 0 || maxPrice < us[ind].price)
 				break;
-			
-			if(!vbe.canUnlockUnit(unlockable[ind])) {
-				ps[ind] = -1;
-				continue;
-			}
 			
 			if(Options.is("exploits") && Configs.getBoolean(cid, currentLayer, Configs.useMultiUnitExploitViewer)) {
 				goMultiUnit = false;
-				final Unit picked = unlockable[ind];
+				final BuyableUnit picked = us[ind];
 				for(int i=0; i<SRC.Run.exploitThreadCount; i++) {
 					new Thread(() -> {
 						while(!goMultiUnit) {
@@ -169,12 +153,13 @@ public class SpecialSlot extends Slot {
 				} catch (InterruptedException e) {}
 				vbe.updateStore(true);
 			} else {
-				String err = vbe.unlockUnit(unlockable[ind]);
+				String err = vbe.unlockUnit(us[ind]);
 				if(err != null && !err.equals("not enough gold")) 
-					Logger.print("SpecialSlot (viewer) -> unlock: type=" + unlockable[ind].type + ", err=" + err, Logger.lowerr, Logger.error, cid, 4, true);
+					Logger.print("SpecialSlot (viewer) -> unlock: type=" + us[ind].type + ", err=" + err, Logger.lowerr, Logger.error, cid, 4, true);
 			}
 			
 			ps[ind] = -1;
+			maxPrice -= us[ind].price;
 		}
 	}
 
@@ -197,18 +182,14 @@ public class SpecialSlot extends Slot {
 			final String section;
 			final StorePrioType spt;
 			final int maxPrice;
-			switch(sec) {//TODO rem
+			switch(sec) {
 			case 0:
 				maxPrice = vbe.getCurrency(Store.keys, false) - Configs.getInt(cid, currentLayer, Configs.storeMinKeysViewer);
-				//if(vbe.getCurrency(Store.keys, false) < Configs.getInt(cid, currentLayer, Configs.storeMinKeysViewer))
-				//	continue;
 				section = SRC.Store.dungeon;
 				spt = Configs.keysViewer;
 				break;
 			case 1:
 				maxPrice = vbe.getCurrency(Store.eventcurrency, false) - Configs.getInt(cid, currentLayer, Configs.storeMinEventcurrencyViewer);
-				//if(vbe.getCurrency(Store.eventcurrency, false) < Configs.getInt(cid, currentLayer, Configs.storeMinEventcurrencyViewer))
-				//	continue;
 				section = SRC.Store.event;
 				spt = Configs.eventViewer;
 				break;
@@ -270,11 +251,6 @@ public class SpecialSlot extends Slot {
 		
 		
 		//	buying scrolls
-		
-		//	TODO rem
-		//if(vbe.getCurrency(Store.gold, false) >= Configs.getInt(cid, currentLayer, Configs.storeMinGoldViewer)) {
-		//}
-		
 		ArrayList<Item> items = vbe.getPurchasableScrolls();
 		if(items.size() != 0) {
 			int[] ps = new int[items.size()];

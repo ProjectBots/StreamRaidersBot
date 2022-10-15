@@ -24,7 +24,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import include.GUI;
-import srlib.Store;
+import srlib.store.Store;
 import srlib.units.UnitType;
 import srlib.viewer.Raid;
 import include.Json;
