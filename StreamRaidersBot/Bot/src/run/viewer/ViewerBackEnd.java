@@ -142,7 +142,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		uelis.afterUpdate("qer", this);
 	}
 	
-	synchronized public void updateCaps(boolean force, boolean dungeon) throws NoConnectionException, NotAuthorizedException {
+	synchronized public void updateCaps(boolean force, boolean dungeon) throws NoConnectionException, NotAuthorizedException, ErrorRetrievingCaptainsException {
 		Long wt = rts.get("caps::"+dungeon);
 		long now = System.currentTimeMillis();
 		if(!force && !(wt == null || now - wt > 0))
@@ -170,13 +170,20 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		}
 	}
 	
-	public CaptainData[] searchCaptains(boolean fav, boolean live, String mode, boolean searchForCaptain, String name, int maxPage) throws NoConnectionException, NotAuthorizedException {
+	public static class ErrorRetrievingCaptainsException extends Exception {
+		private static final long serialVersionUID = 1L;
+	}
+	
+	public CaptainData[] searchCaptains(boolean fav, boolean live, String mode, boolean searchForCaptain, String name, int maxPage) throws NoConnectionException, NotAuthorizedException, ErrorRetrievingCaptainsException {
 		JsonArray rawCaps = new JsonArray();
 		
 		SeedAndLastPage sap = new SeedAndLastPage();
 		
 		for(int i=1; i<=sap.lastPage && i<=maxPage; i++) {
 			JsonObject raw = Json.parseObj(req.getCaptainsForSearch(""+i, "24", sap.seed, fav, live, mode, searchForCaptain, name));
+			JsonElement err = raw.get(SRC.errorMessage);
+			if(err != null && err.isJsonPrimitive() && err.getAsString().equals("Error retrieving captains"))
+				throw new ErrorRetrievingCaptainsException();
 			if(testUpdate(raw))
 				raw = Json.parseObj(req.getCaptainsForSearch(""+i, "24", sap.seed, fav, live, mode, searchForCaptain, name));
 			
@@ -211,7 +218,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	
-	public CaptainData[] getCaps(boolean dungeon) throws NoConnectionException, NotAuthorizedException {
+	public CaptainData[] getCaps(boolean dungeon) throws NoConnectionException, NotAuthorizedException, ErrorRetrievingCaptainsException {
 		updateCaps(false, dungeon);
 		return dungeon 
 				? dunCaps

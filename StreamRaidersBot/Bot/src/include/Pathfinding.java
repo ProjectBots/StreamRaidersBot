@@ -64,7 +64,7 @@ public class Pathfinding {
 		int x, y, min, ox, oy, omin;
 		
 		int[] last = null;
-		short lastf = 0;
+		short lastf = -1;
 		
 		for(int c=0; true; c++) {
 			

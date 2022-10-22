@@ -16,8 +16,7 @@ public class HeapDump {
 	private static volatile Object hotspotMBean;
 
 	/**
-	 * Call this method from your application whenever you want to dump the heap
-	 * snapshot into a file.
+	 * dumps the heap
 	 *
 	 * @param fileName name of the heap dump file
 	 * @param live flag that tells whether to dump only the live objects

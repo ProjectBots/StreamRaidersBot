@@ -2,7 +2,6 @@ package userInterface.viewer;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,7 +16,6 @@ import include.GUI.Button;
 import include.GUI.Image;
 import include.GUI.Label;
 import include.GUI.Container;
-import include.GUI.WinLis;
 import include.Http.NoConnectionException;
 import otherlib.Logger;
 import otherlib.Ressources;
@@ -36,9 +34,6 @@ import userInterface.Colors;
 
 public class SoulSettings extends AbstractSettings {
 	
-	private boolean closed = false;
-	
-
 	protected SoulSettings(String cid, String lid, GUI parent) {
 		super(cid, lid, parent, 750, 750, true, false);
 	}
@@ -61,21 +56,6 @@ public class SoulSettings extends AbstractSettings {
 	@Override
 	protected void addContent() {
 		ViewerBackEnd vbe = Manager.getViewer(cid).getBackEnd();
-		
-		gui.addWinLis(new WinLis() {
-			@Override
-			public void onIconfied(WindowEvent e) {}
-			@Override
-			public void onFocusLost(WindowEvent e) {}
-			@Override
-			public void onFocusGained(WindowEvent e) {}
-			@Override
-			public void onDeIconfied(WindowEvent e) {}
-			@Override
-			public void onClose(WindowEvent e) {
-				closed = true;
-			}
-		});
 		
 		gui.setGlobalKeyLis(new KeyListener() {
 			@Override
@@ -300,14 +280,6 @@ public class SoulSettings extends AbstractSettings {
 		gui.addContainer(cbody);
 		
 		gui.refresh();
-		
-		//	block until window closed
-		//	that way vbe won't be unloaded until finished
-		while(!closed) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e1) {}
-		}
 	}
 
 	

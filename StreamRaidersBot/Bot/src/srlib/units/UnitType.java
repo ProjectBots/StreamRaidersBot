@@ -13,6 +13,11 @@ import otherlib.Options;
 public class UnitType implements Comparable<UnitType> {
 	
 	@Override
+	public String toString() {
+		return uid;
+	}
+	
+	@Override
 	public int compareTo(UnitType ut) {
 		int t = this.rarity.rank - ut.rarity.rank;
 		if(t != 0)

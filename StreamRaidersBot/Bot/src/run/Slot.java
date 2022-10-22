@@ -194,7 +194,7 @@ public abstract class Slot {
 				public void run() {
 					boolean dumped = true;
 					try {
-						HeapDump.dumpHeap("heapdump.hprof", false);
+						HeapDump.dumpHeap("heapdump.hprof", true);
 					} catch (Exception e) {
 						dumped = false;
 					}

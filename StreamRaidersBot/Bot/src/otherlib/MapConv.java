@@ -70,7 +70,7 @@ public class MapConv {
 		
 		String plan = map.getPlanType(x, y);
 		
-		ret[x][y].setFinish((short) (plan != null && plan.equals("noplacement") ? 0 : 1));
+		ret[x][y].setFinish((short) (plan != null && (plan.equals("noplacement") || plan.equals("vibe")) ? 0 : 1));
 		found = true;
 	}
 

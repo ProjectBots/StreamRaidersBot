@@ -26,6 +26,7 @@ import otherlib.Logger;
 import run.Manager;
 import run.ProfileType;
 import run.viewer.ViewerBackEnd;
+import run.viewer.ViewerBackEnd.ErrorRetrievingCaptainsException;
 import srlib.SRC;
 import srlib.SRR.NotAuthorizedException;
 import srlib.viewer.CaptainData;
@@ -40,7 +41,7 @@ public class CaptainSettings extends AbstractSettings {
 	
 	public CaptainSettings(String cid, String lid, GUI parrent) {
 		super(cid, lid, parrent, 800, 500, false, true);
-		this.list = new ListType("campaign");
+		this.list = Configs.all;
 		addContent();
 	}
 	
@@ -174,6 +175,8 @@ public class CaptainSettings extends AbstractSettings {
 						}
 					} catch (NoConnectionException | NotAuthorizedException e1) {
 						Logger.printException("CaptainSettings -> addContent -> export: err=failed to export", e1, Logger.runerr, Logger.error, cid, null, true);
+					} catch (ErrorRetrievingCaptainsException e1) {
+						Logger.printException("CaptainSettings -> addContent -> export: err=failed to retrieve captains", e1, Logger.runerr, Logger.error, cid, null, true);
 					}
 					exportCaps = false;
 					GUI.setForeground(uid+"search::export", Colors.getColor(fontPath+"buttons def"));

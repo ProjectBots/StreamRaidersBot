@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -23,6 +25,7 @@ import otherlib.Configs.ListType;
 import otherlib.MapConv.NoFinException;
 import run.Slot;
 import run.StreamRaidersException;
+import run.viewer.ViewerBackEnd.ErrorRetrievingCaptainsException;
 import srlib.Map;
 import srlib.RaidType;
 import srlib.SRC;
@@ -400,14 +403,14 @@ public class RaidSlot extends Slot {
 			
 
 			boolean nv = false;
-			if(np < 0 && nupts.contains("vibe") && canVibe.contains(nx)) {
+			if(nupts.contains("vibe") && canVibe.contains(nx)) {
 				np = n;
 				nv = true;
 			}
 			
 
 			boolean ev = false;
-			if(ep < 0 && eupts.contains("vibe") && canVibe.contains(ex)) {
+			if(eupts.contains("vibe") && canVibe.contains(ex)) {
 				ep = e;
 				ev = true;
 			}
@@ -450,15 +453,8 @@ public class RaidSlot extends Slot {
 			prios[i] = new Prio(units[i], np, ep, n, e, nv, ev);
 		}
 		
-		//	Fisher-Yates shuffle
-		//	that way there is no favoritism bcs of the order
-		Random r = new Random();
-		for(int i=prios.length-1; i>0; i--) {
-			int index = r.nextInt(i+1);
-			Prio t = prios[index];
-			prios[index] = prios[i];
-			prios[i] = t;
-		}
+		//	shuffle to prevent favoritism bcs of the order
+		ArrayUtils.shuffle(prios);
 		
 		Logger.print("prios=" + Arrays.toString(prios), Logger.units, Logger.info, cid, slot);
 		
@@ -474,8 +470,8 @@ public class RaidSlot extends Slot {
 				
 				for(int j=1; j<prios.length; j++) 
 					if(prios[j].ps[i] > prios[p].ps[i] 
-						|| ((prios[j].ps[i] == prios[p].ps[i])
-							&& (prios[j].unit.level > prios[p].unit.level)))
+						|| (prios[j].ps[i] == prios[p].ps[i]
+							&& prios[j].unit.level > prios[p].unit.level))
 						p = j;
 				
 				Logger.print("inner 1", Logger.place, Logger.info, cid, slot);
@@ -496,7 +492,7 @@ public class RaidSlot extends Slot {
 						pts.add("vibe");
 					
 				}
-
+				
 				Logger.print("inner 2", Logger.place, Logger.info, cid, slot);
 				
 				int[] pos = null;
@@ -505,7 +501,7 @@ public class RaidSlot extends Slot {
 				} catch (NoFinException e) {}
 				if(pos == null)
 					continue;
-
+				
 				Logger.print("inner 3", Logger.place, Logger.info, cid, slot);
 				if(Configs.getBoolean(cid, currentLayer, Configs.useSkinFromCaptainViewer)) {
 					ArrayList<Skin> ss = skins.searchSkins(captainId, u.type);
@@ -535,10 +531,14 @@ public class RaidSlot extends Slot {
 	}
 	
 	private void captain(ViewerBackEnd beh) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
-		captain(beh, true, false);
+		try {
+			captain(beh, true, false);
+		} catch (ErrorRetrievingCaptainsException e) {
+			Logger.printException("RaidSlot -> captain: err=failed to retrieve captains", e, Logger.runerr, Logger.error, cid, slot, true);
+		}
 	}
 
-	private void captain(ViewerBackEnd vbe, boolean first, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void captain(ViewerBackEnd vbe, boolean first, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException, ErrorRetrievingCaptainsException {
 		
 		Raid r = vbe.getRaid(slot, true);
 		
@@ -657,7 +657,7 @@ public class RaidSlot extends Slot {
 	}
 	
 	
-	private void switchCap(ViewerBackEnd beh, boolean dungeon, Raid r, String cap, boolean noCap, boolean first) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void switchCap(ViewerBackEnd beh, boolean dungeon, Raid r, String cap, boolean noCap, boolean first) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException, ErrorRetrievingCaptainsException {
 		try {
 			switchCap(beh, dungeon, r, cap, noCap);
 		} catch (NoCapMatchesException e) {
@@ -671,7 +671,7 @@ public class RaidSlot extends Slot {
 		}
 	}
 	
-	private void switchCap(ViewerBackEnd vbe, boolean dungeon, Raid r, String cap, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void switchCap(ViewerBackEnd vbe, boolean dungeon, Raid r, String cap, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException, ErrorRetrievingCaptainsException {
 
 		long now = Time.getServerTime();
 		

@@ -11,12 +11,10 @@ import srlib.souls.SoulType;
 
 public class Unit implements Comparable<Unit> {
 	
-	
-	
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer()
-				.append("{").append(type)
+				.append("{").append(type.toString())
 				.append(" ").append(level);
 		
 		if(soulType != null)
