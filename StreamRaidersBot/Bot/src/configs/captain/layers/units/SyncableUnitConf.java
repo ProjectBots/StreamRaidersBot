@@ -1,6 +1,13 @@
 package configs.captain.layers.units;
 
-public class SyncableUnitConf {
+import include.DeepCopy;
+
+public class SyncableUnitConf implements Cloneable {
+
+	@Override
+	public SyncableUnitConf clone() {
+		return DeepCopy.copyAllFields(new SyncableUnitConf(), this);
+	}
 
 	public int place = -1;
 	public int placedun = -1;

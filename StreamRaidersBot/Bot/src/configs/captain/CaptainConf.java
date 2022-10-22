@@ -1,28 +1,29 @@
 package configs.captain;
 
 import java.util.Arrays;
-import java.util.Hashtable;
 
-
-import configs.captain.layers.LayerConf;
+import configs.captain.layers.CaptainLayerConf;
 import configs.shared.TimeConf;
+import include.DeepCopy;
+import include.DeepCopyHashtable;
 
-public class CaptainConf {
+public class CaptainConf implements Cloneable {
 
-	public final Hashtable<String, LayerConf> lconfs = new Hashtable<>();
+	@Override
+	public CaptainConf clone() {
+		return DeepCopy.copyAllFields(new CaptainConf(), this);
+	}
+	
+	/**
+	 * lid: CaptainLayerConf
+	 */
+	public final DeepCopyHashtable<String, CaptainLayerConf> lconfs = new DeepCopyHashtable<>();
 	
 	/**
 	 * must be sorted by start value<br>
 	 * see {@link Arrays#sort(Object[])}
 	 */
 	public TimeConf[] tconfs;
-	
-	/**
-	 * 0 chests
-	 * 1 bought
-	 * 2 event
-	 */
-	public final Hashtable<Short, Hashtable<String, Integer>> stats = new Hashtable<>();
 	
 	
 }

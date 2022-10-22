@@ -121,6 +121,9 @@ public abstract class AbstractProfile<B extends AbstractBackEnd<B>> {
 	public abstract void updateRews();
 	
 
+	/**
+	 * ["chests", "bought", "event"]
+	 */
 	protected static final String[] rew_sources = "chests bought event".split(" ");
 	public static String getRewSouceName(short rs) {
 		return rew_sources[rs];

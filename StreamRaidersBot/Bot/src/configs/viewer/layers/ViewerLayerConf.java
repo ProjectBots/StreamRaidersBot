@@ -1,26 +1,28 @@
-package configs.captain.layers;
+package configs.viewer.layers;
 
-import java.util.Hashtable;
-
-import configs.captain.layers.units.UnitConf;
 import configs.shared.layers.SleepConf;
-import srlib.units.UnitRarity;
+import configs.viewer.layers.units.ViewerUnitConf;
+import include.DeepCopy;
+import include.DeepCopyHashtable;
 
-public class LayerConf {
-
+public class ViewerLayerConf implements Cloneable {
+	
+	@Override
+	public ViewerLayerConf clone() {
+		return DeepCopy.copyAllFields(new ViewerLayerConf(), this);
+	}
+	
+	
 	public String name = "(default)";
 	public int color = -4144960;
 	
 	//	TODO do not save/export default rarity
-	public final Hashtable<String, UnitConf> uconfs = new Hashtable<>();
-	public final Hashtable<String, Integer> storePrios = new Hashtable<>();
-	public final Hashtable<String, ChestConf> cconfs = new Hashtable<>();
+	public final DeepCopyHashtable<String, ViewerUnitConf> uconfs = new DeepCopyHashtable<>();
+	public final DeepCopyHashtable<String, ChestConf> chconfs = new DeepCopyHashtable<>();
+	public final DeepCopyHashtable<String, CaptainConf> caconfs = new DeepCopyHashtable<>();
+	public final DeepCopyHashtable<String, Integer> storePrios = new DeepCopyHashtable<>();
 	
-	
-	public final SleepConf[] sconfs = {new SleepConf(), new SleepConf()};
-	
-	
-	//	TODO add on load and not here
+	/*	TODO add on load and not here
 	{
 		for(UnitRarity ur : UnitRarity.values()) {
 			final int prio = (ur.rank+1)*10;
@@ -41,6 +43,8 @@ public class LayerConf {
 			uconfs.put(ur.toString(), uc);
 		}
 	}
+	*/
+	public final SleepConf[] sconfs = {new SleepConf(), new SleepConf(), new SleepConf(), new SleepConf(), new SleepConf()};
 	
 	public final int[] storeRefresh = {5000, 10000, -1, -1};
 	
@@ -63,21 +67,44 @@ public class LayerConf {
 	 * 3 storeUpdate<br>
 	 * 4 skinUpdate<br>
 	 * 5 questEventRewardsUpdate<br>
+	 * 6 capsUpdate<br>
+	 * 7 soulsUpdate<br>
 	 */
-	public final int[] updateTimes = {10, 1, 5, 30, 60, 15};
+	public final int[] updateTimes = {10, 1, 5, 30, 60, 15, 10, 60};
 	
+	/**
+	 * 0 min<br>
+	 * 1 max<br>
+	 */
+	public final int[] unitPlaceDelay = {0, 0};
 	
+	public int dungeonSlot = -1;
+	public int versusSlot = -1;
 	public int unitPlaceRetries = 5;
 	public int mapReloadAfterXRetries = 3;
+	public int maxUnitPerRaid = 5;
+	public int capInactiveTreshold = 10;
 	public int proxyPort = 0;
+	
+	/**
+	 * 0 useMultiPlaceExploit<br>
+	 * 1 useMultiQuestExploit<br>
+	 * 2 useMultiEventExploit<br>
+	 * 3 useMultiChestExploit<br>
+	 * 4 useMultiUnitExploit<br>
+	 */
+	public final boolean[] useExpoit = {false, false, false, false, false};
+	
+	public final boolean[] lockedSlots = {false, false, false, false};;
 	
 	public boolean storePriceAsDefaultPrio = false;
 	public boolean preferRoguesOnTreasureMaps = false;
+	public boolean allowPlaceFirst = true;
+	public boolean useSkinFromCaptain = true;
 	public boolean proxyMandatory = true;
 	
 	public String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/0.0";
 	public String proxyDomain = "";
 	public String proxyUser = "";
 	public String proxyPass = "";
-	
 }

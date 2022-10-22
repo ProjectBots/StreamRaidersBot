@@ -1,26 +1,30 @@
 package configs.viewer;
 
 import java.util.Arrays;
-import java.util.Hashtable;
 
-import configs.viewer.layers.LayerConf;
+import configs.viewer.layers.ViewerLayerConf;
+import include.DeepCopy;
+import include.DeepCopyHashtable;
 import configs.shared.TimeConf;
 
-public class ViewerConf {
-
-	public final Hashtable<String, LayerConf> lconfs = new Hashtable<>();
+public class ViewerConf implements Cloneable {
+	
+	private static final TimeConf[] DEFAULT_TCONFS = {new TimeConf("(default)", 0)};
+	
+	@Override
+	public ViewerConf clone() {
+		return DeepCopy.copyAllFields(new ViewerConf(), this);
+	}
+	
+	/**
+	 * lid: ViewerLayerConf
+	 */
+	public final DeepCopyHashtable<String, ViewerLayerConf> lconfs = new DeepCopyHashtable<>();
 	
 	/**
 	 * has to be sorted by start value<br>
 	 * see {@link Arrays#sort(Object[])}
 	 */
-	public TimeConf[] tconfs;
-	
-	/**
-	 * 0 chests
-	 * 1 bought
-	 * 2 event
-	 */
-	public final Hashtable<Short, Hashtable<String, Integer>> stats = new Hashtable<>();
+	public TimeConf[] tconfs = DEFAULT_TCONFS;
 	
 }

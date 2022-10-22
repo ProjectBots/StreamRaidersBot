@@ -1,6 +1,14 @@
 package configs.viewer.layers;
 
-public class CaptainConf {
+import include.DeepCopy;
+
+public class CaptainConf implements Cloneable {
+	
+	@Override
+	public CaptainConf clone() {
+		return DeepCopy.copyAllFields(new CaptainConf(), this);
+	}
+	
 	//	campaign
 	public int cfav = 1;
 	public boolean cic = false;

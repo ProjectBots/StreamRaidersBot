@@ -1,5 +1,13 @@
 package configs.captain.layers;
 
-public class ChestConf {
+import include.DeepCopy;
+
+public class ChestConf implements Cloneable {
+
+	@Override
+	public ChestConf clone() {
+		return DeepCopy.copyAllFields(new ChestConf(), this);
+	}
+	
 	public int weight = 10;
 }

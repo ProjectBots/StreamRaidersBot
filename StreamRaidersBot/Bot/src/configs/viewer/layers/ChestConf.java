@@ -1,7 +1,14 @@
 package configs.viewer.layers;
 
-public class ChestConf {
+import include.DeepCopy;
 
+public class ChestConf implements Cloneable {
+
+	@Override
+	public ChestConf clone() {
+		return DeepCopy.copyAllFields(new ChestConf(), this);
+	}
+	
 	public int minLoy = 0;
 	public int maxLoy = -1;
 	public int minTime = 10;

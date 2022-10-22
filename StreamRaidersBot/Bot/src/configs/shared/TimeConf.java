@@ -1,9 +1,13 @@
 package configs.shared;
 
-public class TimeConf implements Comparable<TimeConf> {
+public class TimeConf implements Comparable<TimeConf>, Cloneable {
 	@Override
 	public int compareTo(TimeConf o) {
 		return o.start - this.start;
+	}
+	@Override
+	public TimeConf clone() {
+		return this;
 	}
 	
 	public final String lid;
