@@ -226,7 +226,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	public String updateFavoriteCaptain(CaptainData cap, boolean fav) throws NoConnectionException {
-		JsonElement err = Json.parseObj(req.updateFavoriteCaptains(cap.captainId, fav)).get(SRC.errorMessage);
+		JsonElement err = Json.parseObj(req.updateFavoriteCaptains(cap.captainId+"c", fav)).get(SRC.errorMessage);
 		if(err == null != !err.isJsonPrimitive())
 			return null;
 		
@@ -281,7 +281,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	public String addRaid(CaptainData captain, String slot) throws NoConnectionException {
-		JsonElement err = Json.parseObj(req.addPlayerToRaid(captain.captainId, slot)).get(SRC.errorMessage);
+		JsonElement err = Json.parseObj(req.addPlayerToRaid(captain.captainId+"c", slot)).get(SRC.errorMessage);
 		return err.isJsonPrimitive() ? err.getAsString() : null;
 	}
 	

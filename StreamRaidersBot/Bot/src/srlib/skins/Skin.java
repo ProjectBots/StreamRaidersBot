@@ -16,7 +16,7 @@ public class Skin {
 	public final String captainId;
 	Skin(JsonObject pack) {
 		uid = pack.get("Uid").getAsString();
-		unitType = UnitType.types.get(pack.get("BaseUnitType").getAsString());
+		unitType = UnitType.getType(pack.get("BaseUnitType").getAsString());
 		disname = pack.get("DisplayName").getAsString();
 		type = SkinType.parseString(pack.get("Type").getAsString());
 		captainId = pack.get("StreamerId").getAsString();

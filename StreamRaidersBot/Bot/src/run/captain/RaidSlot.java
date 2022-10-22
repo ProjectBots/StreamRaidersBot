@@ -5,7 +5,7 @@ import run.Slot;
 
 public class RaidSlot extends Slot {
 
-	public RaidSlot(AbstractProfile<?, ?> p, Slot[] slots) {
+	public RaidSlot(AbstractProfile<?> p, Slot[] slots) {
 		super(p, slots, 0);
 		// TODO Auto-generated constructor stub
 	}

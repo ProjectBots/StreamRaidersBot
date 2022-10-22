@@ -420,7 +420,7 @@ public class Configs {
 									.getAsJsonObject("unitInfo")
 									.keySet());
 		if(includeTypes)
-			ret.addAll(UnitType.typeUids);
+			ret.addAll(UnitType.getTypeUids());
 		
 		return ret;
 	}
@@ -1531,9 +1531,9 @@ public class Configs {
 
 			//	make sure all unit types are present
 			JsonObject units = layer.getAsJsonObject("units");
-			for(String type : UnitType.typeUids)
+			for(String type : UnitType.getTypeUids())
 				if(!units.has(type))
-					units.add(type, units.get(UnitType.types.get(type).rarity.toString()).deepCopy());
+					units.add(type, units.get(UnitType.getType(type).rarity.toString()).deepCopy());
 			
 			for(String u : units.keySet())
 				Json.check(units.getAsJsonObject(u), cunitviewer.deepCopy(), true, null);
@@ -1628,6 +1628,7 @@ public class Configs {
 	 * unsyncs if defCid is null
 	 * @param cid profile id
 	 * @param defCid other profile id
+	 * @param pt profile type
 	 */
 	public static void syncProfile(String cid, String defCid, ProfileType pt) {
 		if(pt == ProfileType.CAPTAIN && !(getPBoo(cid, canCaptain) && (defCid == null || getPBoo(defCid, canCaptain))))
@@ -2095,7 +2096,7 @@ public class Configs {
 			//	easiest way to copy and unsync
 			JsonObject source = Json.parseObj(config.toString());
 			
-			HashSet<String> unitTypes = new HashSet<>(UnitType.typeUids);
+			HashSet<String> unitTypes = new HashSet<>(UnitType.getTypeUids());
 			
 			for(String k1 : source.keySet()) {
 				if(k1.equals("type") || k1.equals("version"))

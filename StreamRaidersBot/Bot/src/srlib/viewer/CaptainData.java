@@ -7,8 +7,8 @@ import srlib.RaidType;
 public class CaptainData {
 	
 	public final boolean isLive, isPlaying;
-	public final String twitchDisplayName, twitchUserImage, twitchUserName, captainId;
-	public final int pveWins, pveLoyaltyLevel;
+	public final String twitchDisplayName, twitchUserImage, twitchUserName;
+	public final int pveWins, pveLoyaltyLevel, captainId;
 	public final RaidType type;
 
 	public CaptainData(JsonObject cap) {
@@ -18,7 +18,8 @@ public class CaptainData {
 		this.twitchDisplayName = cap.get("twitchDisplayName").getAsString();
 		this.twitchUserImage = cap.get("twitchUserImage").getAsString();
 		this.twitchUserName = cap.get("twitchUserName").getAsString();
-		this.captainId = cap.get("userId").getAsString();
+		String capId = cap.get("userId").getAsString();
+		this.captainId = Integer.parseInt(capId.substring(0, capId.length()-2));
 		this.pveWins = cap.get("pveWins").getAsInt();
 		this.pveLoyaltyLevel = cap.get("pveLoyaltyLevel").getAsInt();
 		this.type = RaidType.parseInt(cap.get("type").getAsInt());
@@ -31,7 +32,7 @@ public class CaptainData {
 				.append(twitchDisplayName)
 				.append("@")
 				.append(captainId)
-				.append(" - ")
+				.append("c - ")
 				.append(isLive ? "live ":"")
 				.append(isPlaying ? "playing ":"")
 				.append(pveWins)

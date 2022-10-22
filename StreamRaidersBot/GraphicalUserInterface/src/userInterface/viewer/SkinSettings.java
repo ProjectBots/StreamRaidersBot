@@ -100,7 +100,7 @@ public class SkinSettings extends AbstractSettings {
 		Hashtable<UnitType, ArrayList<Skin>> skins_all = new Hashtable<>();
 		Hashtable<UnitType, ArrayList<String>> skinNames_all = new Hashtable<>();
 		
-		for(UnitType type : UnitType.types.values()) {
+		for(UnitType type : UnitType.getTypes()) {
 			units_all.put(type, new ArrayList<>());
 			skins_all.put(type, new ArrayList<>());
 			skinNames_all.put(type, new ArrayList<>());
@@ -116,7 +116,7 @@ public class SkinSettings extends AbstractSettings {
 			skinNames_all.get(s.unitType).add(s.disname+" ("+s.type+")");
 		}
 		
-		UnitType[] tps = UnitType.types.values().toArray(new UnitType[UnitType.types.size()]);
+		UnitType[] tps = UnitType.getTypes().toArray(new UnitType[UnitType.getTypes().size()]);
 		
 		Arrays.sort(tps);
 		

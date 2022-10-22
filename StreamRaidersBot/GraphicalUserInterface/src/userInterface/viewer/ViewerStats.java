@@ -19,6 +19,7 @@ import include.Http.NoConnectionException;
 import otherlib.Configs;
 import otherlib.Logger;
 import otherlib.Ressources;
+import run.AbstractProfile;
 import run.viewer.Viewer;
 import run.viewer.ViewerBackEnd;
 import srlib.SRR.NotAuthorizedException;
@@ -29,7 +30,7 @@ import userInterface.AbstractStats;
 import userInterface.Colors;
 
 
-public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.ViewerBackEndRunnable> {
+public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd> {
 	
 	private static final AffineTransform affinetransform = new AffineTransform();     
 	private static final FontRenderContext frc = new FontRenderContext(affinetransform,true,true);     
@@ -53,7 +54,7 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.Vie
 			Logger.printException("Stats -> open: err=failed to get infos", e, Logger.general, Logger.error, run.cid, null, true);
 			return;
 		}
-		JsonObject rews = run.getRews();
+		Hashtable<Short, Hashtable<String, Integer>> rews = run.getRews();
 		JsonObject stats = Configs.getUObj(cid, Configs.statsViewer);
 		
 		gui.setBackgroundGradient(Colors.getGradient("VIEWER stats background"));
@@ -117,19 +118,21 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd, Viewer.Vie
 			cfp.setInsets(2, 20, 2, 2);
 				
 				int p = 0;
-				for(String key : rews.keySet()) {
+				for(Short rs : rews.keySet()) {
+					String rsn = AbstractProfile.getRewSouceName(rs);
+					
 					StringBuffer sbt = new StringBuffer();
-					sbt.append("--- ").append(key).append(" ---");
+					sbt.append("--- ").append(rsn).append(" ---");
 					
 					StringBuffer sbp = new StringBuffer();
-					sbp.append("--- ").append(key).append(" ---");
+					sbp.append("--- ").append(rsn).append(" ---");
 					
-					JsonObject rews_ = rews.getAsJsonObject(key);
-					JsonObject stats_ = stats.getAsJsonObject(key);
+					Hashtable<String, Integer> rews_ = rews.get(rs);
+					JsonObject stats_ = stats.getAsJsonObject(rsn);
 					for(String r : rews_.keySet()) {
 						int w = (int) font.getStringBounds(r, frc).getWidth();
 						String b = "\n" + r + "\u0009" + (w < 106 ? "\u0009" : "") + (w < 53 ? "\u0009" : "");
-						sbt.append(b).append(rews_.get(r).getAsInt());
+						sbt.append(b).append(rews_.get(r));
 						sbp.append(b).append(stats_.has(r) ? stats_.get(r).getAsInt() : 0);
 					}
 						

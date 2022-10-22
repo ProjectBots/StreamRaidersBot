@@ -1,12 +1,10 @@
 package run.viewer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.List;
 
-import com.google.gson.JsonObject;
+import org.apache.commons.lang3.ArrayUtils;
 
 import include.Http.NoConnectionException;
 import otherlib.Configs;
@@ -26,49 +24,47 @@ import srlib.units.UnitType;
 import srlib.viewer.CaptainData;
 import srlib.viewer.Raid;
 
-public class Viewer extends AbstractProfile<Viewer.ViewerBackEndRunnable,ViewerBackEnd> {
-	
-	public static interface ViewerBackEndRunnable extends AbstractProfile.BackEndRunnable<ViewerBackEnd> {}
+public class Viewer extends AbstractProfile<ViewerBackEnd> {
 	
 	public static final int slotSize = 5;
 	
 	
-	private static final String[] rew_sources = "chests bought event".split(" ");
 	private static final String[] rew_chests_chests = "chestboostedgold chestbosssuper chestboostedskin chestboss chestboostedtoken chestboostedscroll chestgold chestsilver chestbronze chestsalvage".split(" ");
 	private static final String[] rew_bought_chests = "dungeonchests eventchests".split(" ");
-	private static String[] rew_types;
+	private static final String[] rew_basics = "gold potions token eventcurrency keys meat bones skin soulvessel".split(" ");
 	
 	private static String[] genRewTypes() {
-		ArrayList<String> ret = new ArrayList<String>(Arrays.asList("gold potions token eventcurrency keys meat bones skin soulvessel".split(" ")));
-		ArrayList<String> utypes = new ArrayList<>(UnitType.typeUids.size());
-		for(int i=0; i<UnitType.typeUids.size(); i++)
-			utypes.add("scroll"+UnitType.typeUids.get(i).replace("allies", ""));
-		ret.addAll(utypes);
-		return ret.toArray(new String[ret.size()]);
+		List<String> utypes = UnitType.getTypeUids();
+		
+		String[] ret = new String[rew_basics.length+utypes.size()];
+		for(int i=0; i<utypes.size(); i++)
+			ret[rew_basics.length+i] = "scroll"+utypes.get(i).replace("allies", "");
+		
+		return ret;
 	}
 	
 	@Override
 	public void updateRews() {
-		rew_types = genRewTypes();
-		for(String s : rew_sources) {
-			if(!rews.has(s))
-				rews.add(s, new JsonObject());
-			JsonObject source = rews.getAsJsonObject(s);
-			switch(s) {
+		String[] rew_types = genRewTypes();
+		for(short i=0; i<rew_sources.length; i++) {
+			if(!rews.containsKey(i))
+				rews.put(i, new Hashtable<>());
+			Hashtable<String, Integer> source = rews.get(i);
+			switch(rew_sources[i]) {
 			case "chests":
 				for(String t : rew_chests_chests)
-					if(!source.has(t))
-						source.addProperty(t, 0);
+					if(!source.containsKey(t))
+						source.put(t, 0);
 				break;
 			case "bought":
 				for(String t : rew_bought_chests)
-					if(!source.has(t))
-						source.addProperty(t, 0);
+					if(!source.containsKey(t))
+						source.put(t, 0);
 				break;
 			}
-			for(String t : rew_types)
-				if(!source.has(t))
-					source.addProperty(t, 0);
+			for(int j=0; j<rew_types.length; j++)
+				if(!source.containsKey(rew_types[j]))
+					source.put(rew_types[j], 0);
 		}
 	}
 	

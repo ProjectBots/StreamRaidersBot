@@ -269,7 +269,7 @@ public class GuideContent {
 		});
 		c.addComboBox(level);
 		
-		UnitType ar = UnitType.types.get("archer");
+		UnitType ar = UnitType.getType("archer");
 		String[] list = new String[3];
 		for(int j=0; j<3; j++) 
 			list[j] = ar.getSpecName(j);
@@ -355,7 +355,7 @@ public class GuideContent {
 		
 		if(lvl >= 19) {
 			GUI.setEnabled("guide::spec", true);
-			UnitType type = UnitType.types.get(uid);
+			UnitType type = UnitType.getType(uid);
 			String[] list = new String[3];
 			for(int i=0; i<3; i++) 
 				list[i] = type.getSpecName(i);
@@ -400,7 +400,7 @@ public class GuideContent {
 
 
 	private static String getSpec(String unitUID, String name) {
-		UnitType type = UnitType.types.get(unitUID);
+		UnitType type = UnitType.getType(unitUID);
 		for(int i=0; i<3; i++)
 			if(type.getSpecName(i).equals(name))
 				return type.getSpecUid(i);

@@ -5,7 +5,7 @@ import run.Slot;
 
 public class SpecialSlot extends Slot {
 
-	public SpecialSlot(AbstractProfile<?, ?> p, Slot[] slots) {
+	public SpecialSlot(AbstractProfile<?> p, Slot[] slots) {
 		super(p, slots, 1);
 		// TODO Auto-generated constructor stub
 	}

@@ -96,7 +96,7 @@ public class Store {
 	private static final HashSet<String> currencyTypes = new HashSet<String>() {
 		private static final long serialVersionUID = 1L;
 		{
-		for(String ut : UnitType.typeUids)
+		for(String ut : UnitType.getTypeUids())
 			add(ut.replace("allies", ""));
 		add(potions.get());
 		add(gold.get());
@@ -229,7 +229,7 @@ public class Store {
 		LinkedList<BuyableUnit> ret = new LinkedList<>();
 		
 		//	normal unlock
-		for(UnitType type : UnitType.types.values()) {
+		for(UnitType type : UnitType.getTypes()) {
 			if(gotTypes.containsKey(type))
 				continue;
 			

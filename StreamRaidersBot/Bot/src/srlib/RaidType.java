@@ -5,6 +5,8 @@ import java.util.HashMap;
 public enum RaidType {
 	CAMPAIGN(1800, 0, 300, 1), DUNGEON(360, 60, 100, 3), VERSUS(420, 60, 120, 2);
 	
+	public static final short highestTypeInt = 3;
+	
 	public final int raidDuration, planningPeriodDuration, placementCooldownDuration, typeInt;
 	private RaidType(int raidDuration, int planningPeriodDuration, int placementCooldownDuration, int typeInt) {
 		this.raidDuration = raidDuration;

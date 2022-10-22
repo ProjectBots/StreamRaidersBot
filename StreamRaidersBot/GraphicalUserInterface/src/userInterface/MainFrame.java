@@ -605,7 +605,7 @@ public class MainFrame {
 					for(String cid : Configs.getConfigIds()) {
 						if(loaded.contains(cid)) {
 							addLoadedProfile(cid, Manager.getProfilePos(cid), Manager.getProfileType(cid));
-							AbstractProfile<?, ?> p = Manager.getProfile(cid);
+							AbstractProfile<?> p = Manager.getProfile(cid);
 							for(int i=0; i<p.getSlotSize(); i++)
 								updateSlotRunning(cid, i, p.isRunning(i));
 						} else {

@@ -47,7 +47,7 @@ public class Unit implements Comparable<Unit> {
 	
 	public Unit(JsonObject unit) {
 		this.unitId = unit.get("unitId").getAsInt();
-		this.type = UnitType.types.get(unit.get("unitType").getAsString());
+		this.type = UnitType.getType(unit.get("unitType").getAsString());
 		this.level = unit.get("level").getAsInt();
 		
 		this.dupe = false;

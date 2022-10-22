@@ -178,8 +178,10 @@ public class UnitSettings extends AbstractSettings {
 		
 		addLayerChooser();
 		
+		List<String> utypeUids = UnitType.getTypeUids();
+		
 		String[] unitIDs_raw = Configs.getUnitIdsArray(cid, pt);
-		units = new U[unitIDs_raw.length + UnitType.types.size()];
+		units = new U[unitIDs_raw.length + utypeUids.size()];
 		String[] froms = new String[unitIDs_raw.length];
 		boolean containsOther = false;
 		int i = 0;
@@ -196,7 +198,7 @@ public class UnitSettings extends AbstractSettings {
 			
 			for(i=0; i<unitIDs_raw.length; i++) {
 				final String type = Configs.getUnitInfoStr(cid, unitIDs_raw[i], Configs.typeViewer);
-				units[i] = new U(unitIDs_raw[i], UnitType.types.get(type), 
+				units[i] = new U(unitIDs_raw[i], UnitType.getType(type), 
 							Configs.getUnitInfoInt(cid, unitIDs_raw[i], Configs.levelViewer),
 							cidNameConv.get(Configs.getUnitInfoStr(cid, unitIDs_raw[i], Configs.fromViewer)),
 							Configs.getUnitSync(cid, pt, lid, unitIDs_raw[i]), froms[i]);
@@ -204,7 +206,7 @@ public class UnitSettings extends AbstractSettings {
 		} else {
 			for(i=0; i<unitIDs_raw.length; i++) {
 				final String type = Configs.getUnitInfoStr(cid, unitIDs_raw[i], Configs.typeViewer);
-				units[i] = new U(unitIDs_raw[i], UnitType.types.get(type),
+				units[i] = new U(unitIDs_raw[i], UnitType.getType(type),
 							Configs.getUnitInfoInt(cid, unitIDs_raw[i], Configs.levelViewer),
 							Configs.getUnitSync(cid, pt, lid, unitIDs_raw[i]), froms[i]);
 			}
@@ -212,9 +214,9 @@ public class UnitSettings extends AbstractSettings {
 		
 		
 		
-		for(int j=0; j<UnitType.types.size(); j++) {
-			String type = UnitType.typeUids.get(j);
-			units[i++] = new U(UnitType.types.get(type), Configs.getUnitSync(cid, pt, lid, type));
+		for(int j=0; j<utypeUids.size(); j++) {
+			String type = utypeUids.get(j);
+			units[i++] = new U(UnitType.getType(type), Configs.getUnitSync(cid, pt, lid, type));
 		}
 		
 		Arrays.sort(units);

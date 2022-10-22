@@ -514,5 +514,109 @@
       "skinfullgladiatorjuliusfreezer": 3,
       "skinfullgladiatorcauliseum": 2
     }
+  },
+  "pvpnightmarecommonchest1": {
+    "V0": {
+      "skinfullwarriornightmare": 99999,
+      "skinfullflagbearernightmare": 99999,
+      "skinfulltanknightmare": 99999,
+      "skinfullroguenightmare": 99999,
+      "skinfullarchernightmare": 99999,
+      "5 gold": 1
+    },
+    "B0": {
+      "3 commonscrolls": 35,
+      "10 gold": 10,
+      "15 gold": 20,
+      "20 gold": 5,
+      "1 uncommonscrolls": 30
+    },
+    "C0": {
+      "skinfullwarriornightmare": 99999,
+      "skinfullflagbearernightmare": 99999,
+      "skinfulltanknightmare": 99999,
+      "skinfullroguenightmare": 99999,
+      "skinfullarchernightmare": 99999,
+      "5 gold": 1
+    }
+  },
+  "pvpnightmarelegendarychest1": {
+    "V0": {
+      "skinfullorcslayernightmare": 99999,
+      "skinfullwarbeastnightmare": 99999,
+      "skinfullmagenightmare": 99999,
+      "skinfulltemplarnightmare": 99999,
+      "skinfullballoonbusternightmare": 99999,
+      "skinfullartillerynightmare": 99999,
+      "50 gold": 1
+    },
+    "B0": {
+      "3 commonscrolls": 35,
+      "10 gold": 10,
+      "15 gold": 20,
+      "20 gold": 5,
+      "1 uncommonscrolls": 30
+    },
+    "C0": {
+      "skinfullorcslayernightmare": 99999,
+      "skinfullwarbeastnightmare": 99999,
+      "skinfullmagenightmare": 99999,
+      "skinfulltemplarnightmare": 99999,
+      "skinfullballoonbusternightmare": 99999,
+      "skinfullartillerynightmare": 99999,
+      "50 gold": 1
+    }
+  },
+  "pvpnightmarerarechest1": {
+    "V0": {
+      "skinfullberserkernightmare": 99999,
+      "skinfullflyingroguenightmare": 99999,
+      "skinfullmusketeernightmare": 99999,
+      "skinfullcenturionnightmare": 99999,
+      "skinfullmonknightmare": 99999,
+      "25 gold": 1
+    },
+    "B0": {
+      "3 commonscrolls": 35,
+      "10 gold": 10,
+      "15 gold": 20,
+      "20 gold": 5,
+      "1 uncommonscrolls": 30
+    },
+    "C0": {
+      "skinfullberserkernightmare": 99999,
+      "skinfullflyingroguenightmare": 99999,
+      "skinfullmusketeernightmare": 99999,
+      "skinfullcenturionnightmare": 99999,
+      "skinfullmonknightmare": 99999,
+      "25 gold": 1
+    }
+  },
+  "pvpnightmareuncommonchest1": {
+    "V0": {
+      "skinfullbarbariannightmare": 99999,
+      "skinfullbusternightmare": 99999,
+      "skinfullpaladinnightmare": 99999,
+      "skinfullbombernightmare": 99999,
+      "skinfullhealernightmare": 99999,
+      "skinfullvampirenightmare": 99999,
+      "10 gold": 1
+    },
+    "B0": {
+      "3 commonscrolls": 35,
+      "10 gold": 10,
+      "15 gold": 20,
+      "20 gold": 5,
+      "1 uncommonscrolls": 30
+    },
+    "C0": {
+      "skinfullbarbariannightmare": 99999,
+      "skinfullbusternightmare": 99999,
+      "skinfullpaladinnightmare": 99999,
+      "skinfullbombernightmare": 99999,
+      "skinfullhealernightmare": 99999,
+      "skinfullvampirenightmare": 99999,
+      "10 gold": 1
+    }
   }
 }

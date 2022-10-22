@@ -1,7 +1,10 @@
 package srlib.units;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.List;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -31,15 +34,20 @@ public class UnitType implements Comparable<UnitType> {
 		return this.uid.compareTo(ut.uid);
 	}
 	
-	/**
-	 * do not modify outside of UnitType
-	 */
-	public static Hashtable<String, UnitType> types;
+	private static Hashtable<String, UnitType> types;
+	private static List<String> typeUids;
 	
-	/**
-	 * do not modify outside of UnitType
-	 */
-	public static ArrayList<String> typeUids;
+	public static UnitType getType(String type) {
+		return types.get(type);
+	}
+	
+	public static Collection<UnitType> getTypes() {
+		return types.values();
+	}
+	
+	public static List<String> getTypeUids() {
+		return typeUids;
+	}
 	
 	public static void ini() {
 		JsonObject jo = Json.parseObj(Options.get("unitTypes"));
@@ -61,11 +69,12 @@ public class UnitType implements Comparable<UnitType> {
 			types.put(uid, ut);
 		}
 		
-		UnitType.typeUids = new ArrayList<>(types.keySet());
+		UnitType.typeUids =	Collections.unmodifiableList(new ArrayList<>(types.keySet()));
 	}
 	
 	public static JsonElement genUnitTypesFromData(JsonObject data) {
 		JsonObject us = data.getAsJsonObject("Units");
+		boolean addedType = false;
 		for(String key : us.keySet()) {
 			JsonObject u = us.getAsJsonObject(key);
 			
@@ -83,9 +92,11 @@ public class UnitType implements Comparable<UnitType> {
 						UnitRole.parseUID(u.get("Role").getAsString().toLowerCase()),
 						UnitRarity.parseString(u.get("Rarity").getAsString().toUpperCase())));
 			
-			typeUids.add(type);
+			addedType = true;
 		}
 		
+		if(addedType)
+			UnitType.typeUids =	Collections.unmodifiableList(new ArrayList<>(types.keySet()));
 		
 		
 		JsonObject sps = data.getAsJsonObject("Specialization");

@@ -5,7 +5,7 @@ import run.Slot;
 
 public class TwitchSlot extends Slot {
 
-	public TwitchSlot(AbstractProfile<?, ?> p, Slot[] slots) {
+	public TwitchSlot(AbstractProfile<?> p, Slot[] slots) {
 		super(p, slots, 2);
 		// TODO Auto-generated constructor stub
 	}

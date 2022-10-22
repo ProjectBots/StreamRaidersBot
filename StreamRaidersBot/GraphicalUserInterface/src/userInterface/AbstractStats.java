@@ -11,7 +11,7 @@ import run.AbstractBackEnd;
 import run.AbstractProfile;
 import run.Manager;
 
-public abstract class AbstractStats <P extends AbstractProfile<R, B>, B extends AbstractBackEnd<B>, R extends AbstractProfile.BackEndRunnable<B>> {
+public abstract class AbstractStats <P extends AbstractProfile<B>, B extends AbstractBackEnd<B>> {
 
 	protected final String uid = UUID.randomUUID().toString()+"::", cid;
 	

@@ -3,6 +3,9 @@ package run;
 import java.awt.Color;
 import java.time.LocalDateTime;
 import java.time.temporal.WeekFields;
+import java.util.Hashtable;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -30,21 +33,16 @@ import srlib.store.Store;
  * @param <B> extended class of {@link AbstractBackEnd}
  */
 
-public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<B>, B extends AbstractBackEnd<B>> {
-
-	public static interface BackEndRunnable<B extends AbstractBackEnd<B>> {
-		public void run(B vbe) throws Exception;
-	}
-
+public abstract class AbstractProfile<B extends AbstractBackEnd<B>> {
 
 	public final String cid;
 	private ProfileType ptype;
 	protected B be;
 	protected String currentLayer = "(default)";
-	protected String currentLayerId = null;
+	protected String currentTimeId = null;
 	protected boolean isSwitching = false;
 	protected final Slot[] slots;
-	protected JsonObject rews = new JsonObject();
+	protected Hashtable<Short, Hashtable<String, Integer>> rews = new Hashtable<>();
 	
 	public ProfileType getType() {
 		return ptype;
@@ -78,8 +76,8 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 		return this instanceof Captain ? (Captain) this : null;
 	}
 	
-	public AbstractProfile<R, B> getAsProfile() {
-		return (AbstractProfile<R, B>) this;
+	public AbstractProfile<B> getAsProfile() {
+		return (AbstractProfile<B>) this;
 	}
 	
 	public B getBackEnd() {
@@ -93,7 +91,7 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 	
 	
 	@SuppressWarnings("unchecked")
-	public <T extends AbstractProfile<?,?>>T switchProfileType() throws Exception {
+	public <T extends AbstractProfile<?>>T switchProfileType() throws Exception {
 		//	stopping slots
 		isSwitching = true;
 		setRunningAll(false);
@@ -122,18 +120,25 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 	protected abstract void iniSlots();
 	public abstract void updateRews();
 	
+
+	protected static final String[] rew_sources = "chests bought event".split(" ");
+	public static String getRewSouceName(short rs) {
+		return rew_sources[rs];
+	}
+	
 	public void saveRews() {
 		JsonObject astats = Configs.getUObj(cid, ptype == ProfileType.VIEWER ? Configs.statsViewer : Configs.statsCaptain);
-		for(String s : rews.keySet()) {
+		for(short s_ : rews.keySet()) {
+			String s = rew_sources[s_];
 			JsonObject stats = astats.getAsJsonObject(s);
-			JsonObject rew = rews.getAsJsonObject(s);
+			Hashtable<String, Integer> rew = rews.get(s_);
 			for(String v : rew.keySet()) {
 				if(stats.has(v))
-					stats.addProperty(v, stats.get(v).getAsInt() + rew.get(v).getAsInt());
+					stats.addProperty(v, stats.get(v).getAsInt() + rew.get(v));
 				else
-					stats.addProperty(v, rew.get(v).getAsInt());
+					stats.addProperty(v, rew.get(v));
 				
-				rew.addProperty(v, 0);
+				rew.put(v, 0);
 			}
 		}
 	}
@@ -141,15 +146,15 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 	public void addRew(B be, String con, String type, int amount) {
 		type = Remaper.map(type).replace(Options.get("currentEventCurrency"), Store.eventcurrency.get());
 		try {
-			JsonObject r = rews.getAsJsonObject(con);
-			r.addProperty(type, r.get(type).getAsInt() + amount);
+			Hashtable<String, Integer> r = rews.get((short) ArrayUtils.indexOf(rew_sources, con));
+			r.put(type, r.get(type) + amount);
 			be.addCurrency(type, amount);
 		} catch (NullPointerException e) {
 			Logger.printException("AbstractProfile -> addRew: err=failed to add reward, con=" + con + ", type=" + type + ", amount=" + amount, e, Logger.runerr, Logger.error, cid, null, true);
 		}
 	}
 	
-	public JsonObject getRews() {
+	public Hashtable<Short, Hashtable<String, Integer>> getRews() {
 		return rews;
 	}
 	
@@ -191,10 +196,10 @@ public abstract class AbstractProfile<R extends AbstractProfile.BackEndRunnable<
 		for(String key : ptimes.keySet()) {
 			String[] sp = key.split("-");
 			if(Integer.parseInt(sp[0]) <= n && Integer.parseInt(sp[1]) >= n) {
-				if(key.equals(currentLayerId))
+				if(key.equals(currentTimeId))
 					break;
 				currentLayer = ptimes.get(key).getAsString();
-				currentLayerId = key;
+				currentTimeId = key;
 				break;
 			}
 		}

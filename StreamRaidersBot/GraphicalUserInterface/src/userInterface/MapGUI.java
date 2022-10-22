@@ -268,7 +268,7 @@ public class MapGUI {
 							String ut = null;
 							if(uType != null)
 								l.setText(getShortenedUnitAndPlanType(ut = uType.getAsString()));
-							l.setTooltip(map.getDisplayName(x, y) + (ut==null?"":" - "+UnitType.types.get(ut).name));
+							l.setTooltip(map.getDisplayName(x, y) + (ut==null?"":" - "+UnitType.getType(ut).name));
 						}
 						l.setFont(new Font(Font.SERIF, Font.PLAIN, 10));
 					}

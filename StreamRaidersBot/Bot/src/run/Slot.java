@@ -24,11 +24,11 @@ public abstract class Slot {
 	protected boolean isActivelyRunning = false;
 	private final Slot[] slots;
 	private int sync = -1;
-	private final AbstractProfile<?, ?> p;
+	private final AbstractProfile<?> p;
 	protected String currentLayer;
 	
 	
-	public Slot(AbstractProfile<?, ?> p, Slot[] slots, int slot) {
+	public Slot(AbstractProfile<?> p, Slot[] slots, int slot) {
 		this.cid = p.cid;
 		this.slot = slot;
 		this.slots = slots;
@@ -125,7 +125,7 @@ public abstract class Slot {
 		// --- calculate time to sleep ---
 		
 		JsonObject ptimes = Configs.getUObj(cid, Configs.ptimesViewer);
-		int end = Integer.parseInt(p.currentLayerId.split("-")[1]);
+		int end = Integer.parseInt(p.currentTimeId.split("-")[1]);
 		
 		int min = Configs.getSleepInt(cid, p.currentLayer, ""+slot, Configs.minViewer);
 		int max = Configs.getSleepInt(cid, p.currentLayer, ""+slot, Configs.maxViewer);

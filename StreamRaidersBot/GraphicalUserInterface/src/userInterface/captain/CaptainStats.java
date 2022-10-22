@@ -6,7 +6,7 @@ import run.captain.Captain;
 import run.captain.CaptainBackEnd;
 import userInterface.AbstractStats;
 
-public class CaptainStats extends AbstractStats<Captain, CaptainBackEnd, Captain.CaptainBackEndRunnable> {
+public class CaptainStats extends AbstractStats<Captain, CaptainBackEnd> {
 
 	public CaptainStats(String cid, GUI parent) {
 		super(cid, parent);

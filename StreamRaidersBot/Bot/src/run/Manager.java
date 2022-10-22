@@ -54,7 +54,7 @@ public class Manager {
 	 */
 	
 	
-	private static Hashtable<String, AbstractProfile<?,?>> profiles = new Hashtable<>();
+	private static Hashtable<String, AbstractProfile<?>> profiles = new Hashtable<>();
 	private static Hashtable<String, Integer> poss = new Hashtable<>();
 	
 	private static BotListener blis;
@@ -63,7 +63,7 @@ public class Manager {
 		return blis;
 	}
 	
-	public static AbstractProfile<?, ?> getProfile(String cid) {
+	public static AbstractProfile<?> getProfile(String cid) {
 		return profiles.get(cid);
 	}
 	
@@ -231,7 +231,7 @@ public class Manager {
 			}
 			failedProfiles.remove(cid);
 			blis.onProfileStartedLoading(cid);
-			AbstractProfile<?,?> p = null;
+			AbstractProfile<?> p = null;
 			try {
 				SRR req = null;
 				try {
@@ -295,7 +295,7 @@ public class Manager {
 		if(!profiles.containsKey(cid))
 			throw new IllegalArgumentException("No Profile with cid="+cid+" loaded");
 		setRunningAll(cid, false);
-		AbstractProfile<?,?> p = profiles.remove(cid);
+		AbstractProfile<?> p = profiles.remove(cid);
 		blis.onProfileUnloaded(cid);
 		loadedProfiles.remove(cid);
 		
@@ -346,7 +346,7 @@ public class Manager {
 	 * @param slot
 	 */
 	public static void switchRunning(String cid, int slot) {
-		AbstractProfile<?,?> p = profiles.get(cid);
+		AbstractProfile<?> p = profiles.get(cid);
 		p.setRunning(slot, !p.isRunning(slot));
 	}
 	
@@ -357,7 +357,7 @@ public class Manager {
 	 * @throws Exception
 	 */
 	public static void switchProfileType(String cid) throws Exception {
-		AbstractProfile<?,?> p = profiles.get(cid);
+		AbstractProfile<?> p = profiles.get(cid);
 		p = p.switchProfileType();
 		if(p == null)
 			throw new Exception("Failed to switch, p is null");
@@ -390,7 +390,7 @@ public class Manager {
 			cid = configSyncTo;
 		
 		for(String cid_ : getLoadedProfiles()) {
-			AbstractProfile<?,?> p = profiles.get(cid);
+			AbstractProfile<?> p = profiles.get(cid);
 			if(p.getType() == pt && (Configs.getPStr(cid_, syncProfile).equals(cid) || cid_.equals(cid)))
 				p.updateSlotSync();
 		}
@@ -464,7 +464,7 @@ public class Manager {
 		}
 		for(String cid : profiles.keySet()) {
 			new Thread(() -> {
-				AbstractProfile<?, ?> p = getProfile(cid);
+				AbstractProfile<?> p = getProfile(cid);
 				try {
 					redeemCodes(p, codes);
 					if(Configs.getPBoo(cid, Configs.canCaptain))
@@ -480,14 +480,14 @@ public class Manager {
 		}
 	}
 	
-	private static void redeemCodes(AbstractProfile<?, ?> p, String[] codes) throws Exception {
+	private static void redeemCodes(AbstractProfile<?> p, String[] codes) throws Exception {
 		AbstractBackEnd<?> be = p.getBackEnd();
 		for(int i=0; i<codes.length; i++)
 			if(!be.redeemProductCode(codes[i]))
 				Logger.print("Manager -> redeemCodes: err=failed to redeem, code="+codes[i], Logger.runerr, Logger.error, p.cid, null, true);
 	}
 	
-	private static void redeemCodesSwitchProfileType(AbstractProfile<?, ?> p, String[] codes) throws Exception {
+	private static void redeemCodesSwitchProfileType(AbstractProfile<?> p, String[] codes) throws Exception {
 		boolean[] wereRunning = new boolean[p.slots.length];
 		for(int i=0; i<p.slots.length; i++)
 			wereRunning[i] = p.isRunning(i);
@@ -535,7 +535,7 @@ public class Manager {
 	 */
 	public static void doAll(int con, int delay) {
 		for(String key : profiles.keySet()) {
-			AbstractProfile<?,?> p = profiles.get(key);
+			AbstractProfile<?> p = profiles.get(key);
 			switch(con) {
 			case SRC.Manager.start:
 				p.setRunningAll(true);

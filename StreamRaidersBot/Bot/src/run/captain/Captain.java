@@ -8,9 +8,7 @@ import run.AbstractBackEnd.UpdateEventListener;
 import srlib.SRR;
 import srlib.SRR.NotAuthorizedException;
 
-public class Captain extends AbstractProfile<Captain.CaptainBackEndRunnable,CaptainBackEnd> {
-
-	public static interface CaptainBackEndRunnable extends AbstractProfile.BackEndRunnable<CaptainBackEnd> {}
+public class Captain extends AbstractProfile<CaptainBackEnd> {
 
 	public static final int slotSize = 5;
 	

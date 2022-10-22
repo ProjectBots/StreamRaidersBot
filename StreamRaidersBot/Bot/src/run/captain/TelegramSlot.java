@@ -5,7 +5,7 @@ import run.Slot;
 
 public class TelegramSlot extends Slot {
 
-	public TelegramSlot(AbstractProfile<?, ?> p, Slot[] slots) {
+	public TelegramSlot(AbstractProfile<?> p, Slot[] slots) {
 		super(p, slots, 4);
 		// TODO Auto-generated constructor stub
 	}
