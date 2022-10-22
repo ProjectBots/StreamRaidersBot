@@ -206,22 +206,24 @@ public class SpecialSlot extends Slot {
 			ArrayList<Item> items = vbe.getAvailableEventStoreItems(section, false);
 			Item best = null;
 			int p = -1;
-			for(Item item : items) {
-				if(item.price > maxPrice)
-					continue;
+			for(final Item item : items) {
 				
 				Integer p_ = Configs.getStorePrioInt(cid, currentLayer, spt, item.uid);
 				if(p_ == null) {
 					p_ = Configs.getBoolean(cid, currentLayer, Configs.storePriceAsDefaultPrioViewer) ? item.price : -1;
 					Configs.setStorePrioInt(cid, currentLayer, spt, item.uid, p_);
 				}
-				if(p_ > p) {
+				
+				//	prefer higher prio
+				//	if same, prefer item with highest price that can be bought
+				if(p_ > p || (p_ == p && item.price > best.price && item.price <= maxPrice)) {
 					best = item;
 					p = p_;
 				}
 			}
-			if(p < 0)
+			if(p < 0 || best.price > maxPrice)
 				continue;
+			
 			
 			JsonObject resp = vbe.buyItem(best);
 			

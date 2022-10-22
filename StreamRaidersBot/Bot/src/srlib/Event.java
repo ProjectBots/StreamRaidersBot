@@ -20,7 +20,7 @@ public class Event {
 		updateCurrentEvent(data.getAsJsonObject("Events"));
 		String event = currentEvent;
 		if(event == null)
-			event = getNextEvent(data, data.getAsJsonObject("Events"));
+			event = getNextEvent(data.getAsJsonObject("Events"));
 		
 		JsonArray currentTiers = new JsonArray();
 		if(event == null)
@@ -104,7 +104,7 @@ public class Event {
 		currentEvent = null;
 	}
 	
-	private static String getNextEvent(JsonObject data, JsonObject events) {
+	private static String getNextEvent(JsonObject events) {
 		for(String key : events.keySet()) {
 			JsonObject event = events.getAsJsonObject(key);
 			
@@ -114,6 +114,22 @@ public class Event {
 			return key;
 		}
 		return null;
+	}
+	
+	private static String getLastEvent(JsonObject events) {
+		String last = null;
+		long lst = 0;
+		for(String key : events.keySet()) {
+			JsonObject event = events.getAsJsonObject(key);
+			
+			long st = Time.parse(event.get("StartTime").getAsString());
+			
+			if(st > lst) {
+				last = key;
+				lst = st;
+			}
+		}
+		return last;
 	}
 	
 	public boolean hasBattlePass() {
@@ -129,14 +145,23 @@ public class Event {
 			collectedPass = new boolean[size];
 		}
 		
-		updateCurrentEvent(Json.parseObj(Options.get("events")));
+		JsonObject events = Json.parseObj(Options.get("events"));
+		
+		updateCurrentEvent(events);
+		
+		final String eventToLook = currentEvent != null ? currentEvent : getLastEvent(events);
+		
 		for(int i=0; i<userEventProgression.size(); i++) {
 			JsonObject raw = userEventProgression.get(i).getAsJsonObject();
 			
-			if(!raw.get("eventUid").getAsString().equals(currentEvent)) 
+			if(!raw.get("eventUid").getAsString().equals(eventToLook)) 
 				continue;
 
 			hasBattlePass = raw.get("hasBattlePass").getAsInt() == 1;
+			
+			if(currentEvent == null)
+				return;
+			
 			tier = raw.get("currentTier").getAsInt();
 			
 			JsonElement rbc = raw.get("basicRewardsCollected");
@@ -155,6 +180,8 @@ public class Event {
 			
 			return;
 		}
+		
+		
 	}
 	
 	public boolean canCollectEvent(int p, boolean battlePass) {
