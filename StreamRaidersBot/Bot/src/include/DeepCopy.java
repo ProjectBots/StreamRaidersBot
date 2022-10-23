@@ -18,7 +18,7 @@ public class DeepCopy {
 	 * @param obj
 	 * @return the result
 	 */
-	public static <T> T deepcopy(T obj) {
+	public static <T> T copyObject(T obj) {
 		if(obj instanceof Cloneable) {
 			final Object result;
 			if(obj.getClass().isArray()) {
@@ -30,7 +30,7 @@ public class DeepCopy {
 						Array.set(result, length, Array.get(obj, length));
 				} else {
 					while(length-- > 0)
-						Array.set(result, length, deepcopy(Array.get(obj, length)));
+						Array.set(result, length, copyObject(Array.get(obj, length)));
 				}
 			} else {
 				try {
@@ -65,7 +65,7 @@ public class DeepCopy {
 			fields[i].setAccessible(true);
 			
 			try {
-				fields[i].set(rec, DeepCopy.deepcopy(fields[i].get(don)));
+				fields[i].set(rec, DeepCopy.copyObject(fields[i].get(don)));
 			} catch (IllegalAccessException | RuntimeException e) {
 				throw new RuntimeException("failed to clone "+fields[i].getName(), e);
 			}

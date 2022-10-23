@@ -30,9 +30,10 @@ public class SRC {
 	
 	
 	public static class Search {
-		public static final String all = "";
+		public static final String all = null;
 		public static final String campaign = "campaign";
-		public static final String dungeons = "dungeons";
+		public static final String dungeon = "dungeons";
+		public static final String versus = "versus";
 	}
 	
 	public static class BackEnd {

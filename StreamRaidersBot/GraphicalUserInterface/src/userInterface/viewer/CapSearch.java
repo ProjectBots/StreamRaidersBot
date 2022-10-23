@@ -13,7 +13,6 @@ import otherlib.Configs;
 import otherlib.Logger;
 import otherlib.Configs.ListType;
 import run.Manager;
-import srlib.SRC;
 import srlib.viewer.CaptainData;
 import userInterface.Colors;
 
@@ -56,7 +55,7 @@ public class CapSearch {
 		new Thread(() -> {
 			CaptainData[] caps;
 			try {
-				caps = Manager.getViewer(cid).getBackEnd().searchCaptains(fav, false, SRC.Search.all, true, search, 5);
+				caps = Manager.getViewer(cid).getBackEnd().searchCaptains(fav, false, null, null, true, search, 5);
 			} catch (Exception e) {
 				Logger.printException("CapSearch -> open: err=failed to search captain", e, Logger.general, Logger.error, null, null, true);
 				gui.close();

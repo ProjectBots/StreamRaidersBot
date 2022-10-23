@@ -33,8 +33,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 
 	private Raid[] raids = new Raid[4];
 	private Map[] maps = new Map[4];
-	private CaptainData[] caps;
-	private CaptainData[] dunCaps;
+	private CaptainData[][] caps = new CaptainData[RaidType.highestTypeInt][0];
 	private Quests quests = new Quests();
 	private Event event = new Event();
 	private HashMap<String, Long> rts = new HashMap<>();
@@ -142,23 +141,25 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		uelis.afterUpdate("qer", this);
 	}
 	
-	synchronized public void updateCaps(boolean force, boolean dungeon) throws NoConnectionException, NotAuthorizedException, ErrorRetrievingCaptainsException {
-		Long wt = rts.get("caps::"+dungeon);
+	synchronized public void updateCaps(boolean force, final RaidType rt) throws NoConnectionException, NotAuthorizedException, ErrorRetrievingCaptainsException {
+		Long wt = rts.get("caps::"+rt.toString());
 		long now = System.currentTimeMillis();
 		if(!force && !(wt == null || now - wt > 0))
 			return;
 		
-		setCaps(searchCaptains(false, true, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, false, null, 100), dungeon);
+		setCaps(searchCaptains(false, true, false, rt, false, null, 100), rt);
 		
-		rts.put("caps::"+dungeon, now + updateTimes[0]*60*1000);
-		uelis.afterUpdate("caps::"+dungeon, this);
+		rts.put("caps::"+rt.toString(), now + updateTimes[0]*60*1000);
+		uelis.afterUpdate("caps::"+rt.toString(), this);
 	}
 	
-	public void setCaps(CaptainData[] caps, boolean dungeon) {
-		if(dungeon)
-			this.dunCaps = caps;
-		else
-			this.caps = caps;
+	public void setCaps(CaptainData[] caps, RaidType rt) {
+		this.caps[rt.typeInt-1] = caps;
+	}
+	
+	public CaptainData[] getCaps(RaidType rt) throws NoConnectionException, NotAuthorizedException, ErrorRetrievingCaptainsException {
+		updateCaps(false, rt);
+		return caps[rt.typeInt-1];
 	}
 	
 	public static class SeedAndLastPage {
@@ -174,18 +175,37 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		private static final long serialVersionUID = 1L;
 	}
 	
-	public CaptainData[] searchCaptains(boolean fav, boolean live, String mode, boolean searchForCaptain, String name, int maxPage) throws NoConnectionException, NotAuthorizedException, ErrorRetrievingCaptainsException {
+	public CaptainData[] searchCaptains(boolean fav, boolean live, Boolean roomCodes, RaidType rt, boolean searchForCaptain, String name, int maxPage) throws NoConnectionException, NotAuthorizedException, ErrorRetrievingCaptainsException {
 		JsonArray rawCaps = new JsonArray();
 		
 		SeedAndLastPage sap = new SeedAndLastPage();
 		
+		final String mode;
+		if(rt == null)
+			mode = null;
+		else {
+			switch(rt) {
+			case CAMPAIGN:
+				mode = SRC.Search.campaign;
+				break;
+			case DUNGEON:
+				mode = SRC.Search.dungeon;
+				break;
+			case VERSUS:
+				mode = SRC.Search.versus;
+				break;
+			default:
+				throw new IllegalArgumentException("rt is wrong");
+			}
+		}
+		
 		for(int i=1; i<=sap.lastPage && i<=maxPage; i++) {
-			JsonObject raw = Json.parseObj(req.getCaptainsForSearch(""+i, "24", sap.seed, fav, live, mode, searchForCaptain, name));
+			JsonObject raw = Json.parseObj(req.getCaptainsForSearch(""+i, "24", sap.seed, fav, live, roomCodes, mode, searchForCaptain, name));
 			JsonElement err = raw.get(SRC.errorMessage);
 			if(err != null && err.isJsonPrimitive() && err.getAsString().equals("Error retrieving captains"))
 				throw new ErrorRetrievingCaptainsException();
 			if(testUpdate(raw))
-				raw = Json.parseObj(req.getCaptainsForSearch(""+i, "24", sap.seed, fav, live, mode, searchForCaptain, name));
+				raw = Json.parseObj(req.getCaptainsForSearch(""+i, "24", sap.seed, fav, live, roomCodes, mode, searchForCaptain, name));
 			
 			JsonObject data = raw.getAsJsonObject("data");
 			
@@ -215,14 +235,6 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 			ret[i] = new CaptainData(rawCaps.get(i).getAsJsonObject());
 		
 		return ret;
-	}
-	
-	
-	public CaptainData[] getCaps(boolean dungeon) throws NoConnectionException, NotAuthorizedException, ErrorRetrievingCaptainsException {
-		updateCaps(false, dungeon);
-		return dungeon 
-				? dunCaps
-				: caps;
 	}
 	
 	public String updateFavoriteCaptain(CaptainData cap, boolean fav) throws NoConnectionException {
@@ -281,8 +293,9 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	public String addRaid(CaptainData captain, String slot) throws NoConnectionException {
-		JsonElement err = Json.parseObj(req.addPlayerToRaid(captain.captainId+"c", slot)).get(SRC.errorMessage);
-		return err.isJsonPrimitive() ? err.getAsString() : null;
+		JsonObject resp = Json.parseObj(req.addPlayerToRaid(captain.captainId+"c", slot));
+		JsonElement err = resp.get(SRC.errorMessage);
+		return err.isJsonPrimitive() ? err.getAsString() : (resp.get("data").getAsBoolean() ? null : "data is false");
 	}
 	
 	public String switchRaid(CaptainData captain, int slot) throws NoConnectionException, NotAuthorizedException {

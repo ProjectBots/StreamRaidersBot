@@ -3,8 +3,6 @@ package include;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.apache.commons.lang3.ObjectUtils;
-
 /**
  * Cloning this hashtable produces a true deepcopy <b>if and only if</b> all
  * keys/elements produce a deepcopy when cloned<br>
@@ -21,9 +19,7 @@ public class DeepCopyHashtable<K, V> extends Hashtable<K, V> implements Cloneabl
 	@Override
 	public synchronized DeepCopyHashtable<K, V> clone() {
 		DeepCopyHashtable<K, V> ret = new DeepCopyHashtable<>(size());
-
-		forEach((k, v) -> ret.put(ObjectUtils.cloneIfPossible(k), ObjectUtils.cloneIfPossible(v)));
-
+		forEach((k, v) -> ret.put(DeepCopy.copyObject(k), DeepCopy.copyObject(v)));
 		return ret;
 	}
 
@@ -35,6 +31,11 @@ public class DeepCopyHashtable<K, V> extends Hashtable<K, V> implements Cloneabl
 		super(initialCapacity);
 	}
 
+	/**
+	 * Copies all of the mappings from the specified map to this.
+	 * These mappings will <b>not</b> replace any mappings that this table had for any of the keys currently in the specified map.
+	 * @param t mappings to be stored in this map
+	 */
 	public synchronized void putAllIfAbsent(Map<? extends K, ? extends V> t) {
 		for(Map.Entry<? extends K, ? extends V> e : t.entrySet())
 			putIfAbsent(e.getKey(), e.getValue());

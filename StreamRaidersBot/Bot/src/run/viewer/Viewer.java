@@ -4,8 +4,6 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import include.Http.NoConnectionException;
 import otherlib.Configs;
 import otherlib.Logger;
@@ -37,6 +35,7 @@ public class Viewer extends AbstractProfile<ViewerBackEnd> {
 		List<String> utypes = UnitType.getTypeUids();
 		
 		String[] ret = new String[rew_basics.length+utypes.size()];
+		System.arraycopy(rew_basics, 0, ret, 0, rew_basics.length);
 		for(int i=0; i<utypes.size(); i++)
 			ret[rew_basics.length+i] = "scroll"+utypes.get(i).replace("allies", "");
 		
@@ -73,46 +72,48 @@ public class Viewer extends AbstractProfile<ViewerBackEnd> {
 			@Override
 			public void afterUpdate(String obj, ViewerBackEnd vbe) {
 				Logger.print("updated "+obj, Logger.general, Logger.info, cid, null);
-				boolean dungeon = false;
-				switch(obj) {
-				case "caps::true":
-					dungeon = true;
-					//$FALL-THROUGH$
-				case "caps::false":
+				if(obj.startsWith("caps::")) {
+					RaidType rt = RaidType.valueOf(obj.substring(6));
 					try {
 						final String currentLayer = Manager.getCurrentLayer(cid);
-						CaptainData[] caps;
-						caps = vbe.getCaps(dungeon);
+						CaptainData[] caps = vbe.getCaps(rt);
 						HashSet<String> got = new HashSet<>();
 						for(CaptainData c : caps)
 							got.add(c.twitchUserName);
 						
-						HashSet<String> favs = Configs.getFavCaps(cid, currentLayer, dungeon ? Configs.dungeon : Configs.campaign);
+						HashSet<String> favs = Configs.getFavCaps(cid, currentLayer, Configs.getListTypeByRaidType(rt));
+						CaptainData[] buffer = new CaptainData[favs.size()];
+						int c = 0;
 						for(String tun : favs) {
-							if(got.contains(tun) || !Configs.getCapBoo(cid, currentLayer, tun, dungeon ? Configs.dungeon : Configs.campaign, Configs.il))
+							if(got.contains(tun) || !Configs.getCapBoo(cid, currentLayer, tun, Configs.getListTypeByRaidType(rt), Configs.il))
 								continue;
 							
-							CaptainData[] results = vbe.searchCaptains(false, false, dungeon ? SRC.Search.dungeons : SRC.Search.campaign, true, tun, 1);
+							CaptainData[] results = vbe.searchCaptains(false, false, false, rt, true, tun, 1);
 							if(results.length == 0)
 								continue;
 							
 							if(results[0].isPlaying)
-								caps = add(caps, results[0]);
+								buffer[c++] = results[0];
 						}
-						vbe.setCaps(caps, dungeon);
+						CaptainData[] res = new CaptainData[caps.length+c];
+						System.arraycopy(buffer, 0, res, 0, c);
+						System.arraycopy(caps, 0, res, c, caps.length);
+						vbe.setCaps(res, rt);
 					} catch(Exception e) {
 						Logger.printException("Viewer -> constructor -> uelis: err=unable to retrieve caps", e, Logger.runerr, Logger.error, cid, null, true);
 					}
-					break;
-				case "units":
-					try {
-						Unit[] units = vbe.getUnits(false);
-						for(Unit u : units)
-							Configs.addUnitId(cid, ProfileType.VIEWER, ""+u.unitId, u.type.uid, u.level);
-					} catch (Exception e) {
-						Logger.printException("Viewer -> constructor -> uelis: err=unable to retrieve units", e, Logger.runerr, Logger.error, cid, null, true);
+				} else {
+					switch(obj) {
+					case "units":
+						try {
+							Unit[] units = vbe.getUnits(false);
+							for(Unit u : units)
+								Configs.addUnitId(cid, ProfileType.VIEWER, ""+u.unitId, u.type.uid, u.level);
+						} catch (Exception e) {
+							Logger.printException("Viewer -> constructor -> uelis: err=unable to retrieve units", e, Logger.runerr, Logger.error, cid, null, true);
+						}
+						break;
 					}
-					break;
 				}
 			}
 		}), ProfileType.VIEWER, slotSize);
@@ -229,10 +230,4 @@ public class Viewer extends AbstractProfile<ViewerBackEnd> {
 		return null;
 	}
 	
-	
-	
-	
-	private static <T>T[] add(T[] arr, T item) {
-		return ArrayUtils.add(arr, item);
-	}
 }

@@ -27,7 +27,6 @@ import run.Manager;
 import run.ProfileType;
 import run.viewer.ViewerBackEnd;
 import run.viewer.ViewerBackEnd.ErrorRetrievingCaptainsException;
-import srlib.SRC;
 import srlib.SRR.NotAuthorizedException;
 import srlib.viewer.CaptainData;
 import userInterface.AbstractSettings;
@@ -148,7 +147,7 @@ public class CaptainSettings extends AbstractSettings {
 					GUI.setGradient(uid+"search::export", Colors.getGradient(fontPath+"buttons on"));
 					try {
 						ViewerBackEnd vbe = Manager.getViewer(cid).getBackEnd();
-						CaptainData[] srfavs = vbe.searchCaptains(true, false, SRC.Search.all, false, null, 10);
+						CaptainData[] srfavs = vbe.searchCaptains(true, false, null, null, false, null, 10);
 						HashSet<String> srfavnames = new HashSet<>();
 						HashSet<String> bfavs = Configs.getFavCaps(cid, lid, list);
 						
@@ -164,7 +163,7 @@ public class CaptainSettings extends AbstractSettings {
 						for(String cap : bfavs) {
 							if(srfavnames.contains(cap))
 								continue;
-							CaptainData[] s = vbe.searchCaptains(false, false, SRC.Search.all, true, cap, 1);
+							CaptainData[] s = vbe.searchCaptains(false, false, null, null, true, cap, 1);
 							if(s.length == 0) {
 								Logger.print("CaptainSettings -> addContent -> export: err=failed to get captain, part=fav, tun="+cap, Logger.runerr, Logger.error, cid, null, true);
 								continue;

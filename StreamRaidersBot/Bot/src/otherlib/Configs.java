@@ -24,6 +24,7 @@ import include.Json;
 import include.Maths;
 import include.NEF;
 import run.ProfileType;
+import srlib.RaidType;
 import srlib.units.UnitType;
 
 
@@ -249,6 +250,7 @@ public class Configs {
 	}
 	
 	public static final Str dungeonSlotViewer = new Str("dungeonSlot", ProfileType.VIEWER);
+	public static final Str versusSlotViewer = new Str("versusSlot", ProfileType.VIEWER);
 	public static final Str lnameViewer = new Str("name", ProfileType.VIEWER);
 	public static final Str userAgentViewer = new Str("userAgent", ProfileType.VIEWER);
 	public static final Str proxyDomainViewer = new Str("proxyDomain", ProfileType.VIEWER);
@@ -929,6 +931,20 @@ public class Configs {
 	public static final ListType campaign = new ListType("campaign");
 	public static final ListType dungeon = new ListType("dungeon");
 	public static final ListType all = new ListType("all");
+	
+	public static ListType getListTypeByRaidType(RaidType rt) {
+		switch(rt) {
+		case CAMPAIGN:
+			return campaign;
+		case DUNGEON:
+			return dungeon;
+		case VERSUS:
+			//	TODO versus list type
+			return campaign;
+		default:
+			throw new RuntimeException("rt is wrong");
+		}
+	}
 	
 	private static JsonObject getList(String cid, String lay, ListType con) {
 		return getLayer(cid, con.pt, lay)

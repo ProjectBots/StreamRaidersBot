@@ -25,4 +25,6 @@ public enum RaidType {
 		return from_int.get(type);
 	}
 	
+	
+	
 }

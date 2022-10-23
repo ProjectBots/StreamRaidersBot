@@ -48,6 +48,7 @@ public class Manager {
 	 * 	when stopping wait for slots to finish + option to force close
 	 * 	better ressource management
 	 * 	better config
+	 * 	better config - unit sync
 	 * 
 	 * 	
 	 * 

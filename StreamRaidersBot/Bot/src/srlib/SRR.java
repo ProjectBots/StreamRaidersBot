@@ -356,15 +356,18 @@ public class SRR {
 	
 	
 	
-	public String getCaptainsForSearch(String page, String resultsPerPage, String seed, boolean fav, boolean live, String mode, boolean searchForCaptain, String name) throws NoConnectionException {
+	public String getCaptainsForSearch(String page, String resultsPerPage, String seed, boolean fav, boolean live, Boolean roomCodes, String mode, boolean searchForCaptain, String name) throws NoConnectionException {
 		JsonObject filter = new JsonObject();
 		filter.addProperty("ambassadors", "false");
 		if(fav)
 			filter.addProperty("favorite", "true");
 		if(name != null) 
 			filter.addProperty((searchForCaptain ? "twitchUserName" : "mainGame"), name);
-		if(live) filter.addProperty("isLive", "1");
-		if(!mode.equals(SRC.Search.all))
+		if(live) 
+			filter.addProperty("isLive", "1");
+		if(roomCodes != null)
+			filter.addProperty("roomCodes", ""+roomCodes);
+		if(mode != null)
 			filter.addProperty("mode", mode);
 		
 		Http post = getPost("getCaptainsForSearch");

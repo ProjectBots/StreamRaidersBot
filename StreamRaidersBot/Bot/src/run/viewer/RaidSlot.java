@@ -9,7 +9,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import include.Json;
@@ -530,53 +529,103 @@ public class RaidSlot extends Slot {
 		return change;
 	}
 	
-	private void captain(ViewerBackEnd beh) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
+	private void captain(ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException {
 		try {
-			captain(beh, true, false);
+			captain(vbe, false);
 		} catch (ErrorRetrievingCaptainsException e) {
 			Logger.printException("RaidSlot -> captain: err=failed to retrieve captains", e, Logger.runerr, Logger.error, cid, slot, true);
 		}
 	}
 
-	private void captain(ViewerBackEnd vbe, boolean first, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException, ErrorRetrievingCaptainsException {
+	private void captain(ViewerBackEnd vbe, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException, ErrorRetrievingCaptainsException {
 		
 		Raid r = vbe.getRaid(slot, true);
 		
-		final boolean dungeon = isDungeonCheckLockedSlot(vbe, r);
+		final RaidType rt = getRaidTypeCheckLockedSlot(vbe, r);
 		
 		if(Configs.isSlotLocked(cid, currentLayer, ""+slot) && !change)
 			return;
 		
 		if(r == null) {
-			switchCap(vbe, dungeon, null, null, noCap, first);
+			Logger.print("switched due raid=null", Logger.caps, Logger.info, cid, slot);
+			change = false;
+			switchCap(vbe, rt, null, null, noCap);
 			return;
 		}
 		
-		if(!r.isSwitchable(Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer)))
+		if(r.placedUnit && !r.placementEnded) {
+			Logger.print("can not switch raid due unit placed", Logger.caps, Logger.info, cid, slot);
 			return;
+		}
 
 		final String tun = r.twitchUserName;
 		
-		if(r.type == RaidType.VERSUS || r.isCodeLocked) {
-			switchCap(vbe, dungeon, r, tun, noCap, first);
+		if(change) {
+			Logger.print("switched due change=true", Logger.caps, Logger.info, cid, slot);
+			change = false;
+			switchCap(vbe, rt, r, tun, noCap);
+		}
+		
+		
+		
+		ListType list = Configs.getListTypeByRaidType(rt);
+		
+		Boolean il = Configs.getCapBoo(cid, currentLayer, tun, list, Configs.il);
+		il = il == null ? false : il;
+		
+		if(r.isOffline(!il, Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer)*60)) {
+			Logger.print("switched due offline", Logger.caps, Logger.info, cid, slot);
+			switchCap(vbe, rt, r, tun, noCap);
+			return;
+		}
+		
+		if(r.isCodeLocked) {
+			Logger.print("switched due code locked", Logger.caps, Logger.info, cid, slot);
+			switchCap(vbe, rt, r, tun, noCap);
+			return;
+		}
+		
+		//	TODO remove at some point and time
+		if(r.type == RaidType.VERSUS) {
+			Logger.print("switched due versus", Logger.caps, Logger.info, cid, slot);
+			switchCap(vbe, rt, r, tun, noCap);
+			return;
+		}
+		
+		if(r.type != rt) {
+			Logger.print("switched due slot type mismatch, r is "+r.type.toString()+", should be "+rt.toString(), Logger.caps, Logger.info, cid, slot);
+			switchCap(vbe, rt, r, tun, noCap);
 			return;
 		}
 		
 		String ct = Remaper.map(r.chestType);
 		if(ct.equals("nochest")) {
-			switchCap(vbe, dungeon, r, tun, noCap, first);
+			Logger.print("switched due nochest", Logger.caps, Logger.info, cid, slot);
+			switchCap(vbe, rt, r, tun, noCap);
 			return;
 		}
 
-		ListType list = dungeon ? Configs.dungeon : Configs.campaign;
-		Boolean il = Configs.getCapBoo(cid, currentLayer, tun, list, Configs.il);
-		il = il == null ? false : il;
 		Boolean ic = Configs.getCapBoo(cid, currentLayer, tun, list, Configs.ic);
 		ic = ic == null ? false : ic;
 		Integer fav = Configs.getCapInt(cid, currentLayer, tun, list, Configs.fav);
 		fav = fav == null ? 0 : fav;
 		
-		int loy = dungeon ? (r.allyBoons+",").split(",").length : r.pveWins;
+		int loy;
+		switch(rt) {
+		case CAMPAIGN:
+			loy = r.pveWins;
+			break;
+		case DUNGEON:
+			//	captains can choose a boon after every dungeon room
+			loy = (r.allyBoons+",").split(",").length;
+			break;
+		case VERSUS:
+			//	TODO versus loy
+			loy = 0;
+			break;
+		default:
+			throw new RuntimeException("rt is wrong");
+		}
 		
 		Integer maxLoy = Configs.getChestInt(cid, currentLayer, ct, Configs.maxLoyViewer);
 		Integer minLoy = Configs.getChestInt(cid, currentLayer, ct, Configs.minLoyViewer);
@@ -585,71 +634,80 @@ public class RaidSlot extends Slot {
 		Integer minTimeLeft = Configs.getChestInt(cid, currentLayer, ct, Configs.minTimeViewer);
 		if(maxLoy == null || minLoy == null || enabled == null || maxTimeLeft == null || minTimeLeft == null) {
 			Logger.print("RaidSlot (viewer) -> captain: ct="+ct+", err=failed to get chest config", Logger.runerr, Logger.error, cid, slot, true);
-			//	prevents picking the chest
-			maxLoy = 5;
-			minLoy = 8;
-			enabled = false;
-			maxTimeLeft = 10;
-			minTimeLeft = 20;
+			Logger.print("switched due no chest config", Logger.caps, Logger.info, cid, slot);
+			switchCap(vbe, rt, r, tun, noCap);
+			return;
 		} else if(maxLoy < 0)
 			maxLoy = Integer.MAX_VALUE;
 		
 		
-		JsonArray users = Json.parseArr(r.users);
-		if(users != null) {
-			String vid = vbe.getViewerUserId();
-			for(int i=0; i<users.size(); i++)
-				if(users.get(i).getAsJsonObject().get("userId").getAsString().equals(vid)) {
-					minTimeLeft = Integer.MIN_VALUE;
-					break;
-				}
-		}
+		boolean[] conditions = new boolean[] {
+				!ic && rt != RaidType.DUNGEON && Time.isBeforeServerTime(r.creationDate + r.type.raidDuration - minTimeLeft),
+				!ic && rt != RaidType.DUNGEON && Time.isAfterServerTime(r.creationDate + r.type.raidDuration - maxTimeLeft),
+				!ic && !enabled,
+				!ic && (loy < minLoy || loy > maxLoy),
+				fav < 0
+		};
 		
-		if((dungeon ^ (r.type == RaidType.DUNGEON))
-			|| r.isOffline(!il, Configs.getInt(cid, currentLayer, Configs.capInactiveTresholdViewer)*60)
-			|| (!ic && !dungeon && Time.isBeforeServerTime(r.creationDate + r.type.raidDuration - minTimeLeft))
-			|| (!ic && !dungeon && Time.isAfterServerTime(r.creationDate + r.type.raidDuration - maxTimeLeft))
-			|| (!ic && !enabled)
-			|| (!ic && (loy < minLoy || loy > maxLoy))
-			|| fav < 0
-			) {
-			switchCap(vbe, dungeon, r, tun, noCap, first);
-			return;
-		}
-		
-		if(change) {
-			if(first)
-				switchCap(vbe, dungeon, r, tun, noCap, first);
-			else
-				change = false;
+		for(int i=0; i<conditions.length; i++) {
+			if(conditions[i]) {
+				Logger.print("switched due main "+i, Logger.caps, Logger.info, cid, slot);
+				switchCap(vbe, rt, r, tun, noCap);
+				return;
+			}
 		}
 		
 	}
 	
-	private boolean isDungeonCheckLockedSlot(ViewerBackEnd vbe, Raid r) throws NoConnectionException, NotAuthorizedException {
-		boolean dungeon = Configs.getStr(cid, currentLayer, Configs.dungeonSlotViewer).equals(""+slot);
+	private RaidType getRaidTypeCheckLockedSlot(ViewerBackEnd vbe, Raid r) throws NoConnectionException, NotAuthorizedException {
+		final RaidType ret;
+		if(Configs.getStr(cid, currentLayer, Configs.dungeonSlotViewer).equals(""+slot))
+			ret = RaidType.DUNGEON;
+		else if(Configs.getStr(cid, currentLayer, Configs.versusSlotViewer).equals(""+slot))
+			ret = RaidType.VERSUS;
+		else
+			ret = RaidType.CAMPAIGN;
 		
-		if(r != null && Configs.isSlotLocked(cid, currentLayer, ""+slot)) {
-			if(r.type == RaidType.DUNGEON && !dungeon) {
-				Raid[] all = vbe.getRaids(SRC.BackEnd.all);
-				boolean change = true;
-				for(int i=0; i<all.length; i++) {
-					if(i == slot || all[i] == null)
-						continue;
-					if(all[i].type == RaidType.DUNGEON && Configs.isSlotLocked(cid, currentLayer, ""+i))
-						change = false;
+		
+		if(r == null || !Configs.isSlotLocked(cid, currentLayer, ""+slot) || r.type == ret)
+			return ret;
+		
+		if(ret == RaidType.CAMPAIGN) {
+			for(int i=0; i<4; i++) {
+				if(!Configs.isSlotLocked(cid, currentLayer, ""+i)) {
+					switchSlotRaidType(i, r.type);
+					break;
 				}
-				if(change) {
-					Configs.setStr(cid, currentLayer, Configs.dungeonSlotViewer, ""+slot);
-					dungeon = true;
-				}
-			} else if(r.type != RaidType.DUNGEON && dungeon) {
-				Configs.setStr(cid, currentLayer, Configs.dungeonSlotViewer, "(none)");
-				dungeon = false;
 			}
+			switchSlotRaidType(slot, ret);
+		} else {
+			Raid[] all = vbe.getRaids(SRC.BackEnd.all);
+			
+			for(int i=0; i<all.length; i++) {
+				if(i == slot || all[i] == null)
+					continue;
+				
+				if(all[i].type == ret && Configs.isSlotLocked(cid, currentLayer, ""+i))
+					//	cannot switch slot raid type
+					return ret;
+			}
+			
+			switchSlotRaidType(slot, ret);
 		}
 		
-		return dungeon;
+		return ret;
+	}
+	
+	private void switchSlotRaidType(int slot, RaidType rt) {
+		switch(rt) {
+		case DUNGEON:
+			Configs.setStr(cid, currentLayer, Configs.dungeonSlotViewer, ""+slot);
+			break;
+		case VERSUS:
+			Configs.setStr(cid, currentLayer, Configs.versusSlotViewer, ""+slot);
+			break;
+		default: break;
+		}
 	}
 	
 	public static class NoCapMatchesException extends Exception {
@@ -657,13 +715,13 @@ public class RaidSlot extends Slot {
 	}
 	
 	
-	private void switchCap(ViewerBackEnd beh, boolean dungeon, Raid r, String cap, boolean noCap, boolean first) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException, ErrorRetrievingCaptainsException {
+	private void switchCap(ViewerBackEnd vbe, final RaidType rt, Raid r, String cap, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException, ErrorRetrievingCaptainsException {
 		try {
-			switchCap(beh, dungeon, r, cap, noCap);
+			switchCap_(vbe, rt, r, cap, noCap);
 		} catch (NoCapMatchesException e) {
 			if(!noCap) {
-				beh.updateCaps(true, dungeon);
-				captain(beh, first, true);
+				vbe.updateCaps(true, rt);
+				switchCap_(vbe, rt, r, cap, true);
 			} else {
 				Logger.print("RaidSlot (viewer) -> switchCap: slot="+slot+", err=No Captain Matches Config", Logger.runerr, Logger.error, cid, slot, true);
 				throw e;
@@ -671,18 +729,14 @@ public class RaidSlot extends Slot {
 		}
 	}
 	
-	private void switchCap(ViewerBackEnd vbe, boolean dungeon, Raid r, String cap, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException, ErrorRetrievingCaptainsException {
+	private void switchCap_(ViewerBackEnd vbe, final RaidType rt, Raid r, String cap, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException, ErrorRetrievingCaptainsException {
 
 		long now = Time.getServerTime();
 		
-		if(!(r == null || cap == null)) {
-			if(now - (r.creationDate + r.type.raidDuration - 120) > 0)
-				v.bannedCaps.put(cap, now + 3*60);
-			else
-				v.bannedCaps.put(cap, r.creationDate + r.type.raidDuration + 3*60);
+		if(r != null && cap != null) {
+			v.bannedCaps.put(cap, (now - (r.creationDate + r.type.raidDuration - 120) > 0 ? now : r.creationDate + r.type.raidDuration) + 3*60);
 			Logger.print("blocked " + cap, Logger.caps, Logger.info, cid, slot);
 		}
-		
 		
 		HashSet<String> removed = new HashSet<>();
 		for(String key : v.bannedCaps.keySet().toArray(new String[v.bannedCaps.size()])) {
@@ -693,13 +747,9 @@ public class RaidSlot extends Slot {
 		}
 		Logger.print("unblocked " + removed.toString(), Logger.caps, Logger.info, cid, slot);
 
-		CaptainData[] caps = vbe.getCaps(dungeon);
+		CaptainData[] caps = vbe.getCaps(rt);
 		Logger.print("got caps " + Arrays.toString(caps), Logger.caps, Logger.info, cid, slot);
 		
-		ListType list = dungeon
-				? Configs.dungeon 
-				: Configs.campaign;
-
 		Raid[] all = vbe.getRaids(SRC.BackEnd.all);
 		HashSet<String> otherCaps = new HashSet<>();
 		for(Raid raid : all) {
@@ -715,7 +765,8 @@ public class RaidSlot extends Slot {
 		
 		HashSet<String> skipped = new HashSet<>();
 		
-		
+		ListType list = Configs.getListTypeByRaidType(rt);
+
 		for(int i=0; i<caps.length; i++) {
 			String tun = caps[i].twitchUserName;
 
@@ -749,7 +800,7 @@ public class RaidSlot extends Slot {
 		else
 			Logger.print("RaidSlot -> switchCap: err="+err, Logger.lowerr, Logger.error, cid, slot, true);
 		
-		captain(vbe, false, noCap);
+		captain(vbe, noCap);
 	}
 
 	

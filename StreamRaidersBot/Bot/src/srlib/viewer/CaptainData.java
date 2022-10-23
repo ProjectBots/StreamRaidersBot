@@ -19,7 +19,7 @@ public class CaptainData {
 		this.twitchUserImage = cap.get("twitchUserImage").getAsString();
 		this.twitchUserName = cap.get("twitchUserName").getAsString();
 		String capId = cap.get("userId").getAsString();
-		this.captainId = Integer.parseInt(capId.substring(0, capId.length()-2));
+		this.captainId = Integer.parseInt(capId.substring(0, capId.length()-1));
 		this.pveWins = cap.get("pveWins").getAsInt();
 		this.pveLoyaltyLevel = cap.get("pveLoyaltyLevel").getAsInt();
 		this.type = RaidType.parseInt(cap.get("type").getAsInt());
