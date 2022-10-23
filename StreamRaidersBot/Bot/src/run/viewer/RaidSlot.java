@@ -610,22 +610,14 @@ public class RaidSlot extends Slot {
 		Integer fav = Configs.getCapInt(cid, currentLayer, tun, list, Configs.fav);
 		fav = fav == null ? 0 : fav;
 		
-		int loy;
-		switch(rt) {
-		case CAMPAIGN:
-			loy = r.pveWins;
-			break;
-		case DUNGEON:
-			//	captains can choose a boon after every dungeon room
-			loy = (r.allyBoons+",").split(",").length;
-			break;
-		case VERSUS:
-			//	TODO versus loy
-			loy = 0;
-			break;
-		default:
-			throw new RuntimeException("rt is wrong");
-		}
+		int loy = switch(rt) {
+		case CAMPAIGN -> r.pveWins;
+		//	after every dungeon room, one boon is being added
+		case DUNGEON -> loy = (r.allyBoons+",").split(",").length;
+		//	TODO versus loy
+		case VERSUS -> loy = 0;
+		default -> throw new IllegalArgumentException("Unexpected value: " + rt);
+		};
 		
 		Integer maxLoy = Configs.getChestInt(cid, currentLayer, ct, Configs.maxLoyViewer);
 		Integer minLoy = Configs.getChestInt(cid, currentLayer, ct, Configs.minLoyViewer);

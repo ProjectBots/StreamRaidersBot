@@ -933,17 +933,12 @@ public class Configs {
 	public static final ListType all = new ListType("all");
 	
 	public static ListType getListTypeByRaidType(RaidType rt) {
-		switch(rt) {
-		case CAMPAIGN:
-			return campaign;
-		case DUNGEON:
-			return dungeon;
-		case VERSUS:
-			//	TODO versus list type
-			return campaign;
-		default:
-			throw new RuntimeException("rt is wrong");
-		}
+		return switch(rt) {
+		case CAMPAIGN -> campaign;
+		case DUNGEON -> dungeon;
+		case VERSUS -> campaign;
+		default -> throw new IllegalArgumentException("Unexpected value: " + rt);
+		};
 	}
 	
 	private static JsonObject getList(String cid, String lay, ListType con) {
