@@ -36,6 +36,10 @@ public abstract class Slot {
 		this.currentLayer = p.currentLayer;
 	}
 	
+	/**
+	 * some slots may require to be synced with another slot
+	 * @return true if the slot is able to run on its own
+	 */
 	public abstract boolean canManageItself();
 
 	public boolean isRunning() {
@@ -90,7 +94,11 @@ public abstract class Slot {
 		}).start();
 	}
 	
-	protected void runSlot() {
+	/**
+	 * executes this slot and any slot synced to it.<br>
+	 * starts the sleep if execution finished.
+	 */
+	private void runSlot() {
 		p.updateLayer();
 		p.updateSlotSync();
 		currentLayer = p.currentLayer;
@@ -183,7 +191,9 @@ public abstract class Slot {
 		Logger.print("after MemoryReleaser", Logger.general, Logger.info, cid, slot);
 	}
 	
-	
+	/**
+	 * executes this slot in a thread safe way
+	 */
 	private void exeSlotSequence() {
 		synchronized (p.getSlotLock()) {
 			final String threadName = Thread.currentThread().getName();
@@ -249,10 +259,18 @@ public abstract class Slot {
 		}, 0, 1000);
 	}
 	
+	/**
+	 * sets the sleep to <code>0</code>, effectively skipping the sleep.<br>
+	 * for the slot to execute it has to be running
+	 */
 	public void skipSleep() {
 		sleep = 0;
 	}
 	
+	/**
+	 * heart of the slot<br>
+	 * will be called when the slot should execute
+	 */
 	protected abstract void slotSequence();
 	
 }

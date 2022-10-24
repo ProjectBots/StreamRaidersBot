@@ -184,19 +184,12 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		if(rt == null)
 			mode = null;
 		else {
-			switch(rt) {
-			case CAMPAIGN:
-				mode = SRC.Search.campaign;
-				break;
-			case DUNGEON:
-				mode = SRC.Search.dungeon;
-				break;
-			case VERSUS:
-				mode = SRC.Search.versus;
-				break;
-			default:
-				throw new IllegalArgumentException("rt is wrong");
-			}
+			mode = switch(rt) {
+			case CAMPAIGN -> SRC.Search.campaign;
+			case DUNGEON -> SRC.Search.dungeon;
+			case VERSUS -> SRC.Search.versus;
+			default -> throw new IllegalArgumentException("Unexpected value: " + rt);
+			};
 		}
 		
 		for(int i=1; i<=sap.lastPage && i<=maxPage; i++) {
