@@ -789,8 +789,12 @@ public class RaidSlot extends Slot {
 		
 		if(err == null)
 			Logger.print("switched to " + best.twitchDisplayName, Logger.caps, Logger.info, cid, slot);
-		else
-			Logger.print("RaidSlot -> switchCap: err="+err, Logger.lowerr, Logger.error, cid, slot, true);
+		else {
+			Logger.print("RaidSlot -> switchCap: err="+err, Logger.runerr, Logger.error, cid, slot, true);
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {}
+		}
 		
 		captain(vbe, noCap);
 	}

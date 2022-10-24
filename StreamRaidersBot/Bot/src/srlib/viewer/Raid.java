@@ -20,7 +20,7 @@ public class Raid {
 		return twitchDisplayName;
 	}
 	
-	public final String raidId, nodeType, captainId, chestType, twitchDisplayName, battleground, nodeId,
+	public final String raidId, captainId, nodeType, chestType, twitchDisplayName, battleground, nodeId,
 						twitchUserImage, twitchUserName, allyBoons, placementsSerialized, users;
 	public final long creationDate, nextUnitPlaceTime;
 	public final boolean ended, battleResult, hasViewedResults, isPlaying, isLive, postBattleComplete, hasRecievedRewards, placementEnded, placedUnit, isCodeLocked;

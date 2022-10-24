@@ -293,7 +293,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	public String addRaid(CaptainData captain, String slot) throws NoConnectionException {
-		JsonObject resp = Json.parseObj(req.addPlayerToRaid(captain.captainId+"c", slot));
+		JsonObject resp = Json.parseObj(req.addPlayerToRaid(captain.captainId, slot));
 		JsonElement err = resp.get(SRC.errorMessage);
 		return err.isJsonPrimitive() ? err.getAsString() : (resp.get("data").getAsBoolean() ? null : "data is false");
 	}

@@ -11,7 +11,7 @@ public class CaptainInfo {
 	/**
 	 * captainId: captainInfo
 	 */
-	public static final Hashtable<Integer, CaptainInfo> cinfos = new Hashtable<>();
+	public static final Hashtable<String, CaptainInfo> cinfos = new Hashtable<>();
 	
 	/**
 	 * puts a new CaptainInfo in {@link #cinfos} if not already present
@@ -112,7 +112,7 @@ public class CaptainInfo {
 	 * @param leaves
 	 * @param times
 	 */
-	public CaptainInfo(int capId, String tdn, String tun, int[] wins, int[] defeats, int[] leaves, int[] times) {
+	public CaptainInfo(String capId, String tdn, String tun, int[] wins, int[] defeats, int[] leaves, int[] times) {
 		this.tdn = tdn;
 		this.tun = tun;
 		
@@ -130,7 +130,7 @@ public class CaptainInfo {
 	 * @param tdn
 	 * @param tun
 	 */
-	private CaptainInfo(int capId, String tdn, String tun) {
+	private CaptainInfo(String capId, String tdn, String tun) {
 		this.tdn = tdn;
 		this.tun = tun;
 		

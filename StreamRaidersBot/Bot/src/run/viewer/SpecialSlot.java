@@ -162,8 +162,13 @@ public class SpecialSlot extends Slot {
 			maxPrice -= us[ind].price;
 		}
 	}
+	
 
 	private void store(ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
+		store(vbe, true);
+	}
+
+	private void store(final ViewerBackEnd vbe, final boolean first) throws NoConnectionException, NotAuthorizedException {
 		
 		vbe.updateStore(false);
 		
@@ -247,8 +252,15 @@ public class SpecialSlot extends Slot {
 				default:
 					Logger.print("SpecialSlot (viewer) -> store -> buyItem: err=unknown buyType, buyType="+resp.get("buyType").getAsString()+", item="+best.toString(), Logger.runerr, Logger.error, cid, 4, true);
 				}
-			} else if(!err.getAsString().startsWith("not enough "))
-				Logger.print("SpecialSlot (viewer) -> store -> buyItem: err="+err.getAsString()+", item="+best.toString(), Logger.runerr, Logger.error, cid, 4, true);
+			} else if(!err.getAsString().startsWith("not enough ")) {
+				Logger.print("SpecialSlot (viewer) -> store -> buyItem: err="+err.getAsString()+", item="+best.toString()+", resp="+resp.toString(), Logger.runerr, Logger.error, cid, 4, true);
+				if(first) {
+					//	error may have been caused due to the shop not being up to date
+					vbe.updateStore(true);
+					store(vbe, false);
+					return;
+				}
+			}
 		}
 		
 		

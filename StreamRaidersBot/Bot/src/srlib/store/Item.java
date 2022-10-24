@@ -11,7 +11,7 @@ public class Item {
 				.append(name)
 				.append(" ")
 				.append(quantity)
-				.append("@")
+				.append(" @")
 				.append(price)
 				.append(" ")
 				.append(purchased ? "purchased (" : "(")
