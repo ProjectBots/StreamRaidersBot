@@ -34,10 +34,32 @@ public class UnitType implements Comparable<UnitType> {
 		return this.uid.compareTo(ut.uid);
 	}
 	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == null)
+			return false;
+		
+		if(!(obj instanceof UnitType))
+			return false;
+		
+		return uid.equals(((UnitType) obj).uid);
+	}
+	
 	private static Hashtable<String, UnitType> types;
 	private static List<String> typeUids;
 	
+	
+	public static String typeStringRemap(String in) {
+		switch(in) {
+		case "paladin": return "alliespaladin";
+		case "balloonbuster": return "alliesballoonbuster";
+		case "flyingrogue": return "flyingarcher";
+		default: return in;
+		}
+	}
+	
 	public static UnitType getType(String type) {
+		type = typeStringRemap(type);
 		return types.get(type);
 	}
 	
@@ -45,6 +67,10 @@ public class UnitType implements Comparable<UnitType> {
 		return types.values();
 	}
 	
+	/**
+	 * @return a unmodifiable list<br>
+	 * (see {@link Collections#unmodifiableList(List)})
+	 */
 	public static List<String> getTypeUids() {
 		return typeUids;
 	}

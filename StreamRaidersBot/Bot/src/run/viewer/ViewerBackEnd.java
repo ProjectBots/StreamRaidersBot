@@ -13,31 +13,41 @@ import com.google.gson.JsonObject;
 import include.Json;
 import include.Http.NoConnectionException;
 import otherlib.Logger;
+import otherlib.Options;
 import run.AbstractBackEnd;
-import srlib.Event;
+import srlib.EventsAndRewards;
 import srlib.Map;
-import srlib.Quests;
 import srlib.RaidType;
+import srlib.Reward;
 import srlib.SRC;
 import srlib.SRR;
-import srlib.Quests.Quest;
+import srlib.Quest;
 import srlib.SRR.NotAuthorizedException;
 import srlib.skins.Skin;
 import srlib.souls.SoulType;
 import srlib.store.BuyableUnit;
+import srlib.store.Store;
 import srlib.units.Unit;
+import srlib.units.UnitType;
 import srlib.viewer.CaptainData;
 import srlib.viewer.Raid;
 
 public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 
-	private Raid[] raids = new Raid[4];
-	private Map[] maps = new Map[4];
+	private Raid[] raids = {null, null, null, null};
+	private Map[] maps = {null, null, null, null};
 	private CaptainData[][] caps = new CaptainData[RaidType.highestTypeInt][0];
-	private Quests quests = new Quests();
-	private Event event = new Event();
+	private Quest[] quests = {};
+	private EventsAndRewards event = new EventsAndRewards();
 	private HashMap<String, Long> rts = new HashMap<>();
-	private int[] updateTimes = new int[] {10, 1, 5, 15};
+	/**
+	 * 0 caps<br>
+	 * 1 raids<br>
+	 * 2 maps<br>
+	 * 3 eventrewards<br>
+	 * 4 quests<br>
+	 */
+	private int[] updateTimes = {10, 1, 5, 15, 15};
 	
 	
 	public ViewerBackEnd(String cid, SRR req, UpdateEventListener<ViewerBackEnd> uelis) throws NoConnectionException, NotAuthorizedException {
@@ -48,16 +58,18 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	protected void ini() throws NoConnectionException, NotAuthorizedException {
 		super.ini();
 		updateRaids(true);
-		updateQuestEventRewards(true);
+		updateEventRewards(true);
+		updateQuests(true);
 	}
 	
 	
-	public void setUpdateTimes(int units, int skins, int souls, int caps, int raids, int maps, int store, int qer) {
+	public void setUpdateTimes(int units, int skins, int souls, int caps, int raids, int maps, int store, int eventRewards, int quests) {
 		super.setUpdateTimes(units, skins, souls, store);
 		updateTimes[0] = caps;
 		updateTimes[1] = raids;
 		updateTimes[2] = maps;
-		updateTimes[3] = qer;
+		updateTimes[3] = eventRewards;
+		updateTimes[4] = quests;
 	}
 	
 	
@@ -118,8 +130,8 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		uelis.afterUpdate("map::"+slot, this);
 	}
 	
-	synchronized public void updateQuestEventRewards(boolean force) throws NoConnectionException, NotAuthorizedException {
-		Long wt = rts.get("qer");
+	synchronized public void updateEventRewards(boolean force) throws NoConnectionException, NotAuthorizedException {
+		Long wt = rts.get("eventRewards");
 		long now = System.currentTimeMillis();
 		if(!force && !(wt == null || now - wt > 0))
 			return;
@@ -130,15 +142,53 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		
 		event.updateEventProgression(userEventProgression.getAsJsonArray("data"));
 		
-		JsonObject userQuests = Json.parseObj(req.getUserQuests());
-		if(testUpdate(userQuests))
-			userQuests = Json.parseObj(req.getUserQuests());
+		rts.put("eventRewards", now + updateTimes[3]*60*1000);
+		uelis.afterUpdate("eventRewards", this);
+	}
+	
+	synchronized public void updateQuests(boolean force) throws NoConnectionException, NotAuthorizedException {
+		Long wt = rts.get("quests");
+		long now = System.currentTimeMillis();
+		if(!force && !(wt == null || now - wt > 0))
+			return;
 		
-		//TODO split
-		quests.updateQuests(userQuests.getAsJsonArray("data"));
+		JsonObject request = Json.parseObj(req.getUserQuests());
+		if(testUpdate(request))
+			request = Json.parseObj(req.getUserQuests());
 		
-		rts.put("qer", now + updateTimes[3]*60*1000);
-		uelis.afterUpdate("qer", this);
+		JsonArray userQuests = request.getAsJsonArray("data");
+		JsonObject questTypes = Json.parseObj(Options.get("quests"));
+		
+		Quest[] buffer = new Quest[userQuests.size()];
+		int c = 0;
+		
+		for(int i=0; i<userQuests.size(); i++) {
+			JsonObject rQuest = userQuests.get(i).getAsJsonObject();
+			
+			JsonElement id = rQuest.get("currentQuestId");
+			if(!id.isJsonPrimitive())
+				continue;
+			
+			String questId = id.getAsString();
+			
+			JsonObject quest = questTypes.getAsJsonObject(questId);
+			
+			String qtype = quest.get("Type").getAsString();
+			
+			buffer[c++] = new Quest(questId,
+									rQuest.get("currentProgress").getAsInt(),
+									quest.get("GoalAmount").getAsInt(),
+									rQuest.get("questSlotId").getAsString(),
+									qtype,
+									qtype.equals("PlaceUnitOfType") ? UnitType.getType(quest.get("UnitTypeRequirement").getAsString()) : null);
+			
+		}
+		
+		quests = new Quest[c];
+		System.arraycopy(buffer, 0, quests, 0, c);
+		
+		rts.put("quests", now + updateTimes[4]*60*1000);
+		uelis.afterUpdate("quests", this);
 	}
 	
 	synchronized public void updateCaps(boolean force, final RaidType rt) throws NoConnectionException, NotAuthorizedException, ErrorRetrievingCaptainsException {
@@ -301,11 +351,12 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	
-	public JsonObject getChest(int slot) throws NoConnectionException, NotAuthorizedException {
-		JsonElement data = Json.parseObj(req.getRaidStatsByUser(raids[slot].raidId)).get("data");
-		if(data == null || !data.isJsonObject())
-			return null;
-		return raids[slot].getChest(data.getAsJsonObject());
+	public ArrayList<Reward> getChest(int slot) throws NoConnectionException, NotAuthorizedException {
+		JsonObject resp = Json.parseObj(req.getRaidStatsByUser(raids[slot].raidId));
+		JsonElement err = resp.get(SRC.errorMessage);
+		if(err != null && err.isJsonPrimitive())
+			throw new RuntimeException(err.getAsString());
+		return raids[slot].getChest(resp.getAsJsonObject("data"));
 	}
 	
 	public boolean isReward(int slot) throws NoConnectionException, NotAuthorizedException {
@@ -439,40 +490,75 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	public boolean isEvent() throws NoConnectionException, NotAuthorizedException {
-		updateQuestEventRewards(false);
-		return Event.isEvent();
+		updateEventRewards(false);
+		return EventsAndRewards.isEvent();
 	}
 	
 	public int getEventTier() throws NoConnectionException, NotAuthorizedException {
-		updateQuestEventRewards(false);
+		updateEventRewards(false);
 		return event.getEventTier();
 	}
 	
 	public boolean canCollectEvent(int p, boolean battlePass) throws NoConnectionException, NotAuthorizedException {
-		updateQuestEventRewards(false);
+		updateEventRewards(false);
 		return event.canCollectEvent(p, battlePass);
 	}
 	
 	public JsonObject collectEvent(int p, boolean battlePass) throws NoConnectionException {
-		return event.collectEvent(p, battlePass, Json.parseObj(req.grantEventReward(Event.getCurrentEvent(), ""+p, battlePass)));
+		return event.collectEvent(p, battlePass, Json.parseObj(req.grantEventReward(EventsAndRewards.getCurrentEvent(), ""+p, battlePass)));
 	}
 	
 	public boolean hasBattlePass() throws NoConnectionException, NotAuthorizedException {
-		updateQuestEventRewards(false);
+		updateEventRewards(false);
 		return event.hasBattlePass();
 	}
 	
 	public ArrayList<Quest> getClaimableQuests() throws NoConnectionException, NotAuthorizedException {
-		updateQuestEventRewards(true);
-		return quests.getClaimableQuests();
+		ArrayList<Quest> ret = new ArrayList<Quest>();
+		for(Quest q : quests)
+			if(q.canClaim)
+				ret.add(q);
+		return ret;
 	}
 	
-	public JsonObject claimQuest(Quest quest) throws NoConnectionException {
-		return Json.parseObj(req.collectQuestReward(quest.slot));
+	public static class QuestClaimFailedException extends Exception {
+		private static final long serialVersionUID = -7741694457843475140L;
+		public QuestClaimFailedException(String err) {
+			super(err);
+		}
 	}
 	
-	public ArrayList<String> getNeededUnitTypesForQuests() {
-		return quests.getNeededUnitTypesForQuests();
+	public Reward claimQuest(Quest quest) throws NoConnectionException, QuestClaimFailedException {
+		JsonObject dat = Json.parseObj(req.collectQuestReward(quest.qslot));
+		JsonElement err = dat.get(SRC.errorMessage);
+		boolean isErr = err.isJsonPrimitive();
+		
+		if(isErr)
+			throw new QuestClaimFailedException(err.getAsString());
+		
+		dat = dat.getAsJsonObject("data").getAsJsonObject("rewardData");
+		String item = dat.get("ItemId").getAsString();
+		
+		if(item.equals("goldpiecebag"))
+			item = Store.gold.get();
+		else if(item.contains("skin"))
+			item = "skin";
+		else if(Options.get("eventBadges").contains(item))
+			return null;
+		
+		int a = dat.get("Amount").getAsInt();
+		
+		quests = ArrayUtils.removeElement(quests, quest);
+		
+		return new Reward(item, a);
+	}
+	
+	public HashSet<UnitType> getNeededUnitTypesForQuests() {
+		HashSet<UnitType> ret = new HashSet<>();
+		for(Quest q : quests)
+			if(q.neededUnit != null)
+				ret.add(q.neededUnit);
+		return ret;
 	}
 	
 	public String grantTeamReward() throws NoConnectionException {

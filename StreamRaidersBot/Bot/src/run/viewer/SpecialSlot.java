@@ -15,13 +15,14 @@ import otherlib.Configs.StorePrioType;
 import run.ProfileType;
 import run.Slot;
 import run.StreamRaidersException;
+import run.viewer.ViewerBackEnd.QuestClaimFailedException;
 import srlib.SRC;
-import srlib.Quests.Quest;
+import srlib.Quest;
+import srlib.Reward;
 import srlib.SRR.NotAuthorizedException;
 import srlib.store.BuyableUnit;
 import srlib.store.Item;
 import srlib.store.Store;
-import srlib.viewer.Raid.Reward;
 
 public class SpecialSlot extends Slot {
 
@@ -113,7 +114,6 @@ public class SpecialSlot extends Slot {
 		}
 	}
 
-	private boolean goMultiUnit;
 	
 	private void unlock(ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
 		int ming = Configs.getInt(cid, currentLayer, Configs.unlockMinGoldViewer);
@@ -143,24 +143,13 @@ public class SpecialSlot extends Slot {
 				break;
 			
 			if(Options.is("exploits") && Configs.getBoolean(cid, currentLayer, Configs.useMultiUnitExploitViewer)) {
-				goMultiUnit = false;
+
 				final BuyableUnit picked = us[ind];
-				for(int i=0; i<SRC.Run.exploitThreadCount; i++) {
-					new Thread(() -> {
-						while(!goMultiUnit) {
-							try {
-								Thread.sleep(1);
-							} catch (InterruptedException e) {}
-						}
-						try {
-							vbe.unlockUnit(picked);
-						} catch (NoConnectionException e) {}
-					}).start();
-				}
-				goMultiUnit = true;
-				try {
-					Thread.sleep(3000);
-				} catch (InterruptedException e) {}
+				useMultiExploit(() -> {
+					try {
+						vbe.unlockUnit(picked);
+					} catch (NoConnectionException e) {}
+				});
 				vbe.updateStore(true);
 			} else {
 				String err = vbe.unlockUnit(us[ind]);
@@ -235,12 +224,23 @@ public class SpecialSlot extends Slot {
 	 */
 	private void storeCollectDaily(ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
 		Item daily = vbe.getDaily();
-		if(daily != null) {
-			JsonElement err = vbe.buyItem(daily).get(SRC.errorMessage);
-			if(err.isJsonPrimitive())
-				Logger.print("SpecialSlot (viewer) -> storeCollectDaily: err="+err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
-			else
-				v.addRew(vbe, SRC.Run.bought, Store.eventcurrency.get(), daily.quantity);
+		if(daily != null && !daily.purchased) {
+			if(Options.is("exploits") && Configs.getBoolean(cid, currentLayer, Configs.useMultiDailyClaimExploitViewer)) {
+				useMultiExploit(() -> {
+					try {
+						JsonElement err = vbe.buyItem(daily).get(SRC.errorMessage);
+						if(!err.isJsonPrimitive())
+							v.addRew(vbe, SRC.Run.bought, Store.eventcurrency.get(), daily.quantity);
+					} catch (NoConnectionException | NotAuthorizedException e) {}
+				});
+			} else {
+				JsonElement err = vbe.buyItem(daily).get(SRC.errorMessage);
+				if(err.isJsonPrimitive())
+					Logger.print("SpecialSlot (viewer) -> storeCollectDaily: err="+err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
+				else
+					v.addRew(vbe, SRC.Run.bought, Store.eventcurrency.get(), daily.quantity);
+			}
+			
 		}
 	}
 	
@@ -262,7 +262,7 @@ public class SpecialSlot extends Slot {
 		
 		ArrayList<Item> items = vbe.getAvailableEventStoreItems(section, false);
 		Item best = null;
-		int p = -1;
+		int p = Integer.MIN_VALUE;
 		for(final Item item : items) {
 			
 			Integer p_ = Configs.getStorePrioInt(cid, currentLayer, spt, item.uid);
@@ -293,8 +293,8 @@ public class SpecialSlot extends Slot {
 				v.addRew(vbe, SRC.Run.bought, chestType, 1);
 				JsonArray data = resp.getAsJsonObject("data").getAsJsonArray("rewards");
 				for(int i=0; i<data.size(); i++) {
-					Reward rew = new Reward(data.get(i).getAsString(), cid, 4);
-					v.addRew(vbe, SRC.Run.bought, rew.name, rew.quantity);
+					Reward rew = Reward.genChestReward(data.get(i).getAsString(), cid, 4);
+					v.addRew(vbe, SRC.Run.bought, rew.name, rew.amount);
 				}
 				break;
 			case "SKIN":
@@ -403,30 +403,16 @@ public class SpecialSlot extends Slot {
 		}
 	}
 
-	private boolean goMultiQuestClaim;
-	
 	private void quest(ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
 		ArrayList<Quest> quests = vbe.getClaimableQuests();
 		
 		for(final Quest q : quests) {
 			if(Options.is("exploits") && Configs.getBoolean(cid, currentLayer, Configs.useMultiQuestExploitViewer)) {
-				goMultiQuestClaim = false;
-				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
-					new Thread(() -> {
-						while(!goMultiQuestClaim) {
-							try {
-								Thread.sleep(1);
-							} catch (InterruptedException e) {}
-						}
-						try {
-							claimQuest(vbe, q, true);
-						} catch (NoConnectionException e) {}
-					}).start();
-				}
-				goMultiQuestClaim = true;
-				try {
-					Thread.sleep(3000);
-				} catch (InterruptedException e) {}
+				useMultiExploit(() -> {
+					try {
+						claimQuest(vbe, q, true);
+					} catch (NoConnectionException e) {}
+				});
 			} else {
 				claimQuest(vbe, q, false);
 			}
@@ -434,26 +420,12 @@ public class SpecialSlot extends Slot {
 	}
 	
 	private void claimQuest(ViewerBackEnd vbe, Quest q, boolean skipError) throws NoConnectionException {
-		JsonObject dat = vbe.claimQuest(q);
-		JsonElement err = dat.get(SRC.errorMessage);
-		boolean isErr = err.isJsonPrimitive();
-		
-		if(isErr && !skipError)
-			Logger.print("SpecialSlot (viewer) -> claimQuests: err=" + err.getAsString(), Logger.runerr, Logger.error, cid, 4, true);
-		
-		if(!isErr) {
-			dat = dat.getAsJsonObject("data").getAsJsonObject("rewardData");
-			String item = dat.get("ItemId").getAsString();
-			
-			if(item.equals("goldpiecebag"))
-				item = Store.gold.get();
-			else if(item.contains("skin"))
-				item = "skin";
-			else if(Options.get("eventBadges").contains(item))
-				return;
-			
-			int a = dat.get("Amount").getAsInt();
-			v.addRew(vbe, SRC.Run.event, item, a);
+		try {
+			Reward r = vbe.claimQuest(q);
+			v.addRew(vbe, SRC.Run.event, r.name, r.amount);
+		} catch (QuestClaimFailedException e) {
+			if(!skipError)
+				Logger.printException("SpecialSlot (viewer) -> claimQuests: err=failed to claim quest", e, Logger.runerr, Logger.error, cid, 4, true);
 		}
 	}
 
@@ -476,30 +448,16 @@ public class SpecialSlot extends Slot {
 		}
 	}
 	
-	private boolean goMultiEventClaim;
-	
 	private void collectEvent(final ViewerBackEnd vbe, final int tier, final boolean bp) throws NoConnectionException, NotAuthorizedException {
 		if(!vbe.canCollectEvent(tier, bp))
 			return;
 		
 		if(Options.is("exploits") && Configs.getBoolean(cid, currentLayer, Configs.useMultiEventExploitViewer)) {
-			goMultiEventClaim = false;
-			for(int i=0; i<SRC.Run.exploitThreadCount; i++) {
-				new Thread(() -> {
-					while(!goMultiEventClaim) {
-						try {
-							Thread.sleep(1);
-						} catch (InterruptedException e) {}
-					}
-					try {
-						collectEventInner(vbe, tier, bp, true);
-					} catch (NoConnectionException | NullPointerException e) {}
-				}).start();
-			}
-			goMultiEventClaim = true;
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException e) {}
+			useMultiExploit(() -> {
+				try {
+					collectEventInner(vbe, tier, bp, true);
+				} catch (NoConnectionException | NullPointerException e) {}
+			});
 		} else {
 			collectEventInner(vbe, tier, bp, false);
 		}

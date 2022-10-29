@@ -312,7 +312,8 @@ public class Configs {
 	public static final Int mapUpdateViewer = new Int("mapUpdate", ProfileType.VIEWER);
 	public static final Int storeUpdateViewer = new Int("storeUpdate", ProfileType.VIEWER);
 	public static final Int skinUpdateViewer = new Int("skinUpdate", ProfileType.VIEWER);
-	public static final Int questEventRewardsUpdateViewer = new Int("questEventRewardsUpdate", ProfileType.VIEWER);
+	public static final Int eventRewardsUpdateViewer = new Int("eventRewardsUpdate", ProfileType.VIEWER);
+	public static final Int questUpdateViewer = new Int("eventRewardsUpdate", ProfileType.VIEWER);
 	public static final Int capsUpdateViewer = new Int("capsUpdate", ProfileType.VIEWER);
 	public static final Int soulsUpdateViewer = new Int("capsUpdate", ProfileType.VIEWER);
 	public static final Int proxyPortViewer = new Int("proxyPort", ProfileType.VIEWER);
@@ -334,7 +335,8 @@ public class Configs {
 	public static final Int storeUpdateCaptain = new Int("storeUpdate", ProfileType.CAPTAIN);
 	public static final Int soulsUpdateCaptain = new Int("storeUpdate", ProfileType.CAPTAIN);
 	public static final Int skinUpdateCaptain = new Int("skinUpdate", ProfileType.CAPTAIN);
-	public static final Int questEventRewardsUpdateCaptain = new Int("questEventRewardsUpdate", ProfileType.CAPTAIN);
+	public static final Int eventRewardsUpdateCaptain = new Int("eventRewardsUpdate", ProfileType.CAPTAIN);
+	public static final Int questUpdateCaptain = new Int("questUpdate", ProfileType.CAPTAIN);
 	public static final Int capsUpdateCaptain = new Int("capsUpdate", ProfileType.CAPTAIN);
 	public static final Int proxyPortCaptain = new Int("proxyPort", ProfileType.CAPTAIN);
 	
@@ -377,6 +379,7 @@ public class Configs {
 	public static final Boo useMultiUnitExploitViewer = new Boo("useMultiUnitExploit", ProfileType.VIEWER);
 	public static final Boo useMultiChestExploitViewer = new Boo("useMultiChestExploit", ProfileType.VIEWER);
 	public static final Boo useMultiEventExploitViewer = new Boo("useMultiEventExploit", ProfileType.VIEWER);
+	public static final Boo useMultiDailyClaimExploitViewer = new Boo("useMultiDailyClaimExploit", ProfileType.VIEWER);
 	public static final Boo preferRoguesOnTreasureMapsViewer = new Boo("preferRoguesOnTreasureMaps", ProfileType.VIEWER);
 	public static final Boo allowPlaceFirstViewer = new Boo("allowPlaceFirst", ProfileType.VIEWER);
 	public static final Boo proxyMandatoryViewer = new Boo("proxyMandatory", ProfileType.VIEWER);

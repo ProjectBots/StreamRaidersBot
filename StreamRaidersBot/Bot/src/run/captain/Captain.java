@@ -12,7 +12,7 @@ public class Captain extends AbstractProfile<CaptainBackEnd> {
 
 	public static final int slotSize = 5;
 	
-	public Captain(String cid, SRR req) throws Exception {
+	public Captain(String cid, SRR req, int pos) throws Exception {
 		super(cid, new CaptainBackEnd(cid, req, new UpdateEventListener<CaptainBackEnd>() {
 			@Override
 			public void afterUpdate(String obj, CaptainBackEnd vbe) {
@@ -21,7 +21,7 @@ public class Captain extends AbstractProfile<CaptainBackEnd> {
 				
 				}
 			}
-		}), ProfileType.CAPTAIN, slotSize);
+		}), ProfileType.CAPTAIN, slotSize, pos);
 	}
 
 	@Override

@@ -3,7 +3,6 @@ package run.viewer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -27,6 +26,7 @@ import run.StreamRaidersException;
 import run.viewer.ViewerBackEnd.ErrorRetrievingCaptainsException;
 import srlib.Map;
 import srlib.RaidType;
+import srlib.Reward;
 import srlib.SRC;
 import srlib.Time;
 import srlib.SRR.NotAuthorizedException;
@@ -83,7 +83,6 @@ public class RaidSlot extends Slot {
 		Logger.print("finished slotSequence for slot "+slot, Logger.general, Logger.info, cid, slot);
 	}
 	
-	private boolean goMultiPlace;
 	private long placeTime = System.currentTimeMillis();
 	
 	private void place(final ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
@@ -214,13 +213,13 @@ public class RaidSlot extends Slot {
 		int reload = Configs.getInt(cid, currentLayer, Configs.mapReloadAfterXRetriesViewer);
 		HashSet<String> bannedPos = new HashSet<>();
 		
-		ArrayList<String> neededUnits = vbe.getNeededUnitTypesForQuests();
+		HashSet<UnitType> neededUnits = vbe.getNeededUnitTypesForQuests();
 		
 		if(Configs.getBoolean(cid, currentLayer, Configs.preferRoguesOnTreasureMapsViewer) 
 			&& r.nodeType.contains("treasure")
 			) {
-			neededUnits.add("rogue");
-			neededUnits.add("flyingarcher");
+			neededUnits.add(UnitType.getType("rogue"));
+			neededUnits.add(UnitType.getType("flyingarcher"));
 		}
 		
 		Logger.print("neededUnits="+neededUnits, Logger.units, Logger.info, cid, slot);
@@ -231,69 +230,33 @@ public class RaidSlot extends Slot {
 		while(true) {
 			Logger.print("place "+re, Logger.loop, Logger.info, cid, slot);
 			
+			final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, chest, isFav, vbe.getSkins(false), r.captainId);
+			if(pla == null) {
+				Logger.print("place=null", Logger.place, Logger.info, cid, slot);
+				System.out.println("place=null, "+Configs.getPStr(cid, Configs.pname)+" - "+slot);
+				break;
+			}
+			Logger.print("Place="+pla.toString(), Logger.place, Logger.info, cid, slot);
+			
 			if(Options.is("exploits") && Configs.getBoolean(cid, currentLayer, Configs.useMultiPlaceExploitViewer)) {
-				goMultiPlace = false;
-				for(int j=0; j<SRC.Run.exploitThreadCount; j++) {
-					final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, chest, isFav, vbe.getSkins(false), r.captainId);
-					if(pla == null)
-						continue;
-					bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
-					Thread t = new Thread(new Runnable() {
-						@Override
-						public void run() {
-							while(!goMultiPlace) {
-								try {
-									Thread.sleep(1);
-								} catch (InterruptedException e) {}
-							}
-							try {
-								vbe.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan, pla.skin);
-							} catch (NoConnectionException e) {}
-						}
-					});
-					t.start();
-				}
-				goMultiPlace = true;
-				try {
-					Thread.sleep(3000);
-				} catch (InterruptedException e) {}
+				useMultiExploit(() -> {
+					try {
+						placeUnit(vbe, pla, dungeon);
+					} catch (NoConnectionException e) {}
+				});
 				break;
 			} else {
-				final Place pla = findPlace(map, mh, bannedPos, neededUnits, units, epic, dungeon, dunLvl, dunNeeded, chest, isFav, vbe.getSkins(false), r.captainId);
+				String err = placeUnit(vbe, pla, dungeon);
 				
-
-				if(pla == null) {
-					Logger.print("place=null", Logger.place, Logger.info, cid, slot);
-					System.out.println("place=null, "+Configs.getPStr(cid, Configs.pname)+" - "+slot);
+				if(err == null || err.equals("PERIOD_ENDED"))
 					break;
-				}
 				
-				Logger.print("Place="+pla.toString(), Logger.place, Logger.info, cid, slot);
-				String err = vbe.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan, pla.skin);
 				bannedPos.add(pla.pos[0]+"-"+pla.pos[1]);
-				
-				if(err == null) {
-					if(pla.epic && !dungeon)
-						vbe.decreaseCurrency(Store.potions, 45);
-					
-					vbe.addCurrency(Store.potions, 1);
-					UnitType ut = pla.unit.type;
-					if(ut.rarity != UnitRarity.LEGENDARY)
-						vbe.addCurrency(pla.unit.type.uid, 1);
-					placeTime = System.currentTimeMillis() 
-								+ Maths.ranInt(Configs.getInt(cid, currentLayer, Configs.unitPlaceDelayMinViewer),
-											Configs.getInt(cid, currentLayer, Configs.unitPlaceDelayMaxViewer));
-					
-					break;
-				}
 				
 				if(err.equals("NOT_ENOUGH_POTIONS")) {
 					vbe.setCurrency(Store.potions, 0);
 					epic = false;
 				}
-				
-				if(err.equals("PERIOD_ENDED"))
-					break;
 				
 				if(re++ < retries) {
 					if(re % reload == 0) {
@@ -306,11 +269,27 @@ public class RaidSlot extends Slot {
 				break;
 			}
 			
-			
-			
-			
 		}
 		
+	}
+	
+	private String placeUnit(ViewerBackEnd vbe, Place pla, boolean dungeon) throws NoConnectionException {
+		String err = vbe.placeUnit(slot, pla.unit, pla.epic, pla.pos, pla.isOnPlan, pla.skin);
+		
+		if(err == null) {
+			if(pla.epic && !dungeon)
+				vbe.decreaseCurrency(Store.potions, 45);
+			
+			vbe.addCurrency(Store.potions, 1);
+			UnitType ut = pla.unit.type;
+			if(ut.rarity != UnitRarity.LEGENDARY)
+				vbe.addCurrency(pla.unit.type.uid, 1);
+			placeTime = System.currentTimeMillis() 
+						+ Maths.ranInt(Configs.getInt(cid, currentLayer, Configs.unitPlaceDelayMinViewer),
+									Configs.getInt(cid, currentLayer, Configs.unitPlaceDelayMaxViewer));
+		}
+		
+		return err;
 	}
 	
 	
@@ -356,7 +335,7 @@ public class RaidSlot extends Slot {
 		}
 	}
 	
-	private Place findPlace(Map map, int[] mh, HashSet<String> bannedPos, List<String> neededUnits, final Unit[] units, final boolean epic, final boolean dungeon, final int dunLvl, final boolean dunNeeded, final String chest, final boolean fav, Skins skins, final String captainId) {
+	private Place findPlace(Map map, int[] mh, HashSet<String> bannedPos, HashSet<UnitType> neededUnits, final Unit[] units, final boolean epic, final boolean dungeon, final int dunLvl, final boolean dunNeeded, final String chest, final boolean fav, Skins skins, final String captainId) {
 		HashSet<String> nupts = map.getUsablePlanTypes(false);
 		HashSet<String> eupts = map.getUsablePlanTypes(true);
 		
@@ -387,9 +366,8 @@ public class RaidSlot extends Slot {
 				e = -1;
 			}
 			
-			if(neededUnits.contains(ut.uid))
+			if(neededUnits.contains(ut))
 				n = Integer.MAX_VALUE;
-			
 			
 			int ep = -1;
 			if(eupts.contains(ut.ptag) || eupts.contains(ut.role.uid))
@@ -566,8 +544,6 @@ public class RaidSlot extends Slot {
 			switchCap(vbe, rt, r, tun, noCap);
 		}
 		
-		
-		
 		ListType list = Configs.getListTypeByRaidType(rt);
 		
 		Boolean il = Configs.getCapBoo(cid, currentLayer, tun, list, Configs.il);
@@ -713,15 +689,16 @@ public class RaidSlot extends Slot {
 		} catch (NoCapMatchesException e) {
 			if(!noCap) {
 				vbe.updateCaps(true, rt);
-				switchCap_(vbe, rt, r, cap, true);
-			} else {
-				Logger.print("RaidSlot (viewer) -> switchCap: slot="+slot+", err=No Captain Matches Config", Logger.runerr, Logger.error, cid, slot, true);
-				throw e;
+				try {
+					switchCap_(vbe, rt, r, cap, true);
+				} catch (NoCapMatchesException e2) {
+					Logger.print("RaidSlot (viewer) -> switchCap: slot="+slot+", err=No Captain Matches Config", Logger.runerr, Logger.error, cid, slot, true);
+				}
 			}
 		}
 	}
 	
-	private void switchCap_(ViewerBackEnd vbe, final RaidType rt, Raid r, String cap, boolean noCap) throws NoConnectionException, NotAuthorizedException, NoCapMatchesException, ErrorRetrievingCaptainsException {
+	private void switchCap_(ViewerBackEnd vbe, final RaidType rt, Raid r, String cap, boolean noCap) throws NoConnectionException, NotAuthorizedException, ErrorRetrievingCaptainsException, NoCapMatchesException {
 
 		long now = Time.getServerTime();
 		
@@ -800,43 +777,26 @@ public class RaidSlot extends Slot {
 	}
 
 	
-	private boolean goMultiChestClaim;
 	
 	private void chest(ViewerBackEnd vbe) throws NoConnectionException, NotAuthorizedException {
 		if(!vbe.isReward(slot))
 			return;
 		if(Options.is("exploits") && Configs.getBoolean(cid, currentLayer, Configs.useMultiChestExploitViewer)) {
-			goMultiChestClaim = false;
-			for(int i=0; i<SRC.Run.exploitThreadCount; i++) {
-				Thread t = new Thread(new Runnable() {
-					@Override
-					public void run() {
-						while(!goMultiChestClaim) {
-							try {
-								Thread.sleep(1);
-							} catch (InterruptedException e) {}
-						}
-						try {
-							JsonObject rews = vbe.getChest(slot);
-							if(rews == null)
-								return;
-							for(String rew : rews.keySet())
-								v.addRew(vbe, SRC.Run.chests, rew, rews.get(rew).getAsInt());
-						} catch (NoConnectionException | NotAuthorizedException e) {}
-					}
-				});
-				t.start();
-			}
-			goMultiChestClaim = true;
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException e) {}
+			useMultiExploit(() -> {
+				try {
+					ArrayList<Reward> rews = vbe.getChest(slot);
+					for(Reward r : rews)
+						v.addRew(vbe, SRC.Run.chests, r.name, r.amount);
+				} catch (Exception e) {}
+			});
 		} else {
-			JsonObject rews = vbe.getChest(slot);
-			if(rews == null)
-				return;
-			for(String rew : rews.keySet())
-				v.addRew(vbe, SRC.Run.chests, rew, rews.get(rew).getAsInt());
+			try {
+				ArrayList<Reward> rews = vbe.getChest(slot);
+				for(Reward r : rews)
+					v.addRew(vbe, SRC.Run.chests, r.name, r.amount);
+			} catch (RuntimeException e) {
+				Logger.printException("RaidSlot (viewer) -> chest: err=failed to claim chest", e, Logger.runerr, Logger.error, cid, slot, true);
+			}
 		}
 		
 	}

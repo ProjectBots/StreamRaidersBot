@@ -296,7 +296,7 @@ public class Store {
 			if(!item.get("itemId").getAsString().equals("dailydrop"))
 				continue;
 			
-			return item.get("purchased").getAsString().equals("1") ? null : new Item(daily, false);
+			return new Item(daily, item.get("purchased").getAsInt() == 1);
 		}
 		return null;
 	}
@@ -438,17 +438,16 @@ public class Store {
 				Json.override(ret, Json.parseObj(req.grantDailyDrop()));
 			} else {
 				ret.addProperty("buyType", BuyType.ITEM.toString());
-				
 				Json.override(ret, Json.parseObj(req.purchaseStoreItem(item.uid)));
-				
-				if(ret.get(SRC.errorMessage).isJsonPrimitive())
-					return ret;
-				
-				for(int i=0; i<shopItems.size(); i++) {
-					JsonObject item_ = shopItems.get(i).getAsJsonObject();
-					if(item_.get("itemId").getAsString().equals(item.uid))
-						item_.addProperty("purchased", 1);
-				}
+			}
+			
+			if(ret.get(SRC.errorMessage).isJsonPrimitive())
+				return ret;
+			
+			for(int i=0; i<shopItems.size(); i++) {
+				JsonObject item_ = shopItems.get(i).getAsJsonObject();
+				if(item_.get("itemId").getAsString().equals(item.uid))
+					item_.addProperty("purchased", 1);
 			}
 			break;
 		}

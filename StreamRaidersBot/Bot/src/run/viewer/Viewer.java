@@ -67,7 +67,7 @@ public class Viewer extends AbstractProfile<ViewerBackEnd> {
 		}
 	}
 	
-	public Viewer(String cid, SRR req) throws Exception {
+	public Viewer(String cid, SRR req, int pos) throws Exception {
 		super(cid, new ViewerBackEnd(cid, req, new UpdateEventListener<ViewerBackEnd>() {
 			@Override
 			public void afterUpdate(String obj, ViewerBackEnd vbe) {
@@ -116,7 +116,7 @@ public class Viewer extends AbstractProfile<ViewerBackEnd> {
 					}
 				}
 			}
-		}), ProfileType.VIEWER, slotSize);
+		}), ProfileType.VIEWER, slotSize, pos);
 		updateRews();
 	}
 	
@@ -218,7 +218,8 @@ public class Viewer extends AbstractProfile<ViewerBackEnd> {
 							Configs.getInt(cid, currentLayer, Configs.raidUpdateViewer),
 							Configs.getInt(cid, currentLayer, Configs.mapUpdateViewer),
 							Configs.getInt(cid, currentLayer, Configs.storeUpdateViewer),
-							Configs.getInt(cid, currentLayer, Configs.questEventRewardsUpdateViewer));
+							Configs.getInt(cid, currentLayer, Configs.eventRewardsUpdateViewer),
+							Configs.getInt(cid, currentLayer, Configs.questUpdateViewer));
 	}
 	
 	public String getTwitchLink(int slot) {

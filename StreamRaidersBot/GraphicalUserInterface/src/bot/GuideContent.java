@@ -24,9 +24,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import include.GUI;
+import srlib.Reward;
 import srlib.store.Store;
 import srlib.units.UnitType;
-import srlib.viewer.Raid;
 import include.Json;
 import include.NEF;
 
@@ -164,8 +164,8 @@ public class GuideContent {
 				int quantity = all_rewards.getAsJsonObject(rews[j]).get("Quantity").getAsInt();
 				String name;
 				String frew = rews[j].split("_")[0];
-				if(Raid.TYPICAL_CHEST_BASIC_REWARDS.containsKey(frew)) 
-					name = Raid.TYPICAL_CHEST_BASIC_REWARDS.get(frew);
+				if(Reward.TYPICAL_CHEST_BASIC_REWARDS.containsKey(frew)) 
+					name = Reward.TYPICAL_CHEST_BASIC_REWARDS.get(frew);
 				else if(typChestScrollRewards.contains(frew) || frew.startsWith("scroll"))
 					name = frew;
 				else if(rews[j].contains("skin"))

@@ -13,9 +13,12 @@ import configs.viewer.layers.ViewerLayerConf;
 import configs.viewer.layers.units.ViewerUnitConf;
 import include.DeepCopyHashtable;
 import run.AbstractProfile;
+import run.Manager;
 import run.ProfileType;
 
 public class ProfileConf {
+
+	public static final String NONE = "(none)";
 	
 	public static final Hashtable<String, ProfileConf> pconfs = new Hashtable<>();
 	
@@ -75,6 +78,14 @@ public class ProfileConf {
 		private static final long serialVersionUID = 1L;
 	}
 	
+	/**
+	 * syncs a profile to another.<br>
+	 * this function will not notify any profiles.<br>
+	 * use {@link Manager#syncProfiles}
+	 * @param pid
+	 * @param defpid
+	 * @param pt
+	 */
 	public static void syncProfiles(String pid, String defpid, ProfileType pt) {
 		final ProfileConf pc = pconfs.get(pid);
 		final ProfileConf dpc;
@@ -131,6 +142,68 @@ public class ProfileConf {
 							.uconfs);
 				
 				pc.vconf = dpc.vconf;
+			}
+			break;
+		}
+		
+	}
+	
+	
+	public void syncUnit(String cid, ProfileType pt, String lid, String unitId, String defUnitId) {
+		
+		switch(pt) {
+		case CAPTAIN:
+			DeepCopyHashtable<String, CaptainUnitConf> uconfsc = cconf.lconfs.get(lid).uconfs;
+			
+			CaptainUnitConf uc = uconfsc.get(unitId);
+			
+			if(defUnitId == null || defUnitId.equals("(none)")) {
+				uc.conf = uc.conf.clone();
+				uc.sync = "(none)";
+			} else {
+				CaptainUnitConf duc = uconfsc.get(defUnitId);
+				String dusc = defUnitId;
+				if(!duc.sync.equals(NONE)) {
+					dusc = duc.sync;
+					duc = uconfsc.get(duc.sync);
+				}
+				
+				for(CaptainUnitConf uc_ : uconfsc.values()) {
+					if(uc_.sync.equals(unitId)) {
+						uc_.conf = duc.conf;
+						uc_.sync = dusc;
+					}
+				}
+				
+				uc.conf = duc.conf;
+				uc.sync = dusc;
+			}
+			break;
+		case VIEWER:
+			DeepCopyHashtable<String, ViewerUnitConf> uconfsv = vconf.lconfs.get(lid).uconfs;
+			
+			ViewerUnitConf uv = uconfsv.get(unitId);
+			
+			if(defUnitId == null || defUnitId.equals("(none)")) {
+				uv.conf = uv.conf.clone();
+				uv.sync = "(none)";
+			} else {
+				ViewerUnitConf duv = uconfsv.get(defUnitId);
+				String dusv = defUnitId;
+				if(!duv.sync.equals(NONE)) {
+					dusv = duv.sync;
+					duv = uconfsv.get(duv.sync);
+				}
+				
+				for(ViewerUnitConf uv_ : uconfsv.values()) {
+					if(uv_.sync.equals(unitId)) {
+						uv_.conf = duv.conf;
+						uv_.sync = dusv;
+					}
+				}
+				
+				uv.conf = duv.conf;
+				uv.sync = dusv;
 			}
 			break;
 		}

@@ -33,9 +33,16 @@ import srlib.store.Store;
  * @param <B> extended class of {@link AbstractBackEnd}
  */
 
-public abstract class AbstractProfile<B extends AbstractBackEnd<B>> {
+public abstract class AbstractProfile<B extends AbstractBackEnd<B>> implements Comparable<AbstractProfile<B>> {
 
+	@Override
+	public int compareTo(AbstractProfile<B> o) {
+		return pos - o.pos;
+	}
+	
+	
 	public final String cid;
+	public final int pos;
 	private ProfileType ptype;
 	protected B be;
 	protected String currentLayer = "(default)";
@@ -60,9 +67,10 @@ public abstract class AbstractProfile<B extends AbstractBackEnd<B>> {
 		return slots.length;
 	}
 	
-	public AbstractProfile(String cid, B be, ProfileType ptype, int slotSize) {
-		this.be = be;
+	public AbstractProfile(String cid, B be, ProfileType ptype, int slotSize, int pos) {
 		this.cid = cid;
+		this.pos = pos;
+		this.be = be;
 		this.ptype = ptype;
 		slots = new Slot[slotSize];
 		iniSlots();
@@ -110,9 +118,9 @@ public abstract class AbstractProfile<B extends AbstractBackEnd<B>> {
 		
 		switch(ptype) {
 		case CAPTAIN:
-			return (T) new Viewer(cid, req);
+			return (T) new Viewer(cid, req, pos);
 		case VIEWER:
-			return (T) new Captain(cid, req);
+			return (T) new Captain(cid, req, pos);
 		}
 		return null;
 	}

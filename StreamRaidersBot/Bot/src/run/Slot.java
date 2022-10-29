@@ -12,11 +12,10 @@ import include.HeapDump;
 import include.Maths;
 import otherlib.Configs;
 import otherlib.Logger;
+import srlib.SRC;
 
 
 public abstract class Slot {
-	
-	
 	
 	protected final String cid;
 	protected final int slot;
@@ -26,7 +25,6 @@ public abstract class Slot {
 	private int sync = -1;
 	private final AbstractProfile<?> p;
 	protected String currentLayer;
-	
 	
 	public Slot(AbstractProfile<?> p, Slot[] slots, int slot) {
 		this.cid = p.cid;
@@ -96,7 +94,7 @@ public abstract class Slot {
 	
 	/**
 	 * executes this slot and any slot synced to it.<br>
-	 * starts the sleep if execution finished.
+	 * starts the sleep timer after execution.
 	 */
 	private void runSlot() {
 		p.updateLayer();
@@ -106,6 +104,7 @@ public abstract class Slot {
 		if(!isRunning())
 			return;
 		
+		//	paying respect to max concurrent actions
 		Logger.print("requesting action", Logger.general, Logger.info, cid, slot);
 		try {
 			Manager.requestAction();
@@ -119,6 +118,7 @@ public abstract class Slot {
 		for(int i=0; i<slots.length; i++)
 			if(slots[i].sync == slot)
 				slots[i].exeSlotSequence();
+		
 		
 		Logger.print("releasing action", Logger.general, Logger.info, cid, slot);
 		Manager.releaseAction();
@@ -273,4 +273,28 @@ public abstract class Slot {
 	 */
 	protected abstract void slotSequence();
 	
+
+	private boolean goMultiExploit;
+	
+	protected void useMultiExploit(Runnable run) {
+		goMultiExploit = false;
+		for(int i=0; i<SRC.Run.exploitThreadCount; i++) {
+			Thread t = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					while(!goMultiExploit) {
+						try {
+							Thread.sleep(1);
+						} catch (InterruptedException e) {}
+					}
+					run.run();
+				}
+			});
+			t.start();
+		}
+		goMultiExploit = true;
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {}
+	}
 }

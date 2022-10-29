@@ -395,7 +395,7 @@ public class ProfileSettings extends AbstractSettings {
 			int y = 0;
 			String[] sbuts = "Prefer Rogues On Treasure Maps  Allow Place First  Store Price As Default Prio  Use Skin From Captain".split("  ");
 			if(Options.is("exploits"))
-				sbuts = ArrayUtils.addAll(sbuts, "Use Multi Place Exploit  Use Multi Quest Exploit  Use Multi Event Exploit  Use Multi Chest Exploit  Use Multi Unit Exploit".split("  "));
+				sbuts = ArrayUtils.addAll(sbuts, "Use Multi Place Exploit  Use Multi Quest Exploit  Use Multi Event Exploit  Use Multi Chest Exploit  Use Multi Unit Exploit  Use Multi Daily Claim Exploit".split("  "));
 			
 			for(String key : sbuts) {
 				final Boo con = new Boo(key.substring(0, 1).toLowerCase() + key.substring(1).replace(" ", ""), ProfileType.VIEWER);
@@ -670,7 +670,7 @@ public class ProfileSettings extends AbstractSettings {
 		cstorem.setPos(0, g++);
 		cstorem.setInsets(10, 0, 0, 0);
 			
-			String[] smgs = "Store Min Gold  Store Min Keys  Store Min Eventcurrency  Upgrade Min Gold  Unlock Min Gold  Unit Place Retries  Map Reload After X Retries  Max Unit Per Raid  Cap Inactive Treshold  Unit Update  Raid Update  Map Update  Store Update  Skin Update  Quest Event Rewards Update  Caps Update  Souls Update".split("  ");
+			String[] smgs = "Store Min Gold  Store Min Keys  Store Min Eventcurrency  Upgrade Min Gold  Unlock Min Gold  Unit Place Retries  Map Reload After X Retries  Max Unit Per Raid  Cap Inactive Treshold  Unit Update  Raid Update  Map Update  Store Update  Skin Update  Quest Update  Event Rewards Update  Caps Update  Souls Update".split("  ");
 			int l = 0;
 			for(String key : smgs) {
 				final Int con = new Int(key.substring(0, 1).toLowerCase() + key.substring(1).replace(" ", ""), ProfileType.VIEWER);

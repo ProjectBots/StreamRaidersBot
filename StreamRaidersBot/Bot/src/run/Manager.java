@@ -3,6 +3,7 @@ package run;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -24,7 +25,8 @@ import otherlib.Configs.PStr;
 import otherlib.Configs.SleInt;
 import run.captain.Captain;
 import run.viewer.Viewer;
-import srlib.Event;
+import srlib.EventsAndRewards;
+import srlib.Reward;
 import srlib.SRC;
 import srlib.SRR;
 import srlib.Time;
@@ -32,7 +34,6 @@ import srlib.SRR.NotAuthorizedException;
 import srlib.SRR.OutdatedDataException;
 import srlib.store.Store;
 import srlib.units.UnitType;
-import srlib.viewer.Raid;
 import include.Json;
 
 public class Manager {
@@ -56,7 +57,6 @@ public class Manager {
 	
 	
 	private static Hashtable<String, AbstractProfile<?>> profiles = new Hashtable<>();
-	private static Hashtable<String, Integer> poss = new Hashtable<>();
 	
 	private static BotListener blis;
 	
@@ -89,7 +89,7 @@ public class Manager {
 	 * @return a instance unique number assigned to the profile starting from 0 and counting up. Can change when restarted, but keeps the order in which the profiles where added.
 	 */
 	public static int getProfilePos(String cid) {
-		return poss.get(cid);
+		return getProfile(cid).pos;
 	}
 	
 	/**
@@ -160,10 +160,6 @@ public class Manager {
 		}
 		setMaxConcurrentActions(Configs.getGInt(Configs.maxProfileActions));
 		setClockRunning(true);
-		int i=0;
-		for(String cid : Configs.getConfigIds())
-			poss.put(cid, i++);
-		poss.put("(next)", i);
 		
 	}
 	
@@ -191,7 +187,6 @@ public class Manager {
 			unloadProfile(cid);
 		Configs.remProfile(cid);
 		Configs.saveb();
-		poss.remove(cid);
 		blis.onProfileRemoved(cid);
 		failedProfiles.remove(cid);
 	}
@@ -222,8 +217,6 @@ public class Manager {
 	private static void loadProfile(final String cid) {
 		if(profiles.containsKey(cid))
 			return;
-		if(!poss.containsKey(cid))
-			poss.put(cid, poss.put("(next)", poss.get("(next)")+1));
 		new Thread(() -> {
 			try {
 				requestAction();
@@ -233,6 +226,7 @@ public class Manager {
 			failedProfiles.remove(cid);
 			blis.onProfileStartedLoading(cid);
 			AbstractProfile<?> p = null;
+			int pos = Configs.getConfigIds().indexOf(cid);
 			try {
 				SRR req = null;
 				try {
@@ -243,11 +237,11 @@ public class Manager {
 					req = new SRR(cid, Options.get("clientVersion"));
 				}
 				if(req.playsAsCaptain()) {
-					p = new Captain(cid, req);
+					p = new Captain(cid, req, pos);
 					if(!Options.is("captain_beta"))
 						p = p.switchProfileType();
 				} else
-					p = new Viewer(cid, req);
+					p = new Viewer(cid, req, pos);
 				profiles.put(cid, p);
 				
 				boolean before = Configs.getPBoo(cid, Configs.canCaptain);
@@ -259,10 +253,10 @@ public class Manager {
 					}
 				}
 				
-				blis.onProfileLoadComplete(cid, poss.get(cid), p.getType());
+				blis.onProfileLoadComplete(cid, pos, p.getType());
 				p.setReady(true);
 			} catch (Exception e) {
-				blis.onProfileLoadError(cid, poss.get(cid), e);
+				blis.onProfileLoadError(cid, pos, e);
 			}
 			synchronized(config_load_status_update_sync_lock) {
 				(p == null
@@ -535,17 +529,24 @@ public class Manager {
 	 * @param delay time between starting each action
 	 */
 	public static void doAll(int con, int delay) {
-		for(String key : profiles.keySet()) {
-			AbstractProfile<?> p = profiles.get(key);
+		AbstractProfile<?>[] psorted = new AbstractProfile[profiles.size()];
+
+		int i = 0;
+		for(AbstractProfile<?> p : profiles.values())
+			psorted[i++] = p;
+		
+		Arrays.sort(psorted);
+		
+		for(i=0; i<psorted.length; i++) {
 			switch(con) {
 			case SRC.Manager.start:
-				p.setRunningAll(true);
+				psorted[i].setRunningAll(true);
 				break;
 			case SRC.Manager.skip:
-				p.skipAll();
+				psorted[i].skipAll();
 				break;
 			case SRC.Manager.stop:
-				p.setRunningAll(false);
+				psorted[i].setRunningAll(false);
 				break;
 			}
 			try {
@@ -569,15 +570,15 @@ public class Manager {
 			for(int i=0; i<catsToUpdateData.length; i+=2)
 				Options.set(catsToUpdateData[i], data.get(catsToUpdateData[i+1]).toString());
 			
-			JsonArray ets = Event.genTiersFromData(data);
+			JsonArray ets = EventsAndRewards.genTiersFromData(data);
 			Options.set("eventTiers", ets.toString());
 			Options.set("eventTiersSize", ""+ets.size());
-			Options.set("eventBadges", Event.genEventBadgesFromData(data));
+			Options.set("eventBadges", EventsAndRewards.genEventBadgesFromData(data));
 			Options.set("currentEventCurrency", data.getAsJsonObject("Items").getAsJsonObject("eventcurrency").get("CurrencyTypeAwarded").getAsString());
 			Options.set("unitCosts", Store.genUnitCostsFromData(data).toString());
 			Options.set("unitTypes", UnitType.genUnitTypesFromData(data).toString());
 			Options.set("unitPower", UnitType.genUnitPowerFromData(data).toString());
-			Options.set("rewards", Raid.updateChestRews(data).toString());
+			Options.set("rewards", Reward.updateChestRews(data).toString());
 			Options.set("data", dataPathUrl);
 			Options.save();
 			

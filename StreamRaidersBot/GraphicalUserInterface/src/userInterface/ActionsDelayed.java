@@ -15,8 +15,8 @@ public class ActionsDelayed {
 	private final String uid = UUID.randomUUID().toString()+"::";
 	
 	public void open(GUI parent, boolean start) {
-
-		GUI t = new GUI("Time", 500, 200, parent, null);
+		
+		GUI t = new GUI(start?"start all":"skip time all", 500, 200, parent, null);
 		
 		t.setBackgroundGradient(Colors.getGradient("actdel background"));
 		
@@ -27,12 +27,8 @@ public class ActionsDelayed {
 					@Override
 					public void run() {
 						try {
-							int time = (int) (Float.parseFloat(GUI.getInputText(uid+"tf")) * 1000);
-							if(start) {
-								Manager.doAll(SRC.Manager.start, time);
-							} else {
-								Manager.doAll(SRC.Manager.skip, time);
-							}
+							Manager.doAll(start?SRC.Manager.start:SRC.Manager.skip,
+									(int) (Float.parseFloat(GUI.getInputText(uid+"tf")) * 1000));
 						} catch (NumberFormatException e) {
 							t.msg("Wrong Input", "You can't do that", GUI.MsgConst.WARNING);
 						}
@@ -52,7 +48,7 @@ public class ActionsDelayed {
 		
 		Button but = new Button();
 		but.setPos(0, 1);
-		but.setText("start all delayed");
+		but.setText(start?"start all delayed":"skip time all delayed");
 		but.setGradient(Colors.getGradient("actdel button"));
 		but.setAL(al);
 		t.addBut(but);

@@ -100,17 +100,19 @@
       "50 gold": 20,
       "6 rarescrolls": 30,
       "8 rarescrolls": 20,
-      "srskinsugarlemonpierogue": 7,
-      "srskinsugarpopcornbomber": 7,
-      "srskinsugarchurrocenturion": 7
+      "srskincultexsoldierwarrior": 7,
+      "srskincultbountyhuntermusketeer": 7,
+      "srskincultclassicartillery": 7,
+      "srskincultyithbuster": 7
     },
     "V2": {
       "75 gold": 10,
       "6 rarescrolls": 10,
       "8 rarescrolls": 15,
-      "srskinsugarlemonpierogue": 20,
-      "srskinsugarpopcornbomber": 15,
-      "srskinsugarchurrocenturion": 12
+      "srskincultexsoldierwarrior": 20,
+      "srskincultbountyhuntermusketeer": 15,
+      "srskincultclassicartillery": 12,
+      "srskincultyithbuster": 12
     },
     "B0": {
       "200 gold": 100
@@ -132,9 +134,10 @@
       "50 gold": 11,
       "5 rarescrolls": 28,
       "6 rarescrolls": 23,
-      "srskinsugarlemonpierogue": 48,
-      "srskinsugarpopcornbomber": 45,
-      "srskinsugarchurrocenturion": 42
+      "srskincultexsoldierwarrior": 48,
+      "srskincultbountyhuntermusketeer": 45,
+      "srskincultclassicartillery": 42,
+      "srskincultyithbuster": 42
     }
   },
   "chestboostedtoken": {
@@ -456,167 +459,61 @@
       "2 uncommonscrolls": 10
     }
   },
-  "dungeons10chest": {
+  "cultchest": {
     "V0": {
-      "1 scrollgladiator": 80,
-      "3 scrollgladiator": 19,
-      "5 scrollgladiator": 1
+      "1 commonscrolls": 36,
+      "4 commonscrolls": 20,
+      "2 uncommonscrolls": 13,
+      "5 uncommonscrolls": 10,
+      "3 rarescrolls": 6,
+      "5 rarescrolls": 5,
+      "srskincultbutlertank": 4,
+      "srskincultalchemistbomber": 3,
+      "srskincultbyakheeflyingrogue": 2,
+      "srskincultdagonwarbeast": 1
     },
     "V1": {
-      "1 potions": 50,
-      "2 potions": 10,
-      "3 potions": 5,
-      "1 scrollgladiator": 20,
-      "3 scrollgladiator": 10
+      "10 gold": 51,
+      "25 gold": 28,
+      "50 gold": 9,
+      "75 gold": 6,
+      "100 gold": 4,
+      "150 gold": 2
     },
     "V2": {
-      "1 meat": 3,
-      "3 meat": 1,
-      "1 scrollgladiator": 80,
-      "3 scrollgladiator": 13
-    },
-    "V3": {
-      "2 token": 50,
-      "25 gold": 25,
-      "50 gold": 15,
-      "75 gold": 5,
-      "skinfullgladiatorjuliusfreezer": 3,
-      "skinfullgladiatorcauliseum": 2
+      "1 token": 80,
+      "2 token": 16,
+      "12 token": 4
     },
     "B0": {
-      "10 gold": 50,
-      "15 gold": 30,
-      "20 gold": 20
+      "5 gold": 50,
+      "7 gold": 30,
+      "10 gold": 20
     },
     "C0": {
-      "1 scrollgladiator": 94,
-      "3 scrollgladiator": 5,
-      "5 scrollgladiator": 1
+      "1 commonscrolls": 36,
+      "4 commonscrolls": 20,
+      "2 uncommonscrolls": 13,
+      "5 uncommonscrolls": 10,
+      "3 rarescrolls": 6,
+      "5 rarescrolls": 5,
+      "srskincultbutlertank": 4,
+      "srskincultalchemistbomber": 3,
+      "srskincultbyakheeflyingrogue": 2,
+      "srskincultdagonwarbeast": 1
     },
     "C1": {
-      "10 gold": 50,
-      "15 gold": 10,
-      "20 gold": 5,
-      "1 scrollgladiator": 20,
-      "3 scrollgladiator": 10
+      "10 gold": 51,
+      "25 gold": 28,
+      "50 gold": 9,
+      "75 gold": 6,
+      "100 gold": 4,
+      "150 gold": 2
     },
     "C2": {
-      "1 meat": 3,
-      "3 meat": 1,
-      "1 scrollgladiator": 80,
-      "3 scrollgladiator": 13
-    },
-    "C3": {
-      "2 token": 50,
-      "25 gold": 25,
-      "50 gold": 15,
-      "75 gold": 5,
-      "skinfullgladiatorjuliusfreezer": 3,
-      "skinfullgladiatorcauliseum": 2
-    }
-  },
-  "pvpnightmarecommonchest1": {
-    "V0": {
-      "skinfullwarriornightmare": 99999,
-      "skinfullflagbearernightmare": 99999,
-      "skinfulltanknightmare": 99999,
-      "skinfullroguenightmare": 99999,
-      "skinfullarchernightmare": 99999,
-      "5 gold": 1
-    },
-    "B0": {
-      "3 commonscrolls": 35,
-      "10 gold": 10,
-      "15 gold": 20,
-      "20 gold": 5,
-      "1 uncommonscrolls": 30
-    },
-    "C0": {
-      "skinfullwarriornightmare": 99999,
-      "skinfullflagbearernightmare": 99999,
-      "skinfulltanknightmare": 99999,
-      "skinfullroguenightmare": 99999,
-      "skinfullarchernightmare": 99999,
-      "5 gold": 1
-    }
-  },
-  "pvpnightmarelegendarychest1": {
-    "V0": {
-      "skinfullorcslayernightmare": 99999,
-      "skinfullwarbeastnightmare": 99999,
-      "skinfullmagenightmare": 99999,
-      "skinfulltemplarnightmare": 99999,
-      "skinfullballoonbusternightmare": 99999,
-      "skinfullartillerynightmare": 99999,
-      "50 gold": 1
-    },
-    "B0": {
-      "3 commonscrolls": 35,
-      "10 gold": 10,
-      "15 gold": 20,
-      "20 gold": 5,
-      "1 uncommonscrolls": 30
-    },
-    "C0": {
-      "skinfullorcslayernightmare": 99999,
-      "skinfullwarbeastnightmare": 99999,
-      "skinfullmagenightmare": 99999,
-      "skinfulltemplarnightmare": 99999,
-      "skinfullballoonbusternightmare": 99999,
-      "skinfullartillerynightmare": 99999,
-      "50 gold": 1
-    }
-  },
-  "pvpnightmarerarechest1": {
-    "V0": {
-      "skinfullberserkernightmare": 99999,
-      "skinfullflyingroguenightmare": 99999,
-      "skinfullmusketeernightmare": 99999,
-      "skinfullcenturionnightmare": 99999,
-      "skinfullmonknightmare": 99999,
-      "25 gold": 1
-    },
-    "B0": {
-      "3 commonscrolls": 35,
-      "10 gold": 10,
-      "15 gold": 20,
-      "20 gold": 5,
-      "1 uncommonscrolls": 30
-    },
-    "C0": {
-      "skinfullberserkernightmare": 99999,
-      "skinfullflyingroguenightmare": 99999,
-      "skinfullmusketeernightmare": 99999,
-      "skinfullcenturionnightmare": 99999,
-      "skinfullmonknightmare": 99999,
-      "25 gold": 1
-    }
-  },
-  "pvpnightmareuncommonchest1": {
-    "V0": {
-      "skinfullbarbariannightmare": 99999,
-      "skinfullbusternightmare": 99999,
-      "skinfullpaladinnightmare": 99999,
-      "skinfullbombernightmare": 99999,
-      "skinfullhealernightmare": 99999,
-      "skinfullvampirenightmare": 99999,
-      "10 gold": 1
-    },
-    "B0": {
-      "3 commonscrolls": 35,
-      "10 gold": 10,
-      "15 gold": 20,
-      "20 gold": 5,
-      "1 uncommonscrolls": 30
-    },
-    "C0": {
-      "skinfullbarbariannightmare": 99999,
-      "skinfullbusternightmare": 99999,
-      "skinfullpaladinnightmare": 99999,
-      "skinfullbombernightmare": 99999,
-      "skinfullhealernightmare": 99999,
-      "skinfullvampirenightmare": 99999,
-      "10 gold": 1
+      "1 token": 80,
+      "2 token": 16,
+      "12 token": 4
     }
   }
 }

@@ -1,6 +1,6 @@
 package srlib.viewer;
 
-import java.util.Hashtable;
+import java.util.ArrayList;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -10,6 +10,7 @@ import include.Json;
 import otherlib.Logger;
 import otherlib.Options;
 import srlib.RaidType;
+import srlib.Reward;
 import srlib.Time;
 import srlib.store.Store;
 
@@ -134,26 +135,25 @@ public class Raid {
 		{Store.bones.get(), "bonesAwarded"}
 	};
 	
+	private final static Reward SALVAGE_CHEST_REWARD = new Reward("chestsalvage", 1);
 	
-	public JsonObject getChest(JsonObject raidStats) {
-		JsonObject ret = new JsonObject();
+	public ArrayList<Reward> getChest(JsonObject raidStats) {
+		
+		ArrayList<Reward> ret = new ArrayList<>();
 		
 		try {
 			if(!raidStats.get("battleResult").getAsBoolean())
 				return ret;
 			
 			JsonElement chest = raidStats.get("chestAwarded");
-			if(type != RaidType.DUNGEON) {
-				if(chest != null && chest.isJsonPrimitive() && !chest.getAsString().equals(""))
-					ret.addProperty(chest.getAsString(), 1);
-				else
-					ret.addProperty("chestsalvage", 1);
-			}
+			if(type != RaidType.DUNGEON)
+				ret.add(chest != null && chest.isJsonPrimitive() && !chest.getAsString().equals("") ? new Reward(chest.getAsString(), 1) : SALVAGE_CHEST_REWARD);
+			
 			
 			for(int i=0; i<AWARDED_REWARDS.length; i++) {
 				int ityp = raidStats.get(AWARDED_REWARDS[i][1]).getAsInt();
 				if(ityp != 0) 
-					ret.addProperty(AWARDED_REWARDS[i][0], ityp);
+					ret.add(new Reward(AWARDED_REWARDS[i][0], ityp));
 			}
 			
 			JsonElement rawRews = raidStats.get("viewerChestRewards");
@@ -163,14 +163,8 @@ public class Raid {
 				if(bonus != null && bonus.isJsonPrimitive() && !bonus.getAsString().equals(""))
 					rews.add(bonus);
 				
-				for(int i=0; i<rews.size(); i++) {
-					Reward r = new Reward(rews.get(i).getAsString(), cid, slot);
-					
-					if(ret.has(r.name))
-						ret.addProperty(r.name, ret.get(r.name).getAsInt() + r.quantity);
-					else
-						ret.addProperty(r.name, r.quantity);
-				}
+				for(int i=0; i<rews.size(); i++)
+					ret.add(Reward.genChestReward(rews.get(i).getAsString(), cid, slot));
 			}
 		} catch (UnsupportedOperationException e) {
 			Logger.printException("Raid -> getChest: err=failed to get chest, rawData="+raidStats.toString(), e, Logger.runerr, Logger.error, cid, slot, true);
@@ -178,42 +172,6 @@ public class Raid {
 		return ret;
 	}
 
-	private static JsonObject chest_rews = Json.parseObj(Options.get("rewards"));
-	
-	public static JsonObject updateChestRews(JsonObject data) {
-		chest_rews = data.getAsJsonObject("ChestRewards");
-		return chest_rews;
-	}
-	
-	public static final Hashtable<String, String> TYPICAL_CHEST_BASIC_REWARDS = new Hashtable<String, String>() {
-		private static final long serialVersionUID = 1L; {
-			put("goldbag", Store.gold.get());
-			put("eventtoken", "token");
-			put("cooldown", Store.meat.get());
-			put("potion", Store.potions.get());
-			put("epicpotion", Store.potions.get());
-	}};
-	
-	public static class Reward {
-		public final String name;
-		public final int quantity;
-		public Reward(String reward, String cid, Integer slot) {
-			String[] rew = reward.split("\\|");
-			quantity = chest_rews.getAsJsonObject(rew[0]).get("Quantity").getAsInt();
-			
-			String frew = rew[0].split("_")[0];
-			if(TYPICAL_CHEST_BASIC_REWARDS.containsKey(frew)) {
-				name = TYPICAL_CHEST_BASIC_REWARDS.get(frew);
-			} else if(rew.length == 2) {
-				name = rew[1];
-			} else if(rew[0].contains("skin")) {
-				name = "skin";
-			} else {
-				Logger.print("Raid -> Reward -> const.: err=failed to determine reward, reward=" + reward, Logger.runerr, Logger.error, cid, slot, true);
-				name = "unknown";
-			}
-		}
-	}
 	
 	
 	public boolean canPlaceUnit() {
