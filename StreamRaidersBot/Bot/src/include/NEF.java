@@ -162,14 +162,9 @@ public class NEF {
 	private static void createDir(String path) {
 		int index = path.lastIndexOf("/");
 		if(index == -1)
-			index = path.lastIndexOf("\\");
-		try {
-			path = path.substring(0, index);
-		} catch (StringIndexOutOfBoundsException e) {
 			return;
-		}
 		
-		File dir = new File(path);
+		File dir = new File(path.substring(0, index));
 		
 		if(!dir.exists()) {
 			dir.mkdirs();

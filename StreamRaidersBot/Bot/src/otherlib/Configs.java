@@ -606,8 +606,6 @@ public class Configs {
 			u.addProperty("sync", "(none)");
 		} else {
 			JsonObject du = units.getAsJsonObject(defUnitId);
-			if(du == null)
-				System.out.println(defUnitId);
 			String dus = du.get("sync").getAsString();
 			if(!dus.equals("(none)"))
 				du = units.getAsJsonObject(dus);
@@ -1410,7 +1408,6 @@ public class Configs {
 			for(String key : objs.keySet())
 				config.add(key, objs.get(key));
 			
-			checkAll();
 			setGStr(newOrder, "");
 		}
 		

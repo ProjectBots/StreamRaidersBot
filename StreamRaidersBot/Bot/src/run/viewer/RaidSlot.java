@@ -555,6 +555,11 @@ public class RaidSlot extends Slot {
 			return;
 		}
 		
+		if(r.placedUnit) {
+			Logger.print("placed unit", Logger.caps, Logger.info, cid, slot);
+			return;
+		}
+		
 		if(r.isCodeLocked) {
 			Logger.print("switched due code locked", Logger.caps, Logger.info, cid, slot);
 			switchCap(vbe, rt, r, tun, noCap);
@@ -610,7 +615,7 @@ public class RaidSlot extends Slot {
 		
 		
 		boolean[] conditions = new boolean[] {
-				!ic && rt != RaidType.DUNGEON && Time.isBeforeServerTime(r.creationDate + r.type.raidDuration - minTimeLeft),
+				!ic && (rt != RaidType.DUNGEON) && Time.isBeforeServerTime(r.creationDate + r.type.raidDuration - minTimeLeft),
 				!ic && rt != RaidType.DUNGEON && Time.isAfterServerTime(r.creationDate + r.type.raidDuration - maxTimeLeft),
 				!ic && !enabled,
 				!ic && (loy < minLoy || loy > maxLoy),

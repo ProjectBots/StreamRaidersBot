@@ -1,8 +1,9 @@
 package run.viewer;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
+import java.util.function.BiConsumer;
 
 import include.Http.NoConnectionException;
 import otherlib.Configs;
@@ -10,6 +11,7 @@ import otherlib.Logger;
 import run.AbstractProfile;
 import run.Manager;
 import run.ProfileType;
+import run.RewSource;
 import run.AbstractBackEnd.UpdateEventListener;
 import srlib.RaidType;
 import srlib.SRC;
@@ -26,44 +28,55 @@ public class Viewer extends AbstractProfile<ViewerBackEnd> {
 	
 	public static final int slotSize = 5;
 	
-	
 	private static final String[] rew_chests_chests = "chestboostedgold chestbosssuper chestboostedskin chestboss chestboostedtoken chestboostedscroll chestgold chestsilver chestbronze chestsalvage".split(" ");
 	private static final String[] rew_bought_chests = "dungeonchests eventchests".split(" ");
 	private static final String[] rew_basics = "gold potions token eventcurrency keys meat bones skin soulvessel".split(" ");
+	private static String[] rew_types;
 	
 	private static String[] genRewTypes() {
-		List<String> utypes = UnitType.getTypeUids();
+		UnitType[] types = UnitType.getTypes().toArray(new UnitType[UnitType.amount()]);
 		
-		String[] ret = new String[rew_basics.length+utypes.size()];
+		Arrays.sort(types);
+		
+		String[] ret = new String[rew_basics.length+types.length];
 		System.arraycopy(rew_basics, 0, ret, 0, rew_basics.length);
-		for(int i=0; i<utypes.size(); i++)
-			ret[rew_basics.length+i] = "scroll"+utypes.get(i).replace("allies", "");
+		for(int i=0; i<types.length; i++)
+			ret[rew_basics.length+i] = "scroll"+types[i].uid.replace("allies", "");
 		
 		return ret;
 	}
 	
 	@Override
+	public void forEachRew(RewSource con, BiConsumer<String, Integer> action) {
+		Hashtable<String, Integer> rews_ = rews.get(con);
+		switch(con) {
+		case CHESTS:
+			for(String t : rew_chests_chests)
+				action.accept(t, rews_.get(t));
+			break;
+		case BOUGHT:
+			for(String t : rew_bought_chests)
+				action.accept(t, rews_.get(t));
+			break;
+		case EVENT:
+			break;
+		}
+		for(int j=0; j<rew_types.length; j++)
+			action.accept(rew_types[j], rews_.get(rew_types[j]));
+	}
+	
+	@Override
 	public void updateRews() {
-		String[] rew_types = genRewTypes();
-		for(short i=0; i<rew_sources.length; i++) {
-			if(!rews.containsKey(i))
-				rews.put(i, new Hashtable<>());
-			Hashtable<String, Integer> source = rews.get(i);
-			switch(rew_sources[i]) {
-			case "chests":
-				for(String t : rew_chests_chests)
-					if(!source.containsKey(t))
-						source.put(t, 0);
-				break;
-			case "bought":
-				for(String t : rew_bought_chests)
-					if(!source.containsKey(t))
-						source.put(t, 0);
-				break;
-			}
-			for(int j=0; j<rew_types.length; j++)
-				if(!source.containsKey(rew_types[j]))
-					source.put(rew_types[j], 0);
+		rew_types = genRewTypes();
+		for(RewSource rs : RewSource.values()) {
+			if(!rews.containsKey(rs))
+				rews.put(rs, new Hashtable<>());
+			final Hashtable<String, Integer> source = rews.get(rs);
+			
+			forEachRew(rs, (t, a) -> {
+				if(a == null)
+					source.put(t, 0);
+			});
 		}
 	}
 	

@@ -47,7 +47,7 @@ public class Guide {
 	private Hashtable<String, Method> onViewedListeners = new Hashtable<>();
 	
 	public Guide(String dir) throws IOException, ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-		this.path = dir+"\\";
+		this.path = dir+"/";
 		String[] text = NEF.readLines(path+"guide.txt");
 		Subject sub = null;
 		StringBuilder sbt = null;

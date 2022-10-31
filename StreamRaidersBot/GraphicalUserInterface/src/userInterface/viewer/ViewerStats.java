@@ -19,7 +19,7 @@ import include.Http.NoConnectionException;
 import otherlib.Configs;
 import otherlib.Logger;
 import otherlib.Ressources;
-import run.AbstractProfile;
+import run.RewSource;
 import run.viewer.Viewer;
 import run.viewer.ViewerBackEnd;
 import srlib.SRR.NotAuthorizedException;
@@ -41,7 +41,7 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd> {
 	}
 	
 	@Override
-	public void open(Viewer run, ViewerBackEnd vbe) {
+	public void open(Viewer v, ViewerBackEnd vbe) {
 		
 		int[] pos = new int[4];
 		
@@ -51,10 +51,9 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd> {
 			units = vbe.getUnits(false);
 			curs = vbe.getCurrencies();
 		} catch (NoConnectionException | NotAuthorizedException e) {
-			Logger.printException("Stats -> open: err=failed to get infos", e, Logger.general, Logger.error, run.cid, null, true);
+			Logger.printException("Stats -> open: err=failed to get infos", e, Logger.general, Logger.error, v.cid, null, true);
 			return;
 		}
-		Hashtable<Short, Hashtable<String, Integer>> rews = run.getRews();
 		JsonObject stats = Configs.getUObj(cid, Configs.statsViewer);
 		
 		gui.setBackgroundGradient(Colors.getGradient("VIEWER stats background"));
@@ -81,7 +80,7 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd> {
 							vbe.updateStore(true);
 							new ViewerStats(cid, gui);
 						} catch (Exception e1) {
-							Logger.printException("Stats -> open -> reload: err=failed to update Units/Store", e1, Logger.runerr, Logger.error, run.cid, null, true);
+							Logger.printException("Stats -> open -> reload: err=failed to update Units/Store", e1, Logger.runerr, Logger.error, v.cid, null, true);
 						}
 						break;
 					}
@@ -118,8 +117,9 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd> {
 			cfp.setInsets(2, 20, 2, 2);
 				
 				int p = 0;
-				for(Short rs : rews.keySet()) {
-					String rsn = AbstractProfile.getRewSouceName(rs);
+				for(RewSource rs : RewSource.values()) {
+					
+					final String rsn = rs.toString().toLowerCase();
 					
 					StringBuffer sbt = new StringBuffer();
 					sbt.append("--- ").append(rsn).append(" ---");
@@ -127,15 +127,14 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd> {
 					StringBuffer sbp = new StringBuffer();
 					sbp.append("--- ").append(rsn).append(" ---");
 					
-					Hashtable<String, Integer> rews_ = rews.get(rs);
 					JsonObject stats_ = stats.getAsJsonObject(rsn);
-					for(String r : rews_.keySet()) {
-						int w = (int) font.getStringBounds(r, frc).getWidth();
-						String b = "\n" + r + "\u0009" + (w < 106 ? "\u0009" : "") + (w < 53 ? "\u0009" : "");
-						sbt.append(b).append(rews_.get(r));
-						sbp.append(b).append(stats_.has(r) ? stats_.get(r).getAsInt() : 0);
-					}
-						
+					
+					v.forEachRew(rs, (t, a) -> {
+						int w = (int) font.getStringBounds(t, frc).getWidth();
+						String b = "\n" + t + "\u0009" + (w < 106 ? "\u0009" : "") + (w < 53 ? "\u0009" : "");
+						sbt.append(b).append(a);
+						sbp.append(b).append(stats_.has(t) ? stats_.get(t).getAsInt() : 0);
+					});
 					
 					TextArea ta = new TextArea();
 					ta.setMargin(new Insets(10, 10, 10, 40));

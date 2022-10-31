@@ -124,7 +124,7 @@ public class Raid {
 	}
 	
 	public boolean isReward() {
-		return ended && !hasRecievedRewards;
+		return ended && postBattleComplete && !hasRecievedRewards;
 	}
 	
 	private static final String[][] AWARDED_REWARDS = new String[][] {

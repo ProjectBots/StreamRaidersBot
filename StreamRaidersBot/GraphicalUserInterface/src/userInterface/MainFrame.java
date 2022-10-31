@@ -246,7 +246,7 @@ public class MainFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					new Guide("data\\Guide").show(gui, "Home");
+					new Guide("data/Guide").show(gui, "Home");
 				} catch (Exception e1) {
 					Logger.printException("MainFrame -> openGuide: err=sth went wrong", e1, Logger.runerr, Logger.error, null, null, true);
 				}

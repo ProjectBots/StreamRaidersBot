@@ -1,9 +1,12 @@
 package run.captain;
 
+import java.util.function.BiConsumer;
+
 import include.Http.NoConnectionException;
 import otherlib.Logger;
 import run.AbstractProfile;
 import run.ProfileType;
+import run.RewSource;
 import run.AbstractBackEnd.UpdateEventListener;
 import srlib.SRR;
 import srlib.SRR.NotAuthorizedException;
@@ -33,6 +36,12 @@ public class Captain extends AbstractProfile<CaptainBackEnd> {
 		slots[4] = new TelegramSlot(this, slots);
 	}
 
+	
+	@Override
+	public void forEachRew(RewSource con, BiConsumer<String, Integer> consumer) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 	@Override
 	public void updateRews() {

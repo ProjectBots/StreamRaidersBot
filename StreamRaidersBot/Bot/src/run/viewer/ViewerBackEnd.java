@@ -15,7 +15,7 @@ import include.Http.NoConnectionException;
 import otherlib.Logger;
 import otherlib.Options;
 import run.AbstractBackEnd;
-import srlib.EventsAndRewards;
+import srlib.EventsAndEventRewards;
 import srlib.Map;
 import srlib.RaidType;
 import srlib.Reward;
@@ -38,7 +38,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	private Map[] maps = {null, null, null, null};
 	private CaptainData[][] caps = new CaptainData[RaidType.highestTypeInt][0];
 	private Quest[] quests = {};
-	private EventsAndRewards event = new EventsAndRewards();
+	private EventsAndEventRewards event = new EventsAndEventRewards();
 	private HashMap<String, Long> rts = new HashMap<>();
 	/**
 	 * 0 caps<br>
@@ -491,7 +491,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	
 	public boolean isEvent() throws NoConnectionException, NotAuthorizedException {
 		updateEventRewards(false);
-		return EventsAndRewards.isEvent();
+		return EventsAndEventRewards.isEvent();
 	}
 	
 	public int getEventTier() throws NoConnectionException, NotAuthorizedException {
@@ -505,7 +505,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	public JsonObject collectEvent(int p, boolean battlePass) throws NoConnectionException {
-		return event.collectEvent(p, battlePass, Json.parseObj(req.grantEventReward(EventsAndRewards.getCurrentEvent(), ""+p, battlePass)));
+		return event.collectEvent(p, battlePass, Json.parseObj(req.grantEventReward(EventsAndEventRewards.getCurrentEvent(), ""+p, battlePass)));
 	}
 	
 	public boolean hasBattlePass() throws NoConnectionException, NotAuthorizedException {

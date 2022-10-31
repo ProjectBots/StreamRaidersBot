@@ -422,7 +422,7 @@ public class SpecialSlot extends Slot {
 	private void claimQuest(ViewerBackEnd vbe, Quest q, boolean skipError) throws NoConnectionException {
 		try {
 			Reward r = vbe.claimQuest(q);
-			v.addRew(vbe, SRC.Run.event, r.name, r.amount);
+			v.addRew(vbe, SRC.Run.event, r);
 		} catch (QuestClaimFailedException e) {
 			if(!skipError)
 				Logger.printException("SpecialSlot (viewer) -> claimQuests: err=failed to claim quest", e, Logger.runerr, Logger.error, cid, 4, true);

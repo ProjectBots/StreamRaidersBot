@@ -4,8 +4,7 @@ import java.awt.Color;
 import java.time.LocalDateTime;
 import java.time.temporal.WeekFields;
 import java.util.Hashtable;
-
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.function.BiConsumer;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -19,6 +18,7 @@ import otherlib.Remaper;
 import run.captain.Captain;
 import run.captain.CaptainBackEnd;
 import run.viewer.Viewer;
+import srlib.Reward;
 import srlib.SRR;
 import srlib.SRR.NotAuthorizedException;
 import srlib.store.Store;
@@ -49,7 +49,7 @@ public abstract class AbstractProfile<B extends AbstractBackEnd<B>> implements C
 	protected String currentTimeId = null;
 	protected boolean isSwitching = false;
 	protected final Slot[] slots;
-	protected Hashtable<Short, Hashtable<String, Integer>> rews = new Hashtable<>();
+	protected Hashtable<RewSource, Hashtable<String, Integer>> rews = new Hashtable<>();
 	
 	public ProfileType getType() {
 		return ptype;
@@ -128,19 +128,11 @@ public abstract class AbstractProfile<B extends AbstractBackEnd<B>> implements C
 	protected abstract void iniSlots();
 	public abstract void updateRews();
 	
-
-	/**
-	 * ["chests", "bought", "event"]
-	 */
-	protected static final String[] rew_sources = "chests bought event".split(" ");
-	public static String getRewSouceName(short rs) {
-		return rew_sources[rs];
-	}
 	
 	public void saveRews() {
 		JsonObject astats = Configs.getUObj(cid, ptype == ProfileType.VIEWER ? Configs.statsViewer : Configs.statsCaptain);
-		for(short s_ : rews.keySet()) {
-			String s = rew_sources[s_];
+		for(RewSource s_ : rews.keySet()) {
+			String s = s_.toString().toLowerCase();
 			JsonObject stats = astats.getAsJsonObject(s);
 			Hashtable<String, Integer> rew = rews.get(s_);
 			for(String v : rew.keySet()) {
@@ -154,10 +146,16 @@ public abstract class AbstractProfile<B extends AbstractBackEnd<B>> implements C
 		}
 	}
 	
+
+	public void addRew(B be, String con, Reward r) {
+		if(r != null)
+			addRew(be, con, r.name, r.amount);
+	}
+	
 	public void addRew(B be, String con, String type, int amount) {
 		type = Remaper.map(type).replace(Options.get("currentEventCurrency"), Store.eventcurrency.get());
 		try {
-			Hashtable<String, Integer> r = rews.get((short) ArrayUtils.indexOf(rew_sources, con));
+			Hashtable<String, Integer> r = rews.get(RewSource.valueOf(con.toUpperCase()));
 			r.put(type, r.get(type) + amount);
 			be.addCurrency(type, amount);
 		} catch (NullPointerException e) {
@@ -165,9 +163,11 @@ public abstract class AbstractProfile<B extends AbstractBackEnd<B>> implements C
 		}
 	}
 	
-	public Hashtable<Short, Hashtable<String, Integer>> getRews() {
+	public Hashtable<RewSource, Hashtable<String, Integer>> getRews() {
 		return rews;
 	}
+	
+	public abstract void forEachRew(RewSource con, BiConsumer<String, Integer> action);
 	
 	public void setRunning(int slot, boolean b) {
 		slots[slot].setRunning(b);

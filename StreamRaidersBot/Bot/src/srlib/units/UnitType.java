@@ -75,6 +75,13 @@ public class UnitType implements Comparable<UnitType> {
 		return typeUids;
 	}
 	
+	/**
+	 * @return the amount of unit types that exist
+	 */
+	public static int amount() {
+		return typeUids.size();
+	}
+	
 	public static void ini() {
 		JsonObject jo = Json.parseObj(Options.get("unitTypes"));
 		UnitType.types = new Hashtable<>();

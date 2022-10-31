@@ -25,7 +25,7 @@ import otherlib.Configs.PStr;
 import otherlib.Configs.SleInt;
 import run.captain.Captain;
 import run.viewer.Viewer;
-import srlib.EventsAndRewards;
+import srlib.EventsAndEventRewards;
 import srlib.Reward;
 import srlib.SRC;
 import srlib.SRR;
@@ -570,10 +570,10 @@ public class Manager {
 			for(int i=0; i<catsToUpdateData.length; i+=2)
 				Options.set(catsToUpdateData[i], data.get(catsToUpdateData[i+1]).toString());
 			
-			JsonArray ets = EventsAndRewards.genTiersFromData(data);
+			JsonArray ets = EventsAndEventRewards.genTiersFromData(data);
 			Options.set("eventTiers", ets.toString());
 			Options.set("eventTiersSize", ""+ets.size());
-			Options.set("eventBadges", EventsAndRewards.genEventBadgesFromData(data));
+			Options.set("eventBadges", EventsAndEventRewards.genEventBadgesFromData(data));
 			Options.set("currentEventCurrency", data.getAsJsonObject("Items").getAsJsonObject("eventcurrency").get("CurrencyTypeAwarded").getAsString());
 			Options.set("unitCosts", Store.genUnitCostsFromData(data).toString());
 			Options.set("unitTypes", UnitType.genUnitTypesFromData(data).toString());
