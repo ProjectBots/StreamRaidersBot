@@ -1,6 +1,7 @@
 package srlib.map;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -9,7 +10,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import include.Json;
-import otherlib.Logger;
 import otherlib.Options;
 import srlib.units.UnitType;
 import srlib.viewer.Raid;
@@ -113,7 +113,13 @@ public class Map {
 	}
 	
 	public void updateMap(JsonObject mapData, Raid raid, List<String> userIds) {
-		updateMap(mapData, Json.parseArr(raid.placementsSerialized), Json.parseArr(raid.users), userIds);
+		try {
+			updateMap(mapData, Json.parseArr(raid.placementsSerialized), Json.parseArr(raid.users), userIds);
+		} catch (NullPointerException e) {
+			System.out.println(raid.users);
+			System.out.println(raid.toString());
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -122,14 +128,18 @@ public class Map {
 			for(PlacementRectType prt : PlacementRectType.values())
 				addRects(mapData.getAsJsonArray(prt.name), prt);
 			
-			addEntities(mapData.getAsJsonArray("PlacementData"), null, userIds);
+			addEntities(mapData.getAsJsonArray("PlacementData"), userIds);
 			addObstacles(mapData.getAsJsonArray("ObstaclePlacementData"));
 		}
 		
-		//	TODO rem unitPower in opt.txt
-		//JsonObject unitsData = Json.parseObj(Options.get("unitPower"));
+		if(users != null)
+			for(int i=0; i<users.size(); i++) {
+				JsonObject user = users.get(i).getAsJsonObject();
+				this.users.put(user.get("userId").getAsString(), user.get("twitchDisplayName").getAsString());
+			}
 		
-		addEntities(placements, users, userIds);
+		if(placements != null)
+			addEntities(placements, userIds);
 		
 	}
 	
@@ -167,8 +177,10 @@ public class Map {
 			p.canFlyOver = obst.get("CanFlyOver").getAsBoolean();
 		}
 	}
+	
+	private HashMap<String, String> users = new HashMap<>();
 
-	private void addEntities(JsonArray places, JsonArray users, List<String> uids) {
+	private void addEntities(JsonArray places, List<String> uids) {
 		if(places == null) 
 			return;
 		
@@ -211,7 +223,7 @@ public class Map {
 				if(chaType.contains("epic") || chaType.contains("captain")) {
 					Place p1 = getCreate(x-1, y+1);
 					p1.isOccupied = true;
-					Place p2 = getCreate(x-1, y+1);
+					Place p2 = getCreate(x-1, y);
 					p2.isOccupied = true;
 					Place p3 = getCreate(x, y+1);
 					p3.isOccupied = true;
@@ -227,16 +239,14 @@ public class Map {
 					p.isCaptain = false;
 				}
 				
-				if(users == null) {
-					p.userId = null;
-				} else {
-					p.userId = place.get("userId").getAsString();
-					if(p.userId.equals("")) {
-						Logger.print("Map -> addEntities: err=users not null, but userId is empty", Logger.runerr, Logger.warn, cid, slot, true);
-						break;
-					}
+				
+				final String usid = place.get("userId").getAsString();
+				p.userId = usid.equals("") ? null : usid;
+				if(p.userId != null) {
 					//	it has a user id, therefore it is a player
 					p.team = Team.PLAYER;
+					
+					p.twitchDisplayName = users.get(usid);
 					
 					int placeId = place.get("raidPlacementsId").getAsInt();
 					if(placeId > lastIndex)
@@ -252,15 +262,6 @@ public class Map {
 					} else {
 						p.isSelf = false;
 						p.isOther = false;
-					}
-					
-					p.twitchDisplayName = null;
-					for(int u=0; u<users.size(); u++) {
-						JsonObject user = users.get(u).getAsJsonObject();
-						if(p.userId.equals(user.get("userId").getAsString())) {
-							p.twitchDisplayName = user.get("twitchDisplayName").getAsString();
-							break;
-						}
 					}
 					
 					String type = UnitType.getUnitTypeFromCharacterType(chaType);
@@ -313,7 +314,7 @@ public class Map {
 		for(int x=0; x<width; x++) {
 			for(int y=0; y<length; y++) {
 				Place p = get(x, y);
-				if(p != null && p.isEmpty()) {
+				if(p != null && p.plan != null && p.isEmpty()) {
 					if(p.plan.equals("noPlacement"))
 						continue;
 					mpts[x][y] = p.plan;

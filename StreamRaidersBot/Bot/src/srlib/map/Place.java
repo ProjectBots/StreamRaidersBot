@@ -61,7 +61,7 @@ public class Place {
 	}
 	
 	public String getUserId() {
-		if(getTeam() != Team.ALLY)
+		if(getTeam() != Team.PLAYER)
 			return null;
 		return userId;
 	}

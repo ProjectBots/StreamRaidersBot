@@ -173,6 +173,7 @@ public class Manager {
 	public static String addProfile(String name, String access_info) {
 		String cid = Configs.addProfile(name, access_info);
 		Configs.saveb();
+		countProfiles++;
 		loadProfile(cid);
 		blis.onProfileAdded(cid);
 		return cid;

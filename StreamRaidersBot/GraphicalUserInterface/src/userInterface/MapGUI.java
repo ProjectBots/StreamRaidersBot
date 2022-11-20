@@ -215,11 +215,6 @@ public class MapGUI {
 					
 					Place p = map.get(x, y);
 					
-
-					if(p.isOccupied())
-						continue;
-					
-					
 					Label l = new Label();
 					l.setText("");
 					l.setSize(SQUARE_SIZE, SQUARE_SIZE);
@@ -229,19 +224,27 @@ public class MapGUI {
 					l.setHalign(SwingConstants.CENTER);
 					l.setValign(SwingConstants.CENTER);
 					l.setBackground(Color.white);
+
+					if(p == null) {
+						gui.addLabel(l);
+						continue;
+					}
+					
+					if(p.isOccupied())
+						continue;
 					
 					PlacementRectType prt = p.getPlacementRectType();
 					if(prt != null) {
 						l.setBackground(switch(prt) {
-						case PLAYER -> new Color(0, 204, 255);
-						case ENEMY -> new Color(255, 143, 143);
-						case HOLDING -> new Color(153, 0, 153);
+							case PLAYER -> new Color(0, 204, 255);
+							case ENEMY -> new Color(255, 143, 143);
+							case HOLDING -> new Color(153, 0, 153);
 						});
 					}
 					
 					if(p.isObstacle()) {
 						if(p.canWalkOver()) {
-							if(prt != PlacementRectType.PLAYER || prt != PlacementRectType.HOLDING)
+							if(prt != PlacementRectType.PLAYER && prt != PlacementRectType.HOLDING)
 								l.setBackground(new Color(145, 145, 145));
 						} else if(p.canFlyOver())
 							l.setBackground(new Color(94, 94, 94));
