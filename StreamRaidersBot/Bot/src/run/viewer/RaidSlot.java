@@ -24,12 +24,12 @@ import otherlib.MapConv.NoFinException;
 import run.Slot;
 import run.StreamRaidersException;
 import run.viewer.ViewerBackEnd.ErrorRetrievingCaptainsException;
-import srlib.Map;
 import srlib.RaidType;
 import srlib.Reward;
 import srlib.SRC;
 import srlib.Time;
 import srlib.SRR.NotAuthorizedException;
+import srlib.map.Map;
 import srlib.skins.Skin;
 import srlib.skins.Skins;
 import srlib.store.Store;
@@ -109,14 +109,6 @@ public class RaidSlot extends Slot {
 			Logger.print("can not place, reason=can not place unit", Logger.place, Logger.info, cid, slot);
 			return;
 		}
-
-		String placeSer = r.placementsSerialized;
-		if(Configs.getInt(cid, currentLayer, Configs.maxUnitPerRaidViewer) < (placeSer == null 
-																					? 0 
-																					: placeSer.split(vbe.getViewerUserId()).length-1)) {
-			Logger.print("can not place, reason=max unit per raid reached", Logger.place, Logger.info, cid, slot);
-			return;
-		}
 		
 		final boolean dungeon = r.type == RaidType.DUNGEON;
 		
@@ -182,6 +174,14 @@ public class RaidSlot extends Slot {
 		
 		
 		Map map = vbe.getMap(slot, true);
+		
+		String placeSer = r.placementsSerialized;
+		if(Configs.getInt(cid, currentLayer, Configs.maxUnitPerRaidViewer) < (placeSer == null 
+																					? 0 
+																					: placeSer.split(vbe.getViewerUserId()).length-1)) {
+			Logger.print("can not place, reason=max unit per raid reached", Logger.place, Logger.info, cid, slot);
+			return;
+		}
 		
 		if(!Configs.getBoolean(cid, currentLayer, Configs.allowPlaceFirstViewer) 
 			&& (placeSer == null ? true : Json.parseArr(placeSer).size() == 0))

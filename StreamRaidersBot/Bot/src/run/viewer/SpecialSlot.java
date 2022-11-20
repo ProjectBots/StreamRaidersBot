@@ -61,9 +61,11 @@ public class SpecialSlot extends Slot {
 			Logger.print("upgrade", Logger.general, Logger.info, cid, slot);
 			upgrade(vbe);
 			
+			/*
 			Logger.print("grantExtraRewards", Logger.general, Logger.info, cid, slot);
 			vbe.grantTeamReward();
 			vbe.grantEventQuestMilestoneReward();
+			*/
 
 			Logger.print("updateFrame", Logger.general, Logger.info, cid, slot);
 			v.updateFrame();

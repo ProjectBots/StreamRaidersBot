@@ -16,13 +16,13 @@ import otherlib.Logger;
 import otherlib.Options;
 import run.AbstractBackEnd;
 import srlib.EventsAndEventRewards;
-import srlib.Map;
 import srlib.RaidType;
 import srlib.Reward;
 import srlib.SRC;
 import srlib.SRR;
 import srlib.Quest;
 import srlib.SRR.NotAuthorizedException;
+import srlib.map.Map;
 import srlib.skins.Skin;
 import srlib.souls.SoulType;
 import srlib.store.BuyableUnit;
@@ -63,11 +63,11 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	
-	public void setUpdateTimes(int units, int skins, int souls, int caps, int raids, int maps, int store, int eventRewards, int quests) {
+	public void setUpdateTimes(int units, int skins, int souls, int caps, int raids, int plans, int store, int eventRewards, int quests) {
 		super.setUpdateTimes(units, skins, souls, store);
 		updateTimes[0] = caps;
 		updateTimes[1] = raids;
-		updateTimes[2] = maps;
+		updateTimes[2] = plans;
 		updateTimes[3] = eventRewards;
 		updateTimes[4] = quests;
 	}
@@ -79,55 +79,85 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		if(!force && !(wt == null || now - wt > 0))
 			return;
 		
-		JsonObject jo = Json.parseObj(req.getActiveRaidsByUser());
+		
+		int[] psi = new int[raids.length*2];
+		int i = 0;
+		int ind = 0;
+		for(;i<raids.length; i++) {
+			if(maps[i] != null) {
+				psi[ind++] = maps[i].raidId;
+				psi[ind++] = maps[i].getLastIndex();
+			}
+		}
+		//	we do not want the array to be empty at its end
+		int[] tmp;
+		if(ind != psi.length) {
+			tmp = new int[ind];
+			System.arraycopy(psi, 0, tmp, 0, ind);
+		} else
+			tmp = psi;
+		
+		
+		JsonObject jo = Json.parseObj(req.getActiveRaidsByUser(tmp));
 		if(testUpdate(jo))
-			jo = Json.parseObj(req.getActiveRaidsByUser());
+			jo = Json.parseObj(req.getActiveRaidsByUser(tmp));
 		
 		
 		boolean[] got = new boolean[4];
 		JsonArray rs = jo.getAsJsonArray("data");
-		for(int i=0; i<rs.size(); i++) {
+		for(i=0; i<rs.size(); i++) {
 			final int index = rs.get(i).getAsJsonObject().get("userSortIndex").getAsInt();
 			raids[index] = new Raid(rs.get(i).getAsJsonObject(), cid, index);
 			got[index] = true;
 		}
 		
-		for(int i=0; i<got.length; i++)
-			if(!got[i])
+		for(i=0; i<got.length; i++) {
+			if(!got[i]) {
 				raids[i] = null;
+				maps[i] = null;
+			} else
+				updateMap(i);
+		}
 		
 		rts.put("raids", now + updateTimes[1]*60*1000);
 		uelis.afterUpdate("raids", this);
 	}
 	
-	synchronized public void updateMap(int slot, boolean force) throws NoConnectionException, NotAuthorizedException {
-		Long wt = rts.get("map::"+slot);
+	synchronized public void updateRaidPlan(int slot, boolean force) throws NoConnectionException, NotAuthorizedException {
+		Long wt = rts.get("plan::"+slot);
 		long now = System.currentTimeMillis();
 		if(!force && !(wt == null || now - wt > 0))
 			return;
 		
+		//	updates the maps too
+		updateRaids(force);
 		
-		updateRaids(true);
+		if(maps[slot] != null) {
+			JsonObject raidplan = Json.parseObj(req.getRaidPlan(""+raids[slot].raidId));
+			if(testUpdate(raidplan))
+				raidplan = Json.parseObj(req.getRaidPlan(""+raids[slot].raidId));
+
+			JsonElement je = raidplan.get("data");
+			if(je.isJsonObject())
+				maps[slot].updateRaidPlan(je.getAsJsonObject().getAsJsonObject("planData"));
+		}
 		
+		rts.put("plan::"+slot, now + updateTimes[2]*60*1000);
+		uelis.afterUpdate("plan::"+slot, this);
+	}
+	
+	private void updateMap(int slot) throws NoConnectionException {
 		ArrayList<String> userIds = SRR.getAllUserIds();
 		userIds.add(0, req.getViewerUserId());
-		
-			
-		JsonObject raidplan = Json.parseObj(req.getRaidPlan(raids[slot].raidId));
-		if(testUpdate(raidplan))
-			raidplan = Json.parseObj(req.getRaidPlan(raids[slot].raidId));
-		
-		JsonElement je = raidplan.get("data");
-		String mapName = raids[slot].battleground;
-		maps[slot] = new Map(Json.parseObj(req.getMapData(mapName)),
-				raids[slot],
-				(je.isJsonObject() ? je.getAsJsonObject().getAsJsonObject("planData") : null),
-				mapName,
-				userIds,
-				cid, slot);
-		
-		rts.put("map::"+slot, now + updateTimes[2]*60*1000);
-		uelis.afterUpdate("map::"+slot, this);
+		if(maps[slot] != null && maps[slot].raidId == raids[slot].raidId) {
+			//	just update existing map
+			maps[slot].updateMap(null, raids[slot], userIds);
+		} else {
+			//	new map -> new Object
+			String mapName = raids[slot].battleground;
+			maps[slot] = new Map(Json.parseObj(req.getMapData(mapName)),
+					raids[slot], mapName, userIds, cid, slot);
+		}
 	}
 	
 	synchronized public void updateEventRewards(boolean force) throws NoConnectionException, NotAuthorizedException {
@@ -323,9 +353,9 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 		if(r.type != RaidType.DUNGEON)
 			return;
 		
-		JsonObject rdata = Json.parseObj(req.getUserDungeonInfoForRaid(r.raidId));
+		JsonObject rdata = Json.parseObj(req.getUserDungeonInfoForRaid(""+r.raidId));
 		if(testUpdate(rdata))
-			rdata = Json.parseObj(req.getUserDungeonInfoForRaid(r.raidId));
+			rdata = Json.parseObj(req.getUserDungeonInfoForRaid(""+r.raidId));
 		
 		r.addUserDungeonInfo(rdata.getAsJsonObject("data"));
 	}
@@ -352,7 +382,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	
 	
 	public ArrayList<Reward> getChest(int slot) throws NoConnectionException, NotAuthorizedException {
-		JsonObject resp = Json.parseObj(req.getRaidStatsByUser(raids[slot].raidId));
+		JsonObject resp = Json.parseObj(req.getRaidStatsByUser(""+raids[slot].raidId));
 		JsonElement err = resp.get(SRC.errorMessage);
 		if(err != null && err.isJsonPrimitive())
 			throw new RuntimeException(err.getAsString());
@@ -450,7 +480,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	public String placeUnit(int slot, Unit unit, boolean epic, int[] pos, boolean onPlanIcon, Skin overrideSkin) throws NoConnectionException {
-		String atr = req.addToRaid(raids[slot].raidId,
+		String atr = req.addToRaid(""+raids[slot].raidId,
 				createPlacementData(unit, epic, maps[slot].getAsSRCoords(epic, pos), onPlanIcon, overrideSkin, unit.getSoulType()));
 		
 		try {
@@ -485,7 +515,8 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 	}
 	
 	public Map getMap(int slot, boolean force) throws NoConnectionException, NotAuthorizedException {
-		updateMap(slot, force);
+		updateRaids(force);
+		updateRaidPlan(slot, force);
 		return maps[slot];
 	}
 	

@@ -5,8 +5,10 @@ import java.util.Set;
 
 import include.Maths.PointN;
 import include.Pathfinding.Field;
-import srlib.Map;
-import srlib.SRC;
+import srlib.map.Map;
+import srlib.map.Place;
+import srlib.map.PlacementRectType;
+import srlib.map.Team;
 
 public class MapConv {
 	
@@ -33,17 +35,20 @@ public class MapConv {
 		for(int x=0; x<width; x++) {
 			for(int y=0; y<length; y++) {
 				fields[x][y] = new Field();
-				String pt = map.getPlanType(x, y);
+				Place p = map.get(x, y);
+				if(p == null)
+					continue;
+				String pt = p.getPlanType();
 				if(pt == null)
 					pt = "Programmed by ProjectBots";
-				if(map.is(x, y, SRC.Map.isObstacle) && !map.is(x, y, SRC.Map.canWalkOver)) {
-					if(canFly && map.is(x, y, SRC.Map.canFlyOver)) 
+				if(!p.canWalkOver()) {
+					if(canFly && p.canFlyOver()) 
 						continue;
 					fields[x][y].setObstacle(true);
-				} else if(pts == null && map.is(x, y, SRC.Map.isPlayerRect)) {
-					setFin(fields, map, x, y, banned);
+				} else if(pts == null && p.getPlacementRectType() == PlacementRectType.PLAYER) {
+					setFin(fields, p, x, y, banned);
 				} else if(pts != null && pts.contains(pt)) {
-					setFin(fields, map, x, y, banned);
+					setFin(fields, p, x, y, banned);
 				}
 			}
 		}
@@ -56,19 +61,19 @@ public class MapConv {
 		return this;
 	}
 	
-	private void setFin(Field[][] ret, Map map, int x, int y, Set<String> banned) {
+	private void setFin(Field[][] ret, Place p, int x, int y, Set<String> banned) {
 		if(banned.contains(x+"-"+y))
 			return;
 		
-		if(!map.is(x, y, SRC.Map.isEmpty)) 
+		if(!p.isEmpty()) 
 			return;
 		
 		for(int i=-2; i<3; i++) 
 			for(int j=-2; j<3; j++) 
-				if(map.is(x+i, y+j, SRC.Map.isEnemy)) 
+				if(p.getTeam() == Team.ENEMY) 
 					return;
 		
-		String plan = map.getPlanType(x, y);
+		String plan = p.getPlanType();
 		
 		ret[x][y].setFinish((short) (plan != null && (plan.equals("noplacement") || plan.equals("vibe")) ? 0 : 1));
 		found = true;
@@ -92,13 +97,17 @@ public class MapConv {
 		for(int k=0; k<2; k++) {
 			for(int x=0; x<hmap.length; x++) {
 				for(int y=0; y<hmap[x].length; y++) {
-					if(map.is(x, y, k==0 ? SRC.Map.isPlayer : SRC.Map.isEnemy) || map.is(x, y, SRC.Map.isOccupied)) {
+					Place p = map.get(x, y);
+					if(p == null)
+						continue;
+				
+					if(p.getTeam() == (k==0 ? Team.PLAYER : Team.ENEMY) || p.isOccupied()) {
 						pc++;
-						PointN p = new PointN(x, y);
-						double mul = map.is(x, y, SRC.Map.isCaptain) ? 2 : 1;
+						PointN pn = new PointN(x, y);
+						double mul = p.isCaptain() ? 2 : 1;
 						for(int i=0; i<hmap.length; i++) {
 							for(int j=0; j<hmap[i].length; j++) {
-								double dis = p.dis(new PointN(i, j));
+								double dis = pn.dis(new PointN(i, j));
 								if(dis < 0.00001) {
 									hmap[i][j] += mul;
 									continue;

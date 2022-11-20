@@ -65,15 +65,15 @@ public class SRR {
 		return playsAsCaptain;
 	}
 	
-	private static ArrayList<String> allUserIds = new ArrayList<String>();
+	
+	private static HashSet<String> allUserIds = new HashSet<String>();
 	
 	public static ArrayList<String> getAllUserIds() {
-		return allUserIds;
+		return new ArrayList<>(allUserIds);
 	}
 	
 	synchronized public static void addUserId(String uid) {
-		if(!allUserIds.contains(uid))
-			allUserIds.add(uid);
+		allUserIds.add(uid);
 	}
 	
 	public static String getData(String dataPath) {
@@ -436,10 +436,14 @@ public class SRR {
 		return sendPost(post);
 	}
 	
-	
-	public String getActiveRaidsByUser() throws NoConnectionException {
+	public String getActiveRaidsByUser(int[] placementStartIndices) throws NoConnectionException {
+		if(placementStartIndices.length % 2 != 0)
+			throw new IllegalArgumentException("placementStartIndices comes in pairs");
 		Http post = getPost("getActiveRaidsByUser");
-		post.addEncArg("placementStartIndices", "{}");
+		JsonObject psi = new JsonObject();
+		for(int i=0; i<placementStartIndices.length; i+=2)
+			psi.addProperty(""+placementStartIndices[i], placementStartIndices[i+1]);
+		post.addEncArg("placementStartIndices", psi.toString());
 		return sendPost(post);
 	}
 	

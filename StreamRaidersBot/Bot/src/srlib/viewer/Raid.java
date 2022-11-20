@@ -21,11 +21,11 @@ public class Raid {
 		return twitchDisplayName;
 	}
 	
-	public final String raidId, captainId, nodeType, chestType, twitchDisplayName, battleground, nodeId,
+	public final String captainId, nodeType, chestType, twitchDisplayName, battleground, nodeId,
 						twitchUserImage, twitchUserName, allyBoons, placementsSerialized, users;
 	public final long creationDate, nextUnitPlaceTime;
 	public final boolean ended, battleResult, hasViewedResults, isPlaying, isLive, postBattleComplete, hasRecievedRewards, placementEnded, placedUnit, isCodeLocked;
-	public final int pveWins, pveLoyaltyLevel, userSortIndex, dungeonStreak;
+	public final int raidId, pveWins, pveLoyaltyLevel, userSortIndex, dungeonStreak;
 	
 	
 	public Raid(JsonObject raid, String cid, int slot) {
@@ -36,7 +36,7 @@ public class Raid {
 		
 		type = RaidType.parseInt(raid.get("type").getAsInt());
 		
-		this.raidId = raid.get("raidId").getAsString();
+		this.raidId = raid.get("raidId").getAsInt();
 		this.captainId = raid.get("captainId").getAsString();
 		this.twitchDisplayName = raid.get("twitchDisplayName").getAsString();
 		this.battleground = raid.get("battleground").getAsString();

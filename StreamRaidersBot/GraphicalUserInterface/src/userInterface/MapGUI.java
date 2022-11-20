@@ -8,30 +8,30 @@ import otherlib.Logger;
 import otherlib.MapConv;
 import run.viewer.Viewer;
 import run.viewer.ViewerBackEnd;
-import srlib.Map;
-import srlib.SRC;
+import srlib.map.Map;
+import srlib.map.Place;
+import srlib.map.PlacementRectType;
+import srlib.map.Team;
 import srlib.units.UnitType;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.swing.SwingConstants;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 
 public class MapGUI {
 
 	public static void showPlanTypes(GUI parent) {
 		
-		JsonArray pts = Map.getSeenPlanTypes();
+		ArrayList<String> pts = Map.getSeenPlanTypes();
 		
 		StringBuilder sb = new StringBuilder();
 		for(int i=0; i<pts.size(); i++) {
-			sb.append(pts.get(i).getAsString() + "\n");
+			sb.append(pts.get(i) + "\n");
 		}
 		
 		if(sb.length() == 0) {
@@ -158,6 +158,8 @@ public class MapGUI {
 		return shortenedUnitAndPlanTypes.containsKey(type) ? shortenedUnitAndPlanTypes.get(type) : " ";
 	}
 	
+	private static final int SQUARE_SIZE = 10;
+	
 	public static void asGui(GUI parrent, Viewer v, int slot) {
 		if(v == null)
 			return;
@@ -192,7 +194,7 @@ public class MapGUI {
 						switch(e.getKeyCode()) {
 						case KeyEvent.VK_R:
 							try {
-								vbe.updateMap(slot, true);
+								vbe.updateRaidPlan(slot, true);
 								asGui(gui, v, slot);
 								gui.close();
 							} catch (Exception e1) {
@@ -210,15 +212,17 @@ public class MapGUI {
 			
 			for(int x=0; x<map.width; x++) {
 				for(int y=0; y<map.length; y++) {
+					
+					Place p = map.get(x, y);
+					
 
-					if(map.is(x, y, SRC.Map.isOccupied))
+					if(p.isOccupied())
 						continue;
 					
-					int s = 10;
 					
 					Label l = new Label();
 					l.setText("");
-					l.setSize(s, s);
+					l.setSize(SQUARE_SIZE, SQUARE_SIZE);
 					l.setInsets(0, 0, 0, 0);
 					l.setOpaque(true);
 					l.setPos(x, y);
@@ -226,55 +230,69 @@ public class MapGUI {
 					l.setValign(SwingConstants.CENTER);
 					l.setBackground(Color.white);
 					
-					if(map.is(x, y, SRC.Map.isEnemyRect)) l.setBackground(new Color(255, 143, 143));
-					if(map.is(x, y, SRC.Map.isPlayerRect)) l.setBackground(new Color(0, 204, 255));
-					if(map.is(x, y, SRC.Map.isHoldRect)) l.setBackground(new Color(153, 0, 153));
+					PlacementRectType prt = p.getPlacementRectType();
+					if(prt != null) {
+						l.setBackground(switch(prt) {
+						case PLAYER -> new Color(0, 204, 255);
+						case ENEMY -> new Color(255, 143, 143);
+						case HOLDING -> new Color(153, 0, 153);
+						});
+					}
 					
-					if(map.is(x, y, SRC.Map.isObstacle)) {
-						if(map.is(x, y, SRC.Map.canWalkOver)) {
-							if(!map.is(x, y, SRC.Map.isPlayerRect))
+					if(p.isObstacle()) {
+						if(p.canWalkOver()) {
+							if(prt != PlacementRectType.PLAYER || prt != PlacementRectType.HOLDING)
 								l.setBackground(new Color(145, 145, 145));
-						} else if(map.is(x, y, SRC.Map.canFlyOver)) 
+						} else if(p.canFlyOver())
 							l.setBackground(new Color(94, 94, 94));
 						else
 							l.setBackground(new Color(51, 51, 51));
 					}
-					//	TODO switch with enums
-					if(map.is(x, y, SRC.Map.isEnemy)) {
-						l.setBackground(Color.red);
-						l.setBorder(Color.black, 1);
-					} else if(map.is(x, y, SRC.Map.isNeutral)) {
-						l.setBackground(new Color(244, 242, 170));
-						l.setBorder(Color.black, 1);
-					} else if(map.is(x, y, SRC.Map.isAllied)) {
-						if(map.is(x, y, SRC.Map.isEpic)) {
-							l.setPos(x-1, y);
-							l.setSpan(2, 2);
-							l.setSize(s*2, s*2);
-						}
-						if(map.is(x, y, SRC.Map.isCaptain))
-							l.setBackground(new Color(200, 255, 0));
-						else if(map.is(x, y, SRC.Map.isSelf))
-							l.setBackground(new Color(255, 106, 0));
-						else if(map.is(x, y, SRC.Map.isOther))
-							l.setBackground(new Color(255, 200, 0));
-						else
-							l.setBackground(Color.green);
-						l.setBorder(Color.black, 1);
-						if(!map.is(x, y, SRC.Map.isPlayer)) {
-							l.setText("X");
-						} else {
-							JsonElement uType = map.get(x, y).get("unitType");
-							String ut = null;
+					
+					Team team = p.getTeam();
+					if(team != null) {
+						l.setBackground(Color.green);
+						switch(p.getTeam()) {
+						case ENEMY:
+							l.setBackground(Color.red);
+							l.setBorder(Color.black, 1);
+							break;
+						case NEUTRAL:
+							l.setBackground(new Color(244, 242, 170));
+							l.setBorder(Color.black, 1);
+							break;
+						case PLAYER:
+							UnitType uType = p.getUnitType();
 							if(uType != null)
-								l.setText(getShortenedUnitAndPlanType(ut = uType.getAsString()));
-							l.setTooltip(map.getDisplayName(x, y) + (ut==null?"":" - "+UnitType.getType(ut).name));
+								l.setText(getShortenedUnitAndPlanType(uType.uid));
+							l.setTooltip(p.getTwitchDisplayName() + (uType==null ? "" : " - "+uType.name));
+							
+							if(p.isCaptain())
+								l.setBackground(new Color(200, 255, 0));
+							else if(p.isSelf())
+								l.setBackground(new Color(255, 106, 0));
+							else if(p.isOther())
+								l.setBackground(new Color(255, 200, 0));
+							
+							//$FALL-THROUGH$
+						case ALLY:
+							if(p.isEpic()) {
+								l.setPos(x-1, y);
+								l.setSpan(2, 2);
+								l.setSize(SQUARE_SIZE*2, SQUARE_SIZE*2);
+							}
+							
+							l.setBorder(Color.black, 1);
+							if(team != Team.PLAYER)
+								l.setText("X");
+							
+							l.setFont(new Font(Font.SERIF, Font.PLAIN, 10));
+							break;
 						}
-						l.setFont(new Font(Font.SERIF, Font.PLAIN, 10));
 					}
 					
-					String plan = map.getPlanType(x, y);
-					if(plan != null && map.is(x, y, SRC.Map.isEmpty)) {
+					String plan = p.getPlanType();
+					if(plan != null && p.isEmpty()) {
 						l.setText(getShortenedUnitAndPlanType(plan));
 						l.setFont(new Font(Font.SERIF, Font.PLAIN, 10));
 					}
