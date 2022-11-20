@@ -210,7 +210,7 @@ public class ViewerBackEnd extends AbstractBackEnd<ViewerBackEnd> {
 									quest.get("GoalAmount").getAsInt(),
 									rQuest.get("questSlotId").getAsString(),
 									qtype,
-									qtype.equals("PlaceUnitOfType") ? UnitType.getType(quest.get("UnitTypeRequirement").getAsString()) : null);
+									qtype.equals("PlaceUnitOfType") ? UnitType.getType(quest.get("Objective").getAsString()) : null);
 			
 		}
 		
