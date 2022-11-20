@@ -113,7 +113,7 @@ public class MapGUI {
 			put("assassin", "D");
 			put("support", "S");
 			put("armored", "A");
-			put("melee", "m");
+			put("melee", "M");
 			put("ranged", "R");
 			
 			//	common
@@ -141,6 +141,7 @@ public class MapGUI {
 			put("musketeer", "u");
 			put("berserker", "z");
 			put("shinobi", "E");
+			put("gladiator", "g");
 			
 			//	legendary
 			put("warbeast", "W");
