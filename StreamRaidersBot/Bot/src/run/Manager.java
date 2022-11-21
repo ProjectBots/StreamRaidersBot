@@ -1,6 +1,8 @@
 package run;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +20,10 @@ import otherlib.Configs;
 import otherlib.Logger;
 import otherlib.Options;
 import otherlib.Remaper;
-import otherlib.Ressources;
+import otherlib.Resources;
+import otherlib.Resources.Resource;
+import otherlib.Resources.ResourceReader;
+import otherlib.Resources.ResourceTemplate;
 import otherlib.Configs.IllegalConfigTypeException;
 import otherlib.Configs.IllegalConfigVersionException;
 import otherlib.Configs.PStr;
@@ -47,11 +52,11 @@ public class Manager {
 	 * 	option to disable the loading images
 	 * 	optimize SkinSettings
 	 * 	when stopping wait for slots to finish + option to force close
-	 * 	better ressource management
-	 * 	better config
+	 * 	better resource management (WIP)
+	 * 	better config (WIP)
 	 * 	better config - unit sync
 	 * 
-	 * 	
+	 * 	rem unitPower from opt.txt
 	 * 
 	 */
 	
@@ -124,11 +129,51 @@ public class Manager {
 				+ "\t/____/_/ |_|  /_____/\\____/\\__/  \r\n"
 				+ "\r\n");
 		
-		try {
-			Ressources.load();
-		} catch (IOException e2) {
-			throw new IniCanceledException("Couldnt load Ressources");
-		}
+		Resources.setFolder("data");
+		
+		Resources.addCategory(JsonObject.class, new ResourceReader<JsonObject>() {
+			@Override
+			public ResourceTemplate<JsonObject> read(String folder, String path) {
+				//	just for me
+				if(path.equals("defConfig.json") || path.equals("remaps.json"))
+					return null;
+					
+				FileReader r = null;
+				try {
+					r = new FileReader(new File(folder+path));
+					return new ResourceTemplate<JsonObject>(Json.parseObj(r), -1);
+				} catch (Exception e) {
+					throw new RuntimeException("failed to get "+folder+path);
+				} finally {
+					if(r != null)
+						try {
+							r.close();
+						} catch (IOException e) {
+							Logger.printException("Manager -> ini -> addCategory: failed to close reader", e, Logger.runerr, Logger.error, null, null, true);
+						}
+				}
+			}
+			@Override
+			public void save(String folder, Resource<JsonObject> data) {
+				FileWriter w = null;
+				try {
+					w = new FileWriter(new File(folder+data.name));
+				} catch (Exception e) {
+					throw new RuntimeException("failed to save "+folder+data.name);
+				} finally {
+					if(w != null)
+						try {
+							w.close();
+						} catch (IOException e) {
+							Logger.printException("Manager -> ini -> addCategory: failed to close writer", e, Logger.runerr, Logger.error, null, null, true);
+						}
+				}
+			}
+		}, "json");
+		
+		ArrayList<String> files = Resources.loadAllFilesInFolder();
+		for(String file : files)
+			Logger.print("Manager -> ini: unknown extension for "+file, Logger.lowerr, Logger.error, null, null, true);
 		
 		try {
 			Options.load();

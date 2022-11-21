@@ -1,5 +1,6 @@
 package include;
 
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -15,6 +16,10 @@ import com.google.gson.JsonPrimitive;
 public class Json {
 
 	public static JsonObject parseObj(String json) {
+		return new Gson().fromJson(json, JsonObject.class);
+	}
+	
+	public static JsonObject parseObj(Reader json) {
 		return new Gson().fromJson(json, JsonObject.class);
 	}
 	

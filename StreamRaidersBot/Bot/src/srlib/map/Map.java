@@ -31,12 +31,6 @@ public class Map {
 	public final int length;
 	public final int mapPower;
 	
-	private int playerPower = 0;
-	
-	public int getPlayerPower() {
-		return playerPower;
-	}
-	
 	private final Place[][] map;
 	
 	public final String name;
@@ -345,10 +339,13 @@ public class Map {
 		for(int x=0; x<width; x++) {
 			for(int y=0; y<length; y++) {
 				Place p = get(x, y);
-				if(p != null && p.isEntity && p.userId.equals(userId))
+				//	p.getUserId() would return null if it is not safe to call p.userId
+				//	therefore it is safe to call p.userId after checking not null
+				if(p != null && p.getUserId() != null && p.userId.equals(userId))
 					ret++;
 			}
 		}
 		return ret;
 	}
+	
 }

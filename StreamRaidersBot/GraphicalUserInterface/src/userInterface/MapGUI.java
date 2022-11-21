@@ -13,6 +13,7 @@ import srlib.map.Place;
 import srlib.map.PlacementRectType;
 import srlib.map.Team;
 import srlib.units.UnitType;
+import srlib.viewer.Raid;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -171,11 +172,15 @@ public class MapGUI {
 			if(!Viewer.canUseSlot(vbe, slot))
 				return;
 			
+			Raid r = vbe.getRaid(slot, false);
+			if(r == null)
+				return;
+			
 			Map map = vbe.getMap(slot, false);
 			if(map == null)
 				return;
 			
-			GUI gui = new GUI("MapName: " + map.name + ", Power: "+map.getPlayerPower()+"::"+map.mapPower, 1000, 800, parrent, null);
+			GUI gui = new GUI("MapName: " + map.name + ", Power: "+r.powerCurrent+"::"+map.mapPower, 1000, 800, parrent, null);
 			gui.setFullScreen(true);
 			
 			gui.setGlobalKeyLis(new KeyListener() {

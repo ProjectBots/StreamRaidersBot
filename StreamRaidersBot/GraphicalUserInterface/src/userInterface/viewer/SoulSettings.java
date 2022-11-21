@@ -18,7 +18,8 @@ import include.GUI.Label;
 import include.GUI.Container;
 import include.Http.NoConnectionException;
 import otherlib.Logger;
-import otherlib.Ressources;
+import otherlib.Resources;
+import otherlib.Resources.ResourceCategory;
 import run.Manager;
 import run.ProfileType;
 import run.viewer.ViewerBackEnd;
@@ -55,6 +56,8 @@ public class SoulSettings extends AbstractSettings {
 
 	@Override
 	protected void addContent() {
+		final ResourceCategory<java.awt.Image> imgs = Resources.getCategory(java.awt.Image.class);
+		
 		ViewerBackEnd vbe = Manager.getViewer(cid).getBackEnd();
 		
 		gui.setGlobalKeyLis(new KeyListener() {
@@ -141,7 +144,7 @@ public class SoulSettings extends AbstractSettings {
 			int x=0;
 
 			for(SoulType st : SoulType.values()) {
-				Image ist = new Image(Ressources.get("SoulPics/"+st.toString().toLowerCase(), java.awt.Image.class));
+				Image ist = new Image(imgs.get("SoulPics/"+st.toString().toLowerCase()+".png"));
 				ist.setPos(x++, g);
 				ist.setSquare(50);
 				ist.setInsets(2, 10, 2, 2);
@@ -154,7 +157,7 @@ public class SoulSettings extends AbstractSettings {
 				chead.addLabel(lc);
 			}
 			
-			Image ist = new Image(Ressources.get("SoulPics/graysoul", java.awt.Image.class));
+			Image ist = new Image(imgs.get("SoulPics/graysoul.png"));
 			ist.setPos(x++, g);
 			ist.setSquare(50);
 			ist.setInsets(2, 60, 2, 2);
@@ -175,7 +178,7 @@ public class SoulSettings extends AbstractSettings {
 				final int yy = y;
 				x = 0;
 				
-				Image upic = new Image(Ressources.get("UnitPics/"+units[y].type.uid.replace("allies", ""), java.awt.Image.class));
+				Image upic = new Image(imgs.get("UnitPics/"+units[y].type.uid.replace("allies", "")+".png"));
 				upic.setPos(x++, y);
 				upic.setSquare(25);
 				cbody.addImage(upic);
@@ -190,7 +193,7 @@ public class SoulSettings extends AbstractSettings {
 				
 				for(final SoulType st : SoulType.values()) {
 					Container cist = new Container();
-					ist = new Image(Ressources.get("SoulPics/"+st.toString().toLowerCase(), java.awt.Image.class));
+					ist = new Image(imgs.get("SoulPics/"+st.toString().toLowerCase()+".png"));
 					ist.setSquare(25);
 					cist.addImage(ist);
 					

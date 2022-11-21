@@ -31,7 +31,7 @@ import otherlib.Configs;
 import otherlib.Logger;
 import otherlib.Options;
 import otherlib.Remaper;
-import otherlib.Ressources;
+import otherlib.Resources;
 import include.Guide;
 import include.Http;
 import run.AbstractProfile;
@@ -431,13 +431,13 @@ public class MainFrame {
 		if(raid == null) {
 			GUI.setText(pspre+cid+"::"+slot+"::capname", "????????");
 			try {
-				setImage("Other/icon", 100, pspre+cid+"::"+slot+"::img");
+				setImage("Other/icon.png", 100, pspre+cid+"::"+slot+"::img");
 			} catch (IOException e) {
 				Logger.printException("MainFrame -> onUpdateSlot: raid=null, err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
 			GUI.setText(pspre+cid+"::"+slot+"::wins", "??");
 			try {
-				setImage("LoyaltyPics/noloy", 20, pspre+cid+"::"+slot+"::loy");
+				setImage("LoyaltyPics/noloy.png", 20, pspre+cid+"::"+slot+"::loy");
 			} catch (IOException e) {
 				Logger.printException("MainFrame -> onUpdateSlot: raid=null, err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
@@ -446,7 +446,7 @@ public class MainFrame {
 			GUI.setGradient(pspre+cid+"::"+slot+"::fav", Colors.getGradient("main buttons def"));
 			GUI.setForeground(pspre+cid+"::"+slot+"::fav", Colors.getColor("main buttons def"));
 			try {
-				setImage("ChestPics/nochest", 25, pspre+cid+"::"+slot+"::chest");
+				setImage("ChestPics/nochest.png", 25, pspre+cid+"::"+slot+"::chest");
 			} catch (IOException e) {
 				Logger.printException("MainFrame -> onUpdateSlot: raid=null, err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
@@ -472,7 +472,7 @@ public class MainFrame {
 				} catch (IOException | RuntimeException e1) {
 					Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set profile image 2, tdn="+raid.twitchDisplayName+", url1="+raid.twitchUserImage+", url2="+link, e1, Logger.general, Logger.warn, cid, slot, true);
 					try {
-						setImage("Other/icon", 100, pspre+cid+"::"+slot+"::img");
+						setImage("Other/icon.png", 100, pspre+cid+"::"+slot+"::img");
 					} catch (IOException e2) {
 						Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set default profile image", e2, Logger.general, Logger.error, cid, slot, true);
 					}
@@ -482,7 +482,7 @@ public class MainFrame {
 			case CAMPAIGN:
 				GUI.setText(pspre+cid+"::"+slot+"::wins", ""+raid.pveWins);
 				try {
-					setImage("LoyaltyPics/" + Viewer.pveloy[raid.pveLoyaltyLevel], 20, pspre+cid+"::"+slot+"::loy");
+					setImage("LoyaltyPics/" + Viewer.pveloy[raid.pveLoyaltyLevel]+".png", 20, pspre+cid+"::"+slot+"::loy");
 				} catch (IOException e) {
 					Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set loy image", e, Logger.general, Logger.error, cid, slot, true);
 				}
@@ -493,7 +493,7 @@ public class MainFrame {
 					keys = 10;
 				GUI.setText(pspre+cid+"::"+slot+"::wins", ""+keys);
 				try {
-					setImage("CurrencyPics/key", 20, pspre+cid+"::"+slot+"::loy");
+					setImage("CurrencyPics/key.png", 20, pspre+cid+"::"+slot+"::loy");
 				} catch (IOException e) {
 					Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set key image", e, Logger.general, Logger.error, cid, slot, true);
 				}
@@ -502,7 +502,7 @@ public class MainFrame {
 				//	TODO
 				GUI.setText(pspre+cid+"::"+slot+"::wins", "¯\\_(ツ)_/¯");
 				try {
-					setImage("CurrencyPics/bone", 20, pspre+cid+"::"+slot+"::loy");
+					setImage("CurrencyPics/bone.png", 20, pspre+cid+"::"+slot+"::loy");
 				} catch (IOException e) {
 					Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set bone image", e, Logger.general, Logger.error, cid, slot, true);
 				}
@@ -545,7 +545,7 @@ public class MainFrame {
 				ct = "nochest";
 			}
 			try {
-				setImage("ChestPics/"+ct, 25, pspre+cid+"::"+slot+"::chest");
+				setImage("ChestPics/"+ct+".png", 25, pspre+cid+"::"+slot+"::chest");
 			} catch (IOException e) {
 				Logger.printException("MainFrame -> onUpdateSlot: err=couldnt set image", e, Logger.general, Logger.error, cid, slot, true);
 			}
@@ -635,7 +635,7 @@ public class MainFrame {
 	}
 	
 	private static void setImage(String path, int size, String id) throws IOException {
-		Image img = new Image(Ressources.get(path, java.awt.Image.class));
+		Image img = new Image((java.awt.Image) Resources.get(path));
 		img.setSquare(size);
 		GUI.setImage(id, img);
 	}

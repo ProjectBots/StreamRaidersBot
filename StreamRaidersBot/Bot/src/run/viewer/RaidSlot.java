@@ -10,7 +10,6 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.gson.JsonObject;
 
-import include.Json;
 import include.Maths;
 import include.Pathfinding;
 import include.Http.NoConnectionException;
@@ -175,32 +174,23 @@ public class RaidSlot extends Slot {
 		
 		Map map = vbe.getMap(slot, true);
 		
-		String placeSer = r.placementsSerialized;
-		if(Configs.getInt(cid, currentLayer, Configs.maxUnitPerRaidViewer) < (placeSer == null 
-																					? 0 
-																					: placeSer.split(vbe.getViewerUserId()).length-1)) {
+		if(Configs.getInt(cid, currentLayer, Configs.maxUnitPerRaidViewer) < map.countUnitsFrom(vbe.getViewerUserId())) {
 			Logger.print("can not place, reason=max unit per raid reached", Logger.place, Logger.info, cid, slot);
 			return;
 		}
 		
-		if(!Configs.getBoolean(cid, currentLayer, Configs.allowPlaceFirstViewer) 
-			&& (placeSer == null ? true : Json.parseArr(placeSer).size() == 0))
+		if(r.powerCurrent == 0 && !Configs.getBoolean(cid, currentLayer, Configs.allowPlaceFirstViewer)) {
+			Logger.print("can not place, reason=not allowed to place first", Logger.place, Logger.info, cid, slot);
 			return;
+		}
 		
 		boolean dunNeeded = false;
 		if(dungeon) {
 			long now = Time.getServerTime();
 			
 			long timeElapsed = now - r.creationDate - RaidType.DUNGEON.planningPeriodDuration;
-			double timePercentage = (100.0 * timeElapsed) / (RaidType.DUNGEON.raidDuration - RaidType.DUNGEON.planningPeriodDuration);
-			
-			double mp = map.mapPower;
-			int pp = map.getPlayerPower();
-			
-			double powerPercentage = (100 * pp) / mp;
-			
-			dunNeeded = timePercentage > powerPercentage + 10;
-			Logger.print("timeElapsed="+timeElapsed+" timePercentage="+timePercentage+" mp="+mp+" pp="+pp+" powerPercentage="+powerPercentage, Logger.place, Logger.info, cid, slot);
+			dunNeeded = (double) timeElapsed / (RaidType.DUNGEON.raidDuration - RaidType.DUNGEON.planningPeriodDuration) > (double) r.powerCurrent / map.mapPower + 0.1;
+			Logger.print("timeElapsed="+timeElapsed+" mapPower="+map.mapPower+" powerCurrent="+r.powerCurrent, Logger.place, Logger.info, cid, slot);
 		}
 		
 		final Unit[] units = vbe.getPlaceableUnits(r);

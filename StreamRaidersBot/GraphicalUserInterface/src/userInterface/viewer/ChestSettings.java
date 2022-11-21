@@ -19,7 +19,8 @@ import include.GUI.TextField;
 import otherlib.Configs;
 import otherlib.Logger;
 import otherlib.Options;
-import otherlib.Ressources;
+import otherlib.Resources;
+import otherlib.Resources.ResourceCategory;
 import include.Json;
 import run.ProfileType;
 import run.viewer.Viewer;
@@ -52,6 +53,10 @@ public class ChestSettings extends AbstractSettings {
 
 	@Override
 	protected void addContent() {
+		
+		final ResourceCategory<java.awt.Image> imgs = Resources.getCategory(java.awt.Image.class);
+		
+		
 		JsonArray cts = Json.parseArr(Options.get("chests"));
 		cts.remove(new JsonPrimitive("chestsalvage"));
 		
@@ -82,7 +87,7 @@ public class ChestSettings extends AbstractSettings {
 			String chest = cts.get(i).getAsString();
 			
 			
-			Image ci = new Image(Ressources.get("ChestPics/"+chest, java.awt.Image.class));
+			Image ci = new Image(imgs.get("ChestPics/"+chest+".png"));
 			ci.setPos(p++, g);
 			ci.setSquare(22);
 			gui.addImage(ci);
@@ -130,7 +135,7 @@ public class ChestSettings extends AbstractSettings {
 							else 
 								w = 3;
 							
-							Image img = new Image(Ressources.get("LoyaltyPics/"+Viewer.pveloy[w], java.awt.Image.class));
+							Image img = new Image(imgs.get("LoyaltyPics/"+Viewer.pveloy[w]+".png"));
 							img.setSquare(18);
 							try {
 								GUI.setImage(uid+chest+"::loyImg::"+s, img);
@@ -166,7 +171,7 @@ public class ChestSettings extends AbstractSettings {
 				}
 				
 				Container cimg = new Container();
-				Image img = new Image(Ressources.get("LoyaltyPics/" + Viewer.pveloy[w], java.awt.Image.class));
+				Image img = new Image(imgs.get("LoyaltyPics/"+Viewer.pveloy[w]+".png"));
 				img.setSquare(18);
 				cimg.addImage(img, uid+chest+"::loyImg::"+s);
 				
@@ -321,7 +326,7 @@ public class ChestSettings extends AbstractSettings {
 		g++;
 		p = 0;
 		
-		Image ci = new Image(Ressources.get("ChestPics/dungeonchest", java.awt.Image.class));
+		Image ci = new Image(imgs.get("ChestPics/dungeonchest.png"));
 		ci.setPos(p++, g);
 		ci.setSquare(22);
 		gui.addImage(ci);

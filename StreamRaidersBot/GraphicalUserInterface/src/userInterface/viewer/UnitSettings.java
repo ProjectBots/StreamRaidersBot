@@ -33,7 +33,7 @@ import include.GUI.TextField;
 import otherlib.Configs;
 import otherlib.Logger;
 import otherlib.Options;
-import otherlib.Ressources;
+import otherlib.Resources;
 import otherlib.Configs.UniInt;
 import otherlib.Configs.UniStr;
 import run.Manager;
@@ -310,7 +310,7 @@ public class UnitSettings extends AbstractSettings {
 	private void addUnit(final U u, final int g) {
 		int p = 0;
 		
-		Image upic = new Image(Ressources.get("UnitPics/"+u.type.uid.replace("allies", ""), java.awt.Image.class));
+		Image upic = new Image((java.awt.Image) Resources.get("UnitPics/"+u.type.uid.replace("allies", "")+".png"));
 		upic.setPos(p++, g);
 		upic.setSquare(18);
 		gui.addImage(upic);
@@ -466,7 +466,7 @@ public class UnitSettings extends AbstractSettings {
 			
 			int m = StringUtils.countMatches(val, s+",");
 			Container cimg = new Container();
-			Image img = new Image(Ressources.get("ChestPics/"+s, java.awt.Image.class));
+			Image img = new Image((java.awt.Image) Resources.get("ChestPics/"+s+".png"));
 			img.setSquare(18);
 			cimg.addImage(img);
 			

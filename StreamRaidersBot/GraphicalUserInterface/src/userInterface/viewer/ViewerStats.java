@@ -18,7 +18,7 @@ import include.GUI.TextArea;
 import include.Http.NoConnectionException;
 import otherlib.Configs;
 import otherlib.Logger;
-import otherlib.Ressources;
+import otherlib.Resources;
 import run.RewSource;
 import run.viewer.Viewer;
 import run.viewer.ViewerBackEnd;
@@ -178,7 +178,7 @@ public class ViewerStats extends AbstractStats<Viewer, ViewerBackEnd> {
 				name.setForeground(Colors.getColor("VIEWER stats labels"));
 				uc.addLabel(name);
 				
-				Image img = new Image(Ressources.get("UnitPics/" + type.uid.replace("allies", ""), java.awt.Image.class));
+				Image img = new Image((java.awt.Image) Resources.get("UnitPics/"+type.uid.replace("allies", "")+".png"));
 				img.setPos(0, 1);
 				img.setSquare(80);
 				img.setAnchor("c");

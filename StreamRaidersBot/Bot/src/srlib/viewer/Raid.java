@@ -25,7 +25,7 @@ public class Raid {
 						twitchUserImage, twitchUserName, allyBoons, placementsSerialized, users;
 	public final long creationDate, nextUnitPlaceTime;
 	public final boolean ended, battleResult, hasViewedResults, isPlaying, isLive, postBattleComplete, hasRecievedRewards, placementEnded, placedUnit, isCodeLocked;
-	public final int raidId, pveWins, pveLoyaltyLevel, userSortIndex, dungeonStreak;
+	public final int raidId, pveWins, pveLoyaltyLevel, userSortIndex, dungeonStreak, powerCurrent;
 	
 	
 	public Raid(JsonObject raid, String cid, int slot) {
@@ -69,6 +69,7 @@ public class Raid {
 		this.isCodeLocked = raid.get("isCodeLocked").getAsBoolean();
 		
 		this.pveWins = raid.get("pveWins").getAsInt();
+		this.powerCurrent = raid.get("powerCurrent").getAsInt();
 		this.pveLoyaltyLevel = raid.get("pveLoyaltyLevel").getAsInt();
 		this.userSortIndex = raid.get("userSortIndex").getAsInt();
 		je = raid.get("dungeonStreak");
