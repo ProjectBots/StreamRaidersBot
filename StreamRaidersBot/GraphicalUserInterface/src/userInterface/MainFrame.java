@@ -11,6 +11,7 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.HashSet;
 import javax.swing.WindowConstants;
 
@@ -41,6 +42,7 @@ import run.viewer.Viewer;
 import srlib.RaidType;
 import srlib.SRC;
 import srlib.Time;
+import srlib.units.UnitType;
 import srlib.viewer.Raid;
 import userInterface.captain.CaptainProfileSection;
 import userInterface.globaloptions.GlobalOptions;
@@ -130,6 +132,9 @@ public class MainFrame {
 					case KeyEvent.VK_T:
 						String st = Time.format(Time.getServerTime());
 						gui.msg("ServerTime", st, GUI.MsgConst.INFO);
+						break;
+					case KeyEvent.VK_U:
+						gui.msg("UnitTypes", UnitType.getTypes().toString(), GUI.MsgConst.INFO);
 						break;
 					}
 				} else if((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) > 0) {

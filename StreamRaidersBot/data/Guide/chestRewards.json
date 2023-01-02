@@ -459,61 +459,63 @@
       "2 uncommonscrolls": 10
     }
   },
-  "cultchest": {
+  "dungeons11chest": {
     "V0": {
-      "1 commonscrolls": 36,
-      "4 commonscrolls": 20,
-      "2 uncommonscrolls": 13,
-      "5 uncommonscrolls": 10,
-      "3 rarescrolls": 6,
-      "5 rarescrolls": 5,
-      "srskincultbutlertank": 4,
-      "srskincultalchemistbomber": 3,
-      "srskincultbyakheeflyingrogue": 2,
-      "srskincultdagonwarbeast": 1
+      "1 scrollfairy": 80,
+      "3 scrollfairy": 19,
+      "5 scrollfairy": 1
     },
     "V1": {
-      "10 gold": 51,
-      "25 gold": 28,
-      "50 gold": 9,
-      "75 gold": 6,
-      "100 gold": 4,
-      "150 gold": 2
+      "1 potions": 50,
+      "2 potions": 10,
+      "3 potions": 5,
+      "1 scrollfairy": 20,
+      "3 scrollfairy": 10
     },
     "V2": {
-      "1 token": 80,
-      "2 token": 16,
-      "12 token": 4
+      "1 meat": 3,
+      "3 meat": 1,
+      "1 scrollfairy": 80,
+      "3 scrollfairy": 13
+    },
+    "V3": {
+      "2 token": 50,
+      "25 gold": 25,
+      "50 gold": 15,
+      "75 gold": 5,
+      "skinfullfairyfairygodfather": 3,
+      "skinfullfairydragonflame": 2
     },
     "B0": {
-      "5 gold": 50,
-      "7 gold": 30,
-      "10 gold": 20
+      "10 gold": 50,
+      "15 gold": 30,
+      "20 gold": 20
     },
     "C0": {
-      "1 commonscrolls": 36,
-      "4 commonscrolls": 20,
-      "2 uncommonscrolls": 13,
-      "5 uncommonscrolls": 10,
-      "3 rarescrolls": 6,
-      "5 rarescrolls": 5,
-      "srskincultbutlertank": 4,
-      "srskincultalchemistbomber": 3,
-      "srskincultbyakheeflyingrogue": 2,
-      "srskincultdagonwarbeast": 1
+      "1 scrollfairy": 94,
+      "3 scrollfairy": 5,
+      "5 scrollfairy": 1
     },
     "C1": {
-      "10 gold": 51,
-      "25 gold": 28,
-      "50 gold": 9,
-      "75 gold": 6,
-      "100 gold": 4,
-      "150 gold": 2
+      "10 gold": 50,
+      "15 gold": 10,
+      "20 gold": 5,
+      "1 scrollfairy": 20,
+      "3 scrollfairy": 10
     },
     "C2": {
-      "1 token": 80,
-      "2 token": 16,
-      "12 token": 4
+      "1 meat": 3,
+      "3 meat": 1,
+      "1 scrollfairy": 80,
+      "3 scrollfairy": 13
+    },
+    "C3": {
+      "2 token": 50,
+      "25 gold": 25,
+      "50 gold": 15,
+      "75 gold": 5,
+      "skinfullfairyfairygodfather": 3,
+      "skinfullfairydragonflame": 2
     }
   }
 }

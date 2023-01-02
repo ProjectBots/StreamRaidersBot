@@ -53,8 +53,9 @@ public class Manager {
 	 * 	optimize SkinSettings
 	 * 	when stopping wait for slots to finish + option to force close
 	 * 	better resource management (WIP)
+	 *  - opt.txt to new system (eliminate as many JsonObjects as possible) 
 	 * 	better config (WIP)
-	 * 	better config - unit sync
+	 * 	- unit sync
 	 * 
 	 * 	rem unitPower from opt.txt
 	 * 
@@ -173,7 +174,7 @@ public class Manager {
 		
 		ArrayList<String> files = Resources.loadAllFilesInFolder();
 		for(String file : files)
-			Logger.print("Manager -> ini: unknown extension for "+file, Logger.lowerr, Logger.error, null, null, true);
+			Logger.print("Manager -> ini: unknown extension for "+file, Logger.lowerr, Logger.warn, null, null, true);
 		
 		try {
 			Options.load();
