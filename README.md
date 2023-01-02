@@ -1,5 +1,15 @@
 # StreamRaiderBot
 
+IMORTANT:  
+At the moment StreamRaiders is detecting the bot and "shadow bans" everyone who uses it.  
+You know that you got hit if the window for searching captains is empty.  
+These bans may be appealed (no guarantee) by sending a support e-mail to SR and following instructions if any.  
+  
+Because of this <b>it is NOT recommended to use the bot in its current state</b>.  
+I will make an update if anything changes.  
+
+----
+
 Disclaimer: this program is not from Stream Raiders nor affiliated with them. Use at own Risk
 
 A bot for automated farming in Stream Raiders
