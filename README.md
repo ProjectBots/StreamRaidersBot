@@ -16,6 +16,7 @@ A bot for automated farming in Stream Raiders
 
 We now have a [Discord Server](https://discord.gg/u7e5nTRaZQ)!
 
+Docker version over [here](https://github.com/dead-f00l/StreamRaidersBot-docker)
 
 First Steps:  
 click the "add a profile" under "Bot" to add a profile (this bot can handle a lot of accounts for auto farming).  
